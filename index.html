@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .feedback-correct {
+            animation: feedback-pop 0.3s ease-out;
+        }
+        .feedback-incorrect {
+            animation: feedback-shake 0.5s ease-in-out;
+        }
+        @keyframes feedback-pop {
+            0% { transform: scale(0.8); opacity: 0; }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes feedback-shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+            20%, 40%, 60%, 80% { transform: translateX(8px); }
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Tela de Upload -->
+    <div id="upload-screen" class="w-full max-w-md mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-2xl p-8 text-center">
+        <h1 class="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-4">Bem-vindo aos Flashcards!</h1>
+        <p class="text-gray-600 dark:text-gray-300 mb-6">Para começar, por favor, carregue um arquivo de questões no formato .json.</p>
+        <input type="file" id="file-input" accept=".json" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-4"/>
+        <button id="start-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400" disabled>
+            Iniciar Flashcards
+        </button>
+        <p id="upload-error" class="text-red-500 mt-4 text-sm"></p>
+    </div>
+
+    <!-- Tela do Jogo -->
+    <div id="game-container" class="w-full max-w-2xl mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-2xl p-6 sm:p-8 transition-all duration-500 hidden">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">Flashcards</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Questões restantes no ciclo: <span id="questions-left">0</span></p>
+            </div>
+            <div class="text-right">
+                <p class="text-sm text-gray-500 dark:text-gray-400">Pontuação</p>
+                <p id="score" class="text-2xl font-bold text-gray-900 dark:text-white">0</p>
+            </div>
+        </div>
+
+        <div id="question-card" class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg mb-6 min-h-[120px] flex items-center justify-center">
+            <p id="question-text" class="text-center text-lg font-medium text-gray-700 dark:text-gray-300"></p>
+        </div>
+
+        <!-- Área de Resposta (Dissertativa) -->
+        <div id="open-answer-area">
+            <div class="relative">
+                <input type="text" id="answer-input" class="w-full px-4 py-3 text-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" placeholder="Digite sua resposta aqui..." autocomplete="off">
+                <div id="feedback-icon" class="absolute right-4 top-1/2 -translate-y-1/2 text-2xl"></div>
+            </div>
+            <button id="submit-btn" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Verificar Resposta
+            </button>
+        </div>
+
+        <!-- Área de Resposta (Múltipla Escolha) -->
+        <div id="mc-answer-area" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button class="mc-option-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-blue-200 dark:hover:bg-blue-800 text-gray-800 dark:text-gray-200 font-semibold py-4 px-4 rounded-lg text-md transition"></button>
+            <button class="mc-option-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-blue-200 dark:hover:bg-blue-800 text-gray-800 dark:text-gray-200 font-semibold py-4 px-4 rounded-lg text-md transition"></button>
+            <button class="mc-option-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-blue-200 dark:hover:bg-blue-800 text-gray-800 dark:text-gray-200 font-semibold py-4 px-4 rounded-lg text-md transition"></button>
+            <button class="mc-option-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-blue-200 dark:hover:bg-blue-800 text-gray-800 dark:text-gray-200 font-semibold py-4 px-4 rounded-lg text-md transition"></button>
+        </div>
+    </div>
+
+    <script>
+        // --- ELEMENTOS DO DOM ---
+        const uploadScreen = document.getElementById('upload-screen');
+        const gameContainer = document.getElementById('game-container');
+        const fileInput = document.getElementById('file-input');
+        const startBtn = document.getElementById('start-btn');
+        const uploadError = document.getElementById('upload-error');
+
+        const questionText = document.getElementById('question-text');
+        const scoreDisplay = document.getElementById('score');
+        const questionsLeftDisplay = document.getElementById('questions-left');
+        
+        // Áreas de Resposta
+        const openAnswerArea = document.getElementById('open-answer-area');
+        const answerInput = document.getElementById('answer-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const feedbackIcon = document.getElementById('feedback-icon');
+
+        const mcAnswerArea = document.getElementById('mc-answer-area');
+        const mcOptionBtns = document.querySelectorAll('.mc-option-btn');
+
+        // --- ESTADO DO JOGO ---
+        let allQuestions = [];
+        let questionsPool = [];
+        let score = 0;
+        let currentQuestion = {};
+        let currentQuestionIndexInPool = -1;
+
+        // --- LÓGICA DE UPLOAD ---
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                startBtn.disabled = false;
+                uploadError.textContent = '';
+            }
+        });
+
+        startBtn.addEventListener('click', () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                uploadError.textContent = 'Por favor, selecione um arquivo.';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const parsedQuestions = JSON.parse(event.target.result);
+                    if (!Array.isArray(parsedQuestions) || parsedQuestions.length === 0) {
+                        throw new Error("O arquivo JSON deve ser um array de questões e não pode estar vazio.");
+                    }
+                    allQuestions = parsedQuestions;
+                    uploadScreen.classList.add('hidden');
+                    gameContainer.classList.remove('hidden');
+                    startGame();
+                } catch (e) {
+                    uploadError.textContent = `Erro ao ler o arquivo: ${e.message}`;
+                }
+            };
+            reader.onerror = () => {
+                uploadError.textContent = 'Não foi possível ler o arquivo.';
+            };
+            reader.readAsText(file);
+        });
+        
+        // --- FUNÇÕES AUXILIARES ---
+        function normalizeString(str) {
+            if (!str) return '';
+            return str.replace(/\(.*?\)/g, '').trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/-/g, ' ');
+        }
+
+        function calculateSimilarity(s1, s2) {
+            let longer = s1, shorter = s2;
+            if (s1.length < s2.length) { longer = s2; shorter = s1; }
+            const longerLength = longer.length;
+            if (longerLength === 0) return 1.0;
+            const distance = (s1, s2) => {
+                const track = Array(s2.length + 1).fill(null).map(() => Array(s1.length + 1).fill(null));
+                for (let i = 0; i <= s1.length; i += 1) track[0][i] = i;
+                for (let j = 0; j <= s2.length; j += 1) track[j][0] = j;
+                for (let j = 1; j <= s2.length; j += 1) {
+                    for (let i = 1; i <= s1.length; i += 1) {
+                        const indicator = s1[i - 1] === s2[j - 1] ? 0 : 1;
+                        track[j][i] = Math.min(track[j][i - 1] + 1, track[j - 1][i] + 1, track[j - 1][i - 1] + indicator);
+                    }
+                }
+                return track[s2.length][s1.length];
+            };
+            return (longerLength - distance(longer, shorter)) / longerLength;
+        }
+        
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // --- LÓGICA DO JOGO ---
+        function startGame() {
+            score = 0;
+            scoreDisplay.textContent = '0';
+            questionsPool = [...allQuestions]; 
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (questionsPool.length === 0) {
+                questionText.textContent = "Parabéns! Você concluiu todas as questões. O ciclo será reiniciado...";
+                setTimeout(startGame, 3000);
+                return;
+            }
+            
+            resetUI();
+            questionsLeftDisplay.textContent = questionsPool.length;
+            currentQuestionIndexInPool = Math.floor(Math.random() * questionsPool.length);
+            currentQuestion = questionsPool[currentQuestionIndexInPool];
+            questionText.textContent = currentQuestion.description;
+
+            if (currentQuestion.type === 'multiple_choice' && currentQuestion.options) {
+                openAnswerArea.classList.add('hidden');
+                mcAnswerArea.classList.remove('hidden');
+                
+                const options = [...currentQuestion.options];
+                shuffleArray(options);
+                mcOptionBtns.forEach((btn, index) => {
+                    btn.textContent = options[index];
+                    btn.onclick = () => handleMCSubmit(btn);
+                });
+            } else { // 'open' type
+                mcAnswerArea.classList.add('hidden');
+                openAnswerArea.classList.remove('hidden');
+                answerInput.focus();
+            }
+        }
+        
+        function resetUI() {
+            answerInput.value = '';
+            answerInput.disabled = false;
+            submitBtn.disabled = false;
+            feedbackIcon.innerHTML = '';
+            questionText.classList.remove('text-red-500', 'text-green-500');
+            mcOptionBtns.forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('bg-green-500', 'bg-red-500', 'text-white', 'hover:bg-green-500', 'hover:bg-red-500');
+                btn.classList.add('bg-gray-200', 'dark:bg-gray-600', 'hover:bg-blue-200', 'dark:hover:bg-blue-800');
+            });
+        }
+
+        function showFeedback(isCorrect, element) {
+            if (element) { // Múltipla escolha
+                mcOptionBtns.forEach(btn => btn.disabled = true);
+                element.classList.remove('bg-gray-200', 'dark:bg-gray-600', 'hover:bg-blue-200', 'dark:hover:bg-blue-800');
+                if (isCorrect) {
+                    element.classList.add('bg-green-500', 'text-white', 'hover:bg-green-500');
+                } else {
+                    element.classList.add('bg-red-500', 'text-white', 'hover:bg-red-500');
+                    mcOptionBtns.forEach(btn => {
+                        if (normalizeString(btn.textContent) === normalizeString(currentQuestion.answer)) {
+                            btn.classList.remove('bg-gray-200', 'dark:bg-gray-600');
+                            btn.classList.add('bg-green-500', 'text-white');
+                        }
+                    });
+                }
+            } else { // Aberta
+                feedbackIcon.innerHTML = isCorrect ? '✅' : '❌';
+                feedbackIcon.classList.remove('feedback-correct', 'feedback-incorrect');
+                void feedbackIcon.offsetWidth; 
+                feedbackIcon.classList.add(isCorrect ? 'feedback-correct' : 'feedback-incorrect');
+
+                if (!isCorrect) {
+                    questionText.innerHTML = `${currentQuestion.description}<br><span class="text-green-500 font-semibold mt-2 block">Resposta: ${currentQuestion.answer.replace('/', ' ou ')}</span>`;
+                }
+            }
+
+            if(isCorrect) {
+                score++;
+                scoreDisplay.textContent = score;
+                questionsPool.splice(currentQuestionIndexInPool, 1);
+            }
+            
+            setTimeout(loadQuestion, 2500);
+        }
+
+        function handleOpenSubmit() {
+            if (!currentQuestion.answer || answerInput.disabled) return;
+            const userAnswer = normalizeString(answerInput.value);
+            if (!userAnswer) return;
+
+            answerInput.disabled = true;
+            submitBtn.disabled = true;
+
+            const correctAnswers = currentQuestion.answer.split('/');
+            const isCorrect = correctAnswers.some(correctAnswer => {
+                const normalizedCorrectAnswer = normalizeString(correctAnswer);
+                return calculateSimilarity(userAnswer, normalizedCorrectAnswer) >= 0.8;
+            });
+
+            showFeedback(isCorrect, null);
+        }
+        
+        function handleMCSubmit(button) {
+            if (button.disabled) return;
+            const userAnswer = normalizeString(button.textContent);
+            const correctAnswer = normalizeString(currentQuestion.answer);
+            const isCorrect = userAnswer === correctAnswer;
+            showFeedback(isCorrect, button);
+        }
+
+        // --- EVENT LISTENERS ---
+        submitBtn.addEventListener('click', handleOpenSubmit);
+        answerInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') handleOpenSubmit();
+        });
+
+    </script>
+</body>
+</html>
