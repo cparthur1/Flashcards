@@ -1,0 +1,357 @@
+[
+    {
+        "type": "open",
+        "description": "Processo em que um protozoário forma uma capa resistente para sobreviver em ambientes hostis.",
+        "answer": "Encistamento"
+    },
+    {
+        "type": "open",
+        "description": "Classe de protozoários que se locomovem por pseudópodes, como as amebas.",
+        "answer": "Rhizopoda"
+    },
+    {
+        "type": "open",
+        "description": "Tipo de reprodução assexuada onde o núcleo se divide várias vezes antes do citoplasma, gerando múltiplos descendentes.",
+        "answer": "Esquizogonia"
+    },
+    {
+        "type": "open",
+        "description": "Protozoário ciliado, o maior a parasitar o homem, que pode causar disenteria.",
+        "answer": "Balantidium coli"
+    },
+    {
+        "type": "open",
+        "description": "Qual doença a *Entamoeba histolytica* causa?",
+        "answer": "Amebíase"
+    },
+    {
+        "type": "open",
+        "description": "Qual a principal forma de transmissão da amebíase?",
+        "answer": "Ingestão de cistos/Oral-fecal"
+    },
+    {
+        "type": "open",
+        "description": "Qual forma evolutiva da *Entamoeba histolytica* é a infectante para o ser humano?",
+        "answer": "Cisto"
+    },
+    {
+        "type": "open",
+        "description": "Qual forma evolutiva da *Entamoeba histolytica* é responsável por invadir a mucosa intestinal e causar a doença?",
+        "answer": "Trofozoíto"
+    },
+    {
+        "type": "open",
+        "description": "Principal manifestação extraintestinal da amebíase invasiva.",
+        "answer": "Abscesso hepático"
+    },
+    {
+        "type": "open",
+        "description": "Ameba comensal cujo cisto maduro possui 8 núcleos, importante para diagnóstico diferencial com a E. histolytica.",
+        "answer": "Entamoeba coli"
+    },
+    {
+        "type": "open",
+        "description": "Ameba não patogênica encontrada na cavidade bucal que não forma cistos e tem transmissão direta.",
+        "answer": "Entamoeba gingivalis"
+    },
+    {
+        "type": "open",
+        "description": "Menor ameba que parasita o intestino humano, considerada não patogênica.",
+        "answer": "Endolimax nana"
+    },
+    {
+        "type": "open",
+        "description": "Ameba não patogênica cujo cisto se caracteriza por um grande vacúolo de glicogênio e um único núcleo.",
+        "answer": "Iodamoeba butschlii"
+    },
+    {
+        "type": "multiple_choice",
+        "description": "Qual o objetivo principal do tratamento na amebíase intestinal sintomática?",
+        "answer": "Controle do parasita",
+        "options": [
+            "Controle dos sintomas",
+            "Controle do parasita",
+            "Autolimitada"
+        ]
+    },
+    {
+        "type": "open",
+        "description": "Qual doença a *Giardia lamblia* causa?",
+        "answer": "Giardíase"
+    },
+    {
+        "type": "open",
+        "description": "Qual a principal via de transmissão da giardíase?",
+        "answer": "Ingestão de cistos/Oral-fecal"
+    },
+    {
+        "type": "open",
+        "description": "Forma de vida da *Giardia* que se adere à mucosa do duodeno através de um disco adesivo.",
+        "answer": "Trofozoíto"
+    },
+    {
+        "type": "open",
+        "description": "Qual doença o parasita *Trichomonas vaginalis* causa?",
+        "answer": "Tricomoníase"
+    },
+    {
+        "type": "open",
+        "description": "Como ocorre a transmissão do *Trichomonas vaginalis*?",
+        "answer": "Contato sexual/Via sexual"
+    },
+    {
+        "type": "open",
+        "description": "Este parasita urogenital não forma cistos, existindo apenas na forma de trofozoíto.",
+        "answer": "Trichomonas vaginalis"
+    },
+    {
+        "type": "open",
+        "description": "Sinal clínico característico em mulheres com tricomoníase, onde o colo do útero apresenta aspecto de 'morango'.",
+        "answer": "Colpite macular"
+    },
+    {
+        "type": "multiple_choice",
+        "description": "Em um caso de giardíase com intensa diarreia, a reidratação é uma medida para qual tipo de controle?",
+        "answer": "Controle dos sintomas",
+        "options": [
+            "Controle dos sintomas",
+            "Controle do parasita",
+            "Autolimitada"
+        ]
+    },
+    {
+        "type": "multiple_choice",
+        "description": "Qual o objetivo principal do tratamento da tricomoníase, uma IST?",
+        "answer": "Controle do parasita",
+        "options": [
+            "Controle dos sintomas",
+            "Controle do parasita",
+            "Autolimitada"
+        ]
+    },
+    {
+        "type": "open",
+        "description": "Qual doença o *Trypanosoma cruzi* causa?",
+        "answer": "Doença de Chagas"
+    },
+    {
+        "type": "open",
+        "description": "No ciclo da Doença de Chagas, quem é o hospedeiro intermediário?",
+        "answer": "Barbeiro/Triatomíneo"
+    },
+    {
+        "type": "open",
+        "description": "No ciclo da Doença de Chagas, o mamífero (incluindo o homem) é considerado o hospedeiro...",
+        "answer": "Definitivo"
+    },
+    {
+        "type": "open",
+        "description": "A transmissão clássica da Doença de Chagas ocorre pela contaminação com as fezes do vetor no local da picada?",
+        "answer": "Fezes"
+    },
+    {
+        "type": "open",
+        "description": "Qual a forma infectante do *Trypanosoma cruzi* para o ser humano, encontrada nas fezes do vetor?",
+        "answer": "Tripomastigota metacíclico"
+    },
+    {
+        "type": "open",
+        "description": "Qual forma do *Trypanosoma cruzi* se multiplica dentro das células do hospedeiro mamífero, formando 'ninhos'?",
+        "answer": "Amastigota"
+    },
+    {
+        "type": "open",
+        "description": "Forma flagelada do *T. cruzi* encontrada no intestino do 'barbeiro', que se multiplica antes de se tornar infectante.",
+        "answer": "Epimastigota"
+    },
+    {
+        "type": "open",
+        "description": "Sinal clínico agudo da Doença de Chagas caracterizado por edema inflamatório unilateral das pálpebras.",
+        "answer": "Sinal de Romaña"
+    },
+    {
+        "type": "open",
+        "description": "Método de diagnóstico parasitológico indireto para a fase crônica da Doença de Chagas, que utiliza o próprio vetor.",
+        "answer": "Xenodiagnóstico"
+    },
+    {
+        "type": "multiple_choice",
+        "description": "Na fase aguda da Doença de Chagas, qual o objetivo principal do tratamento medicamentoso?",
+        "answer": "Controle do parasita",
+        "options": [
+            "Controle dos sintomas",
+            "Controle do parasita",
+            "Autolimitada"
+        ]
+    },
+    {
+        "type": "open",
+        "description": "Qual o nome do grupo de doenças causadas por protozoários do gênero *Leishmania*?",
+        "answer": "Leishmanioses"
+    },
+    {
+        "type": "open",
+        "description": "Qual inseto atua como hospedeiro intermediário e vetor da Leishmaniose?",
+        "answer": "Flebotomíneo"
+    },
+    {
+        "type": "open",
+        "description": "No ciclo da Leishmaniose, o mamífero (homem, cão) atua como hospedeiro definitivo ou intermediário?",
+        "answer": "Definitivo"
+    },
+    {
+        "type": "open",
+        "description": "Como ocorre a transmissão da *Leishmania* pelo vetor ao hospedeiro vertebrado?",
+        "answer": "Picada/Inoculação de promastigotas"
+    },
+    {
+        "type": "open",
+        "description": "Qual forma evolutiva da *Leishmania* é flagelada e inoculada na pele do hospedeiro pelo vetor?",
+        "answer": "Promastigota"
+    },
+    {
+        "type": "open",
+        "description": "Qual forma da *Leishmania* é intracelular, não possui flagelo externo e se multiplica dentro dos macrófagos?",
+        "answer": "Amastigota"
+    },
+    {
+        "type": "open",
+        "description": "Tipo de Leishmaniose que causa graves lesões em órgãos internos como fígado e baço.",
+        "answer": "Leishmaniose Visceral/Calazar"
+    },
+    {
+        "type": "open",
+        "description": "Principal reservatório doméstico da Leishmaniose Visceral no Brasil.",
+        "answer": "Cão"
+    },
+    {
+        "type": "multiple_choice",
+        "description": "Qual o objetivo do tratamento medicamentoso para as leishmanioses?",
+        "answer": "Controle do parasita",
+        "options": [
+            "Controle dos sintomas",
+            "Controle do parasita",
+            "Autolimitada"
+        ]
+    },
+    {
+        "type": "open",
+        "description": "Qual doença é causada por protozoários do gênero *Plasmodium*?",
+        "answer": "Malária"
+    },
+    {
+        "type": "open",
+        "description": "Quem é o hospedeiro definitivo do *Plasmodium*, onde ocorre a reprodução sexuada?",
+        "answer": "Mosquito/Anopheles"
+    },
+    {
+        "type": "open",
+        "description": "No ciclo da malária, o ser humano é o hospedeiro...",
+        "answer": "Intermediário"
+    },
+    {
+        "type": "open",
+        "description": "Qual a forma de transmissão da malária?",
+        "answer": "Picada de mosquito/Anopheles"
+    },
+    {
+        "type": "open",
+        "description": "Qual forma evolutiva do *Plasmodium* é inoculada no ser humano pela picada do mosquito?",
+        "answer": "Esporozoíto"
+    },
+    {
+        "type": "open",
+        "description": "Após o ciclo no fígado, qual forma do *Plasmodium* invade as hemácias para iniciar o ciclo eritrocítico?",
+        "answer": "Merozoíto"
+    },
+    {
+        "type": "open",
+        "description": "Qual forma evolutiva do *Plasmodium* é ingerida pelo mosquito ao picar um humano infectado, dando início ao ciclo sexuado?",
+        "answer": "Gametócito"
+    },
+    {
+        "type": "open",
+        "description": "Nome dado às formas dormentes do *P. vivax* no fígado, responsáveis pelas recaídas.",
+        "answer": "Hipnozoítos"
+    },
+    {
+        "type": "open",
+        "description": "Espécie de *Plasmodium* que causa a forma mais grave da malária (terçã maligna).",
+        "answer": "Plasmodium falciparum"
+    },
+    {
+        "type": "open",
+        "description": "A crise febril da malária, com calafrios e febre, coincide com a ruptura de qual tipo de célula sanguínea?",
+        "answer": "Hemácias/Eritrócitos"
+    },
+    {
+        "type": "open",
+        "description": "Método de diagnóstico padrão-ouro para malária, que permite visualizar o parasita no sangue.",
+        "answer": "Gota espessa"
+    },
+    {
+        "type": "open",
+        "description": "Qual doença o *Toxoplasma gondii* causa?",
+        "answer": "Toxoplasmose"
+    },
+    {
+        "type": "open",
+        "description": "Quem é o hospedeiro definitivo do *Toxoplasma gondii*?",
+        "answer": "Felinos/Gatos"
+    },
+    {
+        "type": "open",
+        "description": "Humanos e outros mamíferos são considerados hospedeiros _______ do *Toxoplasma gondii*.",
+        "answer": "Intermediários"
+    },
+    {
+        "type": "open",
+        "description": "Uma das formas de transmissão da toxoplasmose é a ingestão de oocistos eliminados nas fezes de qual animal?",
+        "answer": "Gato/Felino"
+    },
+    {
+        "type": "open",
+        "description": "Qual a forma de multiplicação rápida do *T. gondii*, responsável pela fase aguda da doença?",
+        "answer": "Taquizoíto"
+    },
+    {
+        "type": "open",
+        "description": "Qual a forma de multiplicação lenta do *T. gondii*, encontrada em cistos nos tecidos durante a fase crônica e que é infectante?",
+        "answer": "Bradizoíto"
+    },
+    {
+        "type": "open",
+        "description": "Qual doença é causada pelo *Cryptosporidium*?",
+        "answer": "Criptosporidiose"
+    },
+    {
+        "type": "open",
+        "description": "Qual a principal via de transmissão da criptosporidiose?",
+        "answer": "Ingestão de oocistos/Oral-fecal"
+    },
+    {
+        "type": "open",
+        "description": "Qual a forma infectante do *Cryptosporidium*, que já é eliminada nas fezes de forma madura?",
+        "answer": "Oocisto"
+    },
+    {
+        "type": "open",
+        "description": "O ciclo de vida do *Cryptosporidium* é do tipo...",
+        "answer": "Monoxênico"
+    },
+    {
+        "type": "open",
+        "description": "Método de coloração ácido-resistente usado para identificar oocistos de *Cryptosporidium* nas fezes.",
+        "answer": "Ziehl-Neelsen"
+    },
+    {
+        "type": "multiple_choice",
+        "description": "Em pacientes imunocomprometidos com criptosporidiose, qual o principal objetivo da terapia de suporte?",
+        "answer": "Controle dos sintomas",
+        "options": [
+            "Controle dos sintomas",
+            "Controle do parasita",
+            "Autolimitada"
+        ]
+    }
+]
