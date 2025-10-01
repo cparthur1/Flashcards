@@ -11,22 +11,19 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Prevent scrollbars from the canvas */
         }
-        .feedback-correct {
-            animation: feedback-pop 0.3s ease-out;
+        /* Card glow effect for correct answers */
+        .glow-correct {
+            box-shadow: 0 0 20px 7px rgba(74, 222, 128, 0.6); /* green-400 */
         }
-        .feedback-incorrect {
-            animation: feedback-shake 0.5s ease-in-out;
+        /* Card glow effect for incorrect answers */
+        .glow-incorrect {
+            box-shadow: 0 0 20px 7px rgba(239, 68, 68, 0.6); /* red-500 */
         }
-        @keyframes feedback-pop {
-            0% { transform: scale(0.8); opacity: 0; }
-            80% { transform: scale(1.1); }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        @keyframes feedback-shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
-            20%, 40%, 60%, 80% { transform: translateX(8px); }
+        /* Smooth transition for the glow effect */
+        #question-card {
+            transition: box-shadow 0.4s ease-in-out;
         }
         .hidden {
             display: none;
@@ -34,6 +31,9 @@
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Canvas for the falling balls background animation -->
+    <canvas id="background-canvas" class="fixed top-0 left-0 w-full h-full" style="z-index: -1;"></canvas>
 
     <!-- Tela de Upload -->
     <div id="upload-screen" class="w-full max-w-md mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-2xl p-8 text-center">
@@ -67,7 +67,6 @@
         <div id="open-answer-area">
             <div class="relative">
                 <input type="text" id="answer-input" class="w-full px-4 py-3 text-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" placeholder="Digite sua resposta aqui..." autocomplete="off">
-                <div id="feedback-icon" class="absolute right-4 top-1/2 -translate-y-1/2 text-2xl"></div>
             </div>
             <button id="submit-btn" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                 Verificar Resposta
@@ -94,15 +93,19 @@
         const questionText = document.getElementById('question-text');
         const scoreDisplay = document.getElementById('score');
         const questionsLeftDisplay = document.getElementById('questions-left');
+        const questionCard = document.getElementById('question-card');
         
         // Áreas de Resposta
         const openAnswerArea = document.getElementById('open-answer-area');
         const answerInput = document.getElementById('answer-input');
         const submitBtn = document.getElementById('submit-btn');
-        const feedbackIcon = document.getElementById('feedback-icon');
 
         const mcAnswerArea = document.getElementById('mc-answer-area');
         const mcOptionBtns = document.querySelectorAll('.mc-option-btn');
+
+        // Canvas elements for background animation
+        const canvas = document.getElementById('background-canvas');
+        const ctx = canvas.getContext('2d');
 
         // --- ESTADO DO JOGO ---
         let allQuestions = [];
@@ -110,6 +113,7 @@
         let score = 0;
         let currentQuestion = {};
         let currentQuestionIndexInPool = -1;
+        let balls = [];
 
         // --- LÓGICA DE UPLOAD ---
         fileInput.addEventListener('change', () => {
@@ -147,6 +151,72 @@
             reader.readAsText(file);
         });
         
+        // --- LÓGICA DA ANIMAÇÃO (CANVAS) ---
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function createBall(isCorrect) {
+            const radius = Math.random() * 5 + 8; // Smaller balls
+            const x = Math.random() * (canvas.width - radius * 2) + radius;
+            const y = -radius;
+            const color = isCorrect ? 'rgba(74, 222, 128, 0.8)' : 'rgba(239, 68, 68, 0.8)';
+            const dy = 0; // Initial vertical velocity
+            balls.push({ x, y, radius, color, dy, isStatic: false });
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < balls.length; i++) {
+                const ball = balls[i];
+
+                if (!ball.isStatic) {
+                    ball.dy += 0.2; // Gravity
+                    ball.y += ball.dy;
+
+                    // Floor collision
+                    if (ball.y + ball.radius >= canvas.height) {
+                        ball.y = canvas.height - ball.radius;
+                        ball.isStatic = true;
+                    }
+
+                    // Collision with other static balls
+                    for (let j = 0; j < balls.length; j++) {
+                        if (i === j || !balls[j].isStatic) continue;
+                        
+                        const otherBall = balls[j];
+                        const dx = otherBall.x - ball.x;
+                        const dy = otherBall.y - ball.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance < ball.radius + otherBall.radius && ball.y < otherBall.y) {
+                            ball.y = otherBall.y - ball.radius - otherBall.radius;
+                            ball.isStatic = true;
+                            break; // Exit inner loop once collision is handled
+                        }
+                    }
+                }
+            }
+            
+            // Draw all balls
+            balls.forEach(ball => {
+                ctx.beginPath();
+                ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+                ctx.fillStyle = ball.color;
+                ctx.fill();
+                ctx.closePath();
+            });
+            
+            // Limit the number of balls to maintain performance
+            if (balls.length > 400) {
+                balls.shift();
+            }
+
+            requestAnimationFrame(animate);
+        }
+
         // --- FUNÇÕES AUXILIARES ---
         function normalizeString(str) {
             if (!str) return '';
@@ -191,7 +261,10 @@
         function loadQuestion() {
             if (questionsPool.length === 0) {
                 questionText.textContent = "Parabéns! Você concluiu todas as questões. O ciclo será reiniciado...";
-                setTimeout(startGame, 3000);
+                setTimeout(() => {
+                    balls = []; // Clear balls on restart
+                    startGame();
+                }, 3000);
                 return;
             }
             
@@ -208,7 +281,12 @@
                 const options = [...currentQuestion.options];
                 shuffleArray(options);
                 mcOptionBtns.forEach((btn, index) => {
-                    btn.textContent = options[index];
+                    if (options[index]) {
+                        btn.textContent = options[index];
+                        btn.classList.remove('hidden');
+                    } else {
+                        btn.classList.add('hidden');
+                    }
                     btn.onclick = () => handleMCSubmit(btn);
                 });
             } else { // 'open' type
@@ -222,7 +300,7 @@
             answerInput.value = '';
             answerInput.disabled = false;
             submitBtn.disabled = false;
-            feedbackIcon.innerHTML = '';
+            questionCard.classList.remove('glow-correct', 'glow-incorrect');
             questionText.classList.remove('text-red-500', 'text-green-500');
             mcOptionBtns.forEach(btn => {
                 btn.disabled = false;
@@ -232,6 +310,9 @@
         }
 
         function showFeedback(isCorrect, element) {
+            createBall(isCorrect);
+            questionCard.classList.add(isCorrect ? 'glow-correct' : 'glow-incorrect');
+
             if (element) { // Múltipla escolha
                 mcOptionBtns.forEach(btn => btn.disabled = true);
                 element.classList.remove('bg-gray-200', 'dark:bg-gray-600', 'hover:bg-blue-200', 'dark:hover:bg-blue-800');
@@ -247,11 +328,6 @@
                     });
                 }
             } else { // Aberta
-                feedbackIcon.innerHTML = isCorrect ? '✅' : '❌';
-                feedbackIcon.classList.remove('feedback-correct', 'feedback-incorrect');
-                void feedbackIcon.offsetWidth; 
-                feedbackIcon.classList.add(isCorrect ? 'feedback-correct' : 'feedback-incorrect');
-
                 if (!isCorrect) {
                     questionText.innerHTML = `${currentQuestion.description}<br><span class="text-green-500 font-semibold mt-2 block">Resposta: ${currentQuestion.answer.replace('/', ' ou ')}</span>`;
                 }
@@ -296,7 +372,13 @@
         answerInput.addEventListener('keyup', (event) => {
             if (event.key === 'Enter') handleOpenSubmit();
         });
+        window.addEventListener('resize', resizeCanvas, false);
+
+        // --- INITIALIZATION ---
+        resizeCanvas();
+        animate();
 
     </script>
 </body>
 </html>
+
