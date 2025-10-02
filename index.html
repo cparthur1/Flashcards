@@ -197,23 +197,27 @@
 
                         if (distance < minDistance && ball.y < otherBall.y) {
                             
-                            // --- A MUDANÇA DEFINITIVA ESTÁ AQUI, COMO VOCÊ SUGERIU ---
-                            // Em vez de parar (dy = 0), invertemos a velocidade vertical e reduzimos sua força (ex: -0.3).
-                            // Isso cria um pequeno quique, que é a chave para a bola "desgrudar" e começar a rolar.
                             ball.dy *= -0.3;
                             
-                            // Reposiciona a bola para assentar exatamente sobre a outra, evitando que "afunde"
                             const overlap = minDistance - distance;
                             const angle = Math.atan2(dy, dx);
                             ball.x += Math.cos(angle) * overlap;
                             ball.y += Math.sin(angle) * overlap;
                             
-                            // Mantemos a força de rolamento para que as bolas se espalhem.
                             const rollForce = dx * 0.08;
                             ball.x += rollForce;
 
-                            // A bola se torna estática apenas se estiver quase parada na horizontal E na vertical.
-                            if (Math.abs(dx) < 0.5 && Math.abs(ball.dy) < 0.5) {
+                            // --- LÓGICA DO CONTADOR DE ESTABILIDADE ---
+                            // Se a bola está se movendo muito lentamente (quase parada), iniciamos ou incrementamos o contador.
+                            if (Math.abs(ball.dy) < 1 && Math.abs(rollForce) < 0.5) {
+                                ball.settleCounter = (ball.settleCounter || 0) + 1;
+                            } else {
+                                // Se a bola se mover mais rápido (quicar alto ou rolar rápido), resetamos o contador.
+                                ball.settleCounter = 0;
+                            }
+
+                            // Se a bola permaneceu estável por 30 frames (aprox. meio segundo), a tornamos estática.
+                            if (ball.settleCounter > 30) {
                                 ball.isStatic = true;
                             }
 
