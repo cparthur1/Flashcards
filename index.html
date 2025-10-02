@@ -68,12 +68,15 @@
 
         <!-- Área de Resposta (Dissertativa) -->
         <div id="open-answer-area">
-            <div class="relative">
-                <input type="text" id="answer-input" class="w-full px-4 py-3 text-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" placeholder="Digite sua resposta aqui..." autocomplete="off">
-            </div>
-            <button id="submit-btn" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                Verificar Resposta
-            </button>
+        <div class="relative">
+            <input type="text" id="answer-input" class="w-full px-4 py-3 text-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" placeholder="Digite sua resposta aqui..." autocomplete="off">
+        </div>
+        <button id="submit-btn" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Verificar Resposta
+        </button>
+        <button id="next-question-btn" class="w-full mt-6 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 hidden">
+            Próxima Questão
+        </button>
         </div>
 
         <!-- Área de Resposta (Múltipla Escolha) -->
@@ -101,6 +104,7 @@
         // Áreas de Resposta
         const openAnswerArea = document.getElementById('open-answer-area');
         const answerInput = document.getElementById('answer-input');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
         const submitBtn = document.getElementById('submit-btn');
 
         const mcAnswerArea = document.getElementById('mc-answer-area');
@@ -335,50 +339,61 @@
         }
         
         function resetUI() {
-            answerInput.value = '';
-            answerInput.disabled = false;
-            submitBtn.disabled = false;
-            questionCard.classList.remove('glow-correct', 'glow-incorrect');
-            questionText.classList.remove('text-red-500', 'text-green-500');
-            mcOptionBtns.forEach(btn => {
-                btn.disabled = false;
-                btn.classList.remove('bg-green-500', 'bg-red-500', 'text-white', 'hover:bg-green-500', 'hover:bg-red-500');
-                btn.classList.add('bg-gray-200', 'dark:bg-gray-600', 'hover:bg-blue-200', 'dark:hover:bg-blue-800');
-            });
-        }
+    answerInput.value = '';
+    answerInput.disabled = false;
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('hidden'); // Garante que o botão de verificar apareça
+    nextQuestionBtn.classList.add('hidden'); // Esconde o botão de próxima questão
+    questionCard.classList.remove('glow-correct', 'glow-incorrect');
+    questionText.classList.remove('text-red-500', 'text-green-500');
+    mcOptionBtns.forEach(btn => {
+        btn.disabled = false;
+        btn.classList.remove('bg-green-500', 'bg-red-500', 'text-white', 'hover:bg-green-500', 'hover:bg-red-500');
+        btn.classList.add('bg-gray-200', 'dark:bg-gray-600', 'hover:bg-blue-200', 'dark:hover:bg-blue-800');
+    });
+}
 
         function showFeedback(isCorrect, element) {
-            createBall(isCorrect);
-            questionCard.classList.add(isCorrect ? 'glow-correct' : 'glow-incorrect');
+    createBall(isCorrect);
+    questionCard.classList.add(isCorrect ? 'glow-correct' : 'glow-incorrect');
 
-            if (element) { // Múltipla escolha
-                mcOptionBtns.forEach(btn => btn.disabled = true);
-                element.classList.remove('bg-gray-200', 'dark:bg-gray-600', 'hover:bg-blue-200', 'dark:hover:bg-blue-800');
-                if (isCorrect) {
-                    element.classList.add('bg-green-500', 'text-white', 'hover:bg-green-500');
-                } else {
-                    element.classList.add('bg-red-500', 'text-white', 'hover:bg-red-500');
-                    mcOptionBtns.forEach(btn => {
-                        if (normalizeString(btn.textContent) === normalizeString(currentQuestion.answer)) {
-                            btn.classList.remove('bg-gray-200', 'dark:bg-gray-600');
-                            btn.classList.add('bg-green-500', 'text-white');
-                        }
-                    });
+    if (element) { // Múltipla escolha
+        mcOptionBtns.forEach(btn => btn.disabled = true);
+        element.classList.remove('bg-gray-200', 'dark:bg-gray-600', 'hover:bg-blue-200', 'dark:hover:bg-blue-800');
+        if (isCorrect) {
+            element.classList.add('bg-green-500', 'text-white', 'hover:bg-green-500');
+        } else {
+            element.classList.add('bg-red-500', 'text-white', 'hover:bg-red-500');
+            mcOptionBtns.forEach(btn => {
+                if (normalizeString(btn.textContent) === normalizeString(currentQuestion.answer)) {
+                    btn.classList.remove('bg-gray-200', 'dark:bg-gray-600');
+                    btn.classList.add('bg-green-500', 'text-white');
                 }
-            } else { // Aberta
-                if (!isCorrect) {
-                    questionText.innerHTML = `${currentQuestion.description}<br><span class="text-green-500 font-semibold mt-2 block">Resposta: ${currentQuestion.answer.replace('/', ' ou ')}</span>`;
-                }
-            }
-
-            if(isCorrect) {
-                score++;
-                scoreDisplay.textContent = score;
-                questionsPool.splice(currentQuestionIndexInPool, 1);
-            }
-            
-            setTimeout(loadQuestion, 2500);
+            });
         }
+    } else { // Aberta
+        answerInput.disabled = true; // Desabilita o input após o erro
+        if (!isCorrect) {
+            questionText.innerHTML = `${currentQuestion.description}<br><span class="text-green-500 font-semibold mt-2 block">Resposta: ${currentQuestion.answer.replace('/', ' ou ')}</span>`;
+        }
+    }
+
+    if(isCorrect) {
+        score++;
+        scoreDisplay.textContent = score;
+        questionsPool.splice(currentQuestionIndexInPool, 1);
+        setTimeout(loadQuestion, 2500); // Avança automaticamente APENAS se acertar
+    } else {
+        // LÓGICA PARA QUANDO O USUÁRIO ERRAR
+        if (currentQuestion.type === 'open') {
+            submitBtn.classList.add('hidden'); // Esconde o botão 'Verificar'
+            nextQuestionBtn.classList.remove('hidden'); // Mostra o botão 'Próxima Questão'
+            nextQuestionBtn.focus(); // Foca no botão para que a tecla 'Enter' funcione
+        } else { // Para múltipla escolha, apenas avança com timeout
+             setTimeout(loadQuestion, 3500); // Damos um tempo extra para ver a resposta correta
+        }
+    }
+}
 
         function handleOpenSubmit() {
             if (!currentQuestion.answer || answerInput.disabled) return;
@@ -411,6 +426,9 @@
             if (event.key === 'Enter') handleOpenSubmit();
         });
         window.addEventListener('resize', resizeCanvas, false);
+        nextQuestionBtn.addEventListener('click', () => {
+    loadQuestion();
+});
 
         // --- INITIALIZATION ---
         resizeCanvas();
