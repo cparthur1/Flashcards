@@ -337,6 +337,8 @@
         function resetUI() {
     answerInput.value = '';
     answerInput.disabled = false;
+    answerInput.placeholder = 'Digite sua resposta aqui...'; 
+            if (currentQuestion) delete currentQuestion.isBeingCorrected;
     submitBtn.disabled = false;
     submitBtn.classList.remove('hidden'); // Garante que o botão de verificar apareça
     nextQuestionBtn.classList.add('hidden'); // Esconde o botão de próxima questão
@@ -350,56 +352,81 @@
 }
 
         function showFeedback(isCorrect, element) {
-    createBall(isCorrect);
-    questionCard.classList.add(isCorrect ? 'glow-correct' : 'glow-incorrect');
+            createBall(isCorrect);
+            questionCard.classList.add(isCorrect ? 'glow-correct' : 'glow-incorrect');
 
-    if (element) { // Múltipla escolha
-        mcOptionBtns.forEach(btn => btn.disabled = true);
-        element.classList.remove('bg-gray-200', 'dark:bg-gray-600', 'hover:bg-blue-200', 'dark:hover:bg-blue-800');
-        if (isCorrect) {
-            element.classList.add('bg-green-500', 'text-white', 'hover:bg-green-500');
-        } else {
-            element.classList.add('bg-red-500', 'text-white', 'hover:bg-red-500');
-            mcOptionBtns.forEach(btn => {
-                if (normalizeString(btn.textContent) === normalizeString(currentQuestion.answer)) {
-                    btn.classList.remove('bg-gray-200', 'dark:bg-gray-600');
-                    btn.classList.add('bg-green-500', 'text-white');
+            if (element) { // Múltipla escolha
+                mcOptionBtns.forEach(btn => btn.disabled = true);
+                element.classList.remove('bg-gray-200', 'dark:bg-gray-600', 'hover:bg-blue-200', 'dark:hover:bg-blue-800');
+                if (isCorrect) {
+                    element.classList.add('bg-green-500', 'text-white', 'hover:bg-green-500');
+                } else {
+                    element.classList.add('bg-red-500', 'text-white', 'hover:bg-red-500');
+                    mcOptionBtns.forEach(btn => {
+                        if (normalizeString(btn.textContent) === normalizeString(currentQuestion.answer)) {
+                            btn.classList.remove('bg-gray-200', 'dark:bg-gray-600');
+                            btn.classList.add('bg-green-500', 'text-white');
+                        }
+                    });
                 }
-            });
-        }
-    } else { // Aberta
-        answerInput.disabled = true; // Desabilita o input após o erro
-        if (!isCorrect) {
-            questionText.innerHTML = `${currentQuestion.description}<br><span class="text-green-500 font-semibold mt-2 block">Resposta: ${currentQuestion.answer.replace('/', ' ou ')}</span>`;
-        }
-    }
+            } else { // Aberta
+                if (!isCorrect) {
+                    // Mostra a resposta correta
+                    questionText.innerHTML = `${currentQuestion.description}<br><span class="text-green-500 font-semibold mt-2 block">Resposta: ${currentQuestion.answer.replace('/', ' ou ')}</span>`;
+                    
+                    // Prepara o campo para correção
+                    currentQuestion.isBeingCorrected = true; // Marca a questão para o modo de correção
+                    answerInput.value = '';
+                    answerInput.placeholder = 'Digite a resposta correta para continuar...';
+                    answerInput.disabled = false; // Reativa o campo de texto
+                    submitBtn.disabled = false;   // Reativa o botão de verificação
+                    answerInput.focus();
+                }
+            }
 
-    if(isCorrect) {
-        score++;
-        scoreDisplay.textContent = score;
-        questionsPool.splice(currentQuestionIndexInPool, 1);
-        setTimeout(loadQuestion, 2500); // Avança automaticamente APENAS se acertar
-    } else {
-        // LÓGICA PARA QUANDO O USUÁRIO ERRAR
-        if (currentQuestion.type === 'open') {
-            submitBtn.classList.add('hidden'); // Esconde o botão 'Verificar'
-            nextQuestionBtn.classList.remove('hidden'); // Mostra o botão 'Próxima Questão'
-            nextQuestionBtn.focus(); // Foca no botão para que a tecla 'Enter' funcione
-        } else { // Para múltipla escolha, apenas avança com timeout
-             setTimeout(loadQuestion, 3500); // Damos um tempo extra para ver a resposta correta
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = score;
+                questionsPool.splice(currentQuestionIndexInPool, 1);
+                setTimeout(loadQuestion, 2500); // Avança automaticamente se acertar
+            } else if (currentQuestion.type === 'multiple_choice') {
+                // Para múltipla escolha, avança com timeout após o erro
+                setTimeout(loadQuestion, 3500);
+            }
         }
-    }
-}
 
         function handleOpenSubmit() {
             if (!currentQuestion.answer || answerInput.disabled) return;
             const userAnswer = normalizeString(answerInput.value);
             if (!userAnswer) return;
 
+            const correctAnswers = currentQuestion.answer.split('/');
+
+            // Se a questão foi marcada como "sendo corrigida"
+            if (currentQuestion.isBeingCorrected) {
+                const isNowCorrect = correctAnswers.some(correctAnswer => {
+                    const normalizedCorrectAnswer = normalizeString(correctAnswer);
+                    // Usamos uma verificação mais estrita para a correção
+                    return calculateSimilarity(userAnswer, normalizedCorrectAnswer) >= 0.9;
+                });
+
+                if (isNowCorrect) {
+                    loadQuestion(); // Se a correção estiver certa, apenas carrega a próxima questão
+                } else {
+                    // Se errar a correção, limpa o campo para tentar de novo
+                    answerInput.value = ''; 
+                    answerInput.classList.add('animate-pulse', 'border-red-500');
+                    setTimeout(() => {
+                        answerInput.classList.remove('animate-pulse', 'border-red-500');
+                    }, 1000);
+                }
+                return; // Impede que o resto da função execute
+            }
+
+            // Lógica original de verificação
             answerInput.disabled = true;
             submitBtn.disabled = true;
 
-            const correctAnswers = currentQuestion.answer.split('/');
             const isCorrect = correctAnswers.some(correctAnswer => {
                 const normalizedCorrectAnswer = normalizeString(correctAnswer);
                 return calculateSimilarity(userAnswer, normalizedCorrectAnswer) >= 0.8;
