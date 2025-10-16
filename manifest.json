@@ -1,0 +1,23 @@
+{
+  "name": "Flashcards de Estudo",
+  "short_name": "Flashcards",
+  "description": "Um webapp simples para carregar e estudar seus próprios baralhos de flashcards no formato .json.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "favicon.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
+
