@@ -42,7 +42,10 @@
 
     <!-- Tela de Upload -->
     <div id="upload-screen" class="w-full max-w-md mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-2xl p-8 text-center">
-        <h1 class="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-4">Flashcards</h1>
+        <h1 class="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400 flex items-center">
+    <span id="reset-btn" class="cursor-pointer hover:opacity-70 transition-opacity mr-3" title="Voltar ao início">🗑️</span>
+    <span id="deck-title">Flashcards</span>
+        </h1>
         <p class="text-gray-600 dark:text-gray-300 mb-6">Para começar, carregue um arquivo de questões no formato .json.</p>
         <input type="file" id="file-input" accept=".json" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-4"/>
         <button id="start-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400" disabled>
@@ -92,6 +95,8 @@
 
     <script>
         // --- ELEMENTOS DO DOM ---
+        const deckTitle = document.getElementById('deck-title');
+        const resetBtn = document.getElementById('reset-btn');
         const uploadScreen = document.getElementById('upload-screen');
         const gameContainer = document.getElementById('game-container');
         const fileInput = document.getElementById('file-input');
@@ -147,6 +152,8 @@
                         throw new Error("O arquivo JSON deve ser um array de questões e não pode estar vazio.");
                     }
                     allQuestions = parsedQuestions;
+                    const fileName = file.name.replace(/\.json$/i, ''); // Remove .json
+                    deckTitle.textContent = fileName;
                     uploadScreen.classList.add('hidden');
                     gameContainer.classList.remove('hidden');
                     startGame();
@@ -456,6 +463,35 @@
         }
 
         // --- EVENT LISTENERS ---
+        function resetToUploadScreen() {
+            // Esconde a tela de jogo e mostra a de upload
+            gameContainer.classList.add('hidden');
+            uploadScreen.classList.remove('hidden');
+
+            // Reseta o estado do jogo
+            allQuestions = [];
+            questionsPool = [];
+            score = 0;
+            currentQuestion = {};
+            currentQuestionIndexInPool = -1;
+            scoreDisplay.textContent = '0';
+            questionsLeftDisplay.textContent = '0';
+
+            // Limpa o input de arquivo e desabilita o botão
+            fileInput.value = null; 
+            startBtn.disabled = true;
+            uploadError.textContent = '';
+
+            // Reseta o título para o padrão
+            deckTitle.textContent = 'Flashcards';
+
+            // Limpa as bolinhas da animação
+            balls = [];
+            
+            // Garante que a UI do card esteja limpa
+            resetUI();
+        }
+        resetBtn.addEventListener('click', resetToUploadScreen);
         submitBtn.addEventListener('click', handleOpenSubmit);
         answerInput.addEventListener('keyup', (event) => {
             if (event.key === 'Enter') handleOpenSubmit();
