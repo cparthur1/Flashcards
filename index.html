@@ -380,7 +380,29 @@
                 if (isNowCorrect) {
                     loadQuestion(); // Se a correção estiver certa, apenas carrega a próxima questão
                 } else {
- function showFeedback(isCorrect, element) {
+                    // Se errar a correção, limpa o campo para tentar de novo
+                    answerInput.value = ''; 
+                    answerInput.classList.add('animate-pulse', 'border-red-500');
+                    setTimeout(() => {
+                        answerInput.classList.remove('animate-pulse', 'border-red-500');
+                    }, 1000);
+                }
+                return; // Impede que o resto da função execute
+            }
+
+            // Lógica original de verificação
+            answerInput.disabled = true;
+            submitBtn.disabled = true;
+
+            const isCorrect = correctAnswers.some(correctAnswer => {
+                const normalizedCorrectAnswer = normalizeString(correctAnswer);
+                return calculateSimilarity(userAnswer, normalizedCorrectAnswer) >= 0.8;
+            });
+
+            showFeedback(isCorrect, null);
+        }
+
+        function showFeedback(isCorrect, element) {
             createBall(isCorrect);
             questionCard.classList.add(isCorrect ? 'glow-correct' : 'glow-incorrect');
 
@@ -403,14 +425,13 @@
                     // Mostra a resposta correta
                     questionText.innerHTML = `${currentQuestion.description}<br><span class="text-green-500 font-semibold mt-2 block">Resposta: ${currentQuestion.answer.replace('/', ' ou ')}</span>`;
                     
-                    // Prepara o campo para correção (comportamento original)
+                    // Prepara o campo para correção
                     currentQuestion.isBeingCorrected = true; // Marca a questão para o modo de correção
                     answerInput.value = '';
                     answerInput.placeholder = 'Digite a resposta correta ou pule ⚡';
                     answerInput.disabled = false; // Reativa o campo de texto
                     answerInput.focus();
                     
-                    // --- ALTERAÇÕES AQUI ---
                     // Esconde o botão de "Verificar"
                     submitBtn.classList.add('hidden'); 
                     // Deixa o 'submitBtn' habilitado para o "Enter" continuar funcionando na correção
@@ -429,29 +450,7 @@
                 // Para múltipla escolha, avança com timeout após o erro
                 setTimeout(loadQuestion, 3500);
             }
-            // Se for 'open' e errada, a função agora termina e espera a ação do usuário:
-            // 1. Digitar a resposta correta (lidado por handleOpenSubmit)
-            // 2. Clicar no botão 'Pular ⚡' (lidado pelo listener do nextQuestionBtn)
- }                   // Se errar a correção, limpa o campo para tentar de novo
-                    answerInput.value = ''; 
-                    answerInput.classList.add('animate-pulse', 'border-red-500');
-                    setTimeout(() => {
-                        answerInput.classList.remove('animate-pulse', 'border-red-500');
-                    }, 1000);
-                }
-                return; // Impede que o resto da função execute
-            }
-
-            // Lógica original de verificação
-            answerInput.disabled = true;
-            submitBtn.disabled = true;
-
-            const isCorrect = correctAnswers.some(correctAnswer => {
-                const normalizedCorrectAnswer = normalizeString(correctAnswer);
-                return calculateSimilarity(userAnswer, normalizedCorrectAnswer) >= 0.8;
-            });
-
-            showFeedback(isCorrect, null);
+            // Se for 'open' e errada, espera a ação do usuário (digitar ou pular)
         }
         
         function handleMCSubmit(button) {
@@ -460,6 +459,35 @@
             const correctAnswer = normalizeString(currentQuestion.answer);
             const isCorrect = userAnswer === correctAnswer;
             showFeedback(isCorrect, button);
+        }
+
+        function resetToUploadScreen() {
+            // Esconde a tela de jogo e mostra a de upload
+            gameContainer.classList.add('hidden');
+            uploadScreen.classList.remove('hidden');
+
+            // Reseta o estado do jogo
+            allQuestions = [];
+            questionsPool = [];
+            score = 0;
+            currentQuestion = {};
+            currentQuestionIndexInPool = -1;
+            scoreDisplay.textContent = '0';
+            questionsLeftDisplay.textContent = '0';
+
+            // Limpa o input de arquivo e desabilita o botão
+            fileInput.value = null; 
+            startBtn.disabled = true;
+            uploadError.textContent = '';
+
+            // Reseta o título para o padrão
+            deckTitle.textContent = 'Flashcards';
+
+            // Limpa as bolinhas da animação
+            balls = [];
+            
+            // Garante que a UI do card esteja limpa
+            resetUI();
         }
 
         // --- EVENT LISTENERS ---
