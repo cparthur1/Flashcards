@@ -76,8 +76,8 @@
         <button id="submit-btn" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
             Verificar Resposta
         </button>
-        <button id="next-question-btn" class="w-full mt-6 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 hidden">
-            Próxima Questão
+        <button id="next-question-btn" class="w-full mt-6 bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 hidden">
+            Pular ⚡
         </button>
         </div>
 
@@ -353,7 +353,27 @@
     });
 }
 
-        function showFeedback(isCorrect, element) {
+        
+
+        function handleOpenSubmit() {
+            if (!currentQuestion.answer || answerInput.disabled) return;
+            const userAnswer = normalizeString(answerInput.value);
+            if (!userAnswer) return;
+
+            const correctAnswers = currentQuestion.answer.split('/');
+
+            // Se a questão foi marcada como "sendo corrigida"
+            if (currentQuestion.isBeingCorrected) {
+                const isNowCorrect = correctAnswers.some(correctAnswer => {
+                    const normalizedCorrectAnswer = normalizeString(correctAnswer);
+                    // Usamos uma verificação mais estrita para a correção
+                    return calculateSimilarity(userAnswer, normalizedCorrectAnswer) >= 0.9;
+                });
+
+                if (isNowCorrect) {
+                    loadQuestion(); // Se a correção estiver certa, apenas carrega a próxima questão
+                } else {
+ function showFeedback(isCorrect, element) {
             createBall(isCorrect);
             questionCard.classList.add(isCorrect ? 'glow-correct' : 'glow-incorrect');
 
@@ -376,13 +396,20 @@
                     // Mostra a resposta correta
                     questionText.innerHTML = `${currentQuestion.description}<br><span class="text-green-500 font-semibold mt-2 block">Resposta: ${currentQuestion.answer.replace('/', ' ou ')}</span>`;
                     
-                    // Prepara o campo para correção
+                    // Prepara o campo para correção (comportamento original)
                     currentQuestion.isBeingCorrected = true; // Marca a questão para o modo de correção
                     answerInput.value = '';
-                    answerInput.placeholder = 'Digite a resposta correta para continuar...';
+                    answerInput.placeholder = 'Digite a resposta correta ou pule ⚡';
                     answerInput.disabled = false; // Reativa o campo de texto
-                    submitBtn.disabled = false;   // Reativa o botão de verificação
                     answerInput.focus();
+                    
+                    // --- ALTERAÇÕES AQUI ---
+                    // Esconde o botão de "Verificar"
+                    submitBtn.classList.add('hidden'); 
+                    // Deixa o 'submitBtn' habilitado para o "Enter" continuar funcionando na correção
+                    submitBtn.disabled = false;   
+                    // Mostra o botão "Pular ⚡"
+                    nextQuestionBtn.classList.remove('hidden');
                 }
             }
 
@@ -395,27 +422,10 @@
                 // Para múltipla escolha, avança com timeout após o erro
                 setTimeout(loadQuestion, 3500);
             }
-        }
-
-        function handleOpenSubmit() {
-            if (!currentQuestion.answer || answerInput.disabled) return;
-            const userAnswer = normalizeString(answerInput.value);
-            if (!userAnswer) return;
-
-            const correctAnswers = currentQuestion.answer.split('/');
-
-            // Se a questão foi marcada como "sendo corrigida"
-            if (currentQuestion.isBeingCorrected) {
-                const isNowCorrect = correctAnswers.some(correctAnswer => {
-                    const normalizedCorrectAnswer = normalizeString(correctAnswer);
-                    // Usamos uma verificação mais estrita para a correção
-                    return calculateSimilarity(userAnswer, normalizedCorrectAnswer) >= 0.9;
-                });
-
-                if (isNowCorrect) {
-                    loadQuestion(); // Se a correção estiver certa, apenas carrega a próxima questão
-                } else {
-                    // Se errar a correção, limpa o campo para tentar de novo
+            // Se for 'open' e errada, a função agora termina e espera a ação do usuário:
+            // 1. Digitar a resposta correta (lidado por handleOpenSubmit)
+            // 2. Clicar no botão 'Pular ⚡' (lidado pelo listener do nextQuestionBtn)
+ }                   // Se errar a correção, limpa o campo para tentar de novo
                     answerInput.value = ''; 
                     answerInput.classList.add('animate-pulse', 'border-red-500');
                     setTimeout(() => {
