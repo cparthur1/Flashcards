@@ -15,11 +15,18 @@ const questionCard = document.getElementById('question-card');
 // Áreas de Resposta
 const openAnswerArea = document.getElementById('open-answer-area');
 const answerInput = document.getElementById('answer-input');
-const nextQuestionBtn = document.getElementById('next-question-btn');
-const submitBtn = document.getElementById('submit-btn');
+
+const openDoubleAnswerArea = document.getElementById('open-double-answer-area');
+const answerInput1 = document.getElementById('answer-input-1');
+const answerInput2 = document.getElementById('answer-input-2');
 
 const mcAnswerArea = document.getElementById('mc-answer-area');
 const mcOptionBtns = document.querySelectorAll('.mc-option-btn');
+
+// Botões de Ação
+const actionButtonsArea = document.getElementById('action-buttons-area');
+const nextQuestionBtn = document.getElementById('next-question-btn');
+const submitBtn = document.getElementById('submit-btn');
 
 // Canvas elements for background animation
 const canvas = document.getElementById('background-canvas');
@@ -226,8 +233,13 @@ function loadQuestion() {
     currentQuestion = questionsPool[currentQuestionIndexInPool];
     questionText.textContent = currentQuestion.description;
 
+    // Esconde todas as áreas de resposta
+    openAnswerArea.classList.add('hidden');
+    openDoubleAnswerArea.classList.add('hidden');
+    mcAnswerArea.classList.add('hidden');
+    actionButtonsArea.classList.add('hidden');
+
     if (currentQuestion.type === 'multiple_choice' && currentQuestion.options) {
-        openAnswerArea.classList.add('hidden');
         mcAnswerArea.classList.remove('hidden');
         
         const options = [...currentQuestion.options];
@@ -241,9 +253,15 @@ function loadQuestion() {
             }
             btn.onclick = () => handleMCSubmit(btn);
         });
+    } else if (currentQuestion.type === 'open_double') {
+        openDoubleAnswerArea.classList.remove('hidden');
+        actionButtonsArea.classList.remove('hidden');
+        answerInput1.placeholder = currentQuestion.placeholder1 || 'Resposta 1';
+        answerInput2.placeholder = currentQuestion.placeholder2 || 'Resposta 2';
+        answerInput1.focus();
     } else { // 'open' type
-        mcAnswerArea.classList.add('hidden');
         openAnswerArea.classList.remove('hidden');
+        actionButtonsArea.classList.remove('hidden');
         answerInput.focus();
     }
 }
@@ -251,15 +269,27 @@ function loadQuestion() {
 function resetUI() {
     answerInput.value = '';
     answerInput.disabled = false;
-    answerInput.placeholder = 'Digite sua resposta aqui...'; 
+    answerInput.placeholder = 'Digite sua resposta aqui...';
+    
+    answerInput1.value = '';
+    answerInput1.disabled = false;
+    answerInput1.placeholder = 'Resposta 1';
+
+    answerInput2.value = '';
+    answerInput2.disabled = false;
+    answerInput2.placeholder = 'Resposta 2';
+
     if (currentQuestion) delete currentQuestion.isBeingCorrected;
+    
     submitBtn.disabled = false;
     submitBtn.classList.remove('hidden'); // Garante que o botão de verificar apareça
     nextQuestionBtn.classList.add('hidden'); // Esconde o botão de próxima questão
+    
     questionCard.classList.remove('glow-correct', 'glow-incorrect');
     questionText.classList.remove('text-red-500', 'text-green-500');
     // Limpa o texto do HTML, caso a resposta anterior tenha sido mostrada
     questionText.textContent = currentQuestion.description || ''; 
+    
     mcOptionBtns.forEach(btn => {
         btn.disabled = false;
         btn.classList.remove('bg-green-500', 'bg-red-500', 'text-white', 'hover:bg-green-500', 'hover:bg-red-500');
@@ -268,7 +298,18 @@ function resetUI() {
 }
 
 function handleOpenSubmit() {
-    if (!currentQuestion.answer || answerInput.disabled) return;
+    // Previne cliques múltiplos se o botão já estiver desabilitado
+    if (submitBtn.disabled) return;
+
+    if (currentQuestion.type === 'open_double') {
+        handleOpenDoubleSubmit();
+    } else {
+        handleOpenSingleSubmit();
+    }
+}
+
+function handleOpenSingleSubmit() {
+    if (!currentQuestion.answer) return;
     const userAnswer = normalizeString(answerInput.value);
     if (!userAnswer) return;
 
@@ -278,21 +319,17 @@ function handleOpenSubmit() {
     if (currentQuestion.isBeingCorrected) {
         const isNowCorrect = correctAnswers.some(correctAnswer => {
             const normalizedCorrectAnswer = normalizeString(correctAnswer);
-            // Usamos uma verificação mais estrita para a correção
-            return calculateSimilarity(userAnswer, normalizedCorrectAnswer) >= 0.9;
+            return calculateSimilarity(userAnswer, normalizedCorrectAnswer) >= 0.9; // Correção estrita
         });
 
         if (isNowCorrect) {
-            loadQuestion(); // Se a correção estiver certa, apenas carrega a próxima questão
+            loadQuestion();
         } else {
-            // Se errar a correção, limpa o campo para tentar de novo
             answerInput.value = ''; 
             answerInput.classList.add('animate-pulse', 'border-red-500');
-            setTimeout(() => {
-                answerInput.classList.remove('animate-pulse', 'border-red-500');
-            }, 1000);
+            setTimeout(() => answerInput.classList.remove('animate-pulse', 'border-red-500'), 1000);
         }
-        return; // Impede que o resto da função execute
+        return;
     }
 
     // Lógica original de verificação
@@ -306,6 +343,57 @@ function handleOpenSubmit() {
 
     showFeedback(isCorrect, null);
 }
+
+function handleOpenDoubleSubmit() {
+    if (!currentQuestion.answer || !currentQuestion.answer2) return;
+    
+    const userAnswer1 = normalizeString(answerInput1.value);
+    const userAnswer2 = normalizeString(answerInput2.value);
+    if (!userAnswer1 || !userAnswer2) return;
+
+    const correctAnswers1 = currentQuestion.answer.split('/');
+    const correctAnswers2 = currentQuestion.answer2.split('/');
+
+    // Se a questão foi marcada como "sendo corrigida"
+    if (currentQuestion.isBeingCorrected) {
+        const isNowCorrect1 = correctAnswers1.some(correctAnswer => 
+            calculateSimilarity(userAnswer1, normalizeString(correctAnswer)) >= 0.9
+        );
+        const isNowCorrect2 = correctAnswers2.some(correctAnswer => 
+            calculateSimilarity(userAnswer2, normalizeString(correctAnswer)) >= 0.9
+        );
+
+        if (isNowCorrect1 && isNowCorrect2) {
+            loadQuestion();
+        } else {
+            // Se errar a correção, limpa os campos para tentar de novo
+            answerInput1.value = ''; 
+            answerInput2.value = '';
+            answerInput1.classList.add('animate-pulse', 'border-red-500');
+            answerInput2.classList.add('animate-pulse', 'border-red-500');
+            setTimeout(() => {
+                answerInput1.classList.remove('animate-pulse', 'border-red-500');
+                answerInput2.classList.remove('animate-pulse', 'border-red-500');
+            }, 1000);
+        }
+        return;
+    }
+
+    // Lógica original de verificação
+    answerInput1.disabled = true;
+    answerInput2.disabled = true;
+    submitBtn.disabled = true;
+
+    const isCorrect1 = correctAnswers1.some(correctAnswer => 
+        calculateSimilarity(userAnswer1, normalizeString(correctAnswer)) >= 0.8
+    );
+    const isCorrect2 = correctAnswers2.some(correctAnswer => 
+        calculateSimilarity(userAnswer2, normalizeString(correctAnswer)) >= 0.8
+    );
+
+    showFeedback(isCorrect1 && isCorrect2, null);
+}
+
 
 function showFeedback(isCorrect, element) {
     createBall(isCorrect);
@@ -325,23 +413,41 @@ function showFeedback(isCorrect, element) {
                 }
             });
         }
-    } else { // Aberta
+    } else { // Resposta Aberta (Simples ou Dupla)
         if (!isCorrect) {
-            // Mostra a resposta correta
-            questionText.innerHTML = `${currentQuestion.description}<br><span class="text-green-500 font-semibold mt-2 block">Resposta: ${currentQuestion.answer.replace('/', ' ou ')}</span>`;
-            
-            // Prepara o campo para correção
             currentQuestion.isBeingCorrected = true; // Marca a questão para o modo de correção
-            answerInput.value = '';
-            answerInput.placeholder = 'Digite a resposta correta ou pule ⚡';
-            answerInput.disabled = false; // Reativa o campo de texto
-            answerInput.focus();
             
-            // Esconde o botão de "Verificar"
+            if (currentQuestion.type === 'open_double') {
+                // Mostra ambas as respostas corretas
+                const label1 = currentQuestion.placeholder1 || 'Resposta 1';
+                const label2 = currentQuestion.placeholder2 || 'Resposta 2';
+                questionText.innerHTML = `
+                    ${currentQuestion.description}<br>
+                    <span class="text-green-500 font-semibold mt-2 block">${label1}: ${currentQuestion.answer.replace('/', ' ou ')}</span>
+                    <span class="text-green-500 font-semibold mt-2 block">${label2}: ${currentQuestion.answer2.replace('/', ' ou ')}</span>
+                `;
+                // Prepara campos para correção
+                answerInput1.value = '';
+                answerInput2.value = '';
+                answerInput1.placeholder = 'Digite a Resposta 1 correta ou pule ⚡';
+                answerInput2.placeholder = 'Digite a Resposta 2 correta ou pule ⚡';
+                answerInput1.disabled = false; // Reativa o campo
+                answerInput2.disabled = false; // Reativa o campo
+                answerInput1.focus();
+
+            } else { // 'open' simples
+                // Mostra a resposta correta
+                questionText.innerHTML = `${currentQuestion.description}<br><span class="text-green-500 font-semibold mt-2 block">Resposta: ${currentQuestion.answer.replace('/', ' ou ')}</span>`;
+                // Prepara campo para correção
+                answerInput.value = '';
+                answerInput.placeholder = 'Digite a resposta correta ou pule ⚡';
+                answerInput.disabled = false; // Reativa o campo
+                answerInput.focus();
+            }
+            
+            // Lógica comum para botões em caso de erro
             submitBtn.classList.add('hidden'); 
-            // Deixa o 'submitBtn' habilitado para o "Enter" continuar funcionando na correção
-            submitBtn.disabled = false;   
-            // Mostra o botão "Pular ⚡"
+            submitBtn.disabled = false; // Deixa habilitado para o "Enter" continuar funcionando
             nextQuestionBtn.classList.remove('hidden');
         }
     }
@@ -355,7 +461,7 @@ function showFeedback(isCorrect, element) {
         // Para múltipla escolha, avança com timeout após o erro
         setTimeout(loadQuestion, 3500);
     }
-    // Se for 'open' e errada, espera a ação do usuário (digitar ou pular)
+    // Se for 'open' ou 'open_double' e errada, espera a ação do usuário (digitar ou pular)
 }
 
 function handleMCSubmit(button) {
@@ -392,16 +498,26 @@ function resetToUploadScreen() {
     // Limpa as bolinhas da animação
     balls = [];
     
-    // Garante que a UI do card esteja limpa
+    // Garante que a UI do card esteja limpa (chama resetUI sem um currentQuestion válido)
+    currentQuestion = {}; // Esvazia para garantir que resetUI limpe tudo
     resetUI();
 }
 
 // --- EVENT LISTENERS ---
 resetBtn.addEventListener('click', resetToUploadScreen);
 submitBtn.addEventListener('click', handleOpenSubmit);
+
+// Adiciona listeners para a tecla 'Enter' em todos os campos de input
 answerInput.addEventListener('keyup', (event) => {
     if (event.key === 'Enter') handleOpenSubmit();
 });
+answerInput1.addEventListener('keyup', (event) => {
+    if (event.key === 'Enter') handleOpenSubmit();
+});
+answerInput2.addEventListener('keyup', (event) => {
+    if (event.key === 'Enter') handleOpenSubmit();
+});
+
 window.addEventListener('resize', resizeCanvas, false);
 nextQuestionBtn.addEventListener('click', () => {
     loadQuestion();
