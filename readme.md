@@ -4,8 +4,9 @@ Um webapp simples de flashcards que uso pra carregar .json com conteúdos da fac
 
 # **Resumo de como usar:**
 
-Ninguém que precisa decorar um monte de conteúdo vai escrever na mão os flashcards que precisa e, se fosse, usaria o Ankii. A ideia disso aqui é ser um jeito de fazer mais rápido cartões prontos pra usar.  
-Coloque todos os slides ou materiais com listas de conceitos que precisa decorar no Gemini ou Chat GPT com o prompt:  
+Ninguém que precisa decorar um monte de conteúdo vai escrever na mão os flashcards que precisa e, se fosse, usaria o Ankii. A ideia disso aqui é ser um jeito de fazer mais rápido cartões prontos pra usar. 
+Você pode simplesmente entrar nesse Gemini Gem (https://gemini.google.com/gem/1r3YvxeEppp_wrCEu4S2qiMWg6mtGa5uI?usp=sharing), mandar os materiais de aula e pedir pra gerar flashcards ou seguir as instruções abaixo com outros modelos:
+Coloque todos os slides ou materiais com listas de conceitos que precisa decorar com o prompt:  
 "Usando todo o conteúdo de todos os materiais que te mandei, gere um arquivo .json com flashcards para mim decorar todos os conceitos apresentados nos materiais. Nos cartões de resposta escrita "open" a resposta deve ser em palavras chave, As respostas das questões abertas devem ser de 1 palavra só (ou mais caso for um conceito formado por mais de uma palavra), como se a resposta fosse o título do cartão e a pergunta a descrição dele. Quando houver vários conceitos que tenham respostas similares ou diferenciais, use os cartões de múltipla escolha "multiple\_choice". O .json deve seguir essa estrutura: \[  
 {  
 "type": "open",  
