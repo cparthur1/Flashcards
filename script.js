@@ -501,6 +501,9 @@ function resetToUploadScreen() {
     // Garante que a UI do card esteja limpa (chama resetUI sem um currentQuestion válido)
     currentQuestion = {}; // Esvazia para garantir que resetUI limpe tudo
     resetUI();
+
+    // Erase localStorage
+    localStorage.removeItem('flashcardsSave');
 }
 
 // --- EVENT LISTENERS ---
@@ -528,4 +531,40 @@ nextQuestionBtn.addEventListener('click', () => {
 document.addEventListener('DOMContentLoaded', () => {
     resizeCanvas();
     animate();
+
+    // Lógica de Carregamento
+    const savedData = localStorage.getItem('flashcardsSave');
+    if (savedData) {
+        try {
+            const gameState = JSON.parse(savedData);
+            
+            // Restaura as variáveis globais
+            questionsPool = gameState.questionsPool;
+            allQuestions = gameState.allQuestions;
+            score = gameState.score;
+            
+            // Atualiza a Interface
+            deckTitle.textContent = gameState.deckTitle;
+            scoreDisplay.textContent = score;
+            
+            // Troca de tela (esconde upload, mostra jogo)
+            uploadScreen.classList.add('hidden');
+            gameContainer.classList.remove('hidden');
+            
+            loadQuestion(); // Carrega a próxima questão salva
+        } catch (e) {
+            console.error("Erro ao carregar save:", e);
+            localStorage.removeItem('flashcardsSave'); // Limpa save corrompido
+        }
+    }
 });
+
+function saveGameState() {
+    const gameState = {
+        questionsPool: questionsPool,
+        allQuestions: allQuestions,
+        score: score,
+        deckTitle: deckTitle.textContent
+    };
+    localStorage.setItem('flashcardsSave', JSON.stringify(gameState));
+}
