@@ -456,6 +456,7 @@ function showFeedback(isCorrect, element) {
         score++;
         scoreDisplay.textContent = score;
         questionsPool.splice(currentQuestionIndexInPool, 1);
+        saveGameState();
         setTimeout(loadQuestion, 2500); // Avança automaticamente se acertar
     } else if (currentQuestion.type === 'multiple_choice') {
         // Para múltipla escolha, avança com timeout após o erro
