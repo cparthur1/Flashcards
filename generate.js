@@ -46,6 +46,12 @@ const editCardAns1 = document.getElementById('edit-card-ans1');
 const editCardAns2 = document.getElementById('edit-card-ans2');
 const editCardAns2Group = document.getElementById('edit-card-ans2-group');
 
+// Instructions Modal
+const instructionsModal = document.getElementById('instructions-modal');
+const openInstructionsBtn = document.getElementById('open-instructions-btn');
+const closeInstructionsBtn = document.getElementById('close-instructions-btn');
+const instructionsReadyBtn = document.getElementById('instructions-ready-btn');
+
 let deckCards = [];
 let geminiChatSession = null;
 let currentGenModel = null;
@@ -398,6 +404,27 @@ saveEditBtn.addEventListener('click', () => {
     }
     renderCardsList();
     closeEditModalFn();
+});
+
+// Instructions Modal Handlers
+openInstructionsBtn.addEventListener('click', () => {
+    instructionsModal.classList.remove('hidden');
+});
+
+const closeInstructionsModalFn = () => {
+    instructionsModal.classList.add('hidden');
+};
+
+closeInstructionsBtn.addEventListener('click', closeInstructionsModalFn);
+instructionsReadyBtn.addEventListener('click', closeInstructionsModalFn);
+
+// Close modals on overlay click
+[editModal, instructionsModal].forEach(modal => {
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.add('hidden');
+        }
+    });
 });
 
 // Chat integration

@@ -77,7 +77,7 @@
                 <input type="password" id="api-key-input" class="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Gemini API Key">
             </div>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                Ainda não tem uma API key? <a href="https://aistudio.google.com/app/api-keys" target="_blank" class="text-blue-500 hover:underline">Crie uma grátis</a>
+                Ainda não tem uma API key? <button id="open-instructions-btn" class="text-blue-500 hover:underline">Crie uma grátis</button>
             </p>
             <p class="text-xs text-gray-500 mt-1">As suas API key serão salvas localmente, não serão compartilhadas conosco.</p>
         </div>
@@ -223,6 +223,55 @@
             <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-gray-750">
                 <button id="cancel-inline-edit-btn" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded hover:bg-gray-400">Cancelar</button>
                 <button id="save-inline-edit-btn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Key Instructions Modal -->
+    <div id="instructions-modal" class="hidden fixed inset-0 modal-overlay bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
+                <h3 class="font-bold text-xl text-gray-800 dark:text-white">Como criar sua API Key</h3>
+                <button id="close-instructions-btn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 text-2xl">✕</button>
+            </div>
+            
+            <div class="p-6 space-y-8 overflow-y-auto">
+                <!-- Step 1 -->
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3">
+                        <span class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">1</span>
+                        <p class="font-semibold text-lg">Aceite os termos</p>
+                    </div>
+                    <img src="instruction1.png" alt="Passo 1" class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                </div>
+
+                <!-- Step 2 -->
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3">
+                        <span class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">2</span>
+                        <p class="font-semibold text-lg">Aguarde a chave ser criada</p>
+                    </div>
+                    <img src="instruction2.png" alt="Passo 2" class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                </div>
+
+                <!-- Step 3 -->
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3">
+                        <span class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">3</span>
+                        <p class="font-semibold text-lg">Copie a chave</p>
+                    </div>
+                    <img src="instruction3.png" alt="Passo 3" class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                </div>
+            </div>
+
+            <div class="px-6 py-5 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-4 bg-gray-50 dark:bg-gray-750">
+                <a href="https://aistudio.google.com/app/api-keys" target="_blank" id="create-key-external-btn" class="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg">
+                    Criar
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                </a>
+                <button id="instructions-ready-btn" class="px-8 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white font-bold rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                    Pronto
+                </button>
             </div>
         </div>
     </div>
