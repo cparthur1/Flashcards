@@ -90,24 +90,18 @@
             }
         }
 
-        @keyframes gradientBG {
+        @keyframes pulseGradient {
             0% {
-                background-position: 0% 50%;
+                background-image: radial-gradient(circle at center, #b8c1ff 0%, #e6a1ff 25%, #94b4ff 50%, #c9a1f7 75%, #c1f3f7 100%);
             }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
             100% {
-                background-position: 0% 50%;
+                background-image: radial-gradient(circle at center, #b8c1ff 100%, #e6a1ff 125%, #94b4ff 150%, #c9a1f7 175%, #c1f3f7 200%);
             }
         }
 
         .generating-deck-bg {
-            background: linear-gradient(-45deg, #3b82f6, #8b5cf6, #f472b6) !important;
-            background-size: 400% 400% !important;
-            animation: gradientBG 6s ease infinite !important;
+            background-color: #b8c1ff !important;
+            animation: pulseGradient 4s linear infinite !important;
         }
     </style>
     <!-- Import Map for Gemini API -->

@@ -248,7 +248,6 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
         
         deckContainer.classList.add('generating-deck-bg');
         deckContainer.classList.remove('bg-white', 'dark:bg-gray-800');
-        if (deckHeader) deckHeader.classList.add('bg-transparent');
         cardsList.classList.add('bg-transparent');
         
         deckCards = [];
