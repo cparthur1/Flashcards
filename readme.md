@@ -1,153 +1,75 @@
-# **Flashcards**
+# 🗂️ Flashcards AI
 
-Um webapp simples de flashcards que uso pra carregar .json com conteúdos da faculdade e decorar conceitos
+Uma ferramenta de estudo moderna e inteligente para transformar seus materiais em conhecimento memorizado. Carregue seus arquivos ou textos e deixe a Inteligência Artificial criar seu banco de questões em segundos.
 
-# **Resumo de como usar:**
+---
 
-Ninguém que precisa decorar um monte de conteúdo vai escrever na mão os flashcards que precisa e, se fosse, usaria o Ankii. A ideia disso aqui é ser um jeito de fazer mais rápido cartões prontos pra usar. 
-Você pode simplesmente entrar nesse Gemini Gem (https://gemini.google.com/gem/1r3YvxeEppp_wrCEu4S2qiMWg6mtGa5uI?usp=sharing), mandar os materiais de aula e pedir pra gerar flashcards ou seguir as instruções abaixo com outros modelos:
-Coloque todos os slides ou materiais com listas de conceitos que precisa decorar com o prompt:  
-"Usando todo o conteúdo de todos os materiais que te mandei, gere um arquivo .json com flashcards para mim decorar todos os conceitos apresentados nos materiais. Nos cartões de resposta escrita "open" a resposta deve ser em palavras chave, As respostas das questões abertas devem ser de 1 palavra só (ou mais caso for um conceito formado por mais de uma palavra), como se a resposta fosse o título do cartão e a pergunta a descrição dele. Quando houver vários conceitos que tenham respostas similares ou diferenciais, use os cartões de múltipla escolha "multiple\_choice". O .json deve seguir essa estrutura: \[  
-{  
-"type": "open",  
-"description": "Qual a capital da França?",  
-"answer": "Paris"  
-},  
-{  
-"type": "multiple\_choice",  
-"description": "Qual o maior planeta do Sistema Solar?",  
-"answer": "Júpiter",  
-"options": \["Terra", "Marte", "Júpiter", "Saturno"\]  
-},  
-{  
-"type": "open\_double",  
-"description": "Qual a Origem e Inserção do M. Bíceps Braquial?",  
-"answer": "Origem: Tubérculo supraglenoidal (longa) / Processo coracoide (curta)",  
-"answer2": "Inserção: Tuberosidade do rádio",  
-"placeholder1": "Origem",  
-"placeholder2": "Inserção"  
-},  
-{  
-"type": "open",  
-"description": "Qual a fórmula química da água?",  
-"answer": "H2O"  
-}  
-\]"  
-Colando esse prompt junto dos teus materiais, ele deve gerar o texto dos teus flashcards, cole esse texto em um bloco de notas e salve o arquivo como .json, abra o webapp e faça upload desse arquivo e pronto :)
+## ✨ Novas Funcionalidades (Recentes)
 
-# **📖 Para que serve?**
+### 🤖 Gerador de Flashcards com IA
+Integrado nativamente com a **API do Gemini (Google)**, agora você pode gerar baralhos completos a partir de:
+- **Arquivos:** PDF, Docx e TXT.
+- **Texto Direto:** Cole seus resumos ou anotações diretamente no app.
 
-Esta é uma ferramenta de estudo flexível e reutilizável, projetada para ajudar você a memorizar e revisar conteúdos de qualquer matéria através de flashcards. A plataforma funciona diretamente no seu navegador e permite que você carregue seus próprios bancos de questões, tornando o aprendizado ativo e personalizado.  
-Principais Funcionalidades:  
-Três Tipos de Questão: Suporta questões dissertativas (resposta aberta), dissertativas duplas (duas respostas) e de múltipla escolha.  
-Aprendizado Inteligente: Questões acertadas são removidas do ciclo de estudo atual, enquanto as erradas são repetidas até que você acerte, garantindo a fixação do conteúdo.  
-Totalmente Personalizável: Você pode criar bancos de questões sobre qualquer assunto (Biologia, Direito, História, Idiomas, etc.) usando um formato de arquivo simples (.json).  
-Não Requer Instalação: Funciona 100% no seu navegador. Basta abrir o arquivo HTML e carregar suas perguntas.
+### ⚡ Streaming em Tempo Real
+Não precisa esperar a IA terminar! Os cartões aparecem na sua tela **conforme são gerados**. A interface de edição abre instantaneamente, permitindo que você acompanhe o progresso e já veja as primeiras questões.
 
-# **⚙️ Como Funciona?**
+### 🎨 Visual Premium & Experiência Fluida
+- **Gradiente Animado:** Um fundo dinâmico e moderno durante a geração para um feedback visual elegante.
+- **Editor Completo:** Revise, edite ou exclua cartões antes de começar a estudar ou salvar seu arquivo.
+- **Título Automático:** A IA sugere um nome profissional para seu baralho com base no conteúdo gerado.
 
-A aplicação é composta por dois arquivos principais:  
-index.html: Este é o "motor" do aplicativo. É o arquivo que você abre no navegador para iniciar a plataforma.  
-script.js: Contém toda a lógica para exibir as perguntas, verificar as respostas e gerenciar seu progresso.  
-\[seu\_arquivo\_de\_questoes\].json: Este é o seu banco de dados de perguntas. É um arquivo de texto simples onde você lista todas as perguntas, respostas e opções que deseja estudar.  
-Ao iniciar, o index.html pedirá que você carregue um arquivo .json. Uma vez carregado, o aplicativo lê suas perguntas e inicia uma sessão de estudo.
+---
 
-# **🚀 Como Usar?**
+## 🔑 Configuração da API
+Para usar o gerador, você precisa de uma chave de API do Gemini (Grátis):
+1. Clique em **"Crie uma grátis"** na tela inicial do Gerador.
+2. Siga o guia visual integrado para obter sua chave no **Google AI Studio**.
+3. Cole sua chave e comece a criar!
 
-Siga estes 3 passos simples para começar a estudar:  
-Passo 1: Crie seu Banco de Questões  
-O primeiro passo é criar um arquivo .json com suas perguntas. Você pode usar qualquer editor de texto simples (Bloco de Notas, VS Code, Sublime Text, etc.).  
-A estrutura do arquivo é uma lista de objetos, onde cada objeto é um flashcard. Veja como formatar cada tipo de questão abaixo.  
-Passo 2: Abra a Plataforma  
-Abra o arquivo index.html em qualquer navegador de internet (Google Chrome, Firefox, Safari, etc.).  
-Passo 3: Carregue seu Arquivo e Comece  
-Na tela inicial, clique no botão para selecionar um arquivo, encontre o seu arquivo .json que você criou no Passo 1 e clique em "Começar a estudar". Pronto\! A sessão de estudo começará imediatamente.
+---
 
-# **✍️ Como Criar seu Próprio Banco de Questões (.json)**
+## 📖 Como Funciona?
 
-Este é o passo mais importante. Seu arquivo .json deve ser uma lista (\[\]) contendo vários objetos de questão ({}). Cada objeto precisa seguir um formato específico.
+### Principais Modos de Estudo:
+- **Aprendizado Ativo:** O app remove cartões que você já acertou e repete os que você errou até a fixação completa.
+- **Tipos de Cartão:**
+  - **Aberto:** Resposta escrita direta.
+  - **Aberto Duplo:** Para conceitos com dois componentes (ex: Origem e Inserção).
+  - **Múltipla Escolha:** Escolha entre 4 opções geradas pela IA.
 
-1. Questões Abertas (Dissertativas)  
-   Use este formato para perguntas onde você precisa digitar a resposta.  
-   Estrutura:  
-   {  
-   "type": "open",  
-   "description": "Qual a pergunta que você quer fazer?",  
-   "answer": "Qual a resposta correta"  
-   }
+### Fluxo de Trabalho:
+1. **Gere ou Carregue:** Use a IA ou carregue um arquivo `.json` que você já possui.
+2. **Revise:** Use o editor lateral para fazer ajustes finos.
+3. **Estude ou Salve:** Clique em **"Jogar Agora"** para iniciar a sessão ou **"Salvar Arquivo"** para guardar seu baralho localmente.
 
-Exemplo:  
-{  
-"type": "open",  
-"description": "Qual organela celular é responsável pela respiração celular?",  
-"answer": "Mitocôndria"  
-}  
-💡 Dica: Se uma resposta pode ser escrita de várias formas (ex: um nome e um sinônimo), separe-as com uma barra /. O sistema aceitará qualquer uma delas.  
-Exemplo: "answer": "Barbeiro/Triatomíneo"  
-2\. Questões Abertas Duplas (NOVO)  
-Use este formato para perguntas que exigem duas respostas (ex: Origem e Inserção). Ambas precisam estar corretas.  
-Estrutura:  
-{  
-"type": "open\_double",  
-"description": "Qual a Origem e Inserção do M. Bíceps Braquial?",  
-"answer": "Resposta para o campo 1 (pode usar /)",  
-"answer2": "Resposta para o campo 2 (pode usar /)",  
-"placeholder1": "Origem",  
-"placeholder2": "Inserção"  
-}  
-Exemplo:  
-{  
-"type": "open\_double",  
-"description": "Qual a Origem e Inserção do M. Bíceps Braquial?",  
-"answer": "Tubérculo supraglenoidal/Processo coracoide",  
-"answer2": "Tuberosidade do rádio",  
-"placeholder1": "Origem",  
-"placeholder2": "Inserção"  
-}  
-Observações Importantes:  
-"answer" corresponde ao primeiro campo de input, "answer2" ao segundo.  
-"placeholder1" e "placeholder2" são opcionais e definem o texto que aparece dentro dos campos de input.
+---
 
-3. Questões de Múltipla Escolha  
-   Use este formato para perguntas com opções pré-definidas.  
-   Estrutura:  
-   {  
-   "type": "multiple\_choice",  
-   "description": "Qual a sua pergunta de múltipla escolha?",  
-   "answer": "A resposta correta exata",  
-   "options": \["Opção A", "Opção B", "Opção C", "A resposta correta exata"\]  
-   }
+## 🛠️ Detalhes Técnicos
+- **Frontend:** HTML5, Tailwind CSS, JavaScript Vanilla.
+- **IA:** Google Generative AI (`@google/generative-ai`) com suporte a **Streaming**.
+- **PWA Ready:** Funciona diretamente no navegador e pode ser instalado como um app.
 
-Exemplo:  
-{  
-"type": "multiple\_choice",  
-"description": "Quem é o hospedeiro definitivo do Toxoplasma gondii?",  
-"answer": "Felinos",  
-"options": \["Humanos", "Cães", "Felinos", "Aves"\]  
-}  
-Observações Importantes:  
-A "answer" deve ser exatamente igual a uma das strings dentro da lista "options".  
-Para uma melhor experiência visual, forneça sempre 4 opções de resposta. O sistema irá embaralhá-las automaticamente.  
-Arquivo .json Completo (Exemplo)  
-Seu arquivo final será uma lista com todas as suas questões, misturando os tipos se desejar.  
-\[  
-{  
-"type": "open",  
-"description": "Qual a capital da França?",  
-"answer": "Paris"  
-},  
-{  
-"type": "multiple\_choice",  
-"description": "Qual o maior planeta do Sistema Solar?",  
-"answer": "Júpiter",  
-"options": \["Terra", "Marte", "Júpiter", "Saturno"\]  
-},  
-{  
-"type":"open\_double",  
-"description":"Qual a origem e inserção do M. Deltoide?",  
-"answer":"Terço lateral da clavícula/Acrômio/Espinha da escápula",  
-"answer2":"Tuberosidade deltoidea do úmero",  
-"placeholder1":"Origem",  
-"placeholder2":"Inserção"  
-}  
-\]
+---
+
+## ✍️ Uso Manual (Avançado)
+Se preferir não usar a IA, você ainda pode carregar arquivos `.json` estruturados. O formato segue o padrão abaixo:
+
+```json
+[
+  {
+    "type": "open",
+    "description": "Qual a capital da França?",
+    "answer": "Paris"
+  },
+  {
+    "type": "multiple_choice",
+    "description": "Qual o maior planeta?",
+    "answer": "Júpiter",
+    "options": ["Terra", "Marte", "Júpiter", "Saturno"]
+  }
+]
+```
+
+---
+*Desenvolvido para facilitar a vida de quem precisa decorar muito conteúdo em pouco tempo.* 🚀
