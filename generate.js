@@ -48,6 +48,8 @@ let geminiChatSession = null;
 let currentGenModel = null;
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+const FILES_DEFAULT_SVG = '<svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>';
+const TXT_DEFAULT_SVG = '<svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>';
 
 function getFileExtension(filename) {
     return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2);
@@ -80,7 +82,8 @@ filesUpload.addEventListener('change', () => {
             globalError.textContent = `O arquivo "${file.name}" excede o limite de 100MB e foi rejeitado.`;
             filesUpload.value = '';
             filesCount.textContent = 'Nenhum arquivo selecionado';
-            renderFileIcons([], filesIconsContainer, '<svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>');
+            renderFileIcons([], filesIconsContainer, FILES_DEFAULT_SVG);
+            filesUploadText.classList.remove('hidden');
             return;
         }
     }
@@ -92,7 +95,7 @@ filesUpload.addEventListener('change', () => {
         filesCount.textContent = 'Nenhum arquivo selecionado';
         filesUploadText.classList.remove('hidden');
     }
-    renderFileIcons(files, filesIconsContainer, '<svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>');
+    renderFileIcons(files, filesIconsContainer, FILES_DEFAULT_SVG);
 });
 
 txtUpload.addEventListener('change', () => {
@@ -105,7 +108,8 @@ txtUpload.addEventListener('change', () => {
             globalError.textContent = `O arquivo "${file.name}" excede o limite de 100MB e foi rejeitado.`;
             txtUpload.value = '';
             txtCount.textContent = 'Nenhum arquivo selecionado';
-            renderFileIcons([], txtIconsContainer, '<svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>');
+            renderFileIcons([], txtIconsContainer, TXT_DEFAULT_SVG);
+            txtUploadText.classList.remove('hidden');
             return;
         }
         txtCount.textContent = file.name;
@@ -114,7 +118,7 @@ txtUpload.addEventListener('change', () => {
         txtCount.textContent = 'Nenhum arquivo selecionado';
         txtUploadText.classList.remove('hidden');
     }
-    renderFileIcons(files, txtIconsContainer, '<svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>');
+    renderFileIcons(files, txtIconsContainer, TXT_DEFAULT_SVG);
 });
 
 // Load saved key
@@ -178,8 +182,8 @@ async function generateFlashcards(sourceType) {
         generateFilesBtn.disabled = true;
         spinnerFiles.classList.remove('hidden');
 
-        // Can use flash for speed or pro if many complex docs. Let's stick with flash to be faster/cheaper, or pro if PDF? 
-        // gemini-1.5-flash handles multimodal fine.
+        // Can use flash for speed or pro if many complex docs. Let's stick with flash to be faster/cheaper, or pro if PDF
+        // gemini-flash-latest autochooses the latest flash model available handles multimodal fine.
         model = genAI.getGenerativeModel({ model: "gemini-flash-latest", generationConfig });
         currentGenModel = model;
 

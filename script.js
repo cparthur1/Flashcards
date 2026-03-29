@@ -106,9 +106,9 @@ startBtn.addEventListener('click', () => {
     reader.readAsText(currentFile);
 });
 
-// --- LÓGICA DE CRIAÇÃO (DIRECIONA PARA NOVA ABA) ---
+// --- LÓGICA DE CRIAÇÃO (DIRECIONA PARA MESMA ABA) ---
 openCreateBtn.addEventListener('click', () => {
-    window.open('generate.html', '_blank');
+    window.location.href = 'generate.html';
 });
 
 
