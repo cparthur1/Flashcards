@@ -239,22 +239,74 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
     }
 
     try {
-        const result = await model.generateContent(parts);
-        const response = await result.response;
-        let textResult = response.text();
-
-        // Clean markdown blocks if present
-        textResult = textResult.replace(/^```json\n/g, '').replace(/^```\n/g, '').replace(/```$/g, '');
-
-        deckCards = JSON.parse(textResult);
-
-        // Transition to editor view
+        // Transition to editor view early to show cards appearing
         dashboardView.classList.add('hidden');
         editorView.classList.remove('hidden');
-        editorView.classList.add('flex'); // Add flex back since it was disabled by hidden
-
+        editorView.classList.add('flex');
+        
+        deckCards = [];
         renderCardsList();
-        generateDeckTitle(deckCards);
+        deckTitleDisplay.textContent = "Gerando flashcards...";
+
+        const result = await model.generateContentStream(parts);
+        let fullText = "";
+        let processedIndex = 0;
+
+        for await (const chunk of result.stream) {
+            const chunkText = chunk.text();
+            fullText += chunkText;
+
+            // Simple incremental JSON object extractor for an array of objects
+            // We look for patterns like: {"type": ..., } followed by , or ]
+            // This is a basic approach but usually works for the well-structured JSON Gemini produces.
+            
+            let possibleObjects = fullText.substring(processedIndex);
+            
+            // Regex to find complete JSON objects: {...}
+            // We use a simplified regex that matches opening { and balanced closing }
+            // Since we know the items are flat objects in this schema, this is relatively safe.
+            const regex = /\{[^{}]*\}/g;
+            let match;
+            
+            while ((match = regex.exec(possibleObjects)) !== null) {
+                const objectStr = match[0];
+                try {
+                    const card = JSON.parse(objectStr);
+                    // Basic validation to ensure it's a valid flashcard
+                    if (card.type && card.description && (card.answer || card.answer2 || card.options)) {
+                        deckCards.push(card);
+                        renderCardsList();
+                        
+                        // If it's the first few cards, start generating the title
+                        if (deckCards.length === 5) {
+                            generateDeckTitle(deckCards);
+                        }
+                    }
+                    processedIndex += match.index + objectStr.length;
+                    // Reset regex lastIndex because we modified the string we are searching or the index
+                    possibleObjects = fullText.substring(processedIndex);
+                    regex.lastIndex = 0;
+                } catch (e) {
+                    // Not a full object yet or invalid JSON, skip and wait for more data
+                }
+            }
+        }
+
+        // Final attempt to parse in case of any remaining text or slightly different format
+        if (deckCards.length === 0) {
+            try {
+                // Clean markdown blocks if present
+                let textResult = fullText.replace(/^```json\n/g, '').replace(/^```\n/g, '').replace(/```$/g, '');
+                deckCards = JSON.parse(textResult);
+                renderCardsList();
+            } catch (e) {
+                console.error("Erro ao processar JSON final:", e);
+            }
+        }
+
+        if (deckCards.length > 0 && deckTitleDisplay.textContent === "Gerando flashcards...") {
+            generateDeckTitle(deckCards);
+        }
 
         // Start chat session with the context
         geminiChatSession = model.startChat({
@@ -280,6 +332,12 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
             globalError.textContent = `Acesso negado: Reveja sua chave de API Gemini. (Detalhe: ${error.message})`;
         } else {
             globalError.textContent = `Erro ao gerar flashcards: ${error.message}. Talvez o arquivo seja muito grande.`;
+        }
+        // Go back to dashboard if error occurred early
+        if (deckCards.length === 0) {
+            dashboardView.classList.remove('hidden');
+            editorView.classList.add('hidden');
+            editorView.classList.remove('flex');
         }
     } finally {
         generateFilesBtn.disabled = false;
@@ -319,56 +377,66 @@ async function generateDeckTitle(cards) {
 }
 
 // Render Cards List
-function renderCardsList() {
+function renderCardsList(fullReRender = false) {
     deckSizeBadge.textContent = deckCards.length;
-    cardsList.innerHTML = '';
+    
+    if (fullReRender) {
+        cardsList.innerHTML = '';
+    }
 
-    deckCards.forEach((card, index) => {
-        const cardEl = document.createElement('div');
-        cardEl.className = "bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative group shadow-sm flex flex-col gap-2";
-
-        const typeBadge = document.createElement('span');
-        typeBadge.className = "absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-100 dark:bg-gray-600 dark:text-gray-300 px-2 py-1 rounded";
-        typeBadge.textContent = card.type === 'open' ? 'Aberto' : (card.type === 'multiple_choice' ? 'Múltipla Escolha' : 'Duplo Aberto');
-        cardEl.appendChild(typeBadge);
-
-        const descStr = `<strong>P:</strong> <span class="text-gray-800 dark:text-gray-200">${card.description}</span>`;
-        let ansStr = `<strong>R:</strong> <span class="text-green-600 dark:text-green-400">${card.answer}</span>`;
-        if (card.type === 'open_double') {
-            ansStr += `<br><strong>R2:</strong> <span class="text-green-600 dark:text-green-400">${card.answer2}</span>`;
-        } else if (card.type === 'multiple_choice') {
-            ansStr += `<br><span class="text-xs text-gray-500">Opções: ${card.options?.join(', ')}</span>`;
-        }
-
-        const textCont = document.createElement('div');
-        textCont.innerHTML = `<p class="mb-1 text-sm mt-3">${descStr}</p><p class="text-sm">${ansStr}</p>`;
-        cardEl.appendChild(textCont);
-
-        // Actions (Edit, Delete)
-        const actionsDiv = document.createElement('div');
-        actionsDiv.className = "absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity";
-
-        const editBtn = document.createElement('button');
-        editBtn.className = "p-1.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-300 rounded";
-        editBtn.innerHTML = '✏️';
-        editBtn.onclick = () => openEditModal(index);
-
-        const delBtn = document.createElement('button');
-        delBtn.className = "p-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 text-red-600 dark:text-red-300 rounded";
-        delBtn.innerHTML = '🗑️';
-        delBtn.onclick = () => {
-            if (confirm('Excluir este flashcard?')) {
-                deckCards.splice(index, 1);
-                renderCardsList();
-            }
-        };
-
-        actionsDiv.appendChild(editBtn);
-        actionsDiv.appendChild(delBtn);
-        cardEl.appendChild(actionsDiv);
-
+    const currentRenderedCount = cardsList.children.length;
+    
+    for (let i = currentRenderedCount; i < deckCards.length; i++) {
+        const cardEl = createCardElement(deckCards[i], i);
         cardsList.appendChild(cardEl);
-    });
+    }
+}
+
+function createCardElement(card, index) {
+    const cardEl = document.createElement('div');
+    cardEl.className = "bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative group shadow-sm flex flex-col gap-2";
+
+    const typeBadge = document.createElement('span');
+    typeBadge.className = "absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-100 dark:bg-gray-600 dark:text-gray-300 px-2 py-1 rounded";
+    typeBadge.textContent = card.type === 'open' ? 'Aberto' : (card.type === 'multiple_choice' ? 'Múltipla Escolha' : 'Duplo Aberto');
+    cardEl.appendChild(typeBadge);
+
+    const descStr = `<strong>P:</strong> <span class="text-gray-800 dark:text-gray-200">${card.description}</span>`;
+    let ansStr = `<strong>R:</strong> <span class="text-green-600 dark:text-green-400">${card.answer}</span>`;
+    if (card.type === 'open_double') {
+        ansStr += `<br><strong>R2:</strong> <span class="text-green-600 dark:text-green-400">${card.answer2}</span>`;
+    } else if (card.type === 'multiple_choice') {
+        ansStr += `<br><span class="text-xs text-gray-500">Opções: ${card.options?.join(', ')}</span>`;
+    }
+
+    const textCont = document.createElement('div');
+    textCont.innerHTML = `<p class="mb-1 text-sm mt-3">${descStr}</p><p class="text-sm">${ansStr}</p>`;
+    cardEl.appendChild(textCont);
+
+    // Actions (Edit, Delete)
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = "absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity";
+
+    const editBtn = document.createElement('button');
+    editBtn.className = "p-1.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-300 rounded";
+    editBtn.innerHTML = '✏️';
+    editBtn.onclick = () => openEditModal(index);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = "p-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 text-red-600 dark:text-red-300 rounded";
+    delBtn.innerHTML = '🗑️';
+    delBtn.onclick = () => {
+        if (confirm('Excluir este flashcard?')) {
+            deckCards.splice(index, 1);
+            renderCardsList(true); // Full re-render on delete to update indices
+        }
+    };
+
+    actionsDiv.appendChild(editBtn);
+    actionsDiv.appendChild(delBtn);
+    cardEl.appendChild(actionsDiv);
+    
+    return cardEl;
 }
 
 // Edit Modal Handlers
@@ -402,7 +470,7 @@ saveEditBtn.addEventListener('click', () => {
     if (deckCards[i].type === 'open_double') {
         deckCards[i].answer2 = editCardAns2.value;
     }
-    renderCardsList();
+    renderCardsList(true); // Full re-render after edit
     closeEditModalFn();
 });
 
@@ -458,7 +526,7 @@ chatSendBtn.addEventListener('click', async () => {
             const newDeck = JSON.parse(textResult);
             if (Array.isArray(newDeck)) {
                 deckCards = newDeck;
-                renderCardsList();
+                renderCardsList(true); // Full re-render after chat adjustment
                 addChatMessage('model', 'Feito! Atualizei os flashcards ao lado com o seu ajuste.');
             } else {
                 addChatMessage('model', 'O modelo não retornou uma lista válida. Tente novamente.');
