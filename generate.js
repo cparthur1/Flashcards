@@ -173,6 +173,8 @@ async function generateFlashcards(sourceType) {
 
     // Initialize Gemini
     const genAI = new GoogleGenerativeAI(apiKey);
+    const deckContainer = cardsList.parentNode;
+    const deckHeader = cardsList.previousElementSibling;
 
     // Config specifically for JSON output
     const generationConfig = {
@@ -244,7 +246,10 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
         editorView.classList.remove('hidden');
         editorView.classList.add('flex');
         
-        cardsList.parentNode.classList.add('generating-deck-bg');
+        deckContainer.classList.add('generating-deck-bg');
+        deckContainer.classList.remove('bg-white', 'dark:bg-gray-800');
+        if (deckHeader) deckHeader.classList.add('bg-transparent');
+        cardsList.classList.add('bg-transparent');
         
         deckCards = [];
         renderCardsList();
@@ -310,7 +315,10 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
             generateDeckTitle(deckCards);
         }
 
-        cardsList.parentNode.classList.remove('generating-deck-bg');
+        deckContainer.classList.remove('generating-deck-bg');
+        deckContainer.classList.add('bg-white', 'dark:bg-gray-800');
+        if (deckHeader) deckHeader.classList.remove('bg-transparent');
+        cardsList.classList.remove('bg-transparent');
 
         // Start chat session with the context
         geminiChatSession = model.startChat({
@@ -343,7 +351,10 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
             editorView.classList.add('hidden');
             editorView.classList.remove('flex');
         }
-        cardsList.parentNode.classList.remove('generating-deck-bg');
+        deckContainer.classList.remove('generating-deck-bg');
+        deckContainer.classList.add('bg-white', 'dark:bg-gray-800');
+        if (deckHeader) deckHeader.classList.remove('bg-transparent');
+        cardsList.classList.remove('bg-transparent');
     } finally {
         generateFilesBtn.disabled = false;
         spinnerFiles.classList.add('hidden');

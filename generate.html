@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'media', 
+            darkMode: 'media',
             theme: {
                 extend: {
                     colors: {
@@ -20,18 +21,40 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .hidden { display: none !important; }
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
         /* Scrollbar personalizada */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
-        .dark ::-webkit-scrollbar-thumb { background-color: #4b5563; }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background-color: #4b5563;
+        }
+
         .squircle {
             width: 64px;
             height: 64px;
-            background-color: #93c5fd; /* Light blue (blue-300) */
-            color: #1e40af; /* Dark blue text for contrast */
+            background-color: #93c5fd;
+            /* Light blue (blue-300) */
+            color: #1e40af;
+            /* Dark blue text for contrast */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -43,7 +66,11 @@
             border: 2px solid white;
             transition: transform 0.2s ease;
         }
-        .squircle:hover { transform: scale(1.05); }
+
+        .squircle:hover {
+            transform: scale(1.05);
+        }
+
         .spinner {
             border: 4px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
@@ -52,12 +79,31 @@
             height: 24px;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
         .generating-deck-bg {
             background: linear-gradient(-45deg, #3b82f6, #8b5cf6, #f472b6) !important;
             background-size: 400% 400% !important;
@@ -73,67 +119,97 @@
         }
     </script>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen p-4 sm:p-8 flex flex-col items-center">
+
+<body
+    class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen p-4 sm:p-8 flex flex-col items-center">
 
     <!-- VIEW 1: PRE-GENERATION DASHBOARD -->
     <div id="dashboard-view" class="w-full max-w-5xl flex flex-col items-center">
         <!-- Header: API Key Login -->
         <div class="w-full mb-8">
-            <label class="block text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Login com sua chave de API</label>
+            <label class="block text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Login com sua chave de
+                API</label>
             <div class="relative w-full max-w-md">
                 <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                            clip-rule="evenodd"></path>
+                    </svg>
                 </div>
-                <input type="password" id="api-key-input" class="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Gemini API Key">
+                <input type="password" id="api-key-input"
+                    class="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    placeholder="Gemini API Key">
             </div>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                Ainda não tem uma API key? <button id="open-instructions-btn" class="text-blue-500 hover:underline">Crie uma grátis</button>
+                Ainda não tem uma API key? <button id="open-instructions-btn" class="text-blue-500 hover:underline">Crie
+                    uma grátis</button>
             </p>
-            <p class="text-xs text-gray-500 mt-1">As suas API key serão salvas localmente, não serão compartilhadas conosco.</p>
+            <p class="text-xs text-gray-500 mt-1">As suas API key serão salvas localmente, não serão compartilhadas
+                conosco.</p>
         </div>
 
         <!-- The Two Main Options -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-            
+
             <!-- Box 1: Slides and Notes -->
-            <div class="bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-3xl p-6 md:p-10 flex flex-col items-center text-center shadow-md">
+            <div
+                class="bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-3xl p-6 md:p-10 flex flex-col items-center text-center shadow-md">
                 <h2 class="text-xl font-semibold mb-6">Crie a partir dos seus slides e anotações!</h2>
-                
+
                 <div class="w-full mb-6 relative hover:border-blue-400 transition">
-                    <input type="file" id="files-upload" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-2xl z-20">
-                    <div class="border-2 border-dashed border-gray-400 bg-gray-200 dark:bg-gray-700 dark:border-gray-500 rounded-2xl p-6 min-h-[160px] flex flex-col items-center justify-center transition" id="files-upload-indicator">
+                    <input type="file" id="files-upload" multiple
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-2xl z-20">
+                    <div class="border-2 border-dashed border-gray-400 bg-gray-200 dark:bg-gray-700 dark:border-gray-500 rounded-2xl p-6 min-h-[160px] flex flex-col items-center justify-center transition"
+                        id="files-upload-indicator">
                         <div id="files-icons-container" class="flex flex-wrap justify-center gap-2 mb-2">
-                             <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                            </svg>
                         </div>
-                        <span class="text-gray-600 dark:text-gray-300 font-medium text-lg" id="files-upload-text">Upload arquivos</span>
+                        <span class="text-gray-600 dark:text-gray-300 font-medium text-lg" id="files-upload-text">Upload
+                            arquivos</span>
                         <span class="text-xs text-gray-500 mt-1" id="files-count">Nenhum arquivo selecionado</span>
                     </div>
                 </div>
 
                 <div class="w-full mb-6 relative z-30">
-                    <textarea id="custom-prompt" rows="2" class="w-full p-4 bg-gray-200 dark:bg-gray-700 border border-gray-400 dark:border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-gray-800 dark:text-gray-200 placeholder-gray-500 resize-none font-medium text-center" placeholder="Demandas específicas para criar?"></textarea>
+                    <textarea id="custom-prompt" rows="2"
+                        class="w-full p-4 bg-gray-200 dark:bg-gray-700 border border-gray-400 dark:border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-gray-800 dark:text-gray-200 placeholder-gray-500 resize-none font-medium text-center"
+                        placeholder="Demandas específicas para criar?"></textarea>
                 </div>
 
                 <div class="relative w-full z-30">
-                    <button id="generate-files-btn" class="w-full flex justify-center items-center gap-2 bg-[#8B00FF] hover:bg-purple-700 text-white font-bold py-4 rounded-xl text-xl shadow-lg hover:scale-105 transition">
+                    <button id="generate-files-btn"
+                        class="w-full flex justify-center items-center gap-2 bg-[#8B00FF] hover:bg-purple-700 text-white font-bold py-4 rounded-xl text-xl shadow-lg hover:scale-105 transition">
                         <span>✨</span> Gerar
                         <div id="spinner-files" class="spinner hidden"></div>
                     </button>
-                    <p id="files-loading-msg" class="text-xs text-purple-600 dark:text-purple-400 mt-2 font-medium hidden">⏳ Isso pode levar alguns minutos, estamos processando...</p>
+                    <p id="files-loading-msg"
+                        class="text-xs text-purple-600 dark:text-purple-400 mt-2 font-medium hidden">⏳ Isso pode levar
+                        alguns minutos, estamos processando...</p>
                 </div>
             </div>
 
             <!-- Box 2: Pre-written txt -->
-            <div class="bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-3xl p-6 md:p-10 flex flex-col items-center text-center shadow-md">
+            <div
+                class="bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-3xl p-6 md:p-10 flex flex-col items-center text-center shadow-md">
                 <h2 class="text-xl font-semibold mb-6">Converta o que você já escreveu</h2>
-                
+
                 <div class="w-full mb-6 relative hover:border-blue-400 transition">
-                    <input type="file" id="txt-upload" accept=".txt" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-2xl z-20">
-                    <div class="border-2 border-dashed border-gray-400 bg-gray-200 dark:bg-gray-700 dark:border-gray-500 rounded-2xl p-6 min-h-[160px] flex flex-col items-center justify-center transition" id="txt-upload-indicator">
+                    <input type="file" id="txt-upload" accept=".txt"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-2xl z-20">
+                    <div class="border-2 border-dashed border-gray-400 bg-gray-200 dark:bg-gray-700 dark:border-gray-500 rounded-2xl p-6 min-h-[160px] flex flex-col items-center justify-center transition"
+                        id="txt-upload-indicator">
                         <div id="txt-icons-container" class="flex flex-wrap justify-center gap-2 mb-2">
-                            <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
                         </div>
-                        <span class="text-gray-600 dark:text-gray-300 font-medium text-lg" id="txt-upload-text">Upload<br>.txt</span>
+                        <span class="text-gray-600 dark:text-gray-300 font-medium text-lg"
+                            id="txt-upload-text">Upload<br>.txt</span>
                         <span class="text-xs text-gray-500 mt-1" id="txt-count">Nenhum arquivo selecionado</span>
                     </div>
                 </div>
@@ -145,11 +221,14 @@
                 </div>
 
                 <div class="relative w-full z-30 mt-auto">
-                    <button id="generate-txt-btn" class="w-full flex justify-center items-center gap-2 bg-[#8B00FF] hover:bg-purple-700 text-white font-bold py-4 rounded-xl text-xl shadow-lg hover:scale-105 transition">
+                    <button id="generate-txt-btn"
+                        class="w-full flex justify-center items-center gap-2 bg-[#8B00FF] hover:bg-purple-700 text-white font-bold py-4 rounded-xl text-xl shadow-lg hover:scale-105 transition">
                         <span>✨</span> Gerar
                         <div id="spinner-txt" class="spinner hidden"></div>
                     </button>
-                    <p id="txt-loading-msg" class="text-xs text-purple-600 dark:text-purple-400 mt-2 font-medium hidden">⏳ Isso pode levar alguns minutos, estamos processando...</p>
+                    <p id="txt-loading-msg"
+                        class="text-xs text-purple-600 dark:text-purple-400 mt-2 font-medium hidden">⏳ Isso pode levar
+                        alguns minutos, estamos processando...</p>
                 </div>
             </div>
         </div>
@@ -157,28 +236,40 @@
     </div>
 
     <!-- VIEW 2: POST-GENERATION EDITOR -->
-    <div id="editor-view" class="w-full max-w-7xl h-full flex flex-col md:flex-row gap-6 hidden flex-grow box-border pb-8 text-gray-800 dark:text-gray-200">
+    <div id="editor-view"
+        class="w-full max-w-7xl h-full flex flex-col md:flex-row gap-6 hidden flex-grow box-border pb-8 text-gray-800 dark:text-gray-200">
         <!-- Left Column: Chat Interface -->
-        <div class="w-full md:w-1/3 bg-white dark:bg-gray-800 rounded-2xl shadow-xl flex flex-col overflow-hidden h-[85vh]">
-            <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex items-center gap-2">
+        <div
+            class="w-full md:w-1/3 bg-white dark:bg-gray-800 rounded-2xl shadow-xl flex flex-col overflow-hidden h-[85vh]">
+            <div
+                class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex items-center gap-2">
                 <span class="text-xl">🤖</span>
                 <h3 class="font-bold">Assistente de IA</h3>
             </div>
-            
+
             <div id="chat-history" class="flex-grow p-4 overflow-y-auto flex flex-col gap-3">
-                <div class="self-start bg-gray-200 dark:bg-gray-700 py-2 px-4 rounded-xl rounded-tl-sm max-w-[85%] text-sm">
-                    Olá! Seus flashcards foram gerados. Quer que eu ajuste algo? Diga, por exemplo: "Reescreva a pergunta 5 para ser mais curta" ou "Adicione 3 questões sobre mitocôndria".
+                <div
+                    class="self-start bg-gray-200 dark:bg-gray-700 py-2 px-4 rounded-xl rounded-tl-sm max-w-[85%] text-sm">
+                    Olá! Quer que eu ajuste algo? Diga, por exemplo: "Reescreva a pergunta 5 para ser mais curta" ou
+                    "Adicione 3 questões sobre mitocôndria".
                 </div>
             </div>
 
             <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
                 <div class="relative flex items-center">
-                    <input type="text" id="chat-input" class="w-full pl-4 pr-12 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50" placeholder="Peça um ajuste ao baralho...">
-                    <button id="chat-send-btn" class="absolute right-2 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition disabled:bg-gray-400">
-                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    <input type="text" id="chat-input"
+                        class="w-full pl-4 pr-12 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
+                        placeholder="Peça um ajuste ao baralho...">
+                    <button id="chat-send-btn"
+                        class="absolute right-2 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition disabled:bg-gray-400">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
                     </button>
                     <!-- Small spinner for chat loading -->
-                    <div id="chat-spinner" class="spinner absolute right-4 hidden w-5 h-5 border-blue-600 border-top-white"></div>
+                    <div id="chat-spinner"
+                        class="spinner absolute right-4 hidden w-5 h-5 border-blue-600 border-top-white"></div>
                 </div>
             </div>
         </div>
@@ -186,16 +277,20 @@
         <!-- Right Column: Deck Preview & Editor -->
         <div class="w-full md:w-2/3 bg-white dark:bg-gray-800 rounded-2xl shadow-xl flex flex-col h-[85vh]">
             <!-- Header actions -->
-            <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
+            <div
+                class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
                 <h3 class="font-bold flex items-center gap-2">
-                    <span id="deck-size-badge" class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded-full">0</span>
+                    <span id="deck-size-badge"
+                        class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded-full">0</span>
                     <span id="deck-title-display">Flashcards</span>
                 </h3>
                 <div class="flex gap-2 text-sm z-30">
-                    <button id="download-deck-btn" class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-2 px-3 rounded-lg flex items-center gap-2 transition">
+                    <button id="download-deck-btn"
+                        class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-2 px-3 rounded-lg flex items-center gap-2 transition">
                         <span>💾</span> Salvar Arquivo
                     </button>
-                    <button id="play-deck-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-lg transition shadow flex items-center gap-2">
+                    <button id="play-deck-btn"
+                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-lg transition shadow flex items-center gap-2">
                         <span>🚀</span> Jogar Agora
                     </button>
                 </div>
@@ -209,77 +304,102 @@
     </div>
 
     <!-- Edit Card Modal -->
-    <div id="inline-edit-modal" class="hidden fixed inset-0 modal-overlay bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div id="inline-edit-modal"
+        class="hidden fixed inset-0 modal-overlay bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-lg overflow-hidden shadow-2xl">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between">
+            <div
+                class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between">
                 <h3 class="font-bold text-gray-800 dark:text-white">Editar Flashcard</h3>
-                <button id="close-inline-edit-btn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">✕</button>
+                <button id="close-inline-edit-btn"
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400">✕</button>
             </div>
             <div class="p-6 space-y-4">
                 <input type="hidden" id="edit-card-index">
                 <div>
                     <label class="block text-sm font-medium mb-1">Pergunta</label>
-                    <textarea id="edit-card-desc" rows="3" class="w-full p-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded focus:ring-2"></textarea>
+                    <textarea id="edit-card-desc" rows="3"
+                        class="w-full p-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded focus:ring-2"></textarea>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Resposta Principal</label>
-                    <input type="text" id="edit-card-ans1" class="w-full p-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded focus:ring-2">
+                    <input type="text" id="edit-card-ans1"
+                        class="w-full p-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded focus:ring-2">
                 </div>
                 <div id="edit-card-ans2-group" class="hidden">
                     <label class="block text-sm font-medium mb-1">Resposta Secundária (Para duplas)</label>
-                    <input type="text" id="edit-card-ans2" class="w-full p-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded focus:ring-2">
+                    <input type="text" id="edit-card-ans2"
+                        class="w-full p-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded focus:ring-2">
                 </div>
             </div>
-            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-gray-750">
-                <button id="cancel-inline-edit-btn" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded hover:bg-gray-400">Cancelar</button>
-                <button id="save-inline-edit-btn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button>
+            <div
+                class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-gray-750">
+                <button id="cancel-inline-edit-btn"
+                    class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded hover:bg-gray-400">Cancelar</button>
+                <button id="save-inline-edit-btn"
+                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button>
             </div>
         </div>
     </div>
 
     <!-- API Key Instructions Modal -->
-    <div id="instructions-modal" class="hidden fixed inset-0 modal-overlay bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
+    <div id="instructions-modal"
+        class="hidden fixed inset-0 modal-overlay bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div
+                class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
                 <h3 class="font-bold text-xl text-gray-800 dark:text-white">Como criar sua API Key</h3>
-                <button id="close-instructions-btn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 text-2xl">✕</button>
+                <button id="close-instructions-btn"
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 text-2xl">✕</button>
             </div>
-            
+
             <div class="p-6 space-y-8 overflow-y-auto">
                 <!-- Step 1 -->
                 <div class="space-y-3">
                     <div class="flex items-center gap-3">
-                        <span class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">1</span>
+                        <span
+                            class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">1</span>
                         <p class="font-semibold text-lg">Aceite os termos</p>
                     </div>
-                    <img src="instruction1.png" alt="Passo 1" class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <img src="instruction1.png" alt="Passo 1"
+                        class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 </div>
 
                 <!-- Step 2 -->
                 <div class="space-y-3">
                     <div class="flex items-center gap-3">
-                        <span class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">2</span>
+                        <span
+                            class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">2</span>
                         <p class="font-semibold text-lg">Aguarde a chave ser criada</p>
                     </div>
-                    <img src="instruction2.png" alt="Passo 2" class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <img src="instruction2.png" alt="Passo 2"
+                        class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 </div>
 
                 <!-- Step 3 -->
                 <div class="space-y-3">
                     <div class="flex items-center gap-3">
-                        <span class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">3</span>
+                        <span
+                            class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">3</span>
                         <p class="font-semibold text-lg">Copie a chave</p>
                     </div>
-                    <img src="instruction3.png" alt="Passo 3" class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <img src="instruction3.png" alt="Passo 3"
+                        class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 </div>
             </div>
 
-            <div class="px-6 py-5 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-4 bg-gray-50 dark:bg-gray-750">
-                <a href="https://aistudio.google.com/app/api-keys" target="_blank" id="create-key-external-btn" class="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg">
+            <div
+                class="px-6 py-5 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-4 bg-gray-50 dark:bg-gray-750">
+                <a href="https://aistudio.google.com/app/api-keys" target="_blank" id="create-key-external-btn"
+                    class="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg">
                     Criar
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                    </svg>
                 </a>
-                <button id="instructions-ready-btn" class="px-8 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white font-bold rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                <button id="instructions-ready-btn"
+                    class="px-8 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white font-bold rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition">
                     Pronto
                 </button>
             </div>
@@ -289,4 +409,5 @@
     <!-- External script -->
     <script type="module" src="generate.js"></script>
 </body>
+
 </html>
