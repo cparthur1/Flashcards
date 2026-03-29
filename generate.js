@@ -9,6 +9,7 @@ const filesUploadText = document.getElementById('files-upload-text');
 const customPrompt = document.getElementById('custom-prompt');
 const generateFilesBtn = document.getElementById('generate-files-btn');
 const spinnerFiles = document.getElementById('spinner-files');
+const filesLoadingMsg = document.getElementById('files-loading-msg');
 
 const txtUpload = document.getElementById('txt-upload');
 const txtCount = document.getElementById('txt-count');
@@ -16,6 +17,7 @@ const txtIconsContainer = document.getElementById('txt-icons-container');
 const txtUploadText = document.getElementById('txt-upload-text');
 const generateTxtBtn = document.getElementById('generate-txt-btn');
 const spinnerTxt = document.getElementById('spinner-txt');
+const txtLoadingMsg = document.getElementById('txt-loading-msg');
 
 const globalError = document.getElementById('global-error');
 
@@ -181,6 +183,7 @@ async function generateFlashcards(sourceType) {
         }
         generateFilesBtn.disabled = true;
         spinnerFiles.classList.remove('hidden');
+        filesLoadingMsg.classList.remove('hidden');
 
         // Can use flash for speed or pro if many complex docs. Let's stick with flash to be faster/cheaper, or pro if PDF
         // gemini-flash-latest autochooses the latest flash model available handles multimodal fine.
@@ -214,8 +217,9 @@ O arquivo .json deve ser uma lista (\[\]) contendo vários objetos de questão (
         }
         generateTxtBtn.disabled = true;
         spinnerTxt.classList.remove('hidden');
+        txtLoadingMsg.classList.remove('hidden');
 
-        model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", generationConfig });
+        model = genAI.getGenerativeModel({ model: "gemini-flash-latest", generationConfig });
         currentGenModel = model;
 
         const textContent = await readTextFile(txtUpload.files[0]);
@@ -272,8 +276,10 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
     } finally {
         generateFilesBtn.disabled = false;
         spinnerFiles.classList.add('hidden');
+        filesLoadingMsg.classList.add('hidden');
         generateTxtBtn.disabled = false;
         spinnerTxt.classList.add('hidden');
+        txtLoadingMsg.classList.add('hidden');
     }
 }
 
