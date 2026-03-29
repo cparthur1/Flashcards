@@ -106,57 +106,11 @@ startBtn.addEventListener('click', () => {
     reader.readAsText(currentFile);
 });
 
-// --- LÓGICA DE CRIAÇÃO E INSTRUÇÕES (NOVO) ---
+// --- LÓGICA DE CRIAÇÃO (DIRECIONA PARA NOVA ABA) ---
 openCreateBtn.addEventListener('click', () => {
-    createModal.classList.remove('hidden');
-    newDeckNameInput.focus();
+    window.open('generate.html', '_blank');
 });
 
-closeCreateBtn.addEventListener('click', () => {
-    createModal.classList.add('hidden');
-});
-
-openInstructionsBtn.addEventListener('click', () => {
-    instructionsModal.classList.remove('hidden');
-});
-
-closeInstructionsBtn.addEventListener('click', () => {
-    instructionsModal.classList.add('hidden');
-});
-
-// Lógica de colar e jogar
-loadPastedDeckBtn.addEventListener('click', () => {
-    const rawJson = pastedJsonInput.value.trim();
-    const deckName = newDeckNameInput.value.trim() || "Novo Baralho";
-
-    if (!rawJson) {
-        alert("Por favor, cole o JSON no campo indicado.");
-        return;
-    }
-
-    try {
-        // Limpa possíveis caracteres markdown se o usuário copiou com formatação
-        const cleanJson = rawJson.replace(/```json/g, '').replace(/```/g, '');
-        
-        const parsedQuestions = JSON.parse(cleanJson);
-        
-        if (!Array.isArray(parsedQuestions) || parsedQuestions.length === 0) {
-            throw new Error("O conteúdo colado não é uma lista de questões válida.");
-        }
-
-        allQuestions = parsedQuestions;
-        deckTitle.textContent = deckName;
-        
-        // Fecha modais e inicia
-        createModal.classList.add('hidden');
-        uploadScreen.classList.add('hidden');
-        gameContainer.classList.remove('hidden');
-        
-        startGame();
-    } catch (e) {
-        alert(`Erro ao processar o JSON: ${e.message}. Verifique se copiou corretamente.`);
-    }
-});
 
 // --- LÓGICA DA ANIMAÇÃO (CANVAS) ---
 function resizeCanvas() {
