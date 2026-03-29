@@ -245,14 +245,14 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
         dashboardView.classList.add('hidden');
         editorView.classList.remove('hidden');
         editorView.classList.add('flex');
-        
+
         deckContainer.classList.add('generating-deck-bg');
         deckContainer.classList.remove('bg-white', 'dark:bg-gray-800');
         cardsList.classList.add('bg-transparent');
-        
+
         deckCards = [];
         renderCardsList();
-        deckTitleDisplay.textContent = "Gerando flashcards...";
+        deckTitleDisplay.textContent = "Gerando flashcards... (Isso pode levar alguns minutos)";
 
         const result = await model.generateContentStream(parts);
         let fullText = "";
@@ -265,15 +265,15 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
             // Simple incremental JSON object extractor for an array of objects
             // We look for patterns like: {"type": ..., } followed by , or ]
             // This is a basic approach but usually works for the well-structured JSON Gemini produces.
-            
+
             let possibleObjects = fullText.substring(processedIndex);
-            
+
             // Regex to find complete JSON objects: {...}
             // We use a simplified regex that matches opening { and balanced closing }
             // Since we know the items are flat objects in this schema, this is relatively safe.
             const regex = /\{[^{}]*\}/g;
             let match;
-            
+
             while ((match = regex.exec(possibleObjects)) !== null) {
                 const objectStr = match[0];
                 try {
@@ -282,7 +282,7 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
                     if (card.type && card.description && (card.answer || card.answer2 || card.options)) {
                         deckCards.push(card);
                         renderCardsList();
-                        
+
                         // If it's the first few cards, start generating the title
                         if (deckCards.length === 5) {
                             generateDeckTitle(deckCards);
@@ -367,17 +367,17 @@ generateTxtBtn.addEventListener('click', () => generateFlashcards('txt'));
 
 async function generateDeckTitle(cards) {
     if (!cards || cards.length === 0 || !currentGenModel) return;
-    
+
     deckTitleDisplay.textContent = "Gerando título...";
-    
+
     try {
         const sample = cards.slice(0, 5).map(c => c.description).join("\n");
         const prompt = `Com base nestas questões de flashcards, sugira um título curto e profissional para o baralho (máximo de 4 palavras). Retorne APENAS o título, sem aspas ou pontuação extra.\n\nQuestões:\n${sample}`;
-        
+
         const result = await currentGenModel.generateContent(prompt);
         const response = await result.response;
         const title = response.text().trim().replace(/["']/g, '');
-        
+
         if (title) {
             deckTitleDisplay.textContent = title;
         } else {
@@ -392,13 +392,13 @@ async function generateDeckTitle(cards) {
 // Render Cards List
 function renderCardsList(fullReRender = false) {
     deckSizeBadge.textContent = deckCards.length;
-    
+
     if (fullReRender) {
         cardsList.innerHTML = '';
     }
 
     const currentRenderedCount = cardsList.children.length;
-    
+
     for (let i = currentRenderedCount; i < deckCards.length; i++) {
         const cardEl = createCardElement(deckCards[i], i);
         cardsList.appendChild(cardEl);
@@ -448,7 +448,7 @@ function createCardElement(card, index) {
     actionsDiv.appendChild(editBtn);
     actionsDiv.appendChild(delBtn);
     cardEl.appendChild(actionsDiv);
-    
+
     return cardEl;
 }
 
