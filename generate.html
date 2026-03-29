@@ -53,6 +53,16 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .generating-deck-bg {
+            background: linear-gradient(-45deg, #3b82f6, #8b5cf6, #f472b6) !important;
+            background-size: 400% 400% !important;
+            animation: gradientBG 6s ease infinite !important;
+        }
     </style>
     <!-- Import Map for Gemini API -->
     <script type="importmap">

@@ -244,6 +244,8 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
         editorView.classList.remove('hidden');
         editorView.classList.add('flex');
         
+        cardsList.parentNode.classList.add('generating-deck-bg');
+        
         deckCards = [];
         renderCardsList();
         deckTitleDisplay.textContent = "Gerando flashcards...";
@@ -308,6 +310,8 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
             generateDeckTitle(deckCards);
         }
 
+        cardsList.parentNode.classList.remove('generating-deck-bg');
+
         // Start chat session with the context
         geminiChatSession = model.startChat({
             history: [
@@ -339,6 +343,7 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
             editorView.classList.add('hidden');
             editorView.classList.remove('flex');
         }
+        cardsList.parentNode.classList.remove('generating-deck-bg');
     } finally {
         generateFilesBtn.disabled = false;
         spinnerFiles.classList.add('hidden');
