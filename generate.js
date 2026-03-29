@@ -4,12 +4,16 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const apiKeyInput = document.getElementById('api-key-input');
 const filesUpload = document.getElementById('files-upload');
 const filesCount = document.getElementById('files-count');
+const filesIconsContainer = document.getElementById('files-icons-container');
+const filesUploadText = document.getElementById('files-upload-text');
 const customPrompt = document.getElementById('custom-prompt');
 const generateFilesBtn = document.getElementById('generate-files-btn');
 const spinnerFiles = document.getElementById('spinner-files');
 
 const txtUpload = document.getElementById('txt-upload');
 const txtCount = document.getElementById('txt-count');
+const txtIconsContainer = document.getElementById('txt-icons-container');
+const txtUploadText = document.getElementById('txt-upload-text');
 const generateTxtBtn = document.getElementById('generate-txt-btn');
 const spinnerTxt = document.getElementById('spinner-txt');
 
@@ -43,21 +47,74 @@ let deckCards = [];
 let geminiChatSession = null;
 let currentGenModel = null;
 
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+
+function getFileExtension(filename) {
+    return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2);
+}
+
+function renderFileIcons(files, container, defaultSvg) {
+    container.innerHTML = '';
+    if (files.length === 0) {
+        container.innerHTML = defaultSvg;
+        return;
+    }
+
+    Array.from(files).forEach(file => {
+        const ext = getFileExtension(file.name) || '???';
+        const icon = document.createElement('div');
+        icon.className = 'squircle';
+        icon.textContent = ext.substring(0, 4);
+        icon.title = file.name;
+        container.appendChild(icon);
+    });
+}
+
 // File Upload UI Handlers
 filesUpload.addEventListener('change', () => {
-    if (filesUpload.files.length > 0) {
-        filesCount.textContent = `${filesUpload.files.length} arquivo(s) selecionado(s)`;
+    globalError.textContent = '';
+    const files = filesUpload.files;
+
+    for (let file of files) {
+        if (file.size > MAX_FILE_SIZE) {
+            globalError.textContent = `O arquivo "${file.name}" excede o limite de 100MB e foi rejeitado.`;
+            filesUpload.value = '';
+            filesCount.textContent = 'Nenhum arquivo selecionado';
+            renderFileIcons([], filesIconsContainer, '<svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>');
+            return;
+        }
+    }
+
+    if (files.length > 0) {
+        filesCount.textContent = `${files.length} arquivo(s) selecionado(s)`;
+        filesUploadText.classList.add('hidden');
     } else {
         filesCount.textContent = 'Nenhum arquivo selecionado';
+        filesUploadText.classList.remove('hidden');
     }
+    renderFileIcons(files, filesIconsContainer, '<svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>');
 });
 
 txtUpload.addEventListener('change', () => {
-    if (txtUpload.files.length > 0) {
-        txtCount.textContent = txtUpload.files[0].name;
+    globalError.textContent = '';
+    const files = txtUpload.files;
+
+    if (files.length > 0) {
+        const file = files[0];
+        if (file.size > MAX_FILE_SIZE) {
+            globalError.textContent = `O arquivo "${file.name}" excede o limite de 100MB e foi rejeitado.`;
+            txtUpload.value = '';
+            txtCount.textContent = 'Nenhum arquivo selecionado';
+            renderFileIcons([], txtIconsContainer, '<svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>');
+            return;
+        }
+        txtCount.textContent = file.name;
+        txtUploadText.classList.add('hidden');
     } else {
         txtCount.textContent = 'Nenhum arquivo selecionado';
+        txtUploadText.classList.remove('hidden');
     }
+    renderFileIcons(files, txtIconsContainer, '<svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>');
 });
 
 // Load saved key
@@ -103,7 +160,7 @@ async function generateFlashcards(sourceType) {
 
     // Initialize Gemini
     const genAI = new GoogleGenerativeAI(apiKey);
-    
+
     // Config specifically for JSON output
     const generationConfig = {
         temperature: 0.2, // Low temp for more deterministic generation
@@ -112,7 +169,7 @@ async function generateFlashcards(sourceType) {
 
     let model;
     let parts = [];
-    
+
     if (sourceType === 'files') {
         if (filesUpload.files.length === 0) {
             globalError.textContent = 'Por favor, selecione pelo menos um arquivo.';
@@ -123,7 +180,7 @@ async function generateFlashcards(sourceType) {
 
         // Can use flash for speed or pro if many complex docs. Let's stick with flash to be faster/cheaper, or pro if PDF? 
         // gemini-1.5-flash handles multimodal fine.
-        model = genAI.getGenerativeModel({ model: "gemini-1.5-pro", generationConfig });
+        model = genAI.getGenerativeModel({ model: "gemini-flash-latest", generationConfig });
         currentGenModel = model;
 
         const basePrompt = `Com base nos arquivos enviados, o objetivo é processar todo o conteúdo e gerar uma lista extensa de termos técnicos para revisão, incluindo nomes de moléculas, estruturas, etapas de processos e quaisquer conceitos com nomes específicos. Em seguida, usar das informações que classificou na primeira etapa para gerar um arquivo .json baseado em todo o conteúdo que juntou na primeira etapa. O nível de detalhe deve ser apropriado para um estudante de medicina. A sua resposta vai ser apenas o JSON com os flashcards, a primeira etapa serve apenas para você planejar os flashcards. Busque sempre fazer a pergunta como uma descrição e a(s) resposta(s) com o menor numero de palavras possíveis, preferencialmente o nome de um termo, conceito, molécula... Ao final revise se os flashcards criados realmente abordam por extenso tudo que foi enviado. Devem ser gerados aproximadamente 100 flashcards.
@@ -170,7 +227,7 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
         const result = await model.generateContent(parts);
         const response = await result.response;
         let textResult = response.text();
-        
+
         // Clean markdown blocks if present
         textResult = textResult.replace(/^```json\n/g, '').replace(/^```\n/g, '').replace(/```$/g, '');
 
@@ -180,7 +237,7 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
         dashboardView.classList.add('hidden');
         editorView.classList.remove('hidden');
         editorView.classList.add('flex'); // Add flex back since it was disabled by hidden
-        
+
         renderCardsList();
 
         // Start chat session with the context
@@ -223,11 +280,11 @@ generateTxtBtn.addEventListener('click', () => generateFlashcards('txt'));
 function renderCardsList() {
     deckSizeBadge.textContent = deckCards.length;
     cardsList.innerHTML = '';
-    
+
     deckCards.forEach((card, index) => {
         const cardEl = document.createElement('div');
         cardEl.className = "bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative group shadow-sm flex flex-col gap-2";
-        
+
         const typeBadge = document.createElement('span');
         typeBadge.className = "absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-100 dark:bg-gray-600 dark:text-gray-300 px-2 py-1 rounded";
         typeBadge.textContent = card.type === 'open' ? 'Aberto' : (card.type === 'multiple_choice' ? 'Múltipla Escolha' : 'Duplo Aberto');
@@ -236,9 +293,9 @@ function renderCardsList() {
         const descStr = `<strong>P:</strong> <span class="text-gray-800 dark:text-gray-200">${card.description}</span>`;
         let ansStr = `<strong>R:</strong> <span class="text-green-600 dark:text-green-400">${card.answer}</span>`;
         if (card.type === 'open_double') {
-             ansStr += `<br><strong>R2:</strong> <span class="text-green-600 dark:text-green-400">${card.answer2}</span>`;
+            ansStr += `<br><strong>R2:</strong> <span class="text-green-600 dark:text-green-400">${card.answer2}</span>`;
         } else if (card.type === 'multiple_choice') {
-             ansStr += `<br><span class="text-xs text-gray-500">Opções: ${card.options?.join(', ')}</span>`;
+            ansStr += `<br><span class="text-xs text-gray-500">Opções: ${card.options?.join(', ')}</span>`;
         }
 
         const textCont = document.createElement('div');
@@ -248,17 +305,17 @@ function renderCardsList() {
         // Actions (Edit, Delete)
         const actionsDiv = document.createElement('div');
         actionsDiv.className = "absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity";
-        
+
         const editBtn = document.createElement('button');
         editBtn.className = "p-1.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-300 rounded";
         editBtn.innerHTML = '✏️';
         editBtn.onclick = () => openEditModal(index);
-        
+
         const delBtn = document.createElement('button');
         delBtn.className = "p-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 text-red-600 dark:text-red-300 rounded";
         delBtn.innerHTML = '🗑️';
         delBtn.onclick = () => {
-            if(confirm('Excluir este flashcard?')) {
+            if (confirm('Excluir este flashcard?')) {
                 deckCards.splice(index, 1);
                 renderCardsList();
             }
@@ -278,14 +335,14 @@ function openEditModal(index) {
     editCardIndex.value = index;
     editCardDesc.value = card.description;
     editCardAns1.value = card.answer;
-    
-    if(card.type === 'open_double') {
+
+    if (card.type === 'open_double') {
         editCardAns2Group.classList.remove('hidden');
         editCardAns2.value = card.answer2;
     } else {
         editCardAns2Group.classList.add('hidden');
     }
-    
+
     editModal.classList.remove('hidden');
 }
 
@@ -319,10 +376,10 @@ function addChatMessage(role, text) {
 chatSendBtn.addEventListener('click', async () => {
     const text = chatInput.value.trim();
     if (!text || !geminiChatSession) return;
-    
+
     chatInput.value = '';
     addChatMessage('user', text);
-    
+
     chatInput.disabled = true;
     chatSendBtn.disabled = true;
     chatSpinner.classList.remove('hidden');
@@ -333,7 +390,7 @@ chatSendBtn.addEventListener('click', async () => {
         const result = await geminiChatSession.sendMessage(prompt);
         let textResult = result.response.text();
         textResult = textResult.replace(/^```json\n/g, '').replace(/^```\n/g, '').replace(/```$/g, '');
-        
+
         try {
             const newDeck = JSON.parse(textResult);
             if (Array.isArray(newDeck)) {
@@ -369,7 +426,7 @@ downloadDeckBtn.addEventListener('click', () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `flashcards_gerados.json`; 
+    a.download = `flashcards_gerados.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -379,7 +436,7 @@ downloadDeckBtn.addEventListener('click', () => {
 // Play Now (Save to load & return)
 playDeckBtn.addEventListener('click', () => {
     if (deckCards.length === 0) return;
-    
+
     const gameState = {
         questionsPool: [...deckCards],
         allQuestions: [...deckCards],
@@ -387,6 +444,6 @@ playDeckBtn.addEventListener('click', () => {
         deckTitle: "Baralho Gerado com IA"
     };
     localStorage.setItem('flashcardsSave', JSON.stringify(gameState));
-    
-    window.location.href = 'index.html'; 
+
+    window.location.href = 'index.html';
 });
