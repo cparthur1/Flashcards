@@ -316,7 +316,6 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
 
         deckContainer.classList.remove('generating-deck-bg');
         deckContainer.classList.add('bg-white', 'dark:bg-gray-800');
-        if (deckHeader) deckHeader.classList.remove('bg-transparent');
         cardsList.classList.remove('bg-transparent');
 
         // Start chat session with the context
@@ -352,7 +351,6 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
         }
         deckContainer.classList.remove('generating-deck-bg');
         deckContainer.classList.add('bg-white', 'dark:bg-gray-800');
-        if (deckHeader) deckHeader.classList.remove('bg-transparent');
         cardsList.classList.remove('bg-transparent');
     } finally {
         generateFilesBtn.disabled = false;
