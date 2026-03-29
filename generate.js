@@ -186,7 +186,7 @@ async function generateFlashcards(sourceType) {
         filesLoadingMsg.classList.remove('hidden');
 
         // Can use flash for speed or pro if many complex docs. Let's stick with flash to be faster/cheaper, or pro if PDF
-        // gemini-flash-latest autochooses the latest flash model available handles multimodal fine.
+        // gemini-flash-latest autochooses the latest flash model available and handles multimodal fine.
         model = genAI.getGenerativeModel({ model: "gemini-flash-latest", generationConfig });
         currentGenModel = model;
 
