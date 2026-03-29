@@ -26,6 +26,7 @@ const editorView = document.getElementById('editor-view');
 
 const cardsList = document.getElementById('cards-list');
 const deckSizeBadge = document.getElementById('deck-size-badge');
+const deckTitleDisplay = document.getElementById('deck-title-display');
 const downloadDeckBtn = document.getElementById('download-deck-btn');
 const playDeckBtn = document.getElementById('play-deck-btn');
 
@@ -247,6 +248,7 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
         editorView.classList.add('flex'); // Add flex back since it was disabled by hidden
 
         renderCardsList();
+        generateDeckTitle(deckCards);
 
         // Start chat session with the context
         geminiChatSession = model.startChat({
@@ -285,6 +287,30 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
 
 generateFilesBtn.addEventListener('click', () => generateFlashcards('files'));
 generateTxtBtn.addEventListener('click', () => generateFlashcards('txt'));
+
+async function generateDeckTitle(cards) {
+    if (!cards || cards.length === 0 || !currentGenModel) return;
+    
+    deckTitleDisplay.textContent = "Gerando título...";
+    
+    try {
+        const sample = cards.slice(0, 5).map(c => c.description).join("\n");
+        const prompt = `Com base nestas questões de flashcards, sugira um título curto e profissional para o baralho (máximo de 4 palavras). Retorne APENAS o título, sem aspas ou pontuação extra.\n\nQuestões:\n${sample}`;
+        
+        const result = await currentGenModel.generateContent(prompt);
+        const response = await result.response;
+        const title = response.text().trim().replace(/["']/g, '');
+        
+        if (title) {
+            deckTitleDisplay.textContent = title;
+        } else {
+            deckTitleDisplay.textContent = "Meu Baralho";
+        }
+    } catch (e) {
+        console.error("Erro ao gerar título:", e);
+        deckTitleDisplay.textContent = "Meu Baralho";
+    }
+}
 
 // Render Cards List
 function renderCardsList() {
@@ -451,7 +477,7 @@ playDeckBtn.addEventListener('click', () => {
         questionsPool: [...deckCards],
         allQuestions: [...deckCards],
         score: 0,
-        deckTitle: "Baralho Gerado com IA"
+        deckTitle: deckTitleDisplay.textContent
     };
     localStorage.setItem('flashcardsSave', JSON.stringify(gameState));
 
