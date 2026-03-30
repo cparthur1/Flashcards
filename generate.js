@@ -199,7 +199,7 @@ async function generateFlashcards(sourceType) {
         model = genAI.getGenerativeModel({ model: "gemini-flash-latest", generationConfig });
         currentGenModel = model;
 
-        const basePrompt = `Com base nos arquivos enviados, o objetivo é processar todo o conteúdo e gerar uma lista extensa de termos técnicos para revisão, incluindo nomes de moléculas, estruturas, etapas de processos e quaisquer conceitos com nomes específicos. Em seguida, usar das informações que classificou na primeira etapa para gerar um arquivo .json baseado em todo o conteúdo que juntou na primeira etapa. O nível de detalhe deve ser apropriado para um estudante de medicina. A sua resposta vai ser apenas o JSON com os flashcards, a primeira etapa serve apenas para você planejar os flashcards. Busque sempre fazer a pergunta como uma descrição e a(s) resposta(s) com o menor numero de palavras possíveis, preferencialmente o nome de um termo, conceito, molécula... Ao final revise se os flashcards criados realmente abordam por extenso tudo que foi enviado. Devem ser gerados aproximadamente 100 flashcards.
+        const basePrompt = `Com base nos arquivos enviados, o objetivo é processar todo o conteúdo e gerar uma lista extensa de termos técnicos para revisão, incluindo nomes de moléculas, estruturas, etapas de processos e quaisquer conceitos com nomes específicos. Em seguida, usar das informações que classificou na primeira etapa para gerar um arquivo .json baseado em todo o conteúdo que juntou na primeira etapa. O nível de detalhe deve ser apropriado para um estudante de ensino superior. A sua resposta vai ser apenas o JSON com os flashcards, a primeira etapa serve apenas para você planejar os flashcards. Busque sempre fazer a pergunta como uma descrição e a(s) resposta(s) com o menor numero de palavras possíveis, preferencialmente o nome de um termo, conceito, molécula... Ao final revise se os flashcards criados realmente abordam por extenso tudo que foi enviado. Devem ser gerados aproximadamente 100 flashcards.
         
 O arquivo .json deve ser uma lista (\[\]) contendo vários objetos de questão (\{ \}). Cada objeto precisa seguir um dos três formatos: 'open', 'open_double', 'multiple_choice' conforme a seguir:
 1. open: {"type": "open", "description": "Pergunta?", "answer": "Resposta"}
@@ -235,7 +235,9 @@ O arquivo .json deve ser uma lista (\[\]) contendo vários objetos de questão (
         const linesCount = textContent.split('\n').filter(line => line.trim().length > 0).length;
 
         const prompt = `Esse documento está formatado no estilo: "ANSWER: Question" e tem ${linesCount} linhas, cada linha tem que ser um flashcard estilo open. A sua função é apenas adequar esse arquivo .txt no formato necessário .json baseado no estilo de formatação do exemplo, sem alterar NADA do conteúdo textual, transcreva literalmente como está no documento. Então no final deve ter ${linesCount} flashcards. 
-As questões open tem o formato: {"type": "open", "description": "Question", "answer": "ANSWER"}.
+As questões open e open_double tem o formato: 
+1. open: {"type": "open", "description": "Pergunta?", "answer": "Resposta"} 
+2. open_double: {"type": "open_double", "description": "Pergunta?", "answer": "Resposta1", "answer2": "Resposta2", "placeholder1": "Label1", "placeholder2":"Label2"}.
 Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
         parts.push(prompt);
     }
