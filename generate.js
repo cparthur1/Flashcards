@@ -29,6 +29,7 @@ const deckSizeBadge = document.getElementById('deck-size-badge');
 const deckTitleDisplay = document.getElementById('deck-title-display');
 const downloadDeckBtn = document.getElementById('download-deck-btn');
 const playDeckBtn = document.getElementById('play-deck-btn');
+const addCardBtn = document.getElementById('add-card-btn');
 
 const chatHistory = document.getElementById('chat-history');
 const chatInput = document.getElementById('chat-input');
@@ -454,18 +455,33 @@ function createCardElement(card, index) {
     return cardEl;
 }
 
+// Manual Add Card Handler
+addCardBtn.addEventListener('click', () => {
+    openEditModal(-1);
+});
+
 // Edit Modal Handlers
 function openEditModal(index) {
-    const card = deckCards[index];
-    editCardIndex.value = index;
-    editCardDesc.value = card.description;
-    editCardAns1.value = card.answer;
-
-    if (card.type === 'open_double') {
-        editCardAns2Group.classList.remove('hidden');
-        editCardAns2.value = card.answer2;
-    } else {
+    if (index === -1) {
+        // New Card
+        editCardIndex.value = -1;
+        editCardDesc.value = '';
+        editCardAns1.value = '';
         editCardAns2Group.classList.add('hidden');
+        editCardAns2.value = '';
+    } else {
+        // Edit Existing Card
+        const card = deckCards[index];
+        editCardIndex.value = index;
+        editCardDesc.value = card.description;
+        editCardAns1.value = card.answer;
+
+        if (card.type === 'open_double') {
+            editCardAns2Group.classList.remove('hidden');
+            editCardAns2.value = card.answer2;
+        } else {
+            editCardAns2Group.classList.add('hidden');
+        }
     }
 
     editModal.classList.remove('hidden');
@@ -480,12 +496,25 @@ cancelEditBtn.addEventListener('click', closeEditModalFn);
 
 saveEditBtn.addEventListener('click', () => {
     const i = parseInt(editCardIndex.value);
-    deckCards[i].description = editCardDesc.value;
-    deckCards[i].answer = editCardAns1.value;
-    if (deckCards[i].type === 'open_double') {
-        deckCards[i].answer2 = editCardAns2.value;
+    const newCardData = {
+        description: editCardDesc.value,
+        answer: editCardAns1.value
+    };
+
+    if (i === -1) {
+        // Add new card (default to 'open' type for manual addition)
+        newCardData.type = 'open';
+        deckCards.push(newCardData);
+    } else {
+        // Update existing card
+        deckCards[i].description = newCardData.description;
+        deckCards[i].answer = newCardData.answer;
+        if (deckCards[i].type === 'open_double') {
+            deckCards[i].answer2 = editCardAns2.value;
+        }
     }
-    renderCardsList(true); // Full re-render after edit
+
+    renderCardsList(true); // Full re-render
     closeEditModalFn();
 });
 
