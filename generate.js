@@ -1,5 +1,41 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+async function compressPDF(file) {
+    const { jsPDF } = window.jspdf;
+    const arrayBuffer = await file.arrayBuffer();
+    // Configurar o worker do PDF.js
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const outPdf = new jsPDF();
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const scale = 0.5; // Reduz a escala para 50%
+        const viewport = page.getViewport({ scale });
+
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+        // Converte para JPEG com 70% de qualidade
+        const imgData = canvas.toDataURL('image/jpeg', 0.7);
+
+        if (i > 1) outPdf.addPage();
+
+        // Ajusta a imagem ao tamanho da página do PDF
+        const pdfWidth = outPdf.internal.pageSize.getWidth();
+        const pdfHeight = outPdf.internal.pageSize.getHeight();
+        outPdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+    }
+
+    return outPdf.output('blob');
+}
+
+
 // Elements
 const apiKeyInput = document.getElementById('api-key-input');
 const filesUpload = document.getElementById('files-upload');
@@ -60,6 +96,146 @@ let currentGenModel = null;
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const FILES_DEFAULT_SVG = '<svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>';
 const TXT_DEFAULT_SVG = '<svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>';
+
+const systemInstruction = "Você é um assistente cirúrgico especializado em educação médica e editor de flashcards. Sua função é gerenciar um baralho de flashcards (Anki-style) para um estudante de medicina. Você pode adicionar, editar ou remover cards usando as ferramentas fornecidas. Mantenha o tom profissional, analítico e pragmático. Ao editar, busque clareza terminológica e precisão técnica. Você deve atuar como um agente, executando as ações solicitadas e confirmando-as de forma concisa.";
+
+
+// Gemini Tools Definitions for Agentic Editing
+const deckTools = [
+    {
+        functionDeclarations: [
+            {
+                name: "adicionar_card",
+                description: "Adiciona um novo flashcard ao baralho.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        type: { type: "STRING", enum: ["open", "open_double", "multiple_choice"], description: "Tipo do card" },
+                        description: { type: "STRING", description: "Pergunta ou descrição" },
+                        answer: { type: "STRING", description: "Resposta principal" },
+                        answer2: { type: "STRING", description: "Resposta secundária (apenas para open_double)" },
+                        options: { type: "ARRAY", items: { type: "STRING" }, description: "Opções (apenas para multiple_choice)" }
+                    },
+                    required: ["type", "description", "answer"]
+                }
+            },
+            {
+                name: "editar_card",
+                description: "Edita um flashcard existente pelo índice. Envie apenas os campos que deseja atualizar.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        index: { type: "NUMBER", description: "O índice (começando em 0) do card a ser editado." },
+                        description: { type: "STRING" },
+                        answer: { type: "STRING" },
+                        answer2: { type: "STRING" },
+                        options: { type: "ARRAY", items: { type: "STRING" } }
+                    },
+                    required: ["index"]
+                }
+            },
+            {
+                name: "remover_card",
+                description: "Remove um único flashcard permanentemente do baralho.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        index: { type: "NUMBER", description: "Índice do card a ser removido." }
+                    },
+                    required: ["index"]
+                }
+            },
+            {
+                name: "remover_cards_por_indice",
+                description: "Remove múltiplos flashcards de uma vez usando uma lista de índices. Use esta ferramenta quando o usuário pedir para deletar vários cards.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        indices: {
+                            type: "ARRAY",
+                            items: { type: "NUMBER" },
+                            description: "Lista de índices dos cards a serem removidos."
+                        }
+                    },
+                    required: ["indices"]
+                }
+            },
+
+            {
+                name: "adicionar_varios_cards",
+                description: "Adiciona múltiplos cards de uma vez. Útil para geração em lote.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        cards: {
+                            type: "ARRAY",
+                            items: {
+                                type: "OBJECT",
+                                properties: {
+                                    type: { type: "STRING", enum: ["open", "open_double", "multiple_choice"] },
+                                    description: { type: "STRING" },
+                                    answer: { type: "STRING" },
+                                    answer2: { type: "STRING" },
+                                    options: { type: "ARRAY", items: { type: "STRING" } }
+                                },
+                                required: ["type", "description", "answer"]
+                            }
+                        }
+                    },
+                    required: ["cards"]
+                }
+            }
+        ]
+    }
+];
+
+// Local implementations for Gemni to call
+const toolFunctions = {
+    adicionar_card: (args) => {
+        deckCards.push(args);
+        renderCardsList(true);
+        return { success: true, message: "Card adicionado com sucesso." };
+    },
+    editar_card: (args) => {
+        const { index, ...updates } = args;
+        if (deckCards[index]) {
+            deckCards[index] = { ...deckCards[index], ...updates };
+            renderCardsList(true);
+            return { success: true, message: `Card no índice ${index} foi editado.` };
+        }
+        return { success: false, message: `Erro: Card no índice ${index} não encontrado.` };
+    },
+    remover_card: (args) => {
+        const { index } = args;
+        if (deckCards[index]) {
+            const removed = deckCards.splice(index, 1);
+            renderCardsList(true);
+            return { success: true, message: `Card "${removed[0].description.substring(0, 20)}..." removido.` };
+        }
+        return { success: false, message: `Erro: Card no índice ${index} não encontrado.` };
+    },
+    remover_cards_por_indice: (args) => {
+        const { indices } = args;
+        // IMPORTANTE: Ordenar decrescente para evitar o deslocamento dos índices ao dar splice
+        const sortedIndices = [...new Set(indices)].sort((a, b) => b - a);
+        let count = 0;
+        sortedIndices.forEach(idx => {
+            if (deckCards[idx]) {
+                deckCards.splice(idx, 1);
+                count++;
+            }
+        });
+        renderCardsList(true);
+        return { success: true, message: `${count} cards foram removidos com sucesso.` };
+    },
+
+    adicionar_varios_cards: (args) => {
+        deckCards.push(...args.cards);
+        renderCardsList(true);
+        return { success: true, message: `${args.cards.length} cards adicionados ao deck.` };
+    }
+};
+
 
 function getFileExtension(filename) {
     return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2);
@@ -177,10 +353,13 @@ async function generateFlashcards(sourceType) {
     const deckContainer = cardsList.parentNode;
     const deckHeader = cardsList.previousElementSibling;
 
-    // Config specifically for JSON output
+    // Config specifically for Gemini 3 Reasoning - High depth for initial generation
     const generationConfig = {
-        temperature: 0.2, // Low temp for more deterministic generation
+        temperature: 1.0,
         responseMimeType: "application/json",
+        thinkingConfig: {
+            thinkingLevel: "high"
+        }
     };
 
     let model;
@@ -196,17 +375,27 @@ async function generateFlashcards(sourceType) {
         filesLoadingMsg.classList.remove('hidden');
 
         // Can use flash for speed or pro if many complex docs. Let's stick with flash to be faster/cheaper, or pro if PDF
-        // gemini-flash-latest autochooses the latest flash model available and handles multimodal fine.
-        model = genAI.getGenerativeModel({ model: "gemini-flash-latest", generationConfig });
+        // gemini-3-flash-preview autochooses the latest flash model available and handles multimodal fine.
+        model = genAI.getGenerativeModel({
+            model: "gemini-flash-latest",
+            generationConfig,
+            tools: deckTools,
+            systemInstruction
+        });
+
         currentGenModel = model;
 
-        const basePrompt = `Com base nos arquivos enviados, o objetivo é processar todo o conteúdo e gerar uma lista extensa de termos técnicos para revisão, incluindo nomes de moléculas, estruturas, etapas de processos e quaisquer conceitos com nomes específicos. Em seguida, usar das informações que classificou na primeira etapa para gerar um arquivo .json baseado em todo o conteúdo que juntou na primeira etapa. O nível de detalhe deve ser apropriado para um estudante de ensino superior. A sua resposta vai ser apenas o JSON com os flashcards, a primeira etapa serve apenas para você planejar os flashcards. Busque sempre fazer a pergunta como uma descrição e a(s) resposta(s) com o menor numero de palavras possíveis, preferencialmente o nome de um termo, conceito, molécula... Prefira questões do tipo open e open_double no geral, questões multiple_choice para Sim/Não (use distratores contextualizados) e quando for mais didático. Ao final revise se os flashcards criados realmente abordam por extenso tudo que foi enviado. Devem ser gerados aproximadamente 100 flashcards.
-        
-O arquivo .json deve ser uma lista (\[\]) contendo vários objetos de questão (\{ \}). Cada objeto precisa seguir um dos três formatos: 'open', 'open_double', 'multiple_choice' conforme a seguir:
+        const basePrompt = `Com base nos arquivos enviados, gere uma lista extensa de flashcards médicos detalhados.
+Sua resposta deve ser ESTRITAMENTE e APENAS o array JSON. 
+PROIBIDO incluir títulos, explicações, preâmbulos ou qualquer texto fora do JSON.
+O JSON deve ser uma lista ([]) contendo vários objetos de questão ({ }).
+
+Formatos permitidos:
 1. open: {"type": "open", "description": "Pergunta?", "answer": "Resposta"}
 2. open_double: {"type": "open_double", "description": "Pergunta?", "answer": "Resposta1", "answer2": "Resposta2", "placeholder1": "Label1", "placeholder2":"Label2"}
 3. multiple_choice: {"type": "multiple_choice", "description": "Pergunta?", "answer": "Certa", "options": ["A", "B", "Certa", "D"]}
-(Retorne puramente o array JSON).`;
+
+Gere aproximadamente 100 flashcards.`;
 
         let extraPrompt = customPrompt.value.trim();
         let promptToSend = basePrompt;
@@ -215,10 +404,32 @@ O arquivo .json deve ser uma lista (\[\]) contendo vários objetos de questão (
         }
 
         parts.push(promptToSend);
+        const sourceParts = [promptToSend];
 
         for (let i = 0; i < filesUpload.files.length; i++) {
-            parts.push(await fileToGenerativePart(filesUpload.files[i]));
+            let fileToProcess = filesUpload.files[i];
+
+            // Se for PDF e for maior que 5MB, comprimimos
+            if (fileToProcess.type === 'application/pdf' && fileToProcess.size > 5 * 1024 * 1024) {
+                filesLoadingMsg.textContent = `⏳ Comprimindo ${fileToProcess.name}... (Isto pode levar um momento)`;
+                try {
+                    const compressedBlob = await compressPDF(fileToProcess);
+                    fileToProcess = new File([compressedBlob], fileToProcess.name, {
+                        type: 'application/pdf'
+                    });
+                } catch (err) {
+                    console.error("Erro na compressão:", err);
+                    // Se falhar, segue com o original
+                }
+            }
+
+            const filePart = await fileToGenerativePart(fileToProcess);
+            parts.push(filePart);
+            sourceParts.push(filePart);
         }
+
+        // Trigger title generation early using lite model and source material (exclude the tech prompt)
+        generateDeckTitle(sourceParts.slice(1), genAI);
 
     } else if (sourceType === 'txt') {
         if (txtUpload.files.length === 0) {
@@ -229,7 +440,13 @@ O arquivo .json deve ser uma lista (\[\]) contendo vários objetos de questão (
         spinnerTxt.classList.remove('hidden');
         txtLoadingMsg.classList.remove('hidden');
 
-        model = genAI.getGenerativeModel({ model: "gemini-flash-latest", generationConfig });
+        model = genAI.getGenerativeModel({
+            model: "gemini-flash-latest",
+            generationConfig,
+            tools: deckTools,
+            systemInstruction
+        });
+
         currentGenModel = model;
 
         const textContent = await readTextFile(txtUpload.files[0]);
@@ -241,6 +458,10 @@ As questões open e open_double tem o formato:
 2. open_double: {"type": "open_double", "description": "Pergunta?", "answer": "Resposta1", "answer2": "Resposta2", "placeholder1": "Label1", "placeholder2":"Label2"}.
 Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
         parts.push(prompt);
+
+        // Trigger title generation early using lite model and source material (exclude the tech prompt)
+        generateDeckTitle([{text: textContent}], genAI);
+
     }
 
     try {
@@ -265,9 +486,16 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
             const chunkText = chunk.text();
             fullText += chunkText;
 
-            // Simple incremental JSON object extractor for an array of objects
-            // We look for patterns like: {"type": ..., } followed by , or ]
-            // This is a basic approach but usually works for the well-structured JSON Gemini produces.
+            // Preamble stripping: find the first JSON-like start
+            if (processedIndex === 0) {
+                const startIdx = fullText.search(/[\{\[]/);
+                if (startIdx !== -1) {
+                    processedIndex = startIdx;
+                } else {
+                    // Still no JSON found, skip processing this chunk for now
+                    continue;
+                }
+            }
 
             let possibleObjects = fullText.substring(processedIndex);
 
@@ -285,11 +513,6 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
                     if (card.type && card.description && (card.answer || card.answer2 || card.options)) {
                         deckCards.push(card);
                         renderCardsList();
-
-                        // If it's the first few cards, start generating the title
-                        if (deckCards.length === 5) {
-                            generateDeckTitle(deckCards);
-                        }
                     }
                     processedIndex += match.index + objectStr.length;
                     // Reset regex lastIndex because we modified the string we are searching or the index
@@ -301,42 +524,41 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
             }
         }
 
-        // Final attempt to parse in case of any remaining text or slightly different format
+        // Final attempt to parse using a robust regex extractor if stream parsing missed items
         if (deckCards.length === 0) {
             try {
-                // Clean markdown blocks if present
-                let textResult = fullText.replace(/^```json\n/g, '').replace(/^```\n/g, '').replace(/```$/g, '');
-                deckCards = JSON.parse(textResult);
-                renderCardsList();
+                // Find anything between [ and ] or first { and last }
+                const arrayMatch = fullText.match(/\[\s*\{[\s\S]*\}\s*\]/);
+                const textResult = arrayMatch ? arrayMatch[0] : fullText.substring(fullText.search(/[\{\[]/));
+                
+                // Clean markdown blocks
+                const cleaned = textResult.replace(/^```json\n/g, '').replace(/^```\n/g, '').replace(/```$/g, '').trim();
+                deckCards = JSON.parse(cleaned);
+                renderCardsList(true);
             } catch (e) {
                 console.error("Erro ao processar JSON final:", e);
             }
         }
 
-        if (deckCards.length > 0 && deckTitleDisplay.textContent === "Gerando flashcards...") {
-            generateDeckTitle(deckCards);
+        if (deckCards.length > 0 && (deckTitleDisplay.textContent === "Gerando flashcards..." || deckTitleDisplay.textContent === "Gerando título...")) {
+            // Title should already be generating or done
         }
 
         deckContainer.classList.remove('generating-deck-bg');
         deckContainer.classList.add('bg-white', 'dark:bg-gray-800');
         cardsList.classList.remove('bg-transparent');
 
-        // Start chat session with the context
-        geminiChatSession = model.startChat({
-            history: [
-                {
-                    role: "user",
-                    parts: [{ text: "Gere os flashcards no JSON." }],
-                },
-                {
-                    role: "model",
-                    parts: [{ text: JSON.stringify(deckCards) }],
-                }
-            ],
-            generationConfig: {
-                temperature: 0.2,
-                responseMimeType: "application/json"
+        // Start chat session with Agent context and separate generation config (no JSON constraint)
+        const chatGenerationConfig = {
+            temperature: 1.0,
+            thinkingConfig: {
+                thinkingLevel: "low"
             }
+        };
+
+        geminiChatSession = model.startChat({
+            history: [],
+            generationConfig: chatGenerationConfig
         });
 
     } catch (error) {
@@ -368,16 +590,23 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
 generateFilesBtn.addEventListener('click', () => generateFlashcards('files'));
 generateTxtBtn.addEventListener('click', () => generateFlashcards('txt'));
 
-async function generateDeckTitle(cards) {
-    if (!cards || cards.length === 0 || !currentGenModel) return;
+async function generateDeckTitle(sourceParts, genAI) {
+    if (!sourceParts || !genAI) return;
 
     deckTitleDisplay.textContent = "Gerando título...";
 
     try {
-        const sample = cards.slice(0, 5).map(c => c.description).join("\n");
-        const prompt = `Com base nestas questões de flashcards, sugira um título curto e profissional para o baralho (máximo de 4 palavras). Retorne APENAS o título, sem aspas ou pontuação extra.\n\nQuestões:\n${sample}`;
+        // Use Flash Lite for the title - it's fast and efficient for summaries
+        const liteModel = genAI.getGenerativeModel({ model: "gemini-flash-lite-latest" });
 
-        const result = await currentGenModel.generateContent(prompt);
+
+        const titlePrompt = "Com base no material fornecido, sugira um título curto, criativo e profissional para este baralho de flashcards (máximo de 4 palavras). Retorne APENAS o título, sem aspas ou pontuação extra.";
+
+        // Prepare parts for the lite model (exclude the original basePrompt to save context, just focus on content)
+        // Actually, let's just send the whole source material provided.
+        const titleParts = [titlePrompt, ...sourceParts.filter(p => !p.text || !p.text.includes("JSON"))];
+
+        const result = await liteModel.generateContent(titleParts);
         const response = await result.response;
         const title = response.text().trim().replace(/["']/g, '');
 
@@ -560,28 +789,42 @@ chatSendBtn.addEventListener('click', async () => {
     chatSpinner.classList.remove('hidden');
 
     try {
-        // Remind it of the current deck state just in case
-        const prompt = `Aqui está o deck atual:\n${JSON.stringify(deckCards)}\n\nO usuário pede o seguinte ajuste:\n"${text}"\n\nPor favor aplique o ajuste neste array JSON e retorne APENAS o novo array JSON inteiro preservando adequadamente a estrutura requisitada.`;
-        const result = await geminiChatSession.sendMessage(prompt);
-        let textResult = result.response.text();
-        textResult = textResult.replace(/^```json\n/g, '').replace(/^```\n/g, '').replace(/```$/g, '');
+        // Enviar o contexto atualizado dos cards para o modelo não se perder
+        const contextLines = deckCards.map((c, i) => `[${i}] ${c.description.substring(0, 70)}...`).join('\n');
+        const enrichedPrompt = `ATENÇÃO: O estado atual do baralho é este:\n${contextLines}\n\nComando do Usuário: ${text}`;
 
-        try {
-            const newDeck = JSON.parse(textResult);
-            if (Array.isArray(newDeck)) {
-                deckCards = newDeck;
-                renderCardsList(true); // Full re-render after chat adjustment
-                addChatMessage('model', 'Feito! Atualizei os flashcards ao lado com o seu ajuste.');
-            } else {
-                addChatMessage('model', 'O modelo não retornou uma lista válida. Tente novamente.');
-            }
-        } catch (parseEx) {
-            console.error(parseEx);
-            addChatMessage('model', 'Erro ao interpretar a nova lista de flashcards.');
+        // Simple message to the agent
+        let result = await geminiChatSession.sendMessage(enrichedPrompt);
+        let response = result.response;
+
+        // Agent loop (handle tool calls)
+        for (let i = 0; i < 5; i++) {
+            const candidate = response.candidates[0];
+            const calls = candidate.content.parts.filter(p => !!p.functionCall);
+            if (calls.length === 0) break;
+
+            const functionResponses = calls.map(call => {
+                const { name, args } = call.functionCall;
+                const output = toolFunctions[name] ? toolFunctions[name](args) : { error: "Função não encontrada" };
+                return {
+                    functionResponse: {
+                        name,
+                        response: output
+                    }
+                };
+            });
+
+            // Send tool outputs back
+            result = await geminiChatSession.sendMessage(functionResponses);
+            response = result.response;
         }
 
+        const modelText = response.text();
+        addChatMessage('model', modelText || 'Ação realizada.');
+
     } catch (e) {
-        addChatMessage('model', `Houve um erro: ${e.message}`);
+        console.error(e);
+        addChatMessage('model', `Houve um erro no processador: ${e.message}`);
     } finally {
         chatInput.disabled = false;
         chatSendBtn.disabled = false;
