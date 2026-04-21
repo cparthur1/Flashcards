@@ -216,8 +216,11 @@
 
                 <div class="w-full mb-6 text-gray-700 dark:text-gray-300 font-medium z-30">
                     <p>O arquivo deve estar escrito como:</p>
-                    <p class="mt-1">RESPOSTA: Pergunta;</p>
-                    <p class="mt-1">Cada linha (separada por "enter" será um flashcard)</p>
+                    <p class="mt-1">RESPOSTA: Pergunta</p>
+                    <p class="mt-1">Cada linha separada por "enter", será um flashcard</p>
+                    <p class="mt-1">Tag (open_double) no começo e separe as alternativas com ;</p>
+                    <p class="mt-1">Tag (multiple_choice) no começo e cite a resposta correta, o Gemini vai gerar os
+                        distratores</p>
                 </div>
 
                 <div class="relative w-full z-30 mt-auto">
@@ -286,7 +289,8 @@
                     <button id="add-card-btn" title="Adicionar flashcard manualmente"
                         class="p-1 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition flex items-center justify-center w-6 h-6">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
+                            </path>
                         </svg>
                     </button>
                 </h3>

@@ -339,6 +339,64 @@ async function readTextFile(file) {
     });
 }
 
+function parseTxtToJSON(text) {
+    const lines = text.split('\n').filter(line => line.trim().length > 0);
+    const cards = [];
+
+    for (let line of lines) {
+        line = line.trim();
+        let card = null;
+
+        if (line.startsWith('(open_double)')) {
+            // (open_double) Resposta1;Resposta2:Pergunta?
+            const content = line.replace('(open_double)', '').trim();
+            const colonIndex = content.indexOf(':');
+            if (colonIndex !== -1) {
+                const answersPart = content.substring(0, colonIndex).trim();
+                const description = content.substring(colonIndex + 1).trim();
+                const [ans1, ans2] = answersPart.split(';');
+                card = {
+                    type: "open_double",
+                    description: description,
+                    answer: ans1 ? ans1.trim() : "",
+                    answer2: ans2 ? ans2.trim() : "",
+                    placeholder1: "[GEMINI]",
+                    placeholder2: "[GEMINI]"
+                };
+            }
+        } else if (line.startsWith('(multiple_choice)')) {
+            // (multiple_choice) Resposta:Pergunta
+            const content = line.replace('(multiple_choice)', '').trim();
+            const colonIndex = content.indexOf(':');
+            if (colonIndex !== -1) {
+                const answer = content.substring(0, colonIndex).trim();
+                const description = content.substring(colonIndex + 1).trim();
+                card = {
+                    type: "multiple_choice",
+                    description: description,
+                    answer: answer,
+                    options: ["[GEMINI]", "[GEMINI]", answer, "[GEMINI]"]
+                };
+            }
+        } else {
+            // Resposta:Pergunta?
+            const colonIndex = line.indexOf(':');
+            if (colonIndex !== -1) {
+                const answer = line.substring(0, colonIndex).trim();
+                const description = line.substring(colonIndex + 1).trim();
+                card = {
+                    type: "open",
+                    description: description,
+                    answer: answer
+                };
+            }
+        }
+
+        if (card) cards.push(card);
+    }
+    return cards;
+}
+
 // Generate Flashcards logic
 async function generateFlashcards(sourceType) {
     globalError.textContent = '';
@@ -385,8 +443,7 @@ async function generateFlashcards(sourceType) {
 
         currentGenModel = model;
 
-        const basePrompt = `Com base nos arquivos enviados, gere uma lista extensa de flashcards médicos detalhados.
-Sua resposta deve ser ESTRITAMENTE e APENAS o array JSON. 
+        const basePrompt = `Com base nos arquivos enviados, o objetivo é processar todo o conteúdo e gerar flashcards de termos técnicos para revisão, incluindo nomes de moléculas, estruturas, etapas de processos e quaisquer conceitos com nomes específicos. Gere um arquivo .json baseado em todo o conteúdo que juntou. O nível de detalhe deve ser apropriado para um estudante universitário. Busque sempre fazer a pergunta como uma descrição e a(s) resposta(s) com o menor numero de palavras possíveis, preferencialmente o nome de um termo, conceito, molécula... Ao final revise se os flashcards criados realmente abordam por extenso tudo que foi enviado. 
 PROIBIDO incluir títulos, explicações, preâmbulos ou qualquer texto fora do JSON.
 O JSON deve ser uma lista ([]) contendo vários objetos de questão ({ }).
 
@@ -440,28 +497,107 @@ Gere aproximadamente 100 flashcards.`;
         spinnerTxt.classList.remove('hidden');
         txtLoadingMsg.classList.remove('hidden');
 
+        const textContent = await readTextFile(txtUpload.files[0]);
+        const localCards = parseTxtToJSON(textContent);
+
+        // Trigger title generation early
+        generateDeckTitle([{ text: textContent }], genAI);
+
+        // Transition to editor view
+        dashboardView.classList.add('hidden');
+        editorView.classList.remove('hidden');
+        editorView.classList.add('flex');
+
+        deckContainer.classList.add('generating-deck-bg');
+        deckCards = [];
+        renderCardsList();
+
+        const hasGeminiTag = JSON.stringify(localCards).includes("[GEMINI]");
+
+        if (!hasGeminiTag) {
+            deckCards = localCards;
+            renderCardsList(true);
+            deckContainer.classList.remove('generating-deck-bg');
+            deckContainer.classList.add('bg-white', 'dark:bg-gray-800');
+            generateTxtBtn.disabled = false;
+            spinnerTxt.classList.add('hidden');
+            txtLoadingMsg.classList.add('hidden');
+
+            // Initialize chat
+            const model = genAI.getGenerativeModel({ model: "gemini-flash-latest", systemInstruction, tools: deckTools });
+            currentGenModel = model;
+            geminiChatSession = model.startChat({ history: [] });
+            return;
+        }
+
+        // Fill placeholders with Gemini
+        txtLoadingMsg.textContent = "🤖 Gemini preenchendo lacunas...";
+        deckTitleDisplay.textContent = "Completando informações com IA...";
+
         model = genAI.getGenerativeModel({
             model: "gemini-flash-latest",
-            generationConfig,
+            generationConfig: { ...generationConfig, responseMimeType: "text/plain" }, // Tools often work better with text/plain
             tools: deckTools,
-            systemInstruction
+            systemInstruction: systemInstruction + "\nSua tarefa agora é preencher os placeholders '[GEMINI]' em um JSON de flashcards e entregá-los usando a ferramenta 'adicionar_varios_cards'."
         });
 
         currentGenModel = model;
 
-        const textContent = await readTextFile(txtUpload.files[0]);
-        const linesCount = textContent.split('\n').filter(line => line.trim().length > 0).length;
+        const fillPrompt = `Aqui está uma lista de flashcards convertidos localmente, mas que precisam que você preencha os campos '[GEMINI]'. 
+Para 'open_double', preencha 'placeholder1' e 'placeholder2' com labels curtas e apropriadas para as respostas dadas (ex: se as respostas são datas, use 'Data 1' e 'Data 2', ou labels mais descritivas como 'Início' e 'Fim').
+Para 'multiple_choice', complete o array 'options' com 3 alternativas incorretas porém plausíveis, mantendo a resposta correta que já está lá.
+Após completar o processamento, use a ferramenta 'adicionar_varios_cards' para enviar o resultado final.
 
-        const prompt = `Esse documento está formatado no estilo: "ANSWER: Question" e tem ${linesCount} linhas, cada linha tem que ser um flashcard estilo open. A sua função é apenas adequar esse arquivo .txt no formato necessário .json baseado no estilo de formatação do exemplo, sem alterar NADA do conteúdo textual, transcreva literalmente como está no documento. Então no final deve ter ${linesCount} flashcards. 
-As questões open e open_double tem o formato: 
-1. open: {"type": "open", "description": "Pergunta?", "answer": "Resposta"} 
-2. open_double: {"type": "open_double", "description": "Pergunta?", "answer": "Resposta1", "answer2": "Resposta2", "placeholder1": "Label1", "placeholder2":"Label2"}.
-Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
-        parts.push(prompt);
+JSON:
+${JSON.stringify(localCards, null, 2)}`;
 
-        // Trigger title generation early using lite model and source material (exclude the tech prompt)
-        generateDeckTitle([{text: textContent}], genAI);
+        try {
+            let result = await model.generateContent(fillPrompt);
+            let response = result.response;
 
+            // Agentic loop to handle the tool call
+            for (let i = 0; i < 3; i++) {
+                const candidate = response.candidates[0];
+                const calls = candidate.content.parts.filter(p => !!p.functionCall);
+                if (calls.length === 0) break;
+
+                const functionResponses = await Promise.all(calls.map(async (call) => {
+                    const { name, args } = call.functionCall;
+                    const output = toolFunctions[name] ? toolFunctions[name](args) : { error: "Função não encontrada" };
+                    return {
+                        functionResponse: {
+                            name,
+                            response: output
+                        }
+                    };
+                }));
+
+                result = await model.generateContent([
+                    ...candidate.content.parts,
+                    ...functionResponses
+                ]);
+                response = result.response;
+            }
+
+            // After completion, finalize UI
+            deckContainer.classList.remove('generating-deck-bg');
+            deckContainer.classList.add('bg-white', 'dark:bg-gray-800');
+
+            // Initialize chat for subsequent edits
+            geminiChatSession = model.startChat({ history: [] });
+
+        } catch (e) {
+            console.error("Erro no preenchimento Gemini:", e);
+            globalError.textContent = "Erro ao preencher lacunas com Gemini: " + e.message;
+            // Fallback: show local cards even if incomplete
+            deckCards = localCards;
+            renderCardsList(true);
+        } finally {
+            generateTxtBtn.disabled = false;
+            spinnerTxt.classList.add('hidden');
+            txtLoadingMsg.classList.add('hidden');
+        }
+        return; // Exit generateFlashcards as we handled the TXT case fully
     }
 
     try {
@@ -530,7 +666,7 @@ Retorne estritamente o array JSON.\n\nConteúdo:\n${textContent}`;
                 // Find anything between [ and ] or first { and last }
                 const arrayMatch = fullText.match(/\[\s*\{[\s\S]*\}\s*\]/);
                 const textResult = arrayMatch ? arrayMatch[0] : fullText.substring(fullText.search(/[\{\[]/));
-                
+
                 // Clean markdown blocks
                 const cleaned = textResult.replace(/^```json\n/g, '').replace(/^```\n/g, '').replace(/```$/g, '').trim();
                 deckCards = JSON.parse(cleaned);
