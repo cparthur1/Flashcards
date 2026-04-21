@@ -445,7 +445,7 @@ function loadQuestion() {
         actionButtonsArea.classList.remove('hidden');
         answerInput.focus();
     }
-    
+
     // Resetar chat para nova questão
     chatMessages.innerHTML = '<div class="chat-message-ai">Olá! Como posso ajudar você a entender melhor esta questão?</div>';
     currentChatSession = null;
@@ -699,16 +699,16 @@ async function sendChatMessage() {
                 Mantenha o contexto desta questão durante toda a conversa.
             `;
 
-            const model = genAI.getGenerativeModel({ 
-                model: "gemini-1.5-flash",
-                systemInstruction: systemPrompt 
+            const model = genAI.getGenerativeModel({
+                model: "gemini-flash-latest",
+                systemInstruction: systemPrompt
             });
             currentChatSession = model.startChat();
         }
 
         const result = await currentChatSession.sendMessage(message);
         const response = await result.response;
-        
+
         hideTypingIndicator(typingId);
         addMessageToChat('ai', response.text());
     } catch (e) {
@@ -723,13 +723,13 @@ async function sendChatMessage() {
 function addMessageToChat(sender, text) {
     const div = document.createElement('div');
     div.className = sender === 'ai' ? 'chat-message-ai' : 'chat-message-user';
-    
+
     if (sender === 'ai' && window.marked) {
         div.innerHTML = marked.parse(text);
     } else {
         div.textContent = text;
     }
-    
+
     chatMessages.appendChild(div);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
