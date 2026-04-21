@@ -552,7 +552,8 @@ JSON:
 ${JSON.stringify(localCards, null, 2)}`;
 
         try {
-            let result = await model.generateContent(fillPrompt);
+            const chat = model.startChat({ history: [] });
+            let result = await chat.sendMessage(fillPrompt);
             let response = result.response;
 
             // Agentic loop to handle the tool call
@@ -572,10 +573,7 @@ ${JSON.stringify(localCards, null, 2)}`;
                     };
                 }));
 
-                result = await model.generateContent([
-                    ...candidate.content.parts,
-                    ...functionResponses
-                ]);
+                result = await chat.sendMessage(functionResponses);
                 response = result.response;
             }
 
@@ -732,8 +730,8 @@ async function generateDeckTitle(sourceParts, genAI) {
     deckTitleDisplay.textContent = "Gerando título...";
 
     try {
-        // Use Flash Lite for the title - it's fast and efficient for summaries
-        const liteModel = genAI.getGenerativeModel({ model: "gemini-flash-lite-latest" });
+        // Use Flash for the title - it's fast and efficient for summaries
+        const liteModel = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
 
         const titlePrompt = "Com base no material fornecido, sugira um título curto, criativo e profissional para este baralho de flashcards (máximo de 4 palavras). Retorne APENAS o título, sem aspas ou pontuação extra.";
