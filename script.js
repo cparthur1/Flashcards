@@ -94,6 +94,7 @@ let isAiEnabled = false;
 let geminiApiKey = localStorage.getItem('gemini_api_key_checker') || '';
 let genAI = null;
 let lastUserAnswerForChat = "";
+let currentChatSession = null;
 
 // --- LÓGICA DE UPLOAD ---
 fileInput.addEventListener('change', () => {
@@ -444,6 +445,10 @@ function loadQuestion() {
         actionButtonsArea.classList.remove('hidden');
         answerInput.focus();
     }
+    
+    // Resetar chat para nova questão
+    chatMessages.innerHTML = '<div class="chat-message-ai">Olá! Como posso ajudar você a entender melhor esta questão?</div>';
+    currentChatSession = null;
 }
 
 function resetUI() {
@@ -673,41 +678,82 @@ async function sendChatMessage() {
     addMessageToChat('user', message);
     chatInput.value = '';
 
+    // Mostrar animação de digitando
+    const typingId = showTypingIndicator();
+
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+        // Se for o início de uma nova conversa para esta questão, inicializamos o modelo com o contexto
+        if (!currentChatSession) {
+            const correctAnswers = [currentQuestion.answer];
+            if (currentQuestion.answer2) correctAnswers.push(currentQuestion.answer2);
 
-        const correctAnswers = [currentQuestion.answer];
-        if (currentQuestion.answer2) correctAnswers.push(currentQuestion.answer2);
+            const systemPrompt = `
+                Você é um professor tutor ajudando um estudante com um flashcard.
+                
+                CONTEXTO DA QUESTÃO:
+                Pergunta: "${currentQuestion.description}"
+                Resposta(s) Correta(s) no Banco: "${correctAnswers.join(' / ')}"
+                Resposta que o Usuário deu inicialmente: "${lastUserAnswerForChat}"
+                
+                Responda de forma didática, objetiva e curta. Se o usuário errou, explique o porquê de forma simples. Use markdown se necessário para listas ou ênfase.
+                Mantenha o contexto desta questão durante toda a conversa.
+            `;
 
-        const prompt = `
-            Você é um professor tutor ajudando um estudante com um flashcard.
-            
-            CONTEXTO DA QUESTÃO:
-            Pergunta: "${currentQuestion.description}"
-            Resposta(s) Correta(s) no Banco: "${correctAnswers.join(' / ')}"
-            Resposta que o Usuário deu: "${lastUserAnswerForChat}"
-            
-            DÚVIDA DO ESTUDANTE:
-            "${message}"
-            
-            Responda de forma clara, didática e encorajadora. Se o usuário errou, explique o porquê de forma simples.
-        `;
+            const model = genAI.getGenerativeModel({ 
+                model: "gemini-1.5-flash",
+                systemInstruction: systemPrompt 
+            });
+            currentChatSession = model.startChat();
+        }
 
-        const result = await model.generateContent(prompt);
+        const result = await currentChatSession.sendMessage(message);
         const response = await result.response;
+        
+        hideTypingIndicator(typingId);
         addMessageToChat('ai', response.text());
     } catch (e) {
         console.error("Erro no chat de IA:", e);
+        hideTypingIndicator(typingId);
         addMessageToChat('ai', "Desculpe, tive um erro ao processar sua pergunta. Verifique sua conexão ou chave de API.");
+        // Resetar sessão em caso de erro crítico para permitir tentar novamente
+        currentChatSession = null;
     }
 }
 
 function addMessageToChat(sender, text) {
     const div = document.createElement('div');
     div.className = sender === 'ai' ? 'chat-message-ai' : 'chat-message-user';
-    div.textContent = text;
+    
+    if (sender === 'ai' && window.marked) {
+        div.innerHTML = marked.parse(text);
+    } else {
+        div.textContent = text;
+    }
+    
     chatMessages.appendChild(div);
     chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function showTypingIndicator() {
+    const id = 'typing-' + Date.now();
+    const div = document.createElement('div');
+    div.id = id;
+    div.className = 'typing-indicator';
+    div.innerHTML = `
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+    `;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return id;
+}
+
+function hideTypingIndicator(id) {
+    const indicator = document.getElementById(id);
+    if (indicator) {
+        indicator.remove();
+    }
 }
 
 function showFeedback(isCorrect, element) {
