@@ -152,6 +152,9 @@
             <button id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Verificar Resposta</button>
             
             <div id="correction-options" class="hidden flex-col gap-3 mt-4">
+                <button id="ask-ai-btn" class="hidden w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition transform hover:scale-105">
+                    Perguntar ✨
+                </button>
                 <div class="flex gap-2 justify-center">
                     <button id="edit-btn" class="flex-1 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-200 font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition border border-blue-200 dark:border-blue-700">
                         ✏️ Editar
@@ -340,6 +343,86 @@
             </div>
         </div>
     </div>
+
+    <!-- AI Chat Container -->
+    <div id="ai-chat-container" class="fixed bottom-0 right-0 w-full md:w-96 md:h-2/3 bg-white dark:bg-gray-800 shadow-2xl rounded-t-xl md:rounded-l-xl md:rounded-tr-none z-50 flex flex-col transition-all duration-300 transform translate-y-full md:translate-y-0 md:translate-x-full">
+        <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center bg-purple-600 text-white rounded-t-xl md:rounded-tl-xl md:rounded-tr-none">
+            <h3 class="font-bold flex items-center gap-2">Explicação da IA ✨</h3>
+            <button id="close-chat-btn" class="text-white hover:text-gray-200 text-xl font-bold">✕</button>
+        </div>
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar flex flex-col">
+            <div class="chat-message-ai">
+                Olá! Como posso ajudar você a entender melhor esta questão?
+            </div>
+        </div>
+        <div class="p-4 border-t dark:border-gray-700 flex gap-2">
+            <input type="text" id="chat-input" placeholder="Escreva sua dúvida..." class="flex-1 p-2 border dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <button id="send-chat-btn" class="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; }
+        
+        #ai-chat-container {
+            right: 0;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Mobile: Bottom-up */
+        @media (max-width: 767px) {
+            #ai-chat-container {
+                transform: translateY(100%);
+                height: 70vh;
+            }
+            #ai-chat-container.open {
+                transform: translateY(0);
+            }
+        }
+
+        /* Desktop: Side-in */
+        @media (min-width: 768px) {
+            #ai-chat-container {
+                transform: translateX(100%);
+                height: 70vh;
+                top: 15vh;
+            }
+            #ai-chat-container.open {
+                transform: translateX(0);
+            }
+        }
+
+        .chat-message-ai {
+            background: #f3f4f6;
+            color: #1f2937;
+            padding: 0.75rem;
+            border-radius: 0.75rem 0.75rem 0.75rem 0;
+            max-width: 85%;
+            align-self: flex-start;
+            font-size: 0.875rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .dark .chat-message-ai { background: #374151; color: #f3f4f6; }
+
+        .chat-message-user {
+            background: #7c3aed;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 0.75rem 0.75rem 0 0.75rem;
+            max-width: 85%;
+            align-self: flex-end;
+            font-size: 0.875rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+    </style>
 
     <!-- Script carregado externamente -->
     <script src="script.js" type="module" defer></script>

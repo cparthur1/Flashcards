@@ -69,6 +69,14 @@ const aiInstructionsModal = document.getElementById('ai-instructions-modal');
 const closeAiInstructions = document.getElementById('close-ai-instructions');
 const aiInstructionsReady = document.getElementById('ai-instructions-ready');
 
+// Elementos do Chat de IA
+const askAiBtn = document.getElementById('ask-ai-btn');
+const aiChatContainer = document.getElementById('ai-chat-container');
+const closeChatBtn = document.getElementById('close-chat-btn');
+const chatMessages = document.getElementById('chat-messages');
+const chatInput = document.getElementById('chat-input');
+const sendChatBtn = document.getElementById('send-chat-btn');
+
 const canvas = document.getElementById('background-canvas');
 const ctx = canvas.getContext('2d');
 
@@ -85,6 +93,7 @@ let currentFile = null;
 let isAiEnabled = false;
 let geminiApiKey = localStorage.getItem('gemini_api_key_checker') || '';
 let genAI = null;
+let lastUserAnswerForChat = "";
 
 // --- LÓGICA DE UPLOAD ---
 fileInput.addEventListener('change', () => {
@@ -172,6 +181,29 @@ if (openAiInstructions) openAiInstructions.addEventListener('click', () => aiIns
 if (closeAiInstructions) closeAiInstructions.addEventListener('click', () => aiInstructionsModal.classList.add('hidden'));
 if (aiInstructionsReady) aiInstructionsReady.addEventListener('click', () => aiInstructionsModal.classList.add('hidden'));
 
+// --- EVENT LISTENERS DE CHAT DE IA ---
+if (askAiBtn) {
+    askAiBtn.addEventListener('click', () => {
+        openAiChat();
+    });
+}
+
+if (closeChatBtn) {
+    closeChatBtn.addEventListener('click', () => {
+        aiChatContainer.classList.remove('open');
+    });
+}
+
+if (sendChatBtn) {
+    sendChatBtn.addEventListener('click', sendChatMessage);
+}
+
+if (chatInput) {
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendChatMessage();
+    });
+}
+
 // --- LÓGICA DA ANIMAÇÃO (CANVAS) ---
 function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -193,7 +225,7 @@ function animate() {
     for (let i = 0; i < balls.length; i++) {
         const ball = balls[i];
         if (!ball.isStatic) {
-            ball.dy += 0.2; 
+            ball.dy += 0.2;
             ball.y += ball.dy;
             if (ball.y + ball.radius >= canvas.height) {
                 ball.y = canvas.height - ball.radius;
@@ -220,7 +252,7 @@ function animate() {
                     ball.y += Math.sin(angle) * overlap;
                     const rollForce = dx * 0.08;
                     ball.x += rollForce;
-                    break; 
+                    break;
                 }
             }
             if (isTouchingStatic) {
@@ -288,7 +320,7 @@ function exportUpdatedJson() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${deckTitle.textContent}_editado.json`; 
+    a.download = `${deckTitle.textContent}_editado.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -297,14 +329,14 @@ function exportUpdatedJson() {
 
 function deleteCurrentCard() {
     if (!confirm("Tem certeza que deseja excluir este card permanentemente do baralho?")) return;
-    const indexInAll = allQuestions.findIndex(q => 
-        q.description === currentQuestion.description && 
+    const indexInAll = allQuestions.findIndex(q =>
+        q.description === currentQuestion.description &&
         q.answer === currentQuestion.answer
     );
     if (indexInAll > -1) allQuestions.splice(indexInAll, 1);
     if (currentQuestionIndexInPool > -1) questionsPool.splice(currentQuestionIndexInPool, 1);
     questionsLeftDisplay.textContent = questionsPool.length;
-    saveGameState(); 
+    saveGameState();
     loadQuestion();
 }
 
@@ -361,7 +393,7 @@ function updateFeedbackText() {
 function startGame() {
     score = 0;
     scoreDisplay.textContent = '0';
-    questionsPool = [...allQuestions]; 
+    questionsPool = [...allQuestions];
     loadQuestion();
 }
 
@@ -370,12 +402,12 @@ function loadQuestion() {
         questionText.textContent = "Parabéns! Você concluiu todas as questões. O ciclo será reiniciado...";
         deleteCardBtn.classList.add('hidden');
         setTimeout(() => {
-            balls = []; 
+            balls = [];
             startGame();
         }, 3000);
         return;
     }
-    
+
     resetUI();
     questionsLeftDisplay.textContent = questionsPool.length;
     currentQuestionIndexInPool = Math.floor(Math.random() * questionsPool.length);
@@ -407,7 +439,7 @@ function loadQuestion() {
         answerInput1.placeholder = currentQuestion.placeholder1 || 'Resposta 1';
         answerInput2.placeholder = currentQuestion.placeholder2 || 'Resposta 2';
         answerInput1.focus();
-    } else { 
+    } else {
         openAnswerArea.classList.remove('hidden');
         actionButtonsArea.classList.remove('hidden');
         answerInput.focus();
@@ -426,7 +458,7 @@ function resetUI() {
     answerInput2.placeholder = 'Resposta 2';
 
     if (currentQuestion) delete currentQuestion.isBeingCorrected;
-    
+
     submitBtn.disabled = false;
     submitBtn.classList.remove('hidden');
     nextQuestionBtn.classList.add('hidden');
@@ -435,8 +467,8 @@ function resetUI() {
 
     questionCard.classList.remove('glow-correct', 'glow-incorrect');
     questionText.classList.remove('text-red-500', 'text-green-500');
-    questionText.textContent = currentQuestion.description || ''; 
-    
+    questionText.textContent = currentQuestion.description || '';
+
     mcOptionBtns.forEach(btn => {
         btn.disabled = false;
         btn.classList.remove('bg-green-500', 'bg-red-500', 'text-white', 'hover:bg-green-500', 'hover:bg-red-500');
@@ -466,7 +498,7 @@ function handleOpenSingleSubmit() {
         if (isNowCorrect) {
             loadQuestion();
         } else {
-            answerInput.value = ''; 
+            answerInput.value = '';
             answerInput.classList.add('animate-pulse', 'border-red-500');
             setTimeout(() => answerInput.classList.remove('animate-pulse', 'border-red-500'), 1000);
         }
@@ -489,16 +521,16 @@ function handleOpenDoubleSubmit() {
     const correctAnswers1 = currentQuestion.answer.split('/');
     const correctAnswers2 = currentQuestion.answer2.split('/');
     if (currentQuestion.isBeingCorrected) {
-        const isNowCorrect1 = correctAnswers1.some(correctAnswer => 
+        const isNowCorrect1 = correctAnswers1.some(correctAnswer =>
             calculateSimilarity(userAnswer1, normalizeString(correctAnswer)) >= 0.9
         );
-        const isNowCorrect2 = correctAnswers2.some(correctAnswer => 
+        const isNowCorrect2 = correctAnswers2.some(correctAnswer =>
             calculateSimilarity(userAnswer2, normalizeString(correctAnswer)) >= 0.9
         );
         if (isNowCorrect1 && isNowCorrect2) {
             loadQuestion();
         } else {
-            answerInput1.value = ''; 
+            answerInput1.value = '';
             answerInput2.value = '';
             answerInput1.classList.add('animate-pulse', 'border-red-500');
             answerInput2.classList.add('animate-pulse', 'border-red-500');
@@ -512,10 +544,10 @@ function handleOpenDoubleSubmit() {
     answerInput1.disabled = true;
     answerInput2.disabled = true;
     submitBtn.disabled = true;
-    const isCorrect1 = correctAnswers1.some(correctAnswer => 
+    const isCorrect1 = correctAnswers1.some(correctAnswer =>
         calculateSimilarity(userAnswer1, normalizeString(correctAnswer)) >= 0.8
     );
-    const isCorrect2 = correctAnswers2.some(correctAnswer => 
+    const isCorrect2 = correctAnswers2.some(correctAnswer =>
         calculateSimilarity(userAnswer2, normalizeString(correctAnswer)) >= 0.8
     );
     showFeedback(isCorrect1 && isCorrect2, null);
@@ -540,7 +572,7 @@ async function checkAnswerWithAi(question, correctAnswers, userAnswer, ballIndex
     if (!isAiEnabled || !genAI) return;
 
     try {
-        const model = genAI.getGenerativeModel({ 
+        const model = genAI.getGenerativeModel({
             model: "gemini-flash-lite-latest",
             tools: [{
                 functionDeclarations: [{
@@ -607,7 +639,7 @@ function applyAiCorrection(ballIndex) {
     // Por simplicidade, vamos marcar que essa questão específica foi resolvida.
     // No entanto, showFeedback já remove do pool se isCorrect for true.
     // Se foi AI, precisamos remover agora.
-    
+
     // Se a questão que a IA corrigiu ainda for a questão atual que está sendo exibida como "erro":
     if (currentQuestion.isBeingCorrected) {
         questionsPool.splice(currentQuestionIndexInPool, 1);
@@ -628,18 +660,72 @@ function applyAiCorrection(ballIndex) {
     }
 }
 
+function openAiChat() {
+    aiChatContainer.classList.add('open');
+    chatInput.focus();
+}
+
+async function sendChatMessage() {
+    const message = chatInput.value.trim();
+    if (!message || !isAiEnabled || !genAI) return;
+
+    // Adicionar mensagem do usuário na tela
+    addMessageToChat('user', message);
+    chatInput.value = '';
+
+    try {
+        const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+
+        const correctAnswers = [currentQuestion.answer];
+        if (currentQuestion.answer2) correctAnswers.push(currentQuestion.answer2);
+
+        const prompt = `
+            Você é um professor tutor ajudando um estudante com um flashcard.
+            
+            CONTEXTO DA QUESTÃO:
+            Pergunta: "${currentQuestion.description}"
+            Resposta(s) Correta(s) no Banco: "${correctAnswers.join(' / ')}"
+            Resposta que o Usuário deu: "${lastUserAnswerForChat}"
+            
+            DÚVIDA DO ESTUDANTE:
+            "${message}"
+            
+            Responda de forma clara, didática e encorajadora. Se o usuário errou, explique o porquê de forma simples.
+        `;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        addMessageToChat('ai', response.text());
+    } catch (e) {
+        console.error("Erro no chat de IA:", e);
+        addMessageToChat('ai', "Desculpe, tive um erro ao processar sua pergunta. Verifique sua conexão ou chave de API.");
+    }
+}
+
+function addMessageToChat(sender, text) {
+    const div = document.createElement('div');
+    div.className = sender === 'ai' ? 'chat-message-ai' : 'chat-message-user';
+    div.textContent = text;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
 function showFeedback(isCorrect, element) {
+    // Capturar a resposta do usuário para o contexto do chat de IA
+    let userAnswer = "";
+    if (currentQuestion.type === 'open_double') {
+        userAnswer = `${answerInput1.value} ; ${answerInput2.value}`;
+    } else if (currentQuestion.type === 'open') {
+        userAnswer = answerInput.value;
+    } else if (element) {
+        userAnswer = element.textContent;
+    }
+    lastUserAnswerForChat = userAnswer;
+
     const ballIndex = createBall(isCorrect);
-    
+
     // Background AI Check if wrong
     if (!isCorrect && isAiEnabled) {
-        let userAnswer = "";
-        if (currentQuestion.type === 'open_double') {
-            userAnswer = `${answerInput1.value} ; ${answerInput2.value}`;
-        } else if (currentQuestion.type === 'open') {
-            userAnswer = answerInput.value;
-        }
-        
         if (userAnswer) {
             const correctAnswers = [currentQuestion.answer];
             if (currentQuestion.answer2) correctAnswers.push(currentQuestion.answer2);
@@ -648,7 +734,16 @@ function showFeedback(isCorrect, element) {
     }
 
     questionCard.classList.add(isCorrect ? 'glow-correct' : 'glow-incorrect');
-    if (element) { 
+
+    if (!isCorrect && isAiEnabled) {
+        askAiBtn.style.display = 'flex';
+        askAiBtn.classList.remove('hidden');
+    } else {
+        askAiBtn.style.display = 'none';
+        askAiBtn.classList.add('hidden');
+    }
+
+    if (element) {
         mcOptionBtns.forEach(btn => btn.disabled = true);
         element.classList.remove('bg-gray-200', 'dark:bg-gray-600', 'hover:bg-blue-200', 'dark:hover:bg-blue-800');
         if (isCorrect) {
@@ -662,10 +757,10 @@ function showFeedback(isCorrect, element) {
                 }
             });
         }
-    } else { 
+    } else {
         if (!isCorrect) {
             currentQuestion.isBeingCorrected = true;
-            updateFeedbackText(); 
+            updateFeedbackText();
             if (currentQuestion.type === 'open_double') {
                 answerInput1.value = ''; answerInput2.value = '';
                 answerInput1.placeholder = 'Digite a Resposta 1 correta ou pule ⚡';
@@ -678,7 +773,7 @@ function showFeedback(isCorrect, element) {
                 answerInput.disabled = false;
                 answerInput.focus();
             }
-            submitBtn.classList.add('hidden'); 
+            submitBtn.classList.add('hidden');
             submitBtn.disabled = false;
             nextQuestionBtn.classList.remove('hidden');
             correctionOptions.classList.remove('hidden');
@@ -689,8 +784,8 @@ function showFeedback(isCorrect, element) {
         score++;
         scoreDisplay.textContent = score;
         questionsPool.splice(currentQuestionIndexInPool, 1);
-        saveGameState(); 
-        setTimeout(loadQuestion, 2500); 
+        saveGameState();
+        setTimeout(loadQuestion, 2500);
     } else if (currentQuestion.type === 'multiple_choice') {
         setTimeout(loadQuestion, 3500);
     }
@@ -714,7 +809,7 @@ function resetToUploadScreen() {
     currentQuestionIndexInPool = -1;
     scoreDisplay.textContent = '0';
     questionsLeftDisplay.textContent = '0';
-    fileInput.value = null; 
+    fileInput.value = null;
     currentFile = null;
     startBtn.disabled = true;
     startBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
