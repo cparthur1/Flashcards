@@ -595,7 +595,7 @@ async function checkAnswerWithAi(question, correctAnswers, userAnswer, ballIndex
         });
 
         const prompt = `
-            Você é um revisor de flashcards especializado em medicina e anatomia. 
+            Você é um revisor de flashcards. 
             O usuário deu uma resposta que o sistema automático marcou como incorreta, mas você deve avaliar se ela é semanticamente válida ou uma variação aceitável (como abreviações, sinônimos ou partes fundamentais da resposta).
 
             Pergunta: "${question}"
@@ -603,7 +603,7 @@ async function checkAnswerWithAi(question, correctAnswers, userAnswer, ballIndex
             Resposta Digitada pelo Usuário: "${userAnswer}"
 
             DIRETRIZES DE AVALIAÇÃO:
-            1. Se o usuário digitou uma parte fundamental da resposta que é suficiente para demonstrar conhecimento (ex: "Braquial" para "Músculo braquial"), considere CORRETO.
+            1. Se o usuário digitou uma parte fundamental da resposta que é suficiente para demonstrar conhecimento (ex: "Braquial" para "Músculo braquial"), considere CORRETO, seja rígido nesse critério.
             2. Se o usuário usou um sinônimo exato ou termo tecnicamente equivalente, considere CORRETO.
             3. Se a resposta for apenas uma descrição vaga ou estiver errada, não faça nada.
 
