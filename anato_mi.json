@@ -1,0 +1,819 @@
+[
+    {
+        "type": "open",
+        "description": "limite superior da região glútea",
+        "answer": "crista ilíaca"
+    },
+    {
+        "type": "open",
+        "description": "limite medial da região glútea",
+        "answer": "fenda interglútea"
+    },
+    {
+        "type": "open",
+        "description": "limite inferior da região glútea",
+        "answer": "prega cutânea/sulco interglúteo"
+    },
+    {
+        "type": "open",
+        "description": "limite anterior da região femoral",
+        "answer": "ligamento inguinal"
+    },
+    {
+        "type": "open",
+        "description": "limite medial da região femoral",
+        "answer": "ramo isquiopúbico"
+    },
+    {
+        "type": "open",
+        "description": "limite posterior da região femoral",
+        "answer": "prega cutânea/sulco interglúteo"
+    },
+    {
+        "type": "open_double",
+        "description": "componentes do Joelho",
+        "answer": "côndilos do fêmur/parte proximal da tíbia",
+        "answer2": "cabeça da fíbula/patela",
+        "placeholder1": "[GEMINI]",
+        "placeholder2": "[GEMINI]"
+    },
+    {
+        "type": "open",
+        "description": "Região genicular posterior",
+        "answer": "fossa poplítea"
+    },
+    {
+        "type": "open",
+        "description": "componentes da Região talocrural",
+        "answer": "maléolo medial da tíbia/maléolo lateral da fíbula"
+    },
+    {
+        "type": "open",
+        "description": "componentes da região do pé",
+        "answer": "tarso, metatarso e falanges"
+    },
+    {
+        "type": "open",
+        "description": "dedos do pé",
+        "answer": "Artelhos"
+    },
+    {
+        "type": "open",
+        "description": "contém gordura, nervos cutâneos, vasos superficiais, vasos linfáticos e linfonodos",
+        "answer": "Tecido subcutâneo"
+    },
+    {
+        "type": "open",
+        "description": "limite expansão externa dos músculos ao contraírem, delimita compartimentos, garante eficiência na compressão venosa",
+        "answer": "Fáscia muscular"
+    },
+    {
+        "type": "open_double",
+        "description": "local de fixação anterior da fáscia lata",
+        "answer": "púbis",
+        "answer2": "ligamento inguinal",
+        "placeholder1": "[GEMINI]",
+        "placeholder2": "[GEMINI]"
+    },
+    {
+        "type": "open",
+        "description": "local de fixação lateral e posterior da fáscia lata",
+        "answer": "crista iliaca"
+    },
+    {
+        "type": "open_double",
+        "description": "local de fixação medial e posterior da fáscia lata",
+        "answer": "ligamento sacrotuberal",
+        "answer2": "túber isquiático/sacro",
+        "placeholder1": "[GEMINI]",
+        "placeholder2": "[GEMINI]"
+    },
+    {
+        "type": "open",
+        "description": "espessamento lateral da fáscia lata",
+        "answer": "Trato iliotibial"
+    },
+    {
+        "type": "open",
+        "description": "aponeurose contínua dos músculos tensor da fáscia lata + glúteo máximo",
+        "answer": "Formação do trato iliotibial"
+    },
+    {
+        "type": "open",
+        "description": "estende-se do tubérculo ilíaco até o côndilo lateral da tíbia",
+        "answer": "Limites do trato iliotibial"
+    },
+    {
+        "type": "open",
+        "description": "Função do trato iliotibial",
+        "answer": "Estabilizar o joelho"
+    },
+    {
+        "type": "open",
+        "description": "margens anterior e medial da tíbia, contínua com periósteo",
+        "answer": "Fixação da fáscia muscular da perna"
+    },
+    {
+        "type": "open",
+        "description": "forma o retináculo dos músculos extensores",
+        "answer": "Fáscia muscular da perna"
+    },
+    {
+        "type": "open",
+        "description": "delimitado pelo septo intermuscular anterior e pela membrana interóssea, dorsiflexor, contém os mm. tibial anterior, extensor longo dos dedos e extensor longo do hálux",
+        "answer": "Compartimento anterior da perna"
+    },
+    {
+        "type": "open",
+        "description": "delimitado pelo septo intermuscular anterior e posterior, contém os mm. fibular longo e fibular curto",
+        "answer": "Compartimento lateral da perna"
+    },
+    {
+        "type": "open",
+        "description": "delimitado pela membrana interóssea e o septo intermuscular posterior, contém os mm. flexor longo do hálux, flexor longo dos dedos e tibial posterior",
+        "answer": "Compartimento posterior profundo da perna"
+    },
+    {
+        "type": "open",
+        "description": "delimitado pelo septo intermuscular posterior e fáscia muscular da perna, contém o tríceps sural.",
+        "answer": "Compartimento posterior superficial da perna"
+    },
+    {
+        "type": "open",
+        "description": "delimitado pelos septos intermuscular lateral e medial da coxa, contém o m. quadríceps femoral",
+        "answer": "Compartimento anterior da coxa"
+    },
+    {
+        "type": "open",
+        "description": "delimitado pelo septo intermuscular medial e o septo intermuscular posterior, contém os mm. adutores de coxa e estruturas neurovasculares importantes, local em que todos os mm. são inervados pelo nervo obturatório (L2,L3 e L4)",
+        "answer": "Compartimento medial da coxa"
+    },
+    {
+        "type": "open",
+        "description": "delimitado pelo septo intermuscular lateral pelo septo intermuscular posterior, contém os mm. isquiotibiais",
+        "answer": "Compartimento posterior de coxa"
+    },
+    {
+        "type": "open",
+        "description": "formada pela veia dorsal do hálux e arco venoso dorsal do pé, passa sobe anteriormente até o maléolo medial, passa posteriormente ao côndilo medial do fêmur e segue medialmente, atravessando hiato safeno para desembocar na Veia femoral.",
+        "answer": "Veia safena magna"
+    },
+    {
+        "type": "open",
+        "description": "formada pela veia dorsal do dedo mínimo e arco venoso dorsal do pé, sobe posteriormente ao maléolo lateral como uma continuação da veia marginal lateral, seguindo lateralmente ao tendão calcâneo, penetra a fáscia muscular, sobe entre as cabeças do m. gastrocnêmio e drena para a veia poplítea.",
+        "answer": "Veia safena parva"
+    },
+    {
+        "type": "open_double",
+        "description": "Veias que drenam para safena magna antes do hiato safeno",
+        "answer": "V. epigástrica superficial",
+        "answer2": "V. podendo externa/Veia circunflexa ilíaca superficial",
+        "placeholder1": "[GEMINI]",
+        "placeholder2": "[GEMINI]"
+    },
+    {
+        "type": "open",
+        "description": "atravessam fáscia muscular em ângulo oblíquo, permitindo que sejam comprimidas durante a contração muscular, impulsionando a bomba muscular venosa e impedindo o retorno de sangue das veias profundas para as veias superficiais.",
+        "answer": "Vv perfurantes"
+    },
+    {
+        "type": "open",
+        "description": "acompanham artéria tibial anterior, drena pra V. poplitea",
+        "answer": "Vv tibiais anteriores"
+    },
+    {
+        "type": "open",
+        "description": "formam as veias tibiais posteriores e fibulares",
+        "answer": "Vv. plantares lateral e medial"
+    },
+    {
+        "type": "open",
+        "description": "recebe todas as veias profundas da perna e veia safena parva, drenando para veia femoral profunda",
+        "answer": "Veia poplítea"
+    },
+    {
+        "type": "open",
+        "description": "local de drenagem linfática dos vasos linfáticos que acompanham veia safena magna, drenando posteriormente para linfonodos ilíacos externos ou linfonodos inguinais profundos",
+        "answer": "Linfonodos inguinais superficiais"
+    },
+    {
+        "type": "open",
+        "description": "local de drenagem linfáticos dos vasos que acompanham veia safena parva, bem como vasos linfáticos profundos da perna",
+        "answer": "Linfonodos poplíteos"
+    },
+    {
+        "type": "open",
+        "description": "situados sob a fáscia muscular na face medial da veia femoral, local de drenagem dos linfonodos poplíteos, uma parte da linfa dos linfonodos inguinais superficiais, posteriormente drenam para linfonodos ilíacos externos e comuns",
+        "answer": "Linfonodos inguinais profundos"
+    },
+    {
+        "type": "open",
+        "description": "recebem linfa dos linfonodos inguinais profundos,  drenam para tronco linfático lombossacral",
+        "answer": "Linfonodos ilíacos externos e comuns"
+    },
+    {
+        "type": "open",
+        "description": "derivado do plexo sacral, T12 + L1, inerva pele sobre a região anterosuperior da coxa abaixo do ligamento inguinal, pele sobre o trígono femoral",
+        "answer": "N. ilioinguinal"
+    },
+    {
+        "type": "open",
+        "description": "derivado do plexo sacral, T12 + L1, inerva pele sobre região do quadrante súpero lateral da nádega",
+        "answer": "N. ilio-hipogástrico"
+    },
+    {
+        "type": "open",
+        "description": "derivado do plexo sacral, L1 + L2, inerva pele sobre a região do trígono femoral, escroto e lábios maiores do pudendo (sensibilidade geral do ramo genital)",
+        "answer": "N. genitofemoral"
+    },
+    {
+        "type": "open",
+        "description": "derivado do plexo sacral, L2 + L3, inerva pele da face anterior e lateral de coxa",
+        "answer": "N. cutâneo lateral da coxa"
+    },
+    {
+        "type": "open",
+        "description": "derivado do plexo lombar via nervo femoral, suprem pele da região anterior e medial da coxa",
+        "answer": "Rr. cutâneos anteriores do nervo femoral"
+    },
+    {
+        "type": "open",
+        "description": "origem no trígono femoral, derivado do plexo lombar via nervo femoral, torna-se superficial na face medial do joelho, acompanha veia safena magna anteriormente ao maléolo medial, termina na face medial do pé e supre pele da face medial de perna e pé até a cabeça do 1 metatarso.",
+        "answer": "N safeno"
+    },
+    {
+        "type": "open",
+        "description": "derivados do plexo lombar via nervo obturatório (L2 -L4), suprem pequena área na face medial da coxa",
+        "answer": "R. cutâneos do nervo obturatório"
+    },
+    {
+        "type": "open",
+        "description": "derivado do plexo sacral, S1+S2, supre pele na região posterior de coxa e fossa poplítea",
+        "answer": "N. cutâneo posterior da coxa"
+    },
+    {
+        "type": "open",
+        "description": "derivado do plexo lomobosacral via nervo fibular comum (L4-S2), supre pele na face póstero lateral da perna",
+        "answer": "N. cutâneo sural lateral"
+    },
+    {
+        "type": "open",
+        "description": "derivado do plexo lomobosacral via nervo tibial (L4-S3), supre pele na face póstero medial da perna",
+        "answer": "N. cutâneo sural medial"
+    },
+    {
+        "type": "open",
+        "description": "derivado do plexo lomobosacral via nervo tibial (L4-L5), supre parte medial da planta do pé, 1, 2 e 3 dedos",
+        "answer": "N. plantar medial"
+    },
+    {
+        "type": "open",
+        "description": "derivado do plexo lomobosacral via nervo tibial (S1-S2), face lateral da planta do pé, 4 e 5 dedos",
+        "answer": "N. plantar lateral"
+    },
+    {
+        "type": "open",
+        "description": "derivado do plexo lomobosacral via nervo tibial e sural, supre pele do calcanhar",
+        "answer": "N. calcâneo"
+    },
+    {
+        "type": "open",
+        "description": "derivado do plexo lombossacral via nervo fibular comum, segue profundamente ao retináculo dos extensores e entra no dorso do pé, suprindo a pele entre 1 e 2 dedo como nervo digital dorsal",
+        "answer": "N. fibular profundo"
+    },
+    {
+        "type": "open",
+        "description": "derivado do nervo fibular comum, perfura fáscia muscular no terço distal da perna, supre pelo no dorso do pé e todos os dedos, com exceção das faces sobrejacentes do 1 e 2 dedo e face lateral do 5 dedo",
+        "answer": "N. fibular superficial"
+    },
+    {
+        "type": "open",
+        "description": "suprem face anterolateral da perna e dorso do pé",
+        "answer": "Rr. cutâneos medial e intermédios"
+    },
+    {
+        "type": "open",
+        "description": "derivado da união entre tibial e fibular, segue inferior ao maléolo lateral em direção à face lateral do pé, onde se torna nervo cutâneo lateral dorsal do pé, suprindo face lateral das partes posterior e média do pé",
+        "answer": "N. sural"
+    },
+    {
+        "type": "open",
+        "description": "derivado do plexo lombossacral, L2, L3 e L4, parte motora inerva m. quadríceps femoral, m. sartório, m. ilíaco",
+        "answer": "N. femoral"
+    },
+    {
+        "type": "open",
+        "description": "derivado de L3 e L4, inerva mm. adutores",
+        "answer": "N. obturatório"
+    },
+    {
+        "type": "open",
+        "description": "derivado de L4 - S3, inerva mm. isquiotibiais (semitendíneo, semimembranáceo e bíceps femoral)",
+        "answer": "N. isquiático"
+    },
+    {
+        "type": "open",
+        "description": "acompanha artéria poplítea, passa entre as cabeças do m. gastrocnêmio, no tornozelo passa entre flexor longo dos dedos e flexor longo do hálux, inerva motoramente os mm. semitendíneo e semimembranáceo, cabeça longa do bíceps femoral e mm. do compartimento posterior de perna",
+        "answer": "N. tibial"
+    },
+    {
+        "type": "open",
+        "description": "inerva motoramente a cabeça curta do m. bíceps femoral",
+        "answer": "N fibular comum"
+    },
+    {
+        "type": "open",
+        "description": "inerva motoramente m. abdutor do hálux, flexor curto dos dedos",
+        "answer": "N. plantar medial"
+    },
+    {
+        "type": "open",
+        "description": "inerva motoramente o m. abdutor do dedo mínimo, flexor curto do dedo mínimo, mm. interósseos, mm. lumbricais",
+        "answer": "N. plantar lateral"
+    },
+    {
+        "type": "open",
+        "description": "origem entre m. fibular longo e colo da tíbia, desce pelo compartimento lateral da perna, inerva motoramente os mm. fibulares",
+        "answer": "N fibular superficial"
+    },
+    {
+        "type": "open",
+        "description": "origem entre m. fibular longo e colo da fíbula, acompanha artéria e veias tibial anterior,  inerva motoramente m. tibial anteriores, extensor longo dos dedos e extensor longo do hálux",
+        "answer": "N. fibular profundo"
+    },
+    {
+        "type": "open",
+        "description": "derivado de L4-S1, inerva um músculo da região glútea com seu mesmo nome bem como a articulação do quadril",
+        "answer": "N. para o músculo quadrado femoral"
+    },
+    {
+        "type": "open",
+        "description": "derivado de L5-S1, inerva um músculo da região glútea com seu mesmo nome",
+        "answer": "N. para o músculo obturador interno"
+    },
+    {
+        "type": "open",
+        "description": "derivado de L5-S2, inerva os mm. glúteo médio, glúteo mínimo, gêmeo superior gêmeo inferior e tensor da fáscia lata.",
+        "answer": "N. glúteo superior"
+    },
+    {
+        "type": "open",
+        "description": "derivado de L5-S2, inerva os m. glúteo máximo",
+        "answer": "N. glúteo inferior"
+    },
+    {
+        "type": "open",
+        "description": "derivado de S2- S4 não supre estruturas na região glútea ou posterior da coxa, é o principal nervo para o períneo",
+        "answer": "N pudendo"
+    },
+    {
+        "type": "open",
+        "description": "entra na região glútea pelo forame isquiático maior ACIMA do músculo piriforme, supre glúteo máximo com seu ramo superficial, glúteos médio e mínimo e tensor da fáscia lata com seu ramo profundo.",
+        "answer": "Artéria glútea superior"
+    },
+    {
+        "type": "open",
+        "description": "entra na região glútea pelo forame isquiático maior ABAIXO do músculo piriforme, supre os mm. glúteo máximo, obturador interno, quadrado femoral e partes superiores dos mm. isquiotibiais",
+        "answer": "Artérias glútea inferior"
+    },
+    {
+        "type": "open",
+        "description": "suprem parte central dos mm. isquiotibiais e m. vasto lateral",
+        "answer": "Aa. perfurantes"
+    },
+    {
+        "type": "open",
+        "description": "artéria femoral após ultrapassar hiato dos adutores, dando origem às artérias tibial anterior, tibial posterior e fibular, termina na margem inferior do m, poplíteo",
+        "answer": "Artéria poplítea"
+    },
+    {
+        "type": "open",
+        "description": "ramo da artéria poplítea, passa entre a tíbia e a fibula, atravessa membrana interóssea e segue no compartimento anterior entre o m. tibial anterior e o m. extensor longo dos dedos, emitindo ramos maleolares anteriores medial e lateral, terminando ao virar artéria dorsal do pé após o passar o retináculo inferior dos músculos extensores",
+        "answer": "Artéria tibial anterior"
+    },
+    {
+        "type": "open",
+        "description": "atravessa o septo intermuscular e supre o compartimento lateral da perna",
+        "answer": "Ramo perfurante da artéria fibular"
+    },
+    {
+        "type": "open",
+        "description": "ramo da artéria poplítea que tem origem na margem distal do m. poplíteo, acompanha nervo e veias tibiais, da origem aos ramos maleolares mediais e se divide em artéria plantar lateral e medial",
+        "answer": "Artéria tibial posterior"
+    },
+    {
+        "type": "open",
+        "description": "tem origem da artéria tibial posterior ou anterior, segue lateralmente pelo colo da fíbula",
+        "answer": "Artéria circunflexa fibular"
+    },
+    {
+        "type": "open",
+        "description": "ramo da artéria tibial posterior, segue na margem medial da fíbula, dá origem ao ramo maleolar lateral e calcâneo",
+        "answer": "Artéria fibular"
+    },
+    {
+        "type": "open",
+        "description": "A. plantar lateral + Artéria plantar profunda, dá origem às  artérias metatarsais plantares, que dão origem às aa. digitais plantares",
+        "answer": "Arco plantar profundo"
+    },
+    {
+        "type": "open",
+        "description": "origem na asa do ílio, inserção na tuberosidade glútea do fêmur, inervado pelo nervo glúteo inferior, cuja função é extensão do quadril",
+        "answer": "M. glúteo máximo"
+    },
+    {
+        "type": "open",
+        "description": "origem entre as linhas glúteas anterior e posterior, inserção na face lateral do trocanter maior, inervado pelo nervo glúteo superior, cuja função é abdução do quadril",
+        "answer": "M. glúteo médio"
+    },
+    {
+        "type": "open",
+        "description": "origem entre as linhas glúteas anterior e posterior, inserção na face anterior do  trocanter maior, inervado pelo nervo glúteo superior, cuja função é abdução do quadril",
+        "answer": "M. glúteo mínimo"
+    },
+    {
+        "type": "open",
+        "description": "origem na face anterior do sacro, inserção no trocanter maior, inervado por ramificações anteriores de S1 e S2, rotador externo da coxa",
+        "answer": "M piriforme"
+    },
+    {
+        "type": "open",
+        "description": "origem no túber isquiático, inserção no tubérculo quadrado da crista intertrocantérica, inervado por um nervo com seu nome derivado de L4-S1, rotador externo da coxa, estabiliza cabeça do fêmur no acetábulo",
+        "answer": "M. quadrado femoral"
+    },
+    {
+        "type": "open",
+        "description": "origem na espinha isquiática, inserção no trocanter maior, inervado pelo nervo glúteo superior, rotador externo da coxa",
+        "answer": "M. gêmeo superior"
+    },
+    {
+        "type": "open",
+        "description": "origem no túber isquiático, inserção no trocanter maior, inervado pelo nervo glúteo superior, rotador externo da coxa",
+        "answer": "M. gêmeo inferior"
+    },
+    {
+        "type": "open",
+        "description": "origem na membrana obturatória, inserção no trocanter maior, inervado por um nervo com seu nome derivado de L5-S2, rotador externo da coxa",
+        "answer": "M. obturador interno"
+    },
+    {
+        "type": "open",
+        "description": "local de inserção da maioria dos músculos rotadores externos da coxa, com exceção do músculo quadrado femoral, que se insere no tubérculo quadrado na crista intertrocantérica.",
+        "answer": "Trocanter maior do fêmur"
+    },
+    {
+        "type": "open",
+        "description": "origem nos processos transversos das vértebras lombares, inserção no trocanter menor do fêmur, inervado pelo nervo lombar (L1, L2, L3), cuja principal função é flexão de quadril",
+        "answer": "M. iliopsoas"
+    },
+    {
+        "type": "open",
+        "description": "origem na EIAI, inserção na tuberosidade da tíbia, inervado pelo nervo femoral, cuja função é extensão de perna e estabilização da art. do quadril",
+        "answer": "M. reto femoral"
+    },
+    {
+        "type": "open",
+        "description": "origem no púbis, inserção na linha pectínea do fêmur, inervado pelo nervo femoral, cuja função é adução de coxa",
+        "answer": "M pectíneo"
+    },
+    {
+        "type": "open",
+        "description": "origem na EIAS, inserção na parte superior da face medial da tíbia, inervado pelo nervo femoral, flete, abduz e gira lateralmente a coxa",
+        "answer": "M. sartório"
+    },
+    {
+        "type": "open",
+        "description": "origem na linha intertrocantérica, inserção na tuberosidade da tíbia, inervado pelo nervo femoral, extensão de perna",
+        "answer": "M. vasto medial"
+    },
+    {
+        "type": "open",
+        "description": "origem no trocanter maior do fêmur, inserção na tuberosidade da tíbia, inervado pelo nervo femoral, extensão de perna",
+        "answer": "M. vasto lateral"
+    },
+    {
+        "type": "open",
+        "description": "origem na face anteromedial do femur, inserção na tuberosidade da tíbia, inervado pelo nervo femoral, extensão de perna",
+        "answer": "M. vasto intermédio"
+    },
+    {
+        "type": "open",
+        "description": "origem no pubis, inserção na face superomedial da tibia, inervado pelo obturatório, adução de coxa",
+        "answer": "M. grácil"
+    },
+    {
+        "type": "open",
+        "description": "origem no corpo do pubis, inserção no terço distal da linhas áspera, inervado pelo obturatório, adução de coxa",
+        "answer": "M. adutor longo"
+    },
+    {
+        "type": "open",
+        "description": "origem no pubis, inserção na linha pectínea a parte proximal da linha áspera, inervado pelo obturatório, adução de coxa",
+        "answer": "M. adutor curto"
+    },
+    {
+        "type": "open",
+        "description": "origem no ramo inferior do pubis, inserções na tuberosidade glútea, linha supracondilar medial e linha áspera, inervado pelo obturatório, adução de coxa, pode fazer extensão",
+        "answer": "M adutor magno"
+    },
+    {
+        "type": "open",
+        "description": "origem na membrana obturatória, inserção na fossa trocantérica, inervado pelo obturatório, adução de coxa, estabiliza cabeça do fêmur no acetábulo",
+        "answer": "M. obturador externo"
+    },
+    {
+        "type": "open",
+        "description": "origem no túber isquiático, inserção na face medial da parte superior da tíbia, inervado pela porção tibial do nervo isquiático, extensão de coxa",
+        "answer": "M. semitendíneo"
+    },
+    {
+        "type": "open",
+        "description": "origem no túber isquiático, inserção na parte posterior do côndilo medial da tíbia,  inervado pela porção tibial do nervo isquiático, extensão de coxa",
+        "answer": "M. semimembranáceo"
+    },
+    {
+        "type": "open",
+        "description": "origem no túber isquiático, inserção na cabeça da fíbula, inervado pela porção tibial do nervo isquiático, extensão de coxa",
+        "answer": "Cabeça longa do M. bíceps femoral"
+    },
+    {
+        "type": "open",
+        "description": "origem na linha áspera e linha supracondilar lateral, inserção na cabeça da fíbula, inervado pela porção fibular comum do nervo isquiático, extensão de coxa.",
+        "answer": "Cabeça curta do m. bíceps femoral"
+    },
+    {
+        "type": "open",
+        "description": "origem no côndilo lateral, metade superior da face lateral da tíbia e membrana interóssea, inserção na face medial e inferior do cuneiforme medial e base do primeiro metatarso, inervado pelo fibular profundo, dorsiflexão do tornozelo",
+        "answer": "M. tibial anterior"
+    },
+    {
+        "type": "open",
+        "description": "origem no côndilo lateral da tíbia, inserção nas falanges médias e distais, inervado pelo fibular profundo, extensão dos 4 dedos laterais e dorsiflexão do tornozelo",
+        "answer": "M. extensor longo dos dedos"
+    },
+    {
+        "type": "open",
+        "description": "origem na face anterior da fíbula, inserção na falange distal do hálux, inervado pelo fibular profundo, extensão do hálux e dorsiflexão do tornozelo",
+        "answer": "M. extensor longo do hálux"
+    },
+    {
+        "type": "open",
+        "description": "origem no ⅓ distal da face anterior de fíbula, inserção na base do quinto metatarso, inervado pelo fibular profundo, dorsiflexão do tornozelo",
+        "answer": "M. fibular terceiro"
+    },
+    {
+        "type": "open",
+        "description": "origem na cabeça da fíbula, inserção na base do 1 metatarso, inervado pelo fibular superficial, eversão do pé",
+        "answer": "M. fibular longo"
+    },
+    {
+        "type": "open",
+        "description": "origem na face lateral e inferior da fíbula, inserção na base do 5 metatarso, inervado pelo fibular superficial, eversão do pé",
+        "answer": "M. fibular curto"
+    },
+    {
+        "type": "open",
+        "description": "origem no côndilo lateral do fêmur (cabeça lateral) e côndilo medial do fêmur (cabeça medial), inserção na face posterior do calcâneo através de um tendão comum, inervado pelo tibial, faz flexão plantar do tornozelo com joelho estendido",
+        "answer": "M. gastrocnêmio"
+    },
+    {
+        "type": "open",
+        "description": "origem na cabeça da fíbula, inserção na face posterior do calcâneo, inervado pelo tibial, flexão plantar do tornozelo em qualquer posição",
+        "answer": "M. sóleo"
+    },
+    {
+        "type": "open",
+        "description": "origem na linha supracondilar lateral, inserção na face posterior do calcâneo, inervado pelo tibial, auxilia fracamente a flexão plantar do tornozelo",
+        "answer": "M. plantar"
+    },
+    {
+        "type": "open",
+        "description": "origem no côndilo lateral do fêmur, inserção acima da linha para o músculo sóleo, inervado pelo tibial, fraca flexão de joelho",
+        "answer": "M. poplíteo"
+    },
+    {
+        "type": "open",
+        "description": "origem na face posterior da tíbia, inserção na base das falanges distais dos dedos laterais, inervado pelo tibial, faz flexão de dedos e flexão plantar do tornozelo",
+        "answer": "M. flexor longo dos dedos"
+    },
+    {
+        "type": "open",
+        "description": "origem na face posterior da fíbula, inserção na base da falange distal do hálux, inervado pelo tibial, flexão do hálux em todas as articulações",
+        "answer": "M. flexor longo do hálux"
+    },
+    {
+        "type": "open",
+        "description": "origem na face posterior da tíbia e fíbula, inserção no navicular, cuneiforme, cuboide e base dos metatarsos laterais, inervado pelo tibial, faz flexão plantar",
+        "answer": "M. tibial posterior"
+    },
+    {
+        "type": "open",
+        "description": "origem no calcâneo, inserção na base da falange proximal do hálux, inervado pelo fibular profundo, extensão do hálux",
+        "answer": "M. extensor curto do hálux"
+    },
+    {
+        "type": "open",
+        "description": "origem no calcâneo, inserção nos tendões do m. extensor longo dos dedos, inervado pelo fibular profundo, extensão dos dedos",
+        "answer": "M. extensor curto dos dedos"
+    },
+    {
+        "type": "open",
+        "description": "músculo da 1 camada da face plantar do pé, origem na tuberosidade calcânea, inserção nas falanges médias, inervado pelo plantar medial, flexão dos dedos laterais",
+        "answer": "M. flexor curto dos dedos"
+    },
+    {
+        "type": "open",
+        "description": "músculo da 1 camada da face plantar do pé, origem na tuberosidade do calcâneo e inserção na falange proximal do hálux, inervado pelo plantar medial, faz abdução do hálux",
+        "answer": "M. abdutor do hálux"
+    },
+    {
+        "type": "open",
+        "description": "músculo da 1 camada da face plantar do pé origem na tuberosidade do calcâneo, inserção na falange proximal do dedo mínimo, inervado pelo plantar lateral, faz abdução do dedo mínimo",
+        "answer": "M. abdutor do dedo mínimo"
+    },
+    {
+        "type": "open",
+        "description": "músculo da 2  camada da face plantar do pé, origem na face plantar do calcâneo, inserção no tendão do m. flexor longo dos dedos, inervado pelo plantar lateral, auxilia flexão dos dedos laterais",
+        "answer": "M. quadrado plantar"
+    },
+    {
+        "type": "open",
+        "description": "músculo da 2  camada da face plantar do pé, origem nos tendões do m. flexor longo dos dedos, inserção na face medial dos dedos laterais, inervado pelo plantar medial (1) e plantar lateral (2,3,4), faz flexão de falange proximal",
+        "answer": "Mm. Lumbricais"
+    },
+    {
+        "type": "open",
+        "description": "músculo da 3 camada da face plantar do pé, origem no cubóide e cuneiforme lateral, inserção na base da falange proximal do hálux, inervado pelo plantar medial, faz flexão de falange proximal",
+        "answer": "M. flexor curto do hálux"
+    },
+    {
+        "type": "open",
+        "description": "músculo da 3 camada da face plantar do pé, origem na base do 2-4 metatarsais (cabeça oblíqua) e art. metatarsofalangicas (cabeça transversa), inserção na base da falange proximal do 1 dedo, inervado pelo plantar lateral, faz adução do hálux",
+        "answer": "M. adutor do hálux"
+    },
+    {
+        "type": "open",
+        "description": "músculo da 3 camada da face plantar do pé,origem na base do 5 metatarsal e inserção na base da falange proximal do 5 dedo, inervado pelo plantar lateral, flexão de falange proximal do dedo mínimo",
+        "answer": "M. flexor curto do dedo mínimo"
+    },
+    {
+        "type": "open",
+        "description": "músculo da 4 camada da face plantar do pé, origem nas faces adjacentes do 1-5 dedo, inserção na face medial da falange proximal (segundo dedo) e na face lateral dos demais dedos, inervados pelo plantar lateral, faz abdução e flexão dos dedos",
+        "answer": "Mm. interósseos dorsais"
+    },
+    {
+        "type": "open",
+        "description": "músculo da 4 camada da face plantar do pé,origem nas faces medial e bases do 3-5 metatarsais, inserção na base das falanges 3-5, inervados pelo plantar lateral. aduz e flete os dedos",
+        "answer": "Mm. interósseos plantares"
+    },
+    {
+        "type": "open",
+        "description": "veia safena para, artérias e veias poplíteas e seus ramos e tributárias, nervo tibial e fibular comum, nervo cutâneo femoral posterior, linfonodos e vasos linfáticos poplíteos",
+        "answer": "Fossa poplítea"
+    },
+    {
+        "type": "open",
+        "description": "menisco medial, menisco lateral, ligamento cruzado anterior, ligamento cruzado posterior, ligamento colateral fibular, ligamento colateral tibial, ligamento poplíteo oblíquo e ligamento poplíteo arqueado",
+        "answer": "Articulação do joelho"
+    },
+    {
+        "type": "open",
+        "description": "linha supracondilar lateral e medial do fêmur, linha do músculo sóleo da tíbia",
+        "answer": "Limites profundos da fossa poplítea"
+    },
+    {
+        "type": "open",
+        "description": "Limite superolateral superficial da fossa poplítea",
+        "answer": "músculo bíceps femoral"
+    },
+    {
+        "type": "open",
+        "description": "Limite superomedial superficial da fossa poplítea",
+        "answer": "músculo semimebranáceo e semitendíneo"
+    },
+    {
+        "type": "open",
+        "description": "Limite inferolateral e inferomedial superficial da fossa poplítea",
+        "answer": "músculo gastrocnêmio"
+    },
+    {
+        "type": "open",
+        "description": "teto da fossa poplítea",
+        "answer": "fáscia poplítea e pele"
+    },
+    {
+        "type": "open",
+        "description": "talus + calcâneo",
+        "answer": "retropé"
+    },
+    {
+        "type": "open",
+        "description": "ossos tarsais",
+        "answer": "mediopé"
+    },
+    {
+        "type": "open",
+        "description": "ossos metatarsais e falanges",
+        "answer": "antepé"
+    },
+    {
+        "type": "open",
+        "description": "formada pela fáscia plantar lateral e medial, se estende desde o calcâneo até os dedos e é reforçada pelo ligamento metatarsal transverso superficial",
+        "answer": "Aponeurose plantar"
+    },
+    {
+        "type": "open",
+        "description": "coberto pela fáscia plantar medial, contém m. abdutor do hálux, m. flexor curto do hálux, tendão do m. flexor longo do hálux, nervos e vasos plantares mediais",
+        "answer": "Compartimento medial da planta do pé"
+    },
+    {
+        "type": "open",
+        "description": "recoberto por aponeurose plantar, contém m. flexor curto dos dedos, tendões dos mm. flexor longo dos dedos e flexor longo do hálux, nervos e vasos plantares laterais",
+        "answer": "Compartimento central da planta do pé"
+    },
+    {
+        "type": "open",
+        "description": "recoberto por fáscia plantar lateral, contém os mm. abdutor e flexor curto do dedo mínimo",
+        "answer": "Compartimento lateral da planta do pé"
+    },
+    {
+        "type": "open",
+        "description": "localizado profundamente aos ossos metatarsais, contém músculos interósseos (4 interósseos dorsais e 3 interósseos plantares) e os vasos metatarsais",
+        "answer": "Compartimento interósseo do pé"
+    },
+    {
+        "type": "open",
+        "description": "entre a fáscia dorsal do pé e ossos do tarso e metatarso, contém mm. extensor curto do hálux e extensor curto dos dedos, tendões dos mm. extensores longos, artéria dorsal do pé e nervo fibular",
+        "answer": "Compartimento dorsal do pé"
+    },
+    {
+        "type": "open",
+        "description": "abaixo do ligamento inguinal, nervo femoral passa lateralmente, seguido da artéria e veia femorais",
+        "answer": "Trígono femoral"
+    },
+    {
+        "type": "open",
+        "description": "limite superior do trígono femoral",
+        "answer": "Ligamento inguinal"
+    },
+    {
+        "type": "open",
+        "description": "limite lateral do trígono femoral",
+        "answer": "Margem medial do m. sartório"
+    },
+    {
+        "type": "open",
+        "description": "limite medial do trígono femoral",
+        "answer": "Margem lateral do m. adutor longo"
+    },
+    {
+        "type": "open",
+        "description": "ápice do trígono femoral",
+        "answer": "Cruzamento entre sartório e adutor longo"
+    },
+    {
+        "type": "open",
+        "description": "assoalho do trígono femoral",
+        "answer": "Mm. iliopsoas e pectíneo"
+    },
+    {
+        "type": "open",
+        "description": "teto do trígono femoral",
+        "answer": "Fáscia lata, tela subcutânea e pele"
+    },
+    {
+        "type": "open",
+        "description": "tubo de fáscia que envolve artéria e veia femorais, permitindo que essas deslizam profundamente ao ligamento inguinal durante a movimentação do quadril",
+        "answer": "Bainha femoral"
+    },
+    {
+        "type": "open",
+        "description": "compartimento medial da bainha femoral que contém tecido conjuntivo frouxo, vasos linfáticos e linfonodos inguinais profundos, permitindo a expansão da veia femoral quando há aumento do retorno venoso",
+        "answer": "Canal femoral"
+    },
+    {
+        "type": "open",
+        "description": "via de passagem para A. e v. femorais e nervo safeno",
+        "answer": "Canal dos adutores"
+    },
+    {
+        "type": "open",
+        "description": "limite medial/teto do canal dos adutores",
+        "answer": "músculo sartório"
+    },
+    {
+        "type": "open",
+        "description": "limite lateral do canal dos adutores",
+        "answer": "músculo vasto medial"
+    },
+    {
+        "type": "open",
+        "description": "limite posterior do canal dos adutores",
+        "answer": "músculo adutor longo e adutor magno"
+    },
+    {
+        "type": "open",
+        "description": "abertura na porção distal do m. adutor magno, quando artéria e veia femoral ultrapassam esse limite, se tornam artéria e veia poplítea",
+        "answer": "Hiato dos adutores"
+    }
+]

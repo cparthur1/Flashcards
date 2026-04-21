@@ -1,3 +1,5 @@
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
 // --- ELEMENTOS DO DOM ---
 const deckTitle = document.getElementById('deck-title');
 const resetBtn = document.getElementById('reset-btn');
@@ -53,6 +55,20 @@ const actionButtonsArea = document.getElementById('action-buttons-area');
 const nextQuestionBtn = document.getElementById('next-question-btn');
 const submitBtn = document.getElementById('submit-btn');
 
+// Elementos de IA
+const aiToggleBtn = document.getElementById('ai-toggle-btn');
+const aiIconOff = document.getElementById('ai-icon-off');
+const aiIconOn = document.getElementById('ai-icon-on');
+const apiModal = document.getElementById('api-modal');
+const closeApiModal = document.getElementById('close-api-modal');
+const apiKeyInput = document.getElementById('api-key-input');
+const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+const disableAiBtn = document.getElementById('disable-ai-btn');
+const openAiInstructions = document.getElementById('open-ai-instructions');
+const aiInstructionsModal = document.getElementById('ai-instructions-modal');
+const closeAiInstructions = document.getElementById('close-ai-instructions');
+const aiInstructionsReady = document.getElementById('ai-instructions-ready');
+
 const canvas = document.getElementById('background-canvas');
 const ctx = canvas.getContext('2d');
 
@@ -64,6 +80,11 @@ let currentQuestion = {};
 let currentQuestionIndexInPool = -1;
 let balls = [];
 let currentFile = null;
+
+// ESTADO DA IA
+let isAiEnabled = false;
+let geminiApiKey = localStorage.getItem('gemini_api_key_checker') || '';
+let genAI = null;
 
 // --- LÓGICA DE UPLOAD ---
 fileInput.addEventListener('change', () => {
@@ -112,6 +133,45 @@ openCreateBtn.addEventListener('click', () => {
 });
 
 
+// --- EVENT LISTENERS DE IA ---
+if (aiToggleBtn) {
+    aiToggleBtn.addEventListener('click', () => {
+        apiModal.classList.remove('hidden');
+        apiKeyInput.value = geminiApiKey;
+    });
+}
+
+if (closeApiModal) {
+    closeApiModal.addEventListener('click', () => apiModal.classList.add('hidden'));
+}
+
+if (saveApiKeyBtn) {
+    saveApiKeyBtn.addEventListener('click', () => {
+        const key = apiKeyInput.value.trim();
+        if (key) {
+            geminiApiKey = key;
+            localStorage.setItem('gemini_api_key_checker', key);
+            initializeAi();
+            apiModal.classList.add('hidden');
+        }
+    });
+}
+
+if (disableAiBtn) {
+    disableAiBtn.addEventListener('click', () => {
+        isAiEnabled = false;
+        geminiApiKey = '';
+        localStorage.removeItem('gemini_api_key_checker');
+        aiIconOff.classList.remove('hidden');
+        aiIconOn.classList.add('hidden');
+        apiModal.classList.add('hidden');
+    });
+}
+
+if (openAiInstructions) openAiInstructions.addEventListener('click', () => aiInstructionsModal.classList.remove('hidden'));
+if (closeAiInstructions) closeAiInstructions.addEventListener('click', () => aiInstructionsModal.classList.add('hidden'));
+if (aiInstructionsReady) aiInstructionsReady.addEventListener('click', () => aiInstructionsModal.classList.add('hidden'));
+
 // --- LÓGICA DA ANIMAÇÃO (CANVAS) ---
 function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -125,6 +185,7 @@ function createBall(isCorrect) {
     const color = isCorrect ? 'rgba(74, 222, 128, 0.8)' : 'rgba(239, 68, 68, 0.8)';
     const dy = 0;
     balls.push({ x, y, radius, color, dy, isStatic: false });
+    return balls.length - 1;
 }
 
 function animate() {
@@ -460,8 +521,132 @@ function handleOpenDoubleSubmit() {
     showFeedback(isCorrect1 && isCorrect2, null);
 }
 
+// --- LÓGICA DE IA ---
+function initializeAi() {
+    if (geminiApiKey) {
+        try {
+            genAI = new GoogleGenerativeAI(geminiApiKey);
+            isAiEnabled = true;
+            aiIconOff.classList.add('hidden');
+            aiIconOn.classList.remove('hidden');
+        } catch (e) {
+            console.error("Erro ao inicializar Gemini:", e);
+            isAiEnabled = false;
+        }
+    }
+}
+
+async function checkAnswerWithAi(question, correctAnswers, userAnswer, ballIndex) {
+    if (!isAiEnabled || !genAI) return;
+
+    try {
+        const model = genAI.getGenerativeModel({ 
+            model: "gemini-flash-lite-latest",
+            tools: [{
+                functionDeclarations: [{
+                    name: "marcar_como_correto",
+                    description: "Marca a resposta do usuário como correta se ela for semanticamente igual à resposta esperada, ignorando erros de digitação ou pequenas omissões.",
+                    parameters: {
+                        type: "OBJECT",
+                        properties: {
+                            justificativa: { type: "STRING", description: "Breve explicação do porquê a resposta foi aceita." }
+                        },
+                        required: ["justificativa"]
+                    }
+                }]
+            }]
+        });
+
+        const prompt = `
+            Você é um revisor de flashcards especializado em medicina e anatomia. 
+            O usuário deu uma resposta que o sistema automático marcou como incorreta, mas você deve avaliar se ela é semanticamente válida ou uma variação aceitável (como abreviações, sinônimos ou partes fundamentais da resposta).
+
+            Pergunta: "${question}"
+            Resposta(s) Esperada(s) no Banco: "${correctAnswers.join(' / ')}"
+            Resposta Digitada pelo Usuário: "${userAnswer}"
+
+            DIRETRIZES DE AVALIAÇÃO:
+            1. Se o usuário digitou uma parte fundamental da resposta que é suficiente para demonstrar conhecimento (ex: "Braquial" para "Músculo braquial"), considere CORRETO.
+            2. Se o usuário usou um sinônimo exato ou termo tecnicamente equivalente, considere CORRETO.
+            3. Se a resposta for apenas uma descrição vaga ou estiver errada, não faça nada.
+
+            Se a resposta for semanticamente equivalente ou uma variação aceitável, chame a função 'marcar_como_correto'.
+        `;
+
+        const chat = model.startChat();
+        const result = await chat.sendMessage(prompt);
+        const response = result.response;
+        const calls = response.candidates[0].content.parts.filter(p => !!p.functionCall);
+
+        if (calls.length > 0) {
+            const call = calls[0].functionCall;
+            if (call.name === 'marcar_como_correto') {
+                console.log("IA corrigiu a resposta:", call.args.justificativa);
+                applyAiCorrection(ballIndex);
+            }
+        }
+    } catch (e) {
+        console.error("Erro na verificação de IA:", e);
+    }
+}
+
+function applyAiCorrection(ballIndex) {
+    // 1. Transformar a bola vermelha em amarela
+    if (balls[ballIndex]) {
+        balls[ballIndex].color = 'rgba(250, 204, 21, 0.8)'; // Yellow-400
+    }
+
+    // 2. Incrementar pontuação
+    score++;
+    scoreDisplay.textContent = score;
+
+    // 3. Remover do pool se ainda estiver lá
+    // Nota: A questão atual pode já ter mudado se o usuário for rápido, 
+    // mas o pool ainda contém as questões que ele errou.
+    // Como o pool é embaralhado, precisamos encontrar a questão correta.
+    // Por simplicidade, vamos marcar que essa questão específica foi resolvida.
+    // No entanto, showFeedback já remove do pool se isCorrect for true.
+    // Se foi AI, precisamos remover agora.
+    
+    // Se a questão que a IA corrigiu ainda for a questão atual que está sendo exibida como "erro":
+    if (currentQuestion.isBeingCorrected) {
+        questionsPool.splice(currentQuestionIndexInPool, 1);
+        saveGameState();
+        // Se o usuário ainda estiver na tela de erro, avança
+        if (!nextQuestionBtn.classList.contains('hidden')) {
+            loadQuestion();
+        }
+    } else {
+        // Se o usuário já pulou ou errou outra, tentamos achar no pool
+        // Mas isso é mais complexo. O requisito diz "marcada como correta no deck".
+        // Vamos apenas garantir que ela saia do pool se estiver lá.
+        const idx = questionsPool.findIndex(q => q.description === currentQuestion.description);
+        if (idx > -1) {
+            questionsPool.splice(idx, 1);
+            saveGameState();
+        }
+    }
+}
+
 function showFeedback(isCorrect, element) {
-    createBall(isCorrect);
+    const ballIndex = createBall(isCorrect);
+    
+    // Background AI Check if wrong
+    if (!isCorrect && isAiEnabled) {
+        let userAnswer = "";
+        if (currentQuestion.type === 'open_double') {
+            userAnswer = `${answerInput1.value} ; ${answerInput2.value}`;
+        } else if (currentQuestion.type === 'open') {
+            userAnswer = answerInput.value;
+        }
+        
+        if (userAnswer) {
+            const correctAnswers = [currentQuestion.answer];
+            if (currentQuestion.answer2) correctAnswers.push(currentQuestion.answer2);
+            checkAnswerWithAi(currentQuestion.description, correctAnswers, userAnswer, ballIndex);
+        }
+    }
+
     questionCard.classList.add(isCorrect ? 'glow-correct' : 'glow-incorrect');
     if (element) { 
         mcOptionBtns.forEach(btn => btn.disabled = true);
@@ -569,6 +754,7 @@ document.addEventListener('DOMContentLoaded', () => {
     resizeCanvas();
     animate();
     const savedData = localStorage.getItem('flashcardsSave');
+    initializeAi();
     if (savedData) {
         try {
             const gameState = JSON.parse(savedData);
