@@ -607,7 +607,7 @@ async function checkAnswerWithAi(question, correctAnswers, userAnswer, ballIndex
             2. Se o usuário usou um sinônimo exato ou termo tecnicamente equivalente, aceito pela comunidade acadêmica, considere CORRETO.
             3. Se a resposta for apenas uma descrição vaga, confusa ou estiver errada, não faça nada.
 
-            Se a resposta for semanticamente equivalente ou uma variação aceitável, chame a função 'marcar_como_correto'.
+            Se a resposta for semanticamente equivalente ou uma variação aceitável, mantendo a especificidade e falando da mesma estrutura da resposta original, chame a função 'marcar_como_correto'.
         `;
 
         const chat = model.startChat();
