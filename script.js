@@ -604,8 +604,8 @@ async function checkAnswerWithAi(question, correctAnswers, userAnswer, ballIndex
 
             DIRETRIZES DE AVALIAÇÃO:
             1. Se o usuário digitou uma parte fundamental da resposta que é suficiente para demonstrar conhecimento (ex: "Braquial" para "Músculo braquial"), considere CORRETO, seja rígido nesse critério.
-            2. Se o usuário usou um sinônimo exato ou termo tecnicamente equivalente, considere CORRETO.
-            3. Se a resposta for apenas uma descrição vaga ou estiver errada, não faça nada.
+            2. Se o usuário usou um sinônimo exato ou termo tecnicamente equivalente, aceito pela comunidade acadêmica, considere CORRETO.
+            3. Se a resposta for apenas uma descrição vaga, confusa ou estiver errada, não faça nada.
 
             Se a resposta for semanticamente equivalente ou uma variação aceitável, chame a função 'marcar_como_correto'.
         `;
@@ -618,7 +618,7 @@ async function checkAnswerWithAi(question, correctAnswers, userAnswer, ballIndex
         if (calls.length > 0) {
             const call = calls[0].functionCall;
             if (call.name === 'marcar_como_correto') {
-                console.log("IA corrigiu a resposta:", call.args.justificativa);
+                console.log("Agente corrigiu a resposta:", call.args.justificativa);
                 applyAiCorrection(ballIndex);
             }
         }
