@@ -197,7 +197,7 @@ function resetUI() {
         inp.classList.remove('animate-pulse', 'border-red-500');
     });
     answerInput.placeholder = 'Digite sua resposta aqui...';
-    
+
     delete currentQuestion.isBeingCorrected;
     submitBtn.disabled = false;
     submitBtn.classList.remove('hidden');
@@ -227,10 +227,10 @@ function handleOpenSubmit() {
     const correct1 = currentQuestion.answer.split('/');
     const correct2 = (currentQuestion.answer2 || "").split('/');
 
-    const isCorrect1 = type === 'open_double' 
+    const isCorrect1 = type === 'open_double'
         ? correct1.some(c => calculateSimilarity(ans1_d, normalizeString(c)) >= 0.8)
         : correct1.some(c => calculateSimilarity(ans1, normalizeString(c)) >= 0.8);
-    
+
     const isCorrect2 = type === 'open_double'
         ? correct2.some(c => calculateSimilarity(ans2_d, normalizeString(c)) >= 0.8)
         : true;
@@ -348,10 +348,10 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
         });
 
         const expected = [questionObj.answer, questionObj.answer2].filter(Boolean).join(' / ');
-        
+
         const prompt = `
             Você é um revisor de flashcards. 
-            O usuário deu uma resposta que o sistema automático marcou como incorreta, mas você deve avaliar se ela é semanticamente válida ou uma variação aceitável (como abreviações, sinônimos ou partes fundamentais da resposta).
+            O usuário deu uma resposta que o sistema automático marcou como incorreta, mas você deve avaliar se ela é semanticamente válida ou uma variação aceitável (como abreviações, sinônimos ou partes fundamentais da resposta) de forma bem rigorosa.
 
             Pergunta: "${questionObj.description}"
             Resposta(s) Esperada(s) no Banco: "${expected}"
@@ -359,10 +359,10 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
 
             DIRETRIZES DE AVALIAÇÃO:
             1. Se o usuário digitou uma parte fundamental da resposta que é suficiente para demonstrar conhecimento (ex: "Braquial" para "Músculo braquial"), considere CORRETO, seja rígido nesse critério.
-            2. Se o usuário usou um sinônimo exato ou termo tecnicamente equivalente, aceito pela comunidade acadêmica, considere CORRETO.
-            3. Se a resposta for apenas uma descrição vaga, confusa ou estiver errada, não faça nada.
+            2. Se o usuário usou um sinônimo exato ou termo equivalente, aceito pela comunidade acadêmica, considere CORRETO.
+            3. Se a resposta for apenas uma descrição vaga, sobre outra estrutura que não a perguntada, confusa ou estiver errada, NÃO chame a função 'marcar_como_correto'.
 
-            Se a resposta for semanticamente equivalente ou uma variação aceitável, mantendo a especificidade e falando da mesma estrutura da resposta original, chame a função 'marcar_como_correto'.
+            Se a resposta for semanticamente equivalente ou uma variação aceitável, baseado nos critérios, mantendo a especificidade e falando da mesma estrutura da resposta original, chame a função 'marcar_como_correto'.
         `;
 
         const result = await callWithRetry(() => model.generateContent(prompt));
@@ -370,19 +370,19 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
 
         if (calls.length > 0 && calls[0].functionCall.name === 'marcar_como_correto') {
             console.log("Agente corrigiu a resposta:", calls[0].functionCall.args.justificativa);
-            
+
             // Sucesso! A IA corrigiu o erro.
             balls[ballIdx].color = 'rgba(250, 204, 21, 0.8)'; // Amarelo/Dourado para correção IA
             score++;
             scoreDisplay.textContent = score;
-            
+
             // Remove da pool se ainda for a mesma questão e salva
             const idx = questionsPool.findIndex(card => card.description === questionObj.description);
             if (idx > -1) {
                 questionsPool.splice(idx, 1);
                 saveGameState();
             }
-            
+
             // Feedback visual de sucesso
             questionCard.classList.remove('glow-incorrect');
             questionCard.classList.add('glow-correct');
@@ -426,7 +426,7 @@ async function sendChatMessage() {
 function addMsg(sender, text) {
     const div = document.createElement('div');
     div.className = sender === 'ai' ? 'chat-message-ai' : 'chat-message-user';
-    
+
     if (sender === 'ai' && typeof marked !== 'undefined') {
         // AI content is parsed as markdown
         div.innerHTML = marked.parse(text);
@@ -434,7 +434,7 @@ function addMsg(sender, text) {
         // User content is strictly plain text to prevent XSS
         div.textContent = text;
     }
-    
+
     chatMessages.appendChild(div);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
@@ -453,7 +453,7 @@ function hideTyping(id) { document.getElementById(id)?.remove(); }
 // --- EVENT LISTENERS ---
 resetBtn.addEventListener('click', () => { if (confirm("Sair?")) { localStorage.removeItem('flashcardsSave'); window.location.href = ROUTES.HOME; } });
 exportBtn.addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify(allQuestions, null, 2)], {type: "application/json"});
+    const blob = new Blob([JSON.stringify(allQuestions, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = `${deckTitle.textContent}.json`; a.click();
 });
