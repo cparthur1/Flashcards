@@ -866,6 +866,7 @@ function handleMCSubmit(button) {
 function resetToUploadScreen() {
     gameContainer.classList.add('hidden');
     uploadScreen.classList.remove('hidden');
+    globalHeader.classList.add('hidden');
     allQuestions = [];
     questionsPool = [];
     score = 0;
@@ -924,6 +925,7 @@ document.addEventListener('DOMContentLoaded', () => {
             scoreDisplay.textContent = score;
             uploadScreen.classList.add('hidden');
             gameContainer.classList.remove('hidden');
+            globalHeader.classList.remove('hidden');
             loadQuestion();
         } catch (e) {
             console.error("Erro ao carregar save:", e);
