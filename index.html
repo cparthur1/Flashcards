@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'media', 
+            darkMode: 'media',
             theme: {
                 extend: {
                     colors: {
@@ -18,7 +19,7 @@
         }
     </script>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2563eb"/>
+    <meta name="theme-color" content="#2563eb" />
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="apple-touch-icon" href="favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,23 +34,58 @@
         }
     </script>
     <style>
-        body { font-family: 'Inter', sans-serif; overflow: hidden; }
-        .glow-correct { box-shadow: 0 0 20px 7px rgba(74, 222, 128, 0.6); }
-        .glow-incorrect { box-shadow: 0 0 20px 7px rgba(239, 68, 68, 0.6); }
-        #question-card { transition: box-shadow 0.4s ease-in-out; }
-        .hidden { display: none; }
-        #delete-card-btn { transition: opacity 0.2s ease-in-out, transform 0.1s; }
-        #delete-card-btn:active { transform: scale(0.9); }
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        .glow-correct {
+            box-shadow: 0 0 20px 7px rgba(74, 222, 128, 0.6);
+        }
+
+        .glow-incorrect {
+            box-shadow: 0 0 20px 7px rgba(239, 68, 68, 0.6);
+        }
+
+        #question-card {
+            transition: box-shadow 0.4s ease-in-out;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #delete-card-btn {
+            transition: opacity 0.2s ease-in-out, transform 0.1s;
+        }
+
+        #delete-card-btn:active {
+            transform: scale(0.9);
+        }
+
         .modal-overlay {
             background-color: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(4px);
         }
+
         /* Scrollbar personalizada para o Textarea */
-        textarea::-webkit-scrollbar { width: 8px; }
-        textarea::-webkit-scrollbar-track { background: transparent; }
-        textarea::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
-        .dark textarea::-webkit-scrollbar-thumb { background-color: #4b5563; }
-        
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        textarea::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        textarea::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+
+        .dark textarea::-webkit-scrollbar-thumb {
+            background-color: #4b5563;
+        }
+
         .spinner {
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
@@ -58,7 +94,16 @@
             height: 20px;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
     <!-- Simple Markdown Renderer -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -74,8 +119,11 @@
             width: fit-content;
             align-self: flex-start;
         }
-        .dark .typing-indicator { background: #374151; }
-        
+
+        .dark .typing-indicator {
+            background: #374151;
+        }
+
         .typing-dot {
             width: 6px;
             height: 6px;
@@ -83,58 +131,123 @@
             border-radius: 50%;
             animation: typing 1.4s infinite ease-in-out;
         }
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
 
         @keyframes typing {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-6px); }
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+            }
+
+            30% {
+                transform: translateY(-6px);
+            }
         }
 
         /* Markdown Styles in Chat */
-        .chat-message-ai p { margin-bottom: 0.5rem; }
-        .chat-message-ai p:last-child { margin-bottom: 0; }
-        .chat-message-ai ul, .chat-message-ai ol { margin-left: 1.25rem; margin-bottom: 0.5rem; }
-        .chat-message-ai ul { list-style-type: disc; }
-        .chat-message-ai ol { list-style-type: decimal; }
-        .chat-message-ai code { background: rgba(0,0,0,0.1); padding: 0.1rem 0.3rem; border-radius: 0.25rem; font-family: monospace; }
-        .dark .chat-message-ai code { background: rgba(255,255,255,0.1); }
-        .chat-message-ai pre { background: rgba(0,0,0,0.05); padding: 0.5rem; border-radius: 0.5rem; overflow-x: auto; margin: 0.5rem 0; }
-        .dark .chat-message-ai pre { background: rgba(255,255,255,0.05); }
-        .chat-message-ai strong { font-weight: 700; }
+        .chat-message-ai p {
+            margin-bottom: 0.5rem;
+        }
+
+        .chat-message-ai p:last-child {
+            margin-bottom: 0;
+        }
+
+        .chat-message-ai ul,
+        .chat-message-ai ol {
+            margin-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .chat-message-ai ul {
+            list-style-type: disc;
+        }
+
+        .chat-message-ai ol {
+            list-style-type: decimal;
+        }
+
+        .chat-message-ai code {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+        }
+
+        .dark .chat-message-ai code {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-message-ai pre {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+        }
+
+        .dark .chat-message-ai pre {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .chat-message-ai strong {
+            font-weight: 700;
+        }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex items-center justify-center min-h-screen p-4">
+
+<body
+    class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex items-center justify-center min-h-screen p-4">
 
     <canvas id="background-canvas" class="fixed top-0 left-0 w-full h-full" style="z-index: -1;"></canvas>
 
     <!-- Botão de IA (Top Right) -->
-    <button id="ai-toggle-btn" class="fixed top-4 right-4 z-40 bg-white dark:bg-gray-800 p-3 rounded-full shadow-lg hover:scale-110 transition-transform border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300" title="Ativar Recursos de IA">
+    <button id="ai-toggle-btn"
+        class="fixed top-4 right-4 z-40 bg-white dark:bg-gray-800 p-3 rounded-full shadow-lg hover:scale-110 transition-transform border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300"
+        title="Ativar Recursos de IA">
         <svg id="ai-icon-off" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd">
+            </path>
         </svg>
         <div id="ai-icon-on" class="hidden">
             <svg class="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 015-2.906z"></path>
+                <path
+                    d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 015-2.906z">
+                </path>
             </svg>
         </div>
     </button>
 
     <!-- TELA DE UPLOAD (INICIAL) -->
-    <div id="upload-screen" class="w-full max-w-md mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-2xl p-8 text-center transition-all duration-300">
+    <div id="upload-screen"
+        class="w-full max-w-md mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-2xl p-8 text-center transition-all duration-300">
         <h1 class="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">Flashcards</h1>
-        <p class="text-gray-600 dark:text-gray-300 mb-8 text-sm">Carregue um arquivo .json ou crie um novo baralho agora mesmo.</p>
-        
+        <p class="text-gray-600 dark:text-gray-300 mb-8 text-sm">Carregue um arquivo .json ou crie um novo baralho agora
+            mesmo.</p>
+
         <!-- Área de Upload de Arquivo -->
-        <div class="mb-6 p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-500 transition-colors">
-            <input type="file" id="file-input" accept=".json" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
+        <div
+            class="mb-6 p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-500 transition-colors">
+            <input type="file" id="file-input" accept=".json"
+                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
         </div>
 
         <div class="flex flex-col gap-3">
-            <button id="start-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:scale-100 disabled:cursor-not-allowed" disabled>
+            <button id="start-btn"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:scale-100 disabled:cursor-not-allowed"
+                disabled>
                 📂 Abrir Arquivo
             </button>
-            
+
             <div class="relative flex py-2 items-center">
                 <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
                 <span class="flex-shrink-0 mx-4 text-gray-400 text-xs">OU</span>
@@ -142,29 +255,38 @@
             </div>
 
             <!-- Botão Criar Novo -->
-            <button id="open-create-btn" class="w-full bg-white dark:bg-gray-700 border-2 border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none hover:bg-blue-50 dark:hover:bg-gray-600">
+            <button id="open-create-btn"
+                class="w-full bg-white dark:bg-gray-700 border-2 border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none hover:bg-blue-50 dark:hover:bg-gray-600">
                 ✨ Criar Novo
             </button>
         </div>
         <p id="upload-error" class="text-red-500 mt-4 text-sm"></p>
     </div>
 
-    <header id="global-header" class="hidden fixed z-50 transition-all duration-300 
+    <header id="global-header"
+        class="hidden fixed z-50 transition-all duration-300 
         top-0 left-0 w-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex items-center justify-between
         md:top-6 md:left-6 md:w-auto md:rounded-full md:px-6 md:py-3 md:shadow-2xl md:border md:border-gray-200 dark:md:border-gray-700">
         <div class="flex items-center gap-3">
             <div class="flex items-center gap-1">
-                <span id="reset-btn" class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors text-xl" title="Voltar ao início">🗑️</span>
-                <span id="export-btn" class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors text-xl" title="Baixar JSON Atualizado">💾</span>
-                <button id="go-to-editor-btn" class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full hover:bg-blue-100 dark:hover:bg-blue-800/50 transition-colors text-sm font-bold border border-blue-100 dark:border-blue-800" title="Editar com Assistente de IA">
+                <span id="reset-btn"
+                    class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors text-xl"
+                    title="Voltar ao início">🗑️</span>
+                <span id="export-btn"
+                    class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors text-xl"
+                    title="Baixar JSON Atualizado">💾</span>
+                <button id="go-to-editor-btn"
+                    class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full hover:bg-blue-100 dark:hover:bg-blue-800/50 transition-colors text-sm font-bold border border-blue-100 dark:border-blue-800"
+                    title="Editar com Assistente de IA">
                     <span>✏️</span>
-                    <span class="hidden sm:inline">Editar</span>
                 </button>
             </div>
             <div class="h-6 w-[1px] bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block"></div>
-            <h1 id="deck-title" class="font-bold text-gray-800 dark:text-white truncate max-w-[100px] sm:max-w-[200px] md:max-w-xs text-lg">Flashcards</h1>
+            <h1 id="deck-title"
+                class="font-bold text-gray-800 dark:text-white truncate max-w-[100px] sm:max-w-[200px] md:max-w-xs text-lg">
+                Flashcards</h1>
         </div>
-        
+
         <div class="flex items-center gap-4 text-right ml-4">
             <div class="hidden sm:block">
                 <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">Restantes</p>
@@ -179,50 +301,78 @@
     </header>
 
     <!-- TELA DO JOGO -->
-    <div id="game-container" class="w-full max-w-2xl mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-2xl p-6 sm:p-8 transition-all duration-500 hidden relative">
-        <div id="question-card" class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg mb-6 min-h-[120px] flex flex-col items-center justify-center relative group">
-            <button id="delete-card-btn" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600" title="Remover este card permanentemente">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+    <div id="game-container"
+        class="w-full max-w-2xl mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-2xl p-6 sm:p-8 transition-all duration-500 hidden relative">
+        <div id="question-card"
+            class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg mb-6 min-h-[120px] flex flex-col items-center justify-center relative group">
+            <button id="delete-card-btn"
+                class="absolute top-2 right-2 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600"
+                title="Remover este card permanentemente">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
             </button>
             <p id="question-text" class="text-center text-lg font-medium text-gray-700 dark:text-gray-300"></p>
         </div>
 
         <div id="open-answer-area" class="hidden">
             <div class="relative">
-                <input type="text" id="answer-input" class="w-full px-4 py-3 text-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Digite sua resposta aqui..." autocomplete="off" name="flashcard-query" spellcheck="false">
+                <input type="text" id="answer-input"
+                    class="w-full px-4 py-3 text-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    placeholder="Digite sua resposta aqui..." autocomplete="off" name="flashcard-query"
+                    spellcheck="false">
             </div>
         </div>
-        
+
         <div id="open-double-answer-area" class="grid grid-cols-1 sm:grid-cols-2 gap-4 hidden">
-            <div class="relative"><input type="text" id="answer-input-1" class="w-full px-4 py-3 text-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Resposta 1..." autocomplete="off" name="q1" spellcheck="false"></div>
-            <div class="relative"><input type="text" id="answer-input-2" class="w-full px-4 py-3 text-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Resposta 2..." autocomplete="off" name="q2" spellcheck="false"></div>
+            <div class="relative"><input type="text" id="answer-input-1"
+                    class="w-full px-4 py-3 text-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    placeholder="Resposta 1..." autocomplete="off" name="q1" spellcheck="false"></div>
+            <div class="relative"><input type="text" id="answer-input-2"
+                    class="w-full px-4 py-3 text-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    placeholder="Resposta 2..." autocomplete="off" name="q2" spellcheck="false"></div>
         </div>
 
         <div id="mc-answer-area" class="grid grid-cols-1 sm:grid-cols-2 gap-4 hidden">
-            <button class="mc-option-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-blue-200 dark:hover:bg-blue-800 text-gray-800 dark:text-gray-200 font-semibold py-4 px-4 rounded-lg text-md transition"></button>
-            <button class="mc-option-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-blue-200 dark:hover:bg-blue-800 text-gray-800 dark:text-gray-200 font-semibold py-4 px-4 rounded-lg text-md transition"></button>
-            <button class="mc-option-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-blue-200 dark:hover:bg-blue-800 text-gray-800 dark:text-gray-200 font-semibold py-4 px-4 rounded-lg text-md transition"></button>
-            <button class="mc-option-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-blue-200 dark:hover:bg-blue-800 text-gray-800 dark:text-gray-200 font-semibold py-4 px-4 rounded-lg text-md transition"></button>
+            <button
+                class="mc-option-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-blue-200 dark:hover:bg-blue-800 text-gray-800 dark:text-gray-200 font-semibold py-4 px-4 rounded-lg text-md transition"></button>
+            <button
+                class="mc-option-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-blue-200 dark:hover:bg-blue-800 text-gray-800 dark:text-gray-200 font-semibold py-4 px-4 rounded-lg text-md transition"></button>
+            <button
+                class="mc-option-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-blue-200 dark:hover:bg-blue-800 text-gray-800 dark:text-gray-200 font-semibold py-4 px-4 rounded-lg text-md transition"></button>
+            <button
+                class="mc-option-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-blue-200 dark:hover:bg-blue-800 text-gray-800 dark:text-gray-200 font-semibold py-4 px-4 rounded-lg text-md transition"></button>
         </div>
 
         <div id="action-buttons-area" class="mt-6 hidden">
-            <button id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Verificar Resposta</button>
-            
+            <button id="submit-btn"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Verificar
+                Resposta</button>
+
             <div id="correction-options" class="hidden flex-col gap-3 mt-4">
-                <button id="ask-ai-btn" class="hidden w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition transform hover:scale-105">
+                <button id="ask-ai-btn"
+                    class="hidden w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition transform hover:scale-105">
                     Perguntar ✨
                 </button>
                 <div class="flex gap-2 justify-center">
-                    <button id="edit-btn" class="flex-1 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-200 font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition border border-blue-200 dark:border-blue-700">
+                    <button id="edit-btn"
+                        class="flex-1 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-200 font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition border border-blue-200 dark:border-blue-700">
                         ✏️ Editar
                     </button>
-                    <button id="delete-correction-btn" class="flex-1 bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 text-red-700 dark:text-red-200 font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition border border-red-200 dark:border-red-700">
+                    <button id="delete-correction-btn"
+                        class="flex-1 bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 text-red-700 dark:text-red-200 font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition border border-red-200 dark:border-red-700">
                         🗑️ Excluir
                     </button>
                 </div>
             </div>
 
-            <button id="next-question-btn" class="w-full mt-4 bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 hidden">
+            <button id="next-question-btn"
+                class="w-full mt-4 bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 hidden">
                 Pular ⚡
             </button>
         </div>
@@ -230,21 +380,27 @@
 
     <!-- MODAL DE CRIAÇÃO (NOVO) -->
     <div id="create-modal" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-750">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            <div
+                class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-750">
                 <h3 class="text-lg font-bold text-gray-800 dark:text-white">Criar Novo Baralho</h3>
-                <button id="close-create-btn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <button id="close-create-btn"
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                     ✕
                 </button>
             </div>
-            
+
             <div class="p-6 overflow-y-auto">
                 <!-- Botões de IA e Instruções -->
                 <div class="flex gap-3 mb-6">
-                    <a href="https://gemini.google.com/gem/1r3YvxeEppp_wrCEu4S2qiMWg6mtGa5uI?usp=sharing" target="_blank" class="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-2 rounded-lg text-center shadow-md transition-transform transform hover:scale-105 flex items-center justify-center gap-2">
+                    <a href="https://gemini.google.com/gem/1r3YvxeEppp_wrCEu4S2qiMWg6mtGa5uI?usp=sharing"
+                        target="_blank"
+                        class="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-2 rounded-lg text-center shadow-md transition-transform transform hover:scale-105 flex items-center justify-center gap-2">
                         🤖 Gerar com IA
                     </a>
-                    <button id="open-instructions-btn" class="flex-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold py-3 px-2 rounded-lg transition border border-gray-300 dark:border-gray-600 flex items-center justify-center gap-2">
+                    <button id="open-instructions-btn"
+                        class="flex-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold py-3 px-2 rounded-lg transition border border-gray-300 dark:border-gray-600 flex items-center justify-center gap-2">
                         ❓ Instruções
                     </button>
                 </div>
@@ -252,19 +408,25 @@
                 <!-- Inputs -->
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome do Baralho</label>
-                        <input type="text" id="new-deck-name" placeholder="Ex: Anatomia Cardíaca" class="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white transition">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome do
+                            Baralho</label>
+                        <input type="text" id="new-deck-name" placeholder="Ex: Anatomia Cardíaca"
+                            class="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white transition">
                     </div>
-                    
+
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">JSON Gerado (Cole aqui)</label>
-                        <textarea id="pasted-json" rows="6" placeholder='Cole o código JSON aqui. Ex: [{"type": "open", ...}]' class="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white resize-none font-mono text-xs"></textarea>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">JSON Gerado (Cole
+                            aqui)</label>
+                        <textarea id="pasted-json" rows="6"
+                            placeholder='Cole o código JSON aqui. Ex: [{"type": "open", ...}]'
+                            class="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white resize-none font-mono text-xs"></textarea>
                     </div>
                 </div>
             </div>
 
             <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
-                <button id="load-pasted-deck-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg text-lg transition shadow-lg flex items-center justify-center gap-2">
+                <button id="load-pasted-deck-btn"
+                    class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg text-lg transition shadow-lg flex items-center justify-center gap-2">
                     🚀 Começar a Jogar
                 </button>
             </div>
@@ -276,21 +438,25 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
             <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                 <h3 class="text-lg font-bold text-gray-800 dark:text-white">Como Usar</h3>
-                <button id="close-instructions-btn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-xl">
+                <button id="close-instructions-btn"
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-xl">
                     ✕
                 </button>
             </div>
             <div class="p-6 overflow-y-auto space-y-6 text-center bg-gray-100 dark:bg-gray-900">
                 <div class="bg-white dark:bg-gray-800 p-2 rounded-lg shadow">
-                    <img src="instruction1.png" alt="Passo 1" class="w-full max-w-sm mx-auto aspect-[3/4] object-contain bg-gray-200 rounded">
+                    <img src="instruction1.png" alt="Passo 1"
+                        class="w-full max-w-sm mx-auto aspect-[3/4] object-contain bg-gray-200 rounded">
                     <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 font-semibold">Passo 1: Gere o conteúdo</p>
                 </div>
                 <div class="bg-white dark:bg-gray-800 p-2 rounded-lg shadow">
-                    <img src="instruction2.png" alt="Passo 2" class="w-full max-w-sm mx-auto aspect-[3/4] object-contain bg-gray-200 rounded">
+                    <img src="instruction2.png" alt="Passo 2"
+                        class="w-full max-w-sm mx-auto aspect-[3/4] object-contain bg-gray-200 rounded">
                     <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 font-semibold">Passo 2: Copie o JSON</p>
                 </div>
                 <div class="bg-white dark:bg-gray-800 p-2 rounded-lg shadow">
-                    <img src="instruction3.png" alt="Passo 3" class="w-full max-w-sm mx-auto aspect-[3/4] object-contain bg-gray-200 rounded">
+                    <img src="instruction3.png" alt="Passo 3"
+                        class="w-full max-w-sm mx-auto aspect-[3/4] object-contain bg-gray-200 rounded">
                     <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 font-semibold">Passo 3: Cole e jogue</p>
                 </div>
             </div>
@@ -299,34 +465,44 @@
 
     <!-- MODAL DE EDIÇÃO DE CARTÃO (JÁ EXISTENTE) -->
     <div id="edit-modal" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex justify-between items-center">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
+            <div
+                class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex justify-between items-center">
                 <h3 class="text-lg font-bold text-gray-800 dark:text-white">Editar Flashcard</h3>
-                <button id="close-modal-btn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <button id="close-modal-btn"
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                     ✕
                 </button>
             </div>
-            
+
             <div class="p-6 space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pergunta / Descrição</label>
-                    <textarea id="edit-question-input" rows="3" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white resize-none"></textarea>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pergunta /
+                        Descrição</label>
+                    <textarea id="edit-question-input" rows="3"
+                        class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white resize-none"></textarea>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Resposta Principal</label>
-                    <input type="text" id="edit-answer-input" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Resposta
+                        Principal</label>
+                    <input type="text" id="edit-answer-input"
+                        class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white">
                 </div>
                 <div id="edit-answer-2-group" class="hidden">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Resposta 2</label>
-                    <input type="text" id="edit-answer-2-input" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white">
+                    <input type="text" id="edit-answer-2-input"
+                        class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white">
                 </div>
             </div>
 
             <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 flex justify-end gap-3">
-                <button id="cancel-edit-btn" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <button id="cancel-edit-btn"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     Cancelar
                 </button>
-                <button id="save-edit-btn" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <button id="save-edit-btn"
+                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     Salvar Alterações
                 </button>
             </div>
@@ -335,75 +511,105 @@
     </div>
 
     <!-- MODAL DE API KEY (IA) -->
-    <div id="api-modal" class="hidden fixed inset-0 modal-overlay z-[70] flex items-center justify-center p-4 text-gray-800 dark:text-gray-200">
+    <div id="api-modal"
+        class="hidden fixed inset-0 modal-overlay z-[70] flex items-center justify-center p-4 text-gray-800 dark:text-gray-200">
         <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
+            <div
+                class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
                 <h3 class="font-bold text-xl">Recursos de IA</h3>
-                <button id="close-api-modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 text-2xl">✕</button>
+                <button id="close-api-modal"
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 text-2xl">✕</button>
             </div>
             <div class="p-6 space-y-4">
-                <p class="text-sm">Ative a verificação inteligente para identificar acertos em caso de erros de digitação.</p>
+                <p class="text-sm">Ative a verificação inteligente para identificar acertos em caso de erros de
+                    digitação.</p>
                 <div>
                     <label class="block text-sm font-semibold mb-2">Sua Gemini API Key</label>
                     <div class="relative">
-                        <input type="password" id="api-key-input" class="w-full pl-4 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Cole sua chave aqui..." name="api-key">
+                        <input type="password" id="api-key-input"
+                            class="w-full pl-4 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                            placeholder="Cole sua chave aqui..." name="api-key">
                     </div>
-                    <p class="text-xs text-gray-500 mt-2">Sua chave é salva localmente e usada apenas para conferir suas respostas.</p>
+                    <p class="text-xs text-gray-500 mt-2">Sua chave é salva localmente e usada apenas para conferir suas
+                        respostas.</p>
                 </div>
                 <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg border border-blue-100 dark:border-blue-800">
-                    <p class="text-xs text-blue-700 dark:text-blue-300">Não tem uma chave? <button id="open-ai-instructions" class="font-bold underline">Clique aqui para ver o tutorial</button></p>
+                    <p class="text-xs text-blue-700 dark:text-blue-300">Não tem uma chave? <button
+                            id="open-ai-instructions" class="font-bold underline">Clique aqui para ver o
+                            tutorial</button></p>
                 </div>
             </div>
             <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 flex gap-3">
-                <button id="disable-ai-btn" class="flex-1 py-3 text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">Desativar</button>
-                <button id="save-api-key-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition shadow-lg">Ativar IA</button>
+                <button id="disable-ai-btn"
+                    class="flex-1 py-3 text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">Desativar</button>
+                <button id="save-api-key-btn"
+                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition shadow-lg">Ativar
+                    IA</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL DE INSTRUÇÕES API (REUSADO) -->
-    <div id="ai-instructions-modal" class="hidden fixed inset-0 modal-overlay z-[80] flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
+    <div id="ai-instructions-modal"
+        class="hidden fixed inset-0 modal-overlay z-[80] flex items-center justify-center p-4">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div
+                class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
                 <h3 class="font-bold text-xl text-gray-800 dark:text-white">Como criar sua API Key</h3>
-                <button id="close-ai-instructions" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 text-2xl">✕</button>
+                <button id="close-ai-instructions"
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 text-2xl">✕</button>
             </div>
             <div class="p-6 space-y-8 overflow-y-auto">
                 <div class="space-y-3">
                     <div class="flex items-center gap-3">
-                        <span class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">1</span>
+                        <span
+                            class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">1</span>
                         <p class="font-semibold text-lg">Acesse o Google AI Studio e aceite os termos</p>
                     </div>
-                    <img src="instruction1.png" alt="Passo 1" class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <img src="instruction1.png" alt="Passo 1"
+                        class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 </div>
                 <div class="space-y-3">
                     <div class="flex items-center gap-3">
-                        <span class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">2</span>
+                        <span
+                            class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">2</span>
                         <p class="font-semibold text-lg">Clique em "Create API key"</p>
                     </div>
-                    <img src="instruction2.png" alt="Passo 2" class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <img src="instruction2.png" alt="Passo 2"
+                        class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 </div>
                 <div class="space-y-3">
                     <div class="flex items-center gap-3">
-                        <span class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">3</span>
+                        <span
+                            class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">3</span>
                         <p class="font-semibold text-lg">Copie sua chave gerada</p>
                     </div>
-                    <img src="instruction3.png" alt="Passo 3" class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <img src="instruction3.png" alt="Passo 3"
+                        class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 </div>
             </div>
-            <div class="px-6 py-5 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-4 bg-gray-50 dark:bg-gray-750">
-                <a href="https://aistudio.google.com/app/api-keys" target="_blank" class="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg">
+            <div
+                class="px-6 py-5 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-4 bg-gray-50 dark:bg-gray-750">
+                <a href="https://aistudio.google.com/app/api-keys" target="_blank"
+                    class="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg">
                     Ir para AI Studio
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                    </svg>
                 </a>
-                <button id="ai-instructions-ready" class="px-8 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white font-bold rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition">Pronto</button>
+                <button id="ai-instructions-ready"
+                    class="px-8 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white font-bold rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition">Pronto</button>
             </div>
         </div>
     </div>
 
     <!-- AI Chat Container -->
-    <div id="ai-chat-container" class="fixed bottom-0 right-0 w-full md:w-96 md:h-2/3 bg-white dark:bg-gray-800 shadow-2xl rounded-t-xl md:rounded-l-xl md:rounded-tr-none z-50 flex flex-col transition-all duration-300 transform translate-y-full md:translate-y-0 md:translate-x-full">
-        <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center bg-purple-600 text-white rounded-t-xl md:rounded-tl-xl md:rounded-tr-none">
+    <div id="ai-chat-container"
+        class="fixed bottom-0 right-0 w-full md:w-96 md:h-2/3 bg-white dark:bg-gray-800 shadow-2xl rounded-t-xl md:rounded-l-xl md:rounded-tr-none z-50 flex flex-col transition-all duration-300 transform translate-y-full md:translate-y-0 md:translate-x-full">
+        <div
+            class="p-4 border-b dark:border-gray-700 flex justify-between items-center bg-purple-600 text-white rounded-t-xl md:rounded-tl-xl md:rounded-tr-none">
             <h3 class="font-bold flex items-center gap-2">Explicação da IA ✨</h3>
             <button id="close-chat-btn" class="text-white hover:text-gray-200 text-xl font-bold">✕</button>
         </div>
@@ -413,21 +619,37 @@
             </div>
         </div>
         <div class="p-4 border-t dark:border-gray-700 flex gap-2">
-            <input type="text" id="chat-input" placeholder="Escreva sua dúvida..." class="flex-1 p-2 border dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500">
-            <button id="send-chat-btn" class="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            <input type="text" id="chat-input" placeholder="Escreva sua dúvida..."
+                class="flex-1 p-2 border dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <button id="send-chat-btn"
+                class="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform rotate-90" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                 </svg>
             </button>
         </div>
     </div>
 
     <style>
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; }
-        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #4b5563;
+        }
+
         #ai-chat-container {
             right: 0;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -439,6 +661,7 @@
                 transform: translateY(100%);
                 height: 70vh;
             }
+
             #ai-chat-container.open {
                 transform: translateY(0);
             }
@@ -451,6 +674,7 @@
                 height: 70vh;
                 top: 15vh;
             }
+
             #ai-chat-container.open {
                 transform: translateX(0);
             }
@@ -464,10 +688,13 @@
             max-width: 85%;
             align-self: flex-start;
             font-size: 0.875rem;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
-        .dark .chat-message-ai { background: #374151; color: #f3f4f6; }
+        .dark .chat-message-ai {
+            background: #374151;
+            color: #f3f4f6;
+        }
 
         .chat-message-user {
             background: #7c3aed;
@@ -477,13 +704,13 @@
             max-width: 85%;
             align-self: flex-end;
             font-size: 0.875rem;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
     </style>
 
     <!-- Script carregado externamente -->
     <script src="script.js" type="module" defer></script>
-    
+
     <!-- Service Worker (PWA) -->
     <script>
         if ('serviceWorker' in navigator) {
@@ -495,4 +722,5 @@
         }
     </script>
 </body>
+
 </html>
