@@ -2,6 +2,7 @@
 
 Uma ferramenta de estudo moderna e inteligente para transformar seus materiais em conhecimento memorizado. Carregue seus arquivos ou textos e deixe a Inteligência Artificial criar seu banco de questões em segundos.
 
+Use agora no navegador: https://cparthur1.github.io/Flashcards/
 ---
 
 ## ✨ Novas Funcionalidades (Recentes)

@@ -97,7 +97,7 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const FILES_DEFAULT_SVG = '<svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>';
 const TXT_DEFAULT_SVG = '<svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>';
 
-const systemInstruction = "Você é um assistente cirúrgico especializado em educação médica e editor de flashcards. Sua função é gerenciar um baralho de flashcards (Anki-style) para um estudante de medicina. Você pode adicionar, editar ou remover cards usando as ferramentas fornecidas. Mantenha o tom profissional, analítico e pragmático. Ao editar, busque clareza terminológica e precisão técnica. Você deve atuar como um agente, executando as ações solicitadas e confirmando-as de forma concisa.";
+const systemInstruction = "Sua função é gerenciar um baralho de flashcards (Anki-style) para um estudante universitário. Você pode adicionar, editar ou remover cards usando as ferramentas fornecidas. Mantenha o tom profissional, analítico e pragmático. Ao editar, busque clareza terminológica e precisão técnica. Você deve atuar como um agente, executando as ações solicitadas e confirmando-as de forma concisa.";
 
 
 // Gemini Tools Definitions for Agentic Editing
@@ -432,8 +432,7 @@ async function generateFlashcards(sourceType) {
         spinnerFiles.classList.remove('hidden');
         filesLoadingMsg.classList.remove('hidden');
 
-        // Can use flash for speed or pro if many complex docs. Let's stick with flash to be faster/cheaper, or pro if PDF
-        // gemini-3-flash-preview autochooses the latest flash model available and handles multimodal fine.
+
         model = genAI.getGenerativeModel({
             model: "gemini-flash-latest",
             generationConfig,
@@ -736,8 +735,7 @@ async function generateDeckTitle(sourceParts, genAI) {
 
         const titlePrompt = "Com base no material fornecido, sugira um título curto, criativo e profissional para este baralho de flashcards (máximo de 4 palavras). Retorne APENAS o título, sem aspas ou pontuação extra.";
 
-        // Prepare parts for the lite model (exclude the original basePrompt to save context, just focus on content)
-        // Actually, let's just send the whole source material provided.
+        
         const titleParts = [titlePrompt, ...sourceParts.filter(p => !p.text || !p.text.includes("JSON"))];
 
         const result = await liteModel.generateContent(titleParts);
