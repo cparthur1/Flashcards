@@ -90,28 +90,44 @@ function createBall(isCorrect) {
 
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    balls.forEach((ball, i) => {
+    for (let i = 0; i < balls.length; i++) {
+        const ball = balls[i];
         if (!ball.isStatic) {
             ball.dy += 0.2;
             ball.y += ball.dy;
             if (ball.y + ball.radius >= canvas.height) {
                 ball.y = canvas.height - ball.radius;
                 ball.isStatic = true;
+                continue;
             }
-            // Simple collision check with static balls
+            let isTouchingStatic = false;
             for (let j = 0; j < balls.length; j++) {
                 if (i === j || !balls[j].isStatic) continue;
-                const other = balls[j];
-                const dx = ball.x - other.x;
-                const dy = ball.y - other.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < ball.radius + other.radius && ball.y < other.y) {
+                const otherBall = balls[j];
+                const dx = ball.x - otherBall.x;
+                const dy = ball.y - otherBall.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const minDistance = ball.radius + otherBall.radius;
+                if (distance < minDistance && ball.y < otherBall.y) {
+                    isTouchingStatic = true;
+                    if (!ball.firstContactTime) ball.firstContactTime = Date.now();
                     ball.dy *= -0.3;
-                    ball.y = other.y - (ball.radius + other.radius);
-                    ball.x += dx * 0.05;
+                    const overlap = minDistance - distance;
+                    const angle = Math.atan2(dy, dx);
+                    ball.x += Math.cos(angle) * overlap;
+                    ball.y += Math.sin(angle) * overlap;
+                    ball.x += dx * 0.08; // Rolling force
+                    break;
+                }
+            }
+            if (isTouchingStatic && ball.firstContactTime) {
+                if (Date.now() - ball.firstContactTime > 5000) {
+                    ball.isStatic = true;
                 }
             }
         }
+    }
+    balls.forEach(ball => {
         ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
         ctx.fillStyle = ball.color; ctx.fill(); ctx.closePath();
     });
