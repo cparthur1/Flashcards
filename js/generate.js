@@ -38,6 +38,7 @@ const spinnerTxt = document.getElementById('spinner-txt');
 const txtLoadingMsg = document.getElementById('txt-loading-msg');
 
 const globalError = document.getElementById('global-error');
+const startScratchBtn = document.getElementById('start-scratch-btn');
 
 const dashboardView = document.getElementById('dashboard-view');
 const editorView = document.getElementById('editor-view');
@@ -978,6 +979,16 @@ playDeckBtn.addEventListener('click', () => {
     localStorage.setItem('flashcardsSave', JSON.stringify(gameState));
 
     window.location.href = 'game.html';
+});
+
+// Start from Scratch
+startScratchBtn.addEventListener('click', () => {
+    deckCards = [];
+    deckTitleDisplay.textContent = "Novo Baralho";
+    renderDeck();
+    dashboardView.classList.add('hidden');
+    editorView.classList.remove('hidden');
+    globalError.textContent = "";
 });
 
 // Initialization: Check if we are loading an existing deck for editing
