@@ -271,7 +271,7 @@ textarea::-webkit-scrollbar-thumb,
 /* Mobile Header Overlap Fix */
 @media (max-width: 767px) {
     #game-container {
-        margin-top: -80px;
+        margin-top: -180px;
     }
     #ai-toggle-btn {
         top: auto;

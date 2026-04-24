@@ -985,9 +985,10 @@ playDeckBtn.addEventListener('click', () => {
 startScratchBtn.addEventListener('click', () => {
     deckCards = [];
     deckTitleDisplay.textContent = "Novo Baralho";
-    renderDeck();
+    renderCardsList(true);
     dashboardView.classList.add('hidden');
     editorView.classList.remove('hidden');
+    editorView.classList.add('flex');
     globalError.textContent = "";
 });
 
