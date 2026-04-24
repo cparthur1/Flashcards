@@ -149,23 +149,37 @@
         <p id="upload-error" class="text-red-500 mt-4 text-sm"></p>
     </div>
 
-    <!-- TELA DO JOGO -->
-    <div id="game-container" class="w-full max-w-2xl mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-2xl p-6 sm:p-8 transition-all duration-500 hidden relative">
-        <div class="flex justify-between items-center mb-6">
-            <div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400 flex items-center gap-2">
-                    <span id="reset-btn" class="cursor-pointer hover:opacity-70 transition-opacity p-1" title="Voltar ao início">🗑️</span>
-                    <span id="export-btn" class="cursor-pointer hover:opacity-70 transition-opacity p-1" title="Baixar JSON Atualizado">💾</span>
-                    <span id="deck-title" class="ml-2 truncate max-w-[150px] sm:max-w-xs">Flashcards</span>
-                </h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Questões restantes: <span id="questions-left">0</span></p>
+    <header id="global-header" class="hidden fixed z-50 transition-all duration-300 
+        top-0 left-0 w-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex items-center justify-between
+        md:top-6 md:left-6 md:w-auto md:rounded-full md:px-6 md:py-3 md:shadow-2xl md:border md:border-gray-200 dark:md:border-gray-700">
+        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1">
+                <span id="reset-btn" class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors text-xl" title="Voltar ao início">🗑️</span>
+                <span id="export-btn" class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors text-xl" title="Baixar JSON Atualizado">💾</span>
+                <button id="go-to-editor-btn" class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full hover:bg-blue-100 dark:hover:bg-blue-800/50 transition-colors text-sm font-bold border border-blue-100 dark:border-blue-800" title="Editar com Assistente de IA">
+                    <span>✏️</span>
+                    <span class="hidden sm:inline">Editar</span>
+                </button>
             </div>
-            <div class="text-right">
-                <p class="text-sm text-gray-500 dark:text-gray-400">Pontuação</p>
-                <p id="score" class="text-2xl font-bold text-gray-900 dark:text-white">0</p>
+            <div class="h-6 w-[1px] bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block"></div>
+            <h1 id="deck-title" class="font-bold text-gray-800 dark:text-white truncate max-w-[100px] sm:max-w-[200px] md:max-w-xs text-lg">Flashcards</h1>
+        </div>
+        
+        <div class="flex items-center gap-4 text-right ml-4">
+            <div class="hidden sm:block">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">Restantes</p>
+                <p id="questions-left" class="text-sm font-bold text-blue-600 dark:text-blue-400">0</p>
+            </div>
+            <div class="h-8 w-[1px] bg-gray-100 dark:bg-gray-700 mx-1 hidden sm:block"></div>
+            <div>
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">Score</p>
+                <p id="score" class="text-sm font-bold text-gray-900 dark:text-white text-center">0</p>
             </div>
         </div>
+    </header>
 
+    <!-- TELA DO JOGO -->
+    <div id="game-container" class="w-full max-w-2xl mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-2xl p-6 sm:p-8 transition-all duration-500 hidden relative">
         <div id="question-card" class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg mb-6 min-h-[120px] flex flex-col items-center justify-center relative group">
             <button id="delete-card-btn" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600" title="Remover este card permanentemente">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>

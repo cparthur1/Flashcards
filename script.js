@@ -9,6 +9,8 @@ const gameContainer = document.getElementById('game-container');
 const fileInput = document.getElementById('file-input');
 const startBtn = document.getElementById('start-btn');
 const uploadError = document.getElementById('upload-error');
+const globalHeader = document.getElementById('global-header');
+const goToEditorBtn = document.getElementById('go-to-editor-btn');
 
 // NEW CREATE BUTTON & MODALS
 const openCreateBtn = document.getElementById('open-create-btn');
@@ -126,6 +128,7 @@ startBtn.addEventListener('click', () => {
             deckTitle.textContent = fileName;
             uploadScreen.classList.add('hidden');
             gameContainer.classList.remove('hidden');
+            globalHeader.classList.remove('hidden');
             startGame();
         } catch (e) {
             uploadError.textContent = `Erro ao ler o arquivo: ${e.message}`;
@@ -141,6 +144,15 @@ startBtn.addEventListener('click', () => {
 openCreateBtn.addEventListener('click', () => {
     window.location.href = 'generate.html';
 });
+
+if (goToEditorBtn) {
+    goToEditorBtn.addEventListener('click', () => {
+        // Salvar estado atual para o editor
+        localStorage.setItem('editing_deck', JSON.stringify(allQuestions));
+        localStorage.setItem('editing_deck_title', deckTitle.textContent);
+        window.location.href = 'generate.html';
+    });
+}
 
 
 // --- EVENT LISTENERS DE IA ---
@@ -327,6 +339,12 @@ function exportUpdatedJson() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 }
+
+resetBtn.addEventListener('click', () => {
+    if (confirm("Deseja realmente voltar ao início? Todo o progresso atual será perdido.")) {
+        location.reload();
+    }
+});
 
 function deleteCurrentCard() {
     if (!confirm("Tem certeza que deseja excluir este card permanentemente do baralho?")) return;
