@@ -67,7 +67,7 @@ export async function callWithRetry(fn, retries = 3, delay = 1000) {
  * Centralized routing configuration.
  */
 export const ROUTES = {
-    HOME: '/index.html',
-    GAME: '/pages/game.html',
-    GENERATE: '/pages/generate.html'
+    HOME: 'index.html',
+    GAME: 'pages/game.html',
+    GENERATE: 'pages/generate.html'
 };
