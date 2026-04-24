@@ -68,7 +68,7 @@ let balls = [];
 
 // --- AI STATE ---
 let isAiEnabled = false;
-let geminiApiKey = localStorage.getItem('gemini_api_key_checker') || '';
+let geminiApiKey = sessionStorage.getItem('gemini_api_key') || '';
 let genAI = null;
 let lastUserAnswerForChat = "";
 let currentChatSession = null;
@@ -410,7 +410,15 @@ async function sendChatMessage() {
 function addMsg(sender, text) {
     const div = document.createElement('div');
     div.className = sender === 'ai' ? 'chat-message-ai' : 'chat-message-user';
-    div.innerHTML = sender === 'ai' && typeof marked !== 'undefined' ? marked.parse(text) : text;
+    
+    if (sender === 'ai' && typeof marked !== 'undefined') {
+        // AI content is parsed as markdown
+        div.innerHTML = marked.parse(text);
+    } else {
+        // User content is strictly plain text to prevent XSS
+        div.textContent = text;
+    }
+    
     chatMessages.appendChild(div);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
@@ -441,11 +449,11 @@ goToEditorBtn.addEventListener('click', () => {
 aiToggleBtn.addEventListener('click', () => { apiModal.classList.remove('hidden'); apiKeyInput.value = geminiApiKey; });
 saveApiKeyBtn.addEventListener('click', () => {
     geminiApiKey = apiKeyInput.value.trim();
-    localStorage.setItem('gemini_api_key_checker', geminiApiKey);
+    sessionStorage.setItem('gemini_api_key', geminiApiKey);
     initializeAi(); apiModal.classList.add('hidden');
 });
 disableAiBtn.addEventListener('click', () => {
-    isAiEnabled = false; geminiApiKey = ''; localStorage.removeItem('gemini_api_key_checker');
+    isAiEnabled = false; geminiApiKey = ''; sessionStorage.removeItem('gemini_api_key');
     aiIconOff.classList.remove('hidden'); aiIconOn.classList.add('hidden'); apiModal.classList.add('hidden');
 });
 askAiBtn.addEventListener('click', () => { aiChatContainer.classList.add('open'); chatInput.focus(); });

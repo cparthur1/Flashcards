@@ -33,6 +33,15 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+const ALLOWED_CDN_HOSTS = new Set([
+  'cdnjs.cloudflare.com',
+  'fonts.googleapis.com',
+  'fonts.gstatic.com',
+  'cdn.tailwindcss.com',
+  'cdn.jsdelivr.net',
+  'esm.run'
+]);
+
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
@@ -52,8 +61,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Strategy: Cache-First for CDNs
-  if (url.hostname.includes('cdnjs.cloudflare.com') || url.hostname.includes('fonts.gstatic.com') || url.hostname.includes('cdn.tailwindcss.com')) {
+  // Strategy: Cache-First for whitelisted CDNs
+  if (ALLOWED_CDN_HOSTS.has(url.hostname)) {
     event.respondWith(
       caches.match(event.request).then((cached) => {
         return cached || fetch(event.request).then((response) => {

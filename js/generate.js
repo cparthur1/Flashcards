@@ -289,14 +289,14 @@ txtUpload.addEventListener('change', () => {
     renderFileIcons(files, txtIconsContainer, TXT_DEFAULT_SVG);
 });
 
-// Load saved key
-const savedKey = localStorage.getItem('gemini_api_key');
+// Load saved key from sessionStorage (clears on tab close)
+const savedKey = sessionStorage.getItem('gemini_api_key');
 if (savedKey) {
     apiKeyInput.value = savedKey;
 }
 
 apiKeyInput.addEventListener('change', () => {
-    localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
+    sessionStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
 });
 
 // Helper: Read file as Base64 for Gemini Parts
