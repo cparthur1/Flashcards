@@ -456,6 +456,7 @@ disableAiBtn.addEventListener('click', () => {
     isAiEnabled = false; geminiApiKey = ''; sessionStorage.removeItem('gemini_api_key');
     aiIconOff.classList.remove('hidden'); aiIconOn.classList.add('hidden'); apiModal.classList.add('hidden');
 });
+closeApiModal.addEventListener('click', () => apiModal.classList.add('hidden'));
 askAiBtn.addEventListener('click', () => { aiChatContainer.classList.add('open'); chatInput.focus(); });
 closeChatBtn.addEventListener('click', () => aiChatContainer.classList.remove('open'));
 sendChatBtn.addEventListener('click', sendChatMessage);

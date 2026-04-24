@@ -212,3 +212,10 @@ textarea::-webkit-scrollbar-thumb,
     background-size: 400% 400% !important;
     animation: linearGradientMove 10s ease infinite !important;
 }
+
+/* Mobile Header Overlap Fix */
+@media (max-width: 767px) {
+    #game-container {
+        margin-top: 100px;
+    }
+}
