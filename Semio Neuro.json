@@ -1,0 +1,555 @@
+[
+    {
+        "type": "open",
+        "description": "Como é definido o tônus muscular em estado de repouso voluntário?",
+        "answer": "Tensão residual"
+    },
+    {
+        "type": "open",
+        "description": "Qual fundamento fisiológico é a base do tônus muscular?",
+        "answer": "Arco reflexo miotático"
+    },
+    {
+        "type": "open",
+        "description": "Qual estrutura detecta o comprimento muscular no arco reflexo?",
+        "answer": "Fuso neuromuscular"
+    },
+    {
+        "type": "open",
+        "description": "Quais neurônios mantêm o nível basal de contração das fibras extrafusais?",
+        "answer": "Neurônios motores alfa"
+    },
+    {
+        "type": "open",
+        "description": "Qual técnica clínica é essencial para avaliar o tônus?",
+        "answer": "Mobilização passiva"
+    },
+    {
+        "type": "open",
+        "description": "Qual alteração do tônus é classificada como velocidade-dependente?",
+        "answer": "Espasticidade"
+    },
+    {
+        "type": "open",
+        "description": "Qual o termo para a resistência uniforme e constante independente da velocidade?",
+        "answer": "Hipertonia plástica"
+    },
+    {
+        "type": "open",
+        "description": "O fenômeno da 'Roda Dentada' é característico de qual sistema neurológico?",
+        "answer": "Sistema Extrapiramidal"
+    },
+    {
+        "type": "open",
+        "description": "Qual doença é o exemplo clássico de hipertonia plástica por depleção de dopamina?",
+        "answer": "Doença de Parkinson"
+    },
+    {
+        "type": "open",
+        "description": "O fenômeno do 'Canivete' indica lesão em qual via neurológica?",
+        "answer": "Sistema Piramidal"
+    },
+    {
+        "type": "open",
+        "description": "Qual o principal modulador do tônus muscular que, se lesado, causa hipotonia ipsilateral?",
+        "answer": "Cerebelo"
+    },
+    {
+        "type": "open",
+        "description": "O 'Asterixe' é um marcador clássico de qual condição clínica?",
+        "answer": "Encefalopatias Metabólicas"
+    },
+    {
+        "type": "open",
+        "description": "Qual a técnica de pesquisa para o fenômeno de Asterixe?",
+        "answer": "Posição de parar o trânsito"
+    },
+    {
+        "type": "open",
+        "description": "Na escala MRC, qual grau representa a força normal (vence resistência máxima)?",
+        "answer": "Grau 5"
+    },
+    {
+        "type": "open",
+        "description": "Na escala MRC, qual grau indica que o músculo vence a gravidade em amplitude total, mas não vence resistência manual?",
+        "answer": "Grau 3"
+    },
+    {
+        "type": "open",
+        "description": "Qual o termo para a ausência total de força (Grau 0)?",
+        "answer": "Plegia"
+    },
+    {
+        "type": "open",
+        "description": "Como se chama o déficit de força que acomete apenas um membro?",
+        "answer": "Monoparesia"
+    },
+    {
+        "type": "open",
+        "description": "Qual a topografia do déficit na hemiplegia?",
+        "answer": "Dimídio"
+    },
+    {
+        "type": "open",
+        "description": "Onde ocorre a decussação das pirâmides no trato corticoespinhal?",
+        "answer": "Bulbo"
+    },
+    {
+        "type": "open",
+        "description": "Qual neurotransmissor é liberado na placa motora para a contração muscular?",
+        "answer": "Acetilcolina"
+    },
+    {
+        "type": "open",
+        "description": "Qual o conjunto de fibras musculares inervadas por um único segmento espinal?",
+        "answer": "Miótomo"
+    },
+    {
+        "type": "open",
+        "description": "Qual a raiz nervosa e o nervo responsáveis pela abdução do ombro (Deltoide)?",
+        "answer": "C5-C6 e Axilar"
+    },
+    {
+        "type": "open",
+        "description": "A 'mão caída' é típica de lesão em qual nervo periférico?",
+        "answer": "Nervo Radial"
+    },
+    {
+        "type": "open",
+        "description": "Qual nervo é testado na abdução dos dedos em leque?",
+        "answer": "Nervo Ulnar"
+    },
+    {
+        "type": "open",
+        "description": "Qual músculo é o principal flexor do quadril (raízes L2-L4)?",
+        "answer": "Iliopsoas"
+    },
+    {
+        "type": "open",
+        "description": "A fraqueza do Tibial Anterior (L4-L5) causa qual tipo de marcha?",
+        "answer": "Marcha escarvante"
+    },
+    {
+        "type": "open",
+        "description": "Qual raiz nervosa é testada na flexão plantar (ficar na ponta dos pés)?",
+        "answer": "S1"
+    },
+    {
+        "type": "open",
+        "description": "Qual manobra detecta paresias mínimas nos MMSS com mãos em pronação?",
+        "answer": "Manobra de Mingazzini"
+    },
+    {
+        "type": "open",
+        "description": "Qual manobra de MMSS é mais sensível para lesão piramidal (sinal do pronador)?",
+        "answer": "Manobra de Barré"
+    },
+    {
+        "type": "open",
+        "description": "Na Manobra de Barré para MMII, qual a posição e o ângulo das pernas?",
+        "answer": "Decúbito ventral a 45 graus"
+    },
+    {
+        "type": "open",
+        "description": "Como se chama a capacidade de realizar movimentos com precisão ao alvo?",
+        "answer": "Metria"
+    },
+    {
+        "type": "open",
+        "description": "Qual o termo para a falha na coordenação rítmica de movimentos alternados?",
+        "answer": "Disdiadococinesia"
+    },
+    {
+        "type": "open",
+        "description": "O sinal do Rebote (Stewart-Holmes) avalia qual função neurológica?",
+        "answer": "Sinergia"
+    },
+    {
+        "type": "open",
+        "description": "Qual estrutura neurológica é responsável pela eumetria e diadococinesia?",
+        "answer": "Cerebelo"
+    },
+    {
+        "type": "open",
+        "description": "Onde se localiza o receptor do arco reflexo tendíneo profundo?",
+        "answer": "Fuso neuromuscular"
+    },
+    {
+        "type": "open",
+        "description": "Qual manobra de distração ajuda a revelar reflexos tendíneos ausentes?",
+        "answer": "Manobra de Jendrassik"
+    },
+    {
+        "type": "open_double",
+        "description": "Quais as raízes e a resposta esperada do reflexo bicipital?",
+        "answer": "C5-C6",
+        "answer2": "Flexão do cotovelo"
+    },
+    {
+        "type": "open_double",
+        "description": "Quais as raízes e a resposta esperada do reflexo patelar?",
+        "answer": "L2-L4",
+        "answer2": "Extensão do joelho"
+    },
+    {
+        "type": "open",
+        "description": "Qual a graduação numérica para um reflexo classificado como Hiporreflexia?",
+        "answer": "1"
+    },
+    {
+        "type": "open",
+        "description": "O que o 'Clono' indica em termos de localização de lesão?",
+        "answer": "Lesão do Primeiro Neurônio Motor"
+    },
+    {
+        "type": "open",
+        "description": "Qual a resposta patológica no Sinal de Babinski?",
+        "answer": "Extensão do hálux"
+    },
+    {
+        "type": "open",
+        "description": "Qual sinal é considerado o 'Babinski do membro superior'?",
+        "answer": "Sinal de Hoffmann"
+    },
+    {
+        "type": "open",
+        "description": "Qual reflexo mucoso avalia a integridade da ponte (NC V e NC VII)?",
+        "answer": "Reflexo Corneopalpebral"
+    },
+    {
+        "type": "open",
+        "description": "A ausência de qual reflexo superficial indica urgência para Síndrome da Cauda Equina?",
+        "answer": "Reflexo Anal Superficial"
+    },
+    {
+        "type": "multiple_choice",
+        "description": "Qual sistema NÃO compõe a Tríade do Equilíbrio?",
+        "answer": "Auditivo",
+        "options": [
+            "Visão",
+            "Vestibular",
+            "Auditivo",
+            "Propriocepção"
+        ]
+    },
+    {
+        "type": "open",
+        "description": "O Teste de Romberg positivo indica déficit em quais sistemas?",
+        "answer": "Propriocepção ou Vestibular"
+    },
+    {
+        "type": "open",
+        "description": "Como é a queda na ataxia vestibular durante o teste de Romberg?",
+        "answer": "Sempre para o lado da lesão"
+    },
+    {
+        "type": "open",
+        "description": "Qual marcha é caracterizada por circundução do membro inferior espástico?",
+        "answer": "Marcha Ceifante"
+    },
+    {
+        "type": "open",
+        "description": "Qual o nome da marcha com passos curtos, rápidos e tronco inclinado para frente?",
+        "answer": "Marcha Parkinsoniana"
+    },
+    {
+        "type": "open",
+        "description": "O fenômeno de 'Festinação' ocorre em qual tipo de marcha?",
+        "answer": "Parkinsoniana"
+    },
+    {
+        "type": "open",
+        "description": "A 'Marcha Ebriosa' (base alargada e oscilante) é típica de lesão em qual local?",
+        "answer": "Cerebelo"
+    },
+    {
+        "type": "open",
+        "description": "Qual o dermátomo correspondente ao nível do umbigo?",
+        "answer": "T10"
+    },
+    {
+        "type": "open",
+        "description": "Qual o dermátomo correspondente ao polegar?",
+        "answer": "C6"
+    },
+    {
+        "type": "open",
+        "description": "O Trato Espinotalâmico Lateral conduz quais tipos de sensibilidade?",
+        "answer": "Dor e Temperatura"
+    },
+    {
+        "type": "open",
+        "description": "Qual via conduz a batiestesia e a palestesia?",
+        "answer": "Coluna Posterior"
+    },
+    {
+        "type": "open",
+        "description": "Qual frequência de diapasão é utilizada para testar a palestesia?",
+        "answer": "128 Hz"
+    },
+    {
+        "type": "open",
+        "description": "Como se chama a incapacidade de reconhecer um objeto pelo tato?",
+        "answer": "Astereognosia"
+    },
+    {
+        "type": "open",
+        "description": "Onde se localiza a lesão em caso de agrafestesia com sensibilidade básica preservada?",
+        "answer": "Lobo Parietal Contralateral"
+    },
+    {
+        "type": "open",
+        "description": "Qual a distância mínima de discriminação de dois pontos na polpa digital da mão?",
+        "answer": "4 mm"
+    },
+    {
+        "type": "open",
+        "description": "Quais os três componentes da Tríade de Cushing na HIC avançada?",
+        "answer": "Hipertensão, Bradicardia e Alteração Respiratória"
+    },
+    {
+        "type": "open",
+        "description": "Qual o sinal mais precoce e sensível de irritação meníngea?",
+        "answer": "Rigidez de nuca"
+    },
+    {
+        "type": "open",
+        "description": "Qual sinal meníngeo ocorre quando a flexão do pescoço causa flexão involuntária dos joelhos?",
+        "answer": "Sinal de Brudzinski"
+    },
+    {
+        "type": "open",
+        "description": "Qual sinal meníngeo avalia a resistência à extensão do joelho com a coxa fletida?",
+        "answer": "Sinal de Kernig"
+    },
+    {
+        "type": "open",
+        "description": "Como se chama a incapacidade de tocar o peito com o queixo sem abrir a boca?",
+        "answer": "Sinal de Lewinson"
+    },
+    {
+        "type": "open_double",
+        "description": "Diferencie NMS de NMI quanto ao tônus.",
+        "answer": "NMS: Espasticidade",
+        "answer2": "NMI: Hipotonia"
+    },
+    {
+        "type": "open_double",
+        "description": "Diferencie NMS de NMI quanto aos reflexos tendíneos.",
+        "answer": "NMS: Hiperreflexia",
+        "answer2": "NMI: Arreflexia"
+    },
+    {
+        "type": "open",
+        "description": "O que são fasciculações?",
+        "answer": "Contrações involuntárias de fibras musculares"
+    },
+    {
+        "type": "open",
+        "description": "Qual a principal característica do tremor no Parkinson?",
+        "answer": "Tremor de repouso"
+    },
+    {
+        "type": "open",
+        "description": "Qual termo descreve movimentos breves, rápidos e irregulares que parecem uma dança?",
+        "answer": "Coreia"
+    },
+    {
+        "type": "open",
+        "description": "Como são definidos os movimentos de torção que causam posturas anormais sustentadas?",
+        "answer": "Distonia"
+    },
+    {
+        "type": "open",
+        "description": "Qual o nome dos movimentos anormais rítmicos em torno de um eixo?",
+        "answer": "Tremor"
+    },
+    {
+        "type": "open",
+        "description": "A Tríade Clássica da HIC consiste em cefaleia, edema de papila e...?",
+        "answer": "Vômitos em jato"
+    },
+    {
+        "type": "open",
+        "description": "Qual nervo craniano é mais comumente afetado na HIC pelo seu longo trajeto?",
+        "answer": "VI par (Abducente)"
+    },
+    {
+        "type": "open",
+        "description": "Qual a principal diferença entre Déficit Cognitivo Leve e Demência?",
+        "answer": "Preservação das atividades diárias"
+    },
+    {
+        "type": "open",
+        "description": "Qual ferramenta é o padrão-ouro para triagem de comprometimento cognitivo?",
+        "answer": "MEEM"
+    },
+    {
+        "type": "multiple_choice",
+        "description": "Qual causa de demência é considerada metabólica e potencialmente reversível?",
+        "answer": "Deficiência de B12",
+        "options": [
+            "Alzheimer",
+            "Corpos de Lewy",
+            "Deficiência de B12",
+            "Creutzfeldt-Jakob"
+        ]
+    },
+    {
+        "type": "open",
+        "description": "O que compõe o Sistema Nervoso Central?",
+        "answer": "Encéfalo e Medula Espinal"
+    },
+    {
+        "type": "open",
+        "description": "Qual estrutura une os dois hemisférios cerebrais?",
+        "answer": "Corpo Caloso"
+    },
+    {
+        "type": "open",
+        "description": "Qual lobo cerebral contém o Córtex Motor Primário?",
+        "answer": "Lobo Frontal"
+    },
+    {
+        "type": "open",
+        "description": "Qual área do lobo frontal é responsável pela articulação da fala?",
+        "answer": "Área de Broca"
+    },
+    {
+        "type": "open",
+        "description": "Onde se localiza o processamento auditivo e o hipocampo?",
+        "answer": "Lobo Temporal"
+    },
+    {
+        "type": "open",
+        "description": "Qual estrutura do diencéfalo regula o ciclo circadiano através da glândula pineal?",
+        "answer": "Epitálamo"
+    },
+    {
+        "type": "open",
+        "description": "Onde ocorre a decussação motora no tronco encefálico?",
+        "answer": "Bulbo"
+    },
+    {
+        "type": "open",
+        "description": "Como se chama a substância composta predominantemente por corpos celulares?",
+        "answer": "Substância Cinzenta"
+    },
+    {
+        "type": "open",
+        "description": "Onde circula o líquido cefalorraquidiano (LCR) no encéfalo?",
+        "answer": "Ventrículos Cerebrais"
+    },
+    {
+        "type": "open",
+        "description": "A medula espinal termina em qual nível vertebral em adultos?",
+        "answer": "L1 ou L2"
+    },
+    {
+        "type": "open",
+        "description": "Qual a função do corno posterior (dorsal) da medula?",
+        "answer": "Sensitiva"
+    },
+    {
+        "type": "open",
+        "description": "Qual meninge é a camada mais externa e resistente?",
+        "answer": "Dura-máter"
+    },
+    {
+        "type": "open",
+        "description": "O LCR está contido em qual espaço meníngeo?",
+        "answer": "Espaço Subaracnóideo"
+    },
+    {
+        "type": "open",
+        "description": "Qual via motora controla movimentos voluntários distais e precisos?",
+        "answer": "Trato Corticoespinhal"
+    },
+    {
+        "type": "open",
+        "description": "Uma lesão no trato corticoespinhal ACIMA do bulbo causa déficit de qual lado?",
+        "answer": "Contralateral"
+    },
+    {
+        "type": "open",
+        "description": "A 'ALICIA' é um mnemônico utilizado para investigar qual sintoma?",
+        "answer": "Cefaleia"
+    },
+    {
+        "type": "open",
+        "description": "A sensação rotatória onde 'o mundo gira' é denominada?",
+        "answer": "Vertigem"
+    },
+    {
+        "type": "multiple_choice",
+        "description": "Qual pródromo é típico de uma crise convulsiva, mas raro na síncope?",
+        "answer": "Déjà vu",
+        "options": [
+            "Palpitações",
+            "Visão em túnel",
+            "Déjà vu",
+            "Sudorese"
+        ]
+    },
+    {
+        "type": "open",
+        "description": "Qual pontuação na Escala de Glasgow indica necessidade de intubação?",
+        "answer": "Menor ou igual a 8"
+    },
+    {
+        "type": "open_double",
+        "description": "Diferencie a Afasia de Broca da de Wernicke quanto à fala.",
+        "answer": "Broca: Não fluente",
+        "answer2": "Wernicke: Fluente"
+    },
+    {
+        "type": "open",
+        "description": "Qual o termo para a perda total do olfato?",
+        "answer": "Anosmia"
+    },
+    {
+        "type": "open",
+        "description": "A Tríade de Horner consiste em Miose, Ptose e...?",
+        "answer": "Anidrose"
+    },
+    {
+        "type": "open",
+        "description": "Qual sinal pupilar é sugestivo de neurossífilis?",
+        "answer": "Pupila de Argyll-Robertson"
+    },
+    {
+        "type": "open",
+        "description": "A lesão de qual nervo craniano causa estrabismo convergente?",
+        "answer": "VI par (Abducente)"
+    },
+    {
+        "type": "open",
+        "description": "Na lesão do nervo Facial (VII) periférica, qual parte da face é acometida?",
+        "answer": "Todo o lado ipsilateral"
+    },
+    {
+        "type": "open",
+        "description": "Na lesão do nervo Vago (X), para qual lado a úvula desvia?",
+        "answer": "Lado são"
+    },
+    {
+        "type": "open",
+        "description": "Qual nervo craniano controla o músculo Trapézio?",
+        "answer": "XI par (Acessório)"
+    },
+    {
+        "type": "open",
+        "description": "Na escala MRC, qual grau indica apenas um esboço de contração (fibrilação) sem movimento articular?",
+        "answer": "Grau 1"
+    },
+    {
+        "description": "Na escala MRC, qual grau indica movimento ativo apenas se a gravidade for eliminada?",
+        "answer": "Grau 2",
+        "type": "open"
+    },
+    {
+        "description": "Na escala MRC, qual grau indica que o músculo vence a gravidade e resistência moderada, mas é mais fraco que o lado contralateral?",
+        "answer": "Grau 4",
+        "type": "open"
+    }
+]

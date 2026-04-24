@@ -1,38 +1,20 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { callWithRetry } from './utils.js';
 
-async function compressPDF(file) {
-    const { jsPDF } = window.jspdf;
-    const arrayBuffer = await file.arrayBuffer();
-    // Configurar o worker do PDF.js
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    const outPdf = new jsPDF();
-
-    for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const scale = 0.5; // Reduz a escala para 50%
-        const viewport = page.getViewport({ scale });
-
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-
-        await page.render({ canvasContext: context, viewport: viewport }).promise;
-
-        // Converte para JPEG com 70% de qualidade
-        const imgData = canvas.toDataURL('image/jpeg', 0.7);
-
-        if (i > 1) outPdf.addPage();
-
-        // Ajusta a imagem ao tamanho da página do PDF
-        const pdfWidth = outPdf.internal.pageSize.getWidth();
-        const pdfHeight = outPdf.internal.pageSize.getHeight();
-        outPdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-    }
-
-    return outPdf.output('blob');
+function compressPDFWithWorker(file) {
+    return new Promise((resolve, reject) => {
+        const worker = new Worker('../js/pdf-worker.js');
+        worker.onmessage = (e) => {
+            if (e.data.success) resolve(e.data.blob);
+            else reject(new Error(e.data.error));
+            worker.terminate();
+        };
+        worker.onerror = (err) => {
+            reject(err);
+            worker.terminate();
+        };
+        worker.postMessage({ file, fileName: file.name });
+    });
 }
 
 
@@ -307,14 +289,14 @@ txtUpload.addEventListener('change', () => {
     renderFileIcons(files, txtIconsContainer, TXT_DEFAULT_SVG);
 });
 
-// Load saved key
-const savedKey = localStorage.getItem('gemini_api_key');
+// Load saved key from sessionStorage (clears on tab close)
+const savedKey = sessionStorage.getItem('gemini_api_key');
 if (savedKey) {
     apiKeyInput.value = savedKey;
 }
 
 apiKeyInput.addEventListener('change', () => {
-    localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
+    sessionStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
 });
 
 // Helper: Read file as Base64 for Gemini Parts
@@ -469,7 +451,7 @@ Gere aproximadamente 100 flashcards.`;
             if (fileToProcess.type === 'application/pdf' && fileToProcess.size > 5 * 1024 * 1024) {
                 filesLoadingMsg.textContent = `⏳ Comprimindo ${fileToProcess.name}... (Isto pode levar um momento)`;
                 try {
-                    const compressedBlob = await compressPDF(fileToProcess);
+                    const compressedBlob = await compressPDFWithWorker(fileToProcess);
                     fileToProcess = new File([compressedBlob], fileToProcess.name, {
                         type: 'application/pdf'
                     });
@@ -552,7 +534,7 @@ ${JSON.stringify(localCards, null, 2)}`;
 
         try {
             const chat = model.startChat({ history: [] });
-            let result = await chat.sendMessage(fillPrompt);
+            let result = await callWithRetry(() => chat.sendMessage(fillPrompt));
             let response = result.response;
 
             // Agentic loop to handle the tool call
@@ -572,7 +554,7 @@ ${JSON.stringify(localCards, null, 2)}`;
                     };
                 }));
 
-                result = await chat.sendMessage(functionResponses);
+                result = await callWithRetry(() => chat.sendMessage(functionResponses));
                 response = result.response;
             }
 
@@ -611,7 +593,7 @@ ${JSON.stringify(localCards, null, 2)}`;
         renderCardsList();
         deckTitleDisplay.textContent = "Gerando flashcards... (Isso pode levar alguns minutos)";
 
-        const result = await model.generateContentStream(parts);
+        const result = await callWithRetry(() => model.generateContentStream(parts));
         let fullText = "";
         let processedIndex = 0;
 
@@ -738,7 +720,7 @@ async function generateDeckTitle(sourceParts, genAI) {
         
         const titleParts = [titlePrompt, ...sourceParts.filter(p => !p.text || !p.text.includes("JSON"))];
 
-        const result = await liteModel.generateContent(titleParts);
+        const result = await callWithRetry(() => liteModel.generateContent(titleParts));
         const response = await result.response;
         const title = response.text().trim().replace(/["']/g, '');
 
@@ -926,7 +908,7 @@ chatSendBtn.addEventListener('click', async () => {
         const enrichedPrompt = `ATENÇÃO: O estado atual do baralho é este:\n${contextLines}\n\nComando do Usuário: ${text}`;
 
         // Simple message to the agent
-        let result = await geminiChatSession.sendMessage(enrichedPrompt);
+        let result = await callWithRetry(() => geminiChatSession.sendMessage(enrichedPrompt));
         let response = result.response;
 
         // Agent loop (handle tool calls)
@@ -947,7 +929,7 @@ chatSendBtn.addEventListener('click', async () => {
             });
 
             // Send tool outputs back
-            result = await geminiChatSession.sendMessage(functionResponses);
+            result = await callWithRetry(() => geminiChatSession.sendMessage(functionResponses));
             response = result.response;
         }
 
@@ -995,7 +977,7 @@ playDeckBtn.addEventListener('click', () => {
     };
     localStorage.setItem('flashcardsSave', JSON.stringify(gameState));
 
-    window.location.href = 'index.html';
+    window.location.href = 'game.html';
 });
 
 // Initialization: Check if we are loading an existing deck for editing
