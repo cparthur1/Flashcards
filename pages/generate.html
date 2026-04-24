@@ -37,9 +37,11 @@
                             clip-rule="evenodd"></path>
                     </svg>
                 </div>
+                <!-- Hidden username to prevent Chrome from using other fields as a username -->
+                <input type="text" name="username" value="gemini-api-user" style="display:none" autocomplete="username">
                 <input type="password" id="api-key-input"
                     class="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                    placeholder="Gemini API Key">
+                    placeholder="Gemini API Key" autocomplete="current-password" name="api-key">
             </div>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
                 Ainda não tem uma API key? <button id="open-instructions-btn" class="text-blue-500 hover:underline">Crie
