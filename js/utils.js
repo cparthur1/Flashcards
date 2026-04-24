@@ -65,9 +65,13 @@ export async function callWithRetry(fn, retries = 3, delay = 1000) {
 }
 /**
  * Centralized routing configuration.
+ * Dynamically adjusts paths based on current location (root vs /pages/).
  */
+const isSubpage = window.location.pathname.includes('/pages/');
+const prefix = isSubpage ? '../' : '';
+
 export const ROUTES = {
-    HOME: 'index.html',
-    GAME: 'pages/game.html',
-    GENERATE: 'pages/generate.html'
+    HOME: prefix + 'index.html',
+    GAME: prefix + 'pages/game.html',
+    GENERATE: prefix + 'pages/generate.html'
 };
