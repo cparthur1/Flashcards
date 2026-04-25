@@ -66,6 +66,7 @@ let currentQuestion = {};
 let currentQuestionIndexInPool = -1;
 let balls = [];
 let isFirstQuestion = true;
+let hasChatInteraction = false;
 
 // --- AI STATE ---
 let isAiEnabled = false;
@@ -192,8 +193,13 @@ function loadQuestion() {
     
     if (isFirstQuestion) {
         chatMessages.innerHTML = ''; // Limpa o placeholder inicial do HTML
-    } else {
-        // Adiciona o separador ondulado se não for a primeira questão
+        const welcomeMsg = document.createElement('div');
+        welcomeMsg.className = 'chat-message-ai';
+        welcomeMsg.textContent = 'Olá! Como posso ajudar você a entender melhor esta questão?';
+        chatMessages.appendChild(welcomeMsg);
+        isFirstQuestion = false;
+    } else if (hasChatInteraction) {
+        // Adiciona o separador ondulado apenas se houve interação na questão anterior
         const separator = document.createElement('div');
         separator.className = 'chat-separator';
         separator.innerHTML = `
@@ -201,19 +207,19 @@ function loadQuestion() {
             <span class="chat-question-label">Nova Questão</span>
         `;
         chatMessages.appendChild(separator);
+
+        const welcomeMsg = document.createElement('div');
+        welcomeMsg.className = 'chat-message-ai';
+        welcomeMsg.textContent = 'Olá! Como posso ajudar você a entender melhor esta questão?';
+        chatMessages.appendChild(welcomeMsg);
+        
+        // Garantir que o scroll vá para o final para mostrar a nova mensagem
+        setTimeout(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 100);
+
+        hasChatInteraction = false;
     }
-
-    const welcomeMsg = document.createElement('div');
-    welcomeMsg.className = 'chat-message-ai';
-    welcomeMsg.textContent = 'Olá! Como posso ajudar você a entender melhor esta questão?';
-    chatMessages.appendChild(welcomeMsg);
-    
-    // Garantir que o scroll vá para o final para mostrar a nova mensagem
-    setTimeout(() => {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }, 100);
-
-    isFirstQuestion = false;
 }
 
 function resetUI() {
@@ -425,6 +431,7 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
 async function sendChatMessage() {
     const msg = chatInput.value.trim();
     if (!msg || !isAiEnabled || !genAI) return;
+    hasChatInteraction = true;
     addMsg('user', msg); chatInput.value = '';
     const tid = showTyping();
     try {
