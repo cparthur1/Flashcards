@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { callWithRetry } from './utils.js';
+import { callWithRetry, checkAndResetModelFallback } from './utils.js';
 
 function compressPDFWithWorker(file) {
     return new Promise((resolve, reject) => {
@@ -75,6 +75,7 @@ const instructionsReadyBtn = document.getElementById('instructions-ready-btn');
 let deckCards = [];
 let geminiChatSession = null;
 let currentGenModel = null;
+let currentEditorModel = localStorage.getItem('model_fallback_active') === 'true' ? "gemini-flash-lite-latest" : "gemini-flash-latest";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const FILES_DEFAULT_SVG = '<svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>';
@@ -506,7 +507,7 @@ Gere aproximadamente 100 flashcards.`;
             txtLoadingMsg.classList.add('hidden');
 
             // Initialize chat
-            const model = genAI.getGenerativeModel({ model: "gemini-flash-latest", systemInstruction, tools: deckTools });
+            const model = genAI.getGenerativeModel({ model: currentEditorModel, systemInstruction, tools: deckTools });
             currentGenModel = model;
             geminiChatSession = model.startChat({ history: [] });
             return;
@@ -517,7 +518,7 @@ Gere aproximadamente 100 flashcards.`;
         deckTitleDisplay.textContent = "Completando informações com IA...";
 
         model = genAI.getGenerativeModel({
-            model: "gemini-flash-latest",
+            model: "gemini-flash-latest", // Geração inicial SEMPRE flash-latest
             generationConfig: { ...generationConfig, responseMimeType: "text/plain" }, // Tools often work better with text/plain
             tools: deckTools,
             systemInstruction: systemInstruction + "\nSua tarefa agora é preencher os placeholders '[GEMINI]' em um JSON de flashcards e entregá-los usando a ferramenta 'adicionar_varios_cards'."
@@ -681,6 +682,8 @@ ${JSON.stringify(localCards, null, 2)}`;
         console.error(error);
         if (error.message.includes("API key")) {
             globalError.textContent = `Acesso negado: Reveja sua chave de API Gemini. (Detalhe: ${error.message})`;
+        } else if (error.message.includes("429") || error.message.includes("quota")) {
+            globalError.innerHTML = `⚠️ <strong>Quota Excedida:</strong> Você excedeu o limite de uso do Gemini Flash para sua API gratuita. Por favor, faça um upgrade ou tente novamente amanhã.`;
         } else {
             globalError.textContent = `Erro ao gerar flashcards: ${error.message}. Talvez o arquivo seja muito grande.`;
         }
@@ -712,8 +715,8 @@ async function generateDeckTitle(sourceParts, genAI) {
     deckTitleDisplay.textContent = "Gerando título...";
 
     try {
-        // Use Flash for the title - it's fast and efficient for summaries
-        const liteModel = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+        // Título sempre usa lite
+        const liteModel = genAI.getGenerativeModel({ model: "gemini-flash-lite-latest" });
 
 
         const titlePrompt = "Com base no material fornecido, sugira um título curto, criativo e profissional para este baralho de flashcards (máximo de 4 palavras). Retorne APENAS o título, sem aspas ou pontuação extra.";
@@ -939,7 +942,11 @@ chatSendBtn.addEventListener('click', async () => {
 
     } catch (e) {
         console.error(e);
-        addChatMessage('model', `Houve um erro no processador: ${e.message}`);
+        if ((e.message.includes("429") || e.message.includes("quota")) && currentEditorModel === "gemini-flash-latest") {
+            handleEditorQuotaError();
+        } else {
+            addChatMessage('model', `Houve um erro no processador: ${e.message}`);
+        }
     } finally {
         chatInput.disabled = false;
         chatSendBtn.disabled = false;
@@ -950,6 +957,26 @@ chatSendBtn.addEventListener('click', async () => {
 chatInput.addEventListener('keyup', (e) => {
     if (e.key === 'Enter') chatSendBtn.click();
 });
+
+function handleEditorQuotaError() {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'py-3 px-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/40 text-xs self-start max-w-[85%]';
+    errorDiv.innerHTML = `
+        <p class="text-red-600 dark:text-red-400 mb-2 font-bold">⚠️ Quota Excedida: Você atingiu o limite do Gemini Flash.</p>
+        <button id="switch-to-lite-editor-btn" class="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-[10px] uppercase tracking-wider transition">
+            Continuar com IA menor
+        </button>
+    `;
+    chatHistory.appendChild(errorDiv);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+
+    document.getElementById('switch-to-lite-editor-btn').addEventListener('click', (e) => {
+        localStorage.setItem('model_fallback_active', 'true');
+        currentEditorModel = "gemini-flash-lite-latest";
+        geminiChatSession = null; // Forces re-init on next message
+        e.target.parentElement.innerHTML = "IA alterada para Lite. Você já pode reenviar seu comando.";
+    });
+}
 
 // Download Deck
 downloadDeckBtn.addEventListener('click', () => {
@@ -994,6 +1021,7 @@ startScratchBtn.addEventListener('click', () => {
 
 // Initialization: Check if we are loading an existing deck for editing
 window.addEventListener('DOMContentLoaded', () => {
+    checkAndResetModelFallback();
     const savedDeck = localStorage.getItem('editing_deck');
     const savedTitle = localStorage.getItem('editing_deck_title');
     
@@ -1014,7 +1042,7 @@ window.addEventListener('DOMContentLoaded', () => {
             if (apiKey && typeof GoogleGenerativeAI !== 'undefined') {
                 const genAI = new GoogleGenerativeAI(apiKey);
                 const model = genAI.getGenerativeModel({ 
-                    model: "gemini-flash-latest", 
+                    model: currentEditorModel, 
                     systemInstruction, 
                     tools: deckTools 
                 });

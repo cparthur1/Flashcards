@@ -75,3 +75,23 @@ export const ROUTES = {
     GAME: prefix + 'pages/game.html',
     GENERATE: prefix + 'pages/generate.html'
 };
+
+/**
+ * Checks if we should reset the AI model fallback (at 3 AM daily).
+ */
+export function checkAndResetModelFallback() {
+    const now = new Date();
+    const lastResetStr = localStorage.getItem('last_model_reset');
+    const lastReset = lastResetStr ? new Date(lastResetStr) : null;
+
+    // Proxima ou atual barreira de 3 AM
+    const today3AM = new Date();
+    today3AM.setHours(3, 0, 0, 0);
+
+    // Se agora passou de 3 AM E (não houve reset ou o último reset foi antes das 3 AM de hoje)
+    if (now >= today3AM && (!lastReset || lastReset < today3AM)) {
+        localStorage.removeItem('model_fallback_active');
+        localStorage.setItem('last_model_reset', now.toISOString());
+        console.log("AI Model fallback reset for the new day.");
+    }
+}
