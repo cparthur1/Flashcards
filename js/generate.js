@@ -897,7 +897,24 @@ function addChatMessage(role, text) {
 
 chatSendBtn.addEventListener('click', async () => {
     const text = chatInput.value.trim();
-    if (!text || !geminiChatSession) return;
+    if (!text) return;
+
+    // Se a sessão foi resetada (ex: por troca de modelo), reinicializamos
+    if (!geminiChatSession) {
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) {
+            addChatMessage('model', 'Por favor, insira sua API Key para usar o assistente.');
+            return;
+        }
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ 
+            model: currentEditorModel, 
+            systemInstruction, 
+            tools: deckTools 
+        });
+        currentGenModel = model;
+        geminiChatSession = model.startChat({ history: [] });
+    }
 
     chatInput.value = '';
     addChatMessage('user', text);
