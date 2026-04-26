@@ -191,7 +191,7 @@ function loadQuestion() {
         answerInput.focus();
     }
     currentChatSession = null;
-    
+
     if (isFirstQuestion) {
         chatMessages.innerHTML = ''; // Limpa o placeholder inicial do HTML
         const welcomeMsg = document.createElement('div');
@@ -213,7 +213,7 @@ function loadQuestion() {
         welcomeMsg.className = 'chat-message-ai';
         welcomeMsg.textContent = 'Olá! Como posso ajudar você a entender melhor esta questão?';
         chatMessages.appendChild(welcomeMsg);
-        
+
         // Garantir que o scroll vá para o final para mostrar a nova mensagem
         setTimeout(() => {
             chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -396,7 +396,8 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
             DIRETRIZES DE AVALIAÇÃO:
             1. Se o usuário digitou uma parte fundamental da resposta que é suficiente para demonstrar conhecimento (ex: "Braquial" para "Músculo braquial"), considere CORRETO, seja rígido nesse critério.
             2. Se o usuário usou um sinônimo exato ou termo equivalente, aceito pela comunidade acadêmica, considere CORRETO.
-            3. Se a resposta for apenas uma descrição vaga, sobre outra estrutura que não a perguntada, confusa ou estiver errada, NÃO chame a função 'marcar_como_correto'.
+            3. Se uma questão tiver 2 respostas, ambas devem estar corretas.
+            4. Se a resposta for apenas uma descrição vaga, sobre outra estrutura que não a perguntada, confusa ou estiver errada, NÃO chame a função 'marcar_como_correto'.
 
             Se a resposta for semanticamente equivalente ou uma variação aceitável, baseado nos critérios, mantendo a especificidade e falando da mesma estrutura da resposta original, chame a função 'marcar_como_correto'.
         `;
@@ -457,13 +458,13 @@ async function sendChatMessage() {
         }
         const result = await callWithRetry(() => currentChatSession.sendMessage(msg));
         hideTyping(tid); addMsg('ai', result.response.text());
-    } catch (e) { 
-        console.error(e); 
-        hideTyping(tid); 
+    } catch (e) {
+        console.error(e);
+        hideTyping(tid);
         if ((e.message.includes("429") || e.message.includes("quota")) && currentChatModel === "gemini-flash-latest") {
             handleChatQuotaError();
         } else {
-            addMsg('ai', "Erro ao conectar com a IA."); 
+            addMsg('ai', "Erro ao conectar com a IA.");
         }
     }
 }
@@ -579,7 +580,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!data) window.location.href = ROUTES.HOME;
     else {
         allQuestions = data.allQuestions; questionsPool = data.questionsPool;
-        score = data.score; 
+        score = data.score;
         deckTitle.textContent = data.deckTitle || "Flashcards";
         document.title = data.deckTitle ? `${data.deckTitle} | Flashcards` : "Estudando Flashcards";
         scoreDisplay.textContent = score; loadQuestion(); initializeAi();
