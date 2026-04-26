@@ -579,7 +579,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!data) window.location.href = ROUTES.HOME;
     else {
         allQuestions = data.allQuestions; questionsPool = data.questionsPool;
-        score = data.score; deckTitle.textContent = data.deckTitle;
+        score = data.score; 
+        deckTitle.textContent = data.deckTitle || "Flashcards";
+        document.title = data.deckTitle ? `${data.deckTitle} | Flashcards` : "Estudando Flashcards";
         scoreDisplay.textContent = score; loadQuestion(); initializeAi();
     }
 });

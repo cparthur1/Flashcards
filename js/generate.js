@@ -468,8 +468,6 @@ Gere aproximadamente 100 flashcards.`;
             sourceParts.push(filePart);
         }
 
-        // Trigger title generation early using lite model and source material (exclude the tech prompt)
-        generateDeckTitle(sourceParts.slice(1), genAI);
 
     } else if (sourceType === 'txt') {
         if (txtUpload.files.length === 0) {
@@ -483,8 +481,6 @@ Gere aproximadamente 100 flashcards.`;
         const textContent = await readTextFile(txtUpload.files[0]);
         const localCards = parseTxtToJSON(textContent);
 
-        // Trigger title generation early
-        generateDeckTitle([{ text: textContent }], genAI);
 
         // Transition to editor view
         dashboardView.classList.add('hidden');
@@ -678,6 +674,10 @@ ${JSON.stringify(localCards, null, 2)}`;
             generationConfig: chatGenerationConfig
         });
 
+        // Trigger title generation at the end using the actual generated content
+        const deckAsText = deckCards.map(c => `P: ${c.description}\nR: ${c.answer}`).join('\n\n');
+        generateDeckTitle(deckAsText, genAI);
+
     } catch (error) {
         console.error(error);
         if (error.message.includes("API key")) {
@@ -709,29 +709,25 @@ ${JSON.stringify(localCards, null, 2)}`;
 generateFilesBtn.addEventListener('click', () => generateFlashcards('files'));
 generateTxtBtn.addEventListener('click', () => generateFlashcards('txt'));
 
-async function generateDeckTitle(sourceParts, genAI) {
-    if (!sourceParts || !genAI) return;
+async function generateDeckTitle(deckText, genAI) {
+    if (!deckText || !genAI) return;
 
     deckTitleDisplay.textContent = "Gerando título...";
 
     try {
-        // Título sempre usa lite
         const liteModel = genAI.getGenerativeModel({ model: "gemini-flash-lite-latest" });
+        const titlePrompt = "Com base nos flashcards abaixo, sugira um título curto, criativo e profissional para este baralho (máximo de 4 palavras). Retorne APENAS o título, sem aspas ou pontuação extra.\n\nCONTEÚDO:\n" + deckText;
 
-
-        const titlePrompt = "Com base no material fornecido, sugira um título curto, criativo e profissional para este baralho de flashcards (máximo de 4 palavras). Retorne APENAS o título, sem aspas ou pontuação extra.";
-
-        
-        const titleParts = [titlePrompt, ...sourceParts.filter(p => !p.text || !p.text.includes("JSON"))];
-
-        const result = await callWithRetry(() => liteModel.generateContent(titleParts));
+        const result = await callWithRetry(() => liteModel.generateContent(titlePrompt));
         const response = await result.response;
         const title = response.text().trim().replace(/["']/g, '');
 
         if (title) {
             deckTitleDisplay.textContent = title;
+            document.title = `${title} | Gerador`;
         } else {
             deckTitleDisplay.textContent = "Meu Baralho";
+            document.title = "Meu Baralho | Gerador";
         }
     } catch (e) {
         console.error("Erro ao gerar título:", e);
@@ -1003,7 +999,8 @@ downloadDeckBtn.addEventListener('click', () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `flashcards_gerados.json`;
+    const safeTitle = deckTitleDisplay.textContent.trim().replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    a.download = `${safeTitle || 'flashcards'}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -1045,7 +1042,9 @@ window.addEventListener('DOMContentLoaded', () => {
     if (savedDeck) {
         try {
             deckCards = JSON.parse(savedDeck);
-            deckTitleDisplay.textContent = savedTitle || "Flashcards";
+            const displayTitle = savedTitle || "Flashcards";
+            deckTitleDisplay.textContent = displayTitle;
+            document.title = `${displayTitle} | Gerador`;
             
             // Switch view
             dashboardView.classList.add('hidden');
