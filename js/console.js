@@ -54,7 +54,7 @@
     footer.innerHTML = '<button id="clear-console-btn" style="background:#333; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Limpar</button>';
     consoleContainer.appendChild(footer);
 
-    document.body.appendChild(consoleContainer);
+
 
     function addLog(msg, type = 'log') {
         const entry = document.createElement('div');
@@ -102,8 +102,17 @@
         }
     });
 
-    document.getElementById('close-console-btn').onclick = toggleConsole;
-    document.getElementById('clear-console-btn').onclick = () => { logArea.innerHTML = ''; };
+    function initConsole() {
+        if (!document.body) {
+            window.addEventListener('DOMContentLoaded', initConsole);
+            return;
+        }
+        document.body.appendChild(consoleContainer);
+        document.getElementById('close-console-btn').onclick = toggleConsole;
+        document.getElementById('clear-console-btn').onclick = () => { logArea.innerHTML = ''; };
+    }
+
+    initConsole();
 
     console.log("Custom console initialized. Press Alt+C to view.");
 })();
