@@ -406,6 +406,10 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
         `;
 
         const result = await callWithRetry(() => model.generateContent(prompt));
+        
+        // Log the full response from AI for debugging/monitoring
+        console.log("AI Agent Response:", JSON.stringify(result.response, null, 2));
+
         const calls = result.response.candidates[0].content.parts.filter(p => !!p.functionCall);
 
         if (calls.length > 0 && calls[0].functionCall.name === 'marcar_como_correto') {
