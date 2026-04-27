@@ -78,6 +78,35 @@ let genAI = null;
 let lastUserAnswerForChat = "";
 let currentChatSession = null;
 let currentChatModel = localStorage.getItem('model_fallback_active') === 'true' ? "gemini-flash-lite-latest" : "gemini-flash-latest";
+let ai503ErrorCount = 0;
+
+// --- UI UTILITIES ---
+function showNotificationPill(message, iconName, isWarning = false) {
+    const existing = document.getElementById('notification-pill');
+    if (existing) existing.remove();
+
+    const pill = document.createElement('div');
+    pill.id = 'notification-pill';
+    // Samsung One UI style: pill-shaped, superior, blurred, centered
+    pill.className = `fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-2.5 rounded-full shadow-2xl backdrop-blur-xl border border-white/20 transition-all duration-500 transform -translate-y-20 opacity-0 ${isWarning ? 'bg-yellow-100/90 dark:bg-yellow-900/80' : 'bg-white/90 dark:bg-gray-800/90'}`;
+    pill.innerHTML = `
+        <img src="../assets/img/${iconName}" class="w-5 h-5" alt="icon">
+        <span class="text-[13px] font-medium text-gray-800 dark:text-white whitespace-nowrap">${message}</span>
+    `;
+
+    document.body.appendChild(pill);
+
+    requestAnimationFrame(() => {
+        pill.classList.remove('-translate-y-20', 'opacity-0');
+        pill.classList.add('translate-y-0', 'opacity-100');
+    });
+
+    setTimeout(() => {
+        pill.classList.remove('translate-y-0', 'opacity-100');
+        pill.classList.add('-translate-y-20', 'opacity-0');
+        setTimeout(() => pill.remove(), 500);
+    }, 4000);
+}
 
 // --- CANVAS ANIMATION ---
 function resizeCanvas() {
@@ -412,6 +441,10 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
         const modelVersion = result.response.modelVersion || "unknown";
         console.log(`agent API call worked. Model version: ${modelVersion}, Latency ${latency}ms`);
 
+        if (latency > 5000) {
+            showNotificationPill("A conexão está lenta", "poor_wifi.svg", true);
+        }
+
         const calls = result.response.candidates[0].content.parts.filter(p => !!p.functionCall);
 
         if (calls.length > 0 && calls[0].functionCall.name === 'marcar_como_correto') {
@@ -436,6 +469,13 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
         }
     } catch (e) {
         console.error("Erro na correção IA:", e);
+        if (e.message && e.message.includes("503")) {
+            ai503ErrorCount++;
+            if (ai503ErrorCount >= 10) {
+                isAiEnabled = false;
+                showNotificationPill("IA não quer trabalhar hoje", "cloud_alert.svg");
+            }
+        }
     }
 }
 
