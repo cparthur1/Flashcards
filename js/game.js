@@ -405,10 +405,12 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
             Se a resposta for semanticamente equivalente ou uma variação aceitável, baseado nos critérios, mantendo a especificidade e falando da mesma estrutura da resposta original, chame a função 'marcar_como_correto'.
         `;
 
+        const startTime = Date.now();
         const result = await callWithRetry(() => model.generateContent(prompt));
+        const latency = Date.now() - startTime;
         
-        // Log the full response from AI for debugging/monitoring
-        console.log("AI Agent Response:", JSON.stringify(result.response, null, 2));
+        const modelVersion = result.response.modelVersion || "unknown";
+        console.log(`agent API call worked. Model version: ${modelVersion}, Latency ${latency}ms`);
 
         const calls = result.response.candidates[0].content.parts.filter(p => !!p.functionCall);
 
