@@ -110,9 +110,41 @@
         document.body.appendChild(consoleContainer);
         document.getElementById('close-console-btn').onclick = toggleConsole;
         document.getElementById('clear-console-btn').onclick = () => { logArea.innerHTML = ''; };
+
+        // Triple-click on titles to toggle console
+        let clickCount = 0;
+        let lastClickTime = 0;
+        const handleTripleClick = () => {
+            const now = Date.now();
+            if (now - lastClickTime < 500) {
+                clickCount++;
+                if (clickCount >= 3) {
+                    toggleConsole();
+                    clickCount = 0;
+                }
+            } else {
+                clickCount = 1;
+            }
+            lastClickTime = now;
+        };
+
+        // Target common title elements across different pages
+        const targets = [
+            document.getElementById('deck-title'),
+            document.getElementById('deck-title-display'),
+            document.querySelector('#upload-screen h1'),
+            document.querySelector('header h1')
+        ];
+
+        targets.forEach(el => {
+            if (el) {
+                el.addEventListener('click', handleTripleClick);
+                el.style.userSelect = 'none'; // Prevent text selection on triple click
+            }
+        });
     }
 
     initConsole();
 
-    console.log("Custom console initialized. Press Alt+C to view.");
+    console.log("Custom console initialized. Press Alt+C or triple-click the deck title to view.");
 })();
