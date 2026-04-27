@@ -467,10 +467,15 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
                 saveGameState();
             }
 
-            // Feedback visual de sucesso
-            questionCard.classList.remove('glow-incorrect');
-            questionCard.classList.add('glow-correct');
-            setTimeout(loadQuestion, 2000);
+            // Somente aplica feedback visual e carrega nova questão se o usuário ainda estiver na mesma questão
+            if (questionObj === currentQuestion) {
+                questionCard.classList.remove('glow-incorrect');
+                questionCard.classList.add('glow-correct');
+                setTimeout(loadQuestion, 2000);
+            } else {
+                // Se o usuário já passou de fase, apenas atualizamos o contador visual
+                questionsLeftDisplay.textContent = questionsPool.length;
+            }
         }
     } catch (e) {
         console.error("Erro na correção IA:", e);
