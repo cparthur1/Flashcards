@@ -47,6 +47,9 @@ const apiKeyInput = document.getElementById('api-key-input');
 const saveApiKeyBtn = document.getElementById('save-api-key-btn');
 const disableAiBtn = document.getElementById('disable-ai-btn');
 const openAiInstructions = document.getElementById('open-ai-instructions');
+const instructionsModal = document.getElementById('instructions-modal');
+const closeInstructionsBtn = document.getElementById('close-instructions-btn');
+const instructionsReadyBtn = document.getElementById('instructions-ready-btn');
 
 const askAiBtn = document.getElementById('ask-ai-btn');
 const aiChatContainer = document.getElementById('ai-chat-container');
@@ -539,6 +542,9 @@ disableAiBtn.addEventListener('click', () => {
     aiIconOff.classList.remove('hidden'); aiIconOn.classList.add('hidden'); apiModal.classList.add('hidden');
 });
 closeApiModal.addEventListener('click', () => apiModal.classList.add('hidden'));
+openAiInstructions.addEventListener('click', () => instructionsModal.classList.remove('hidden'));
+[closeInstructionsBtn, instructionsReadyBtn].forEach(b => b.addEventListener('click', () => instructionsModal.classList.add('hidden')));
+instructionsModal.addEventListener('click', (e) => { if (e.target === instructionsModal) instructionsModal.classList.add('hidden'); });
 askAiBtn.addEventListener('click', () => { aiChatContainer.classList.add('open'); chatInput.focus(); });
 closeChatBtn.addEventListener('click', () => aiChatContainer.classList.remove('open'));
 sendChatBtn.addEventListener('click', sendChatMessage);
