@@ -79,6 +79,7 @@ let lastUserAnswerForChat = "";
 let currentChatSession = null;
 let currentChatModel = localStorage.getItem('model_fallback_active') === 'true' ? "gemini-flash-lite-latest" : "gemini-flash-latest";
 let ai503ErrorCount = 0;
+let lastLatencyNotificationTime = 0;
 
 // --- UI UTILITIES ---
 function showNotificationPill(message, iconName, isWarning = false) {
@@ -442,7 +443,11 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
         console.log(`agent API call worked. Model version: ${modelVersion}, Latency ${latency}ms`);
 
         if (latency > 5000) {
-            showNotificationPill("A conexão está lenta", "poor_wifi.svg", true);
+            const now = Date.now();
+            if (now - lastLatencyNotificationTime > 10 * 60 * 1000) {
+                showNotificationPill("A conexão está lenta", "poor_wifi.svg", true);
+                lastLatencyNotificationTime = now;
+            }
         }
 
         const calls = result.response.candidates[0].content.parts.filter(p => !!p.functionCall);
