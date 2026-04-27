@@ -96,7 +96,7 @@
     }
 
     window.addEventListener('keydown', (e) => {
-        if (e.key === 'F12') {
+        if (e.altKey && (e.key === 'c' || e.key === 'C')) {
             e.preventDefault();
             toggleConsole();
         }
@@ -105,5 +105,5 @@
     document.getElementById('close-console-btn').onclick = toggleConsole;
     document.getElementById('clear-console-btn').onclick = () => { logArea.innerHTML = ''; };
 
-    console.log("Custom console initialized. Press F12 to view.");
+    console.log("Custom console initialized. Press Alt+C to view.");
 })();
