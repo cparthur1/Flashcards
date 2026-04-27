@@ -442,7 +442,7 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
         const modelVersion = result.response.modelVersion || "unknown";
         console.log(`agent API call worked. Model version: ${modelVersion}, Latency ${latency}ms`);
 
-        if (latency > 5000) {
+        if (latency > 15000) {
             const now = Date.now();
             if (now - lastLatencyNotificationTime > 10 * 60 * 1000) {
                 showNotificationPill("A conexão está lenta", "poor_wifi.svg", true);
