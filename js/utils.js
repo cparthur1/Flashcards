@@ -7,11 +7,11 @@
 export function normalizeString(str) {
     if (!str) return '';
     return str.replace(/\(.*?\)/g, '')
-              .trim()
-              .normalize("NFD")
-              .replace(/[\u0300-\u036f]/g, "")
-              .toLowerCase()
-              .replace(/-/g, ' ');
+        .trim()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/-/g, ' ');
 }
 
 /**
@@ -23,7 +23,7 @@ export function calculateSimilarity(s1, s2) {
     if (s1.length < s2.length) { longer = s2; shorter = s1; }
     const longerLength = longer.length;
     if (longerLength === 0) return 1.0;
-    
+
     const distance = (s1, s2) => {
         const track = Array(s2.length + 1).fill(null).map(() => Array(s1.length + 1).fill(null));
         for (let i = 0; i <= s1.length; i++) track[0][i] = i;
@@ -36,7 +36,7 @@ export function calculateSimilarity(s1, s2) {
         }
         return track[s2.length][s1.length];
     };
-    
+
     return (longerLength - distance(longer, shorter)) / longerLength;
 }
 

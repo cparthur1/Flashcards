@@ -903,10 +903,10 @@ chatSendBtn.addEventListener('click', async () => {
             return;
         }
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ 
-            model: currentEditorModel, 
-            systemInstruction, 
-            tools: deckTools 
+        const model = genAI.getGenerativeModel({
+            model: currentEditorModel,
+            systemInstruction,
+            tools: deckTools
         });
         currentGenModel = model;
         geminiChatSession = model.startChat({ history: [] });
@@ -1040,34 +1040,34 @@ window.addEventListener('DOMContentLoaded', () => {
     checkAndResetModelFallback();
     const savedDeck = localStorage.getItem('editing_deck');
     const savedTitle = localStorage.getItem('editing_deck_title');
-    
+
     if (savedDeck) {
         try {
             deckCards = JSON.parse(savedDeck);
             const displayTitle = savedTitle || "Flashcards";
             deckTitleDisplay.textContent = displayTitle;
             document.title = `${displayTitle} | Gerador`;
-            
+
             // Switch view
             dashboardView.classList.add('hidden');
             editorView.classList.remove('hidden');
             editorView.classList.add('flex');
-            
+
             renderCardsList(true);
-            
+
             // Initialize Gemini Chat session if API key is available
             const apiKey = apiKeyInput.value.trim();
             if (apiKey && typeof GoogleGenerativeAI !== 'undefined') {
                 const genAI = new GoogleGenerativeAI(apiKey);
-                const model = genAI.getGenerativeModel({ 
-                    model: currentEditorModel, 
-                    systemInstruction, 
-                    tools: deckTools 
+                const model = genAI.getGenerativeModel({
+                    model: currentEditorModel,
+                    systemInstruction,
+                    tools: deckTools
                 });
                 currentGenModel = model;
                 geminiChatSession = model.startChat({ history: [] });
             }
-            
+
             // Clear storage after loading
             localStorage.removeItem('editing_deck');
             localStorage.removeItem('editing_deck_title');

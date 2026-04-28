@@ -438,7 +438,7 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
         const startTime = Date.now();
         const result = await callWithRetry(() => model.generateContent(prompt));
         const latency = Date.now() - startTime;
-        
+
         const modelVersion = result.response.modelVersion || "unknown";
         console.log(`agent API call worked. Model version: ${modelVersion}, Latency ${latency}ms`);
 
