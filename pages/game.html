@@ -53,15 +53,19 @@
         <div class="flex items-center gap-3">
             <div class="flex items-center gap-1">
                 <span id="reset-btn"
-                    class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors text-xl"
-                    title="Voltar ao início">🗑️</span>
+                    class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors flex items-center justify-center"
+                    title="Voltar ao início">
+                    <img src="../assets/img/exit.svg" class="w-6 h-6" alt="Sair">
+                </span>
                 <span id="export-btn"
-                    class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors text-xl"
-                    title="Baixar JSON Atualizado">💾</span>
+                    class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors flex items-center justify-center"
+                    title="Baixar JSON Atualizado">
+                    <img src="../assets/img/save.svg" class="w-6 h-6" alt="Salvar">
+                </span>
                 <button id="go-to-editor-btn"
-                    class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors text-xl"
+                    class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors flex items-center justify-center"
                     title="Editar com Assistente de IA">
-                    <span>✏️</span>
+                    <img src="../assets/img/edit.svg" class="w-6 h-6" alt="Editar">
                 </button>
             </div>
             <div class="h-6 w-[1px] bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block"></div>
@@ -143,23 +147,23 @@
             <div id="correction-options" class="hidden flex-col gap-3 mt-4">
                 <button id="ask-ai-btn"
                     class="hidden w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition transform hover:scale-105">
-                    Perguntar ✨
+                    Perguntar <img src="../assets/img/ai.svg" class="w-5 h-5" alt="IA">
                 </button>
                 <div class="flex gap-2 justify-center">
                     <button id="edit-btn"
                         class="flex-1 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-200 font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition border border-blue-200 dark:border-blue-700">
-                        ✏️ Editar
+                        <img src="../assets/img/edit.svg" class="w-5 h-5" alt="Editar"> Editar
                     </button>
                     <button id="delete-correction-btn"
                         class="flex-1 bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 text-red-700 dark:text-red-200 font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition border border-red-200 dark:border-red-700">
-                        🗑️ Excluir
+                        <img src="../assets/img/delete.svg" class="w-5 h-5" alt="Excluir"> Excluir
                     </button>
                 </div>
             </div>
 
             <button id="next-question-btn"
                 class="w-full mt-4 bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300 hidden">
-                Pular ⚡
+                Pular <img src="../assets/img/skip.svg" class="w-6 h-6 inline-block" alt="Pular">
             </button>
         </div>
     </div>
@@ -173,7 +177,7 @@
                 <h3 class="text-lg font-bold text-gray-800 dark:text-white">Editar Flashcard</h3>
                 <button id="close-modal-btn"
                     class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                    ✕
+                    <img src="../assets/img/close.svg" class="w-6 h-6 dark:brightness-0 dark:invert opacity-70 hover:opacity-100 transition-opacity" alt="Fechar">
                 </button>
             </div>
 
@@ -218,7 +222,9 @@
                 class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
                 <h3 class="font-bold text-xl">Recursos de IA</h3>
                 <button id="close-api-modal"
-                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 text-2xl">✕</button>
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
+                    <img src="../assets/img/close.svg" class="w-8 h-8 dark:brightness-0 dark:invert opacity-70 hover:opacity-100 transition-opacity" alt="Fechar">
+                </button>
             </div>
             <div class="p-6 space-y-4">
                 <p class="text-sm">Ative a verificação inteligente para identificar acertos em caso de erros de
@@ -260,7 +266,9 @@
                 class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
                 <h3 class="font-bold text-xl text-gray-800 dark:text-white">Como criar sua API Key</h3>
                 <button id="close-instructions-btn"
-                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 text-2xl">✕</button>
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
+                    <img src="../assets/img/close.svg" class="w-8 h-8 dark:brightness-0 dark:invert opacity-70 hover:opacity-100 transition-opacity" alt="Fechar">
+                </button>
             </div>
 
             <div class="p-6 space-y-8 overflow-y-auto">
@@ -321,8 +329,10 @@
         class="fixed bottom-0 right-0 w-full md:w-96 md:h-2/3 bg-white dark:bg-gray-800 shadow-2xl rounded-t-xl md:rounded-l-xl md:rounded-tr-none z-50 flex flex-col transition-all duration-300 transform translate-y-full md:translate-y-0 md:translate-x-full">
         <div
             class="p-4 border-b dark:border-gray-700 flex justify-between items-center bg-purple-600 text-white rounded-t-xl md:rounded-tl-xl md:rounded-tr-none">
-            <h3 class="font-bold flex items-center gap-2">Explicação da IA ✨</h3>
-            <button id="close-chat-btn" class="text-white hover:text-gray-200 text-xl font-bold">✕</button>
+            <h3 class="font-bold flex items-center gap-2">Explicação da IA <img src="../assets/img/ai.svg" class="w-5 h-5" alt="IA"></h3>
+            <button id="close-chat-btn" class="text-white hover:text-gray-200">
+                <img src="../assets/img/close.svg" class="w-6 h-6 brightness-0 invert opacity-80 hover:opacity-100 transition-opacity" alt="Fechar">
+            </button>
         </div>
         <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar flex flex-col">
             <div class="chat-message-ai">

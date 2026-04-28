@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 uploadError.textContent = '';
                 startBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
                 startBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-                startBtn.textContent = "📂 Abrir " + currentFile.name;
+                startBtn.innerHTML = `<img src="assets/img/folder.svg" class="w-6 h-6 brightness-0 invert" alt="Pasta"> Abrir ${currentFile.name}`;
             }
         });
     }
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const fileName = currentFile.name.replace(/\.json$/i, '');
                     saveAndRedirect(parsedQuestions, fileName);
                 } catch (e) {
-                    uploadError.textContent = `Erro ao ler o arquivo: ${e.message}`;
+                    uploadError.innerHTML = `<img src="assets/img/error.svg" class="w-5 h-5 inline-block mr-1" alt="Erro"> Erro ao ler o arquivo: ${e.message}`;
                 }
             };
             reader.readAsText(currentFile);

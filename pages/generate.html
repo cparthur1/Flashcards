@@ -85,12 +85,13 @@
 
                 <div class="relative w-full z-30">
                     <button id="generate-files-btn"
-                        class="w-full flex justify-center items-center gap-2 bg-[#8B00FF] hover:bg-purple-700 text-white font-bold py-4 rounded-xl text-xl shadow-lg hover:scale-105 transition">
-                        <span>✨</span> Gerar
+                        class="w-full flex justify-center items-center gap-2 bg-[#8B00FF] hover:bg-purple-700 text-white font-bold py-4 rounded-xl text-xl shadow-lg hover:scale-[1.02] transition">
+                        <img src="../assets/img/ai.svg" class="w-6 h-6 brightness-0 invert" alt="IA"> Gerar
                         <div id="spinner-files" class="spinner hidden"></div>
                     </button>
                     <p id="files-loading-msg"
-                        class="text-xs text-purple-600 dark:text-purple-400 mt-2 font-medium hidden">⏳ Isso pode levar
+                        class="text-xs text-purple-600 dark:text-purple-400 mt-2 font-medium hidden flex items-center justify-center gap-1">
+                        <img src="../assets/img/hourglass.svg" class="w-4 h-4" alt="Ampulheta"> Isso pode levar
                         alguns minutos, estamos processando...</p>
                 </div>
             </div>
@@ -129,12 +130,13 @@
 
                 <div class="relative w-full z-30 mt-auto">
                     <button id="generate-txt-btn"
-                        class="w-full flex justify-center items-center gap-2 bg-[#8B00FF] hover:bg-purple-700 text-white font-bold py-4 rounded-xl text-xl shadow-lg hover:scale-105 transition">
-                        <span>✨</span> Gerar
+                        class="w-full flex justify-center items-center gap-2 bg-[#8B00FF] hover:bg-purple-700 text-white font-bold py-4 rounded-xl text-xl shadow-lg hover:scale-[1.02] transition">
+                        <img src="../assets/img/ai.svg" class="w-6 h-6 brightness-0 invert" alt="IA"> Gerar
                         <div id="spinner-txt" class="spinner hidden"></div>
                     </button>
                     <p id="txt-loading-msg"
-                        class="text-xs text-purple-600 dark:text-purple-400 mt-2 font-medium hidden">⏳ Isso pode levar
+                        class="text-xs text-purple-600 dark:text-purple-400 mt-2 font-medium hidden flex items-center justify-center gap-1">
+                        <img src="../assets/img/hourglass.svg" class="w-4 h-4" alt="Ampulheta"> Isso pode levar
                         alguns minutos, estamos processando...</p>
                 </div>
             </div>
@@ -144,7 +146,7 @@
         <div class="mt-8 w-full max-w-md">
             <button id="start-scratch-btn"
                 class="w-full flex justify-center items-center gap-2 bg-white dark:bg-gray-800 border-2 border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 font-bold py-3 rounded-xl text-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition shadow-md">
-                📂 Começar do Zero (Manualmente)
+                <img src="../assets/img/new_file.svg" class="w-6 h-6 dark:brightness-0 dark:invert" alt="Novo Arquivo"> Começar do Zero (Manualmente)
             </button>
         </div>
 
@@ -159,7 +161,7 @@
             class="w-full md:w-1/3 bg-white dark:bg-gray-800 rounded-2xl shadow-xl flex flex-col overflow-hidden h-[85vh]">
             <div
                 class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex items-center gap-2">
-                <span class="text-xl">🤖</span>
+                <img src="../assets/img/robot.svg" class="w-6 h-6 dark:brightness-0 dark:invert" alt="Robô">
                 <h3 class="font-bold">Assistente de IA</h3>
             </div>
 
@@ -210,11 +212,13 @@
                 <div class="flex gap-2 text-sm z-30">
                     <button id="download-deck-btn"
                         class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-2 px-3 rounded-lg flex items-center gap-2 transition">
-                        <span>💾</span> Salvar Arquivo
+                        <img src="../assets/img/save.svg" class="w-5 h-5" alt="Salvar"> Salvar Arquivo
                     </button>
                     <button id="play-deck-btn"
-                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-lg transition shadow flex items-center gap-2">
-                        <span>🚀</span> Jogar Agora
+                        class="group bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-lg transition shadow flex items-center gap-2">
+                        <img src="../assets/img/rocket.svg" class="w-5 h-5 group-hover:hidden brightness-0 invert" alt="Foguete">
+                        <img src="../assets/img/rocket_launch.svg" class="w-5 h-5 hidden group-hover:block brightness-0 invert" alt="Foguete Lançando">
+                        Jogar Agora
                     </button>
                 </div>
             </div>
@@ -234,7 +238,9 @@
                 class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between">
                 <h3 class="font-bold text-gray-800 dark:text-white">Editar Flashcard</h3>
                 <button id="close-inline-edit-btn"
-                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400">✕</button>
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
+                    <img src="../assets/img/close.svg" class="w-6 h-6 dark:brightness-0 dark:invert opacity-70 hover:opacity-100 transition-opacity" alt="Fechar">
+                </button>
             </div>
             <div class="p-6 space-y-4">
                 <input type="hidden" id="edit-card-index">
@@ -273,7 +279,9 @@
                 class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
                 <h3 class="font-bold text-xl text-gray-800 dark:text-white">Como criar sua API Key</h3>
                 <button id="close-instructions-btn"
-                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 text-2xl">✕</button>
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
+                    <img src="../assets/img/close.svg" class="w-8 h-8 dark:brightness-0 dark:invert opacity-70 hover:opacity-100 transition-opacity" alt="Fechar">
+                </button>
             </div>
 
             <div class="p-6 space-y-8 overflow-y-auto">

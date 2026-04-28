@@ -532,7 +532,9 @@ function handleChatQuotaError() {
     const div = document.createElement('div');
     div.className = 'chat-message-ai border-2 border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/10 p-3';
     div.innerHTML = `
-        <p class="text-xs text-red-600 dark:text-red-400 mb-2">⚠️ Você excedeu o limite de uso do Gemini Flash para sua API gratuita.</p>
+        <p class="text-xs text-red-600 dark:text-red-400 mb-2 flex items-center gap-2">
+            <img src="../assets/img/cloud_alert.svg" class="w-5 h-5" alt="Alerta"> Quota Excedida: Você excedeu o limite de uso do Gemini Flash para sua API gratuita.
+        </p>
         <button id="switch-to-lite-chat-btn" class="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-[10px] uppercase tracking-wider transition">
             Continuar com IA menor
         </button>

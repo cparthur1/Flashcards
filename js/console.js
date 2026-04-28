@@ -30,7 +30,9 @@
         margin-bottom: 10px;
         flex-shrink: 0;
     `;
-    header.innerHTML = '<span style="font-weight:bold">CONSOLE LOG</span><button id="close-console-btn" style="background:none; border:none; color:white; cursor:pointer; font-size: 16px;">✕</button>';
+    const isSubpage = window.location.pathname.includes('/pages/');
+    const assetsPath = isSubpage ? '../assets/img/' : 'assets/img/';
+    header.innerHTML = `<span style="font-weight:bold">CONSOLE LOG</span><button id="close-console-btn" style="background:none; border:none; color:white; cursor:pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;"><img src="${assetsPath}close.svg" style="width:20px; height:20px; filter:brightness(0) invert(1);" alt="Fechar"></button>`;
     consoleContainer.appendChild(header);
 
     const logArea = document.createElement('div');

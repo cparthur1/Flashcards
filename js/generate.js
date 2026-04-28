@@ -451,7 +451,7 @@ Gere aproximadamente 100 flashcards.`;
 
             // Se for PDF e for maior que 5MB, comprimimos
             if (fileToProcess.type === 'application/pdf' && fileToProcess.size > 5 * 1024 * 1024) {
-                filesLoadingMsg.textContent = `⏳ Comprimindo ${fileToProcess.name}... (Isto pode levar um momento)`;
+                filesLoadingMsg.innerHTML = `<img src="../assets/img/hourglass.svg" class="w-4 h-4 inline-block mr-1" alt="Ampulheta"> Comprimindo ${fileToProcess.name}... (Isto pode levar um momento)`;
                 try {
                     const compressedBlob = await compressPDFWithWorker(fileToProcess);
                     fileToProcess = new File([compressedBlob], fileToProcess.name, {
@@ -510,7 +510,7 @@ Gere aproximadamente 100 flashcards.`;
         }
 
         // Fill placeholders with Gemini
-        txtLoadingMsg.textContent = "🤖 Gemini preenchendo lacunas...";
+        txtLoadingMsg.innerHTML = '<img src="../assets/img/hourglass.svg" class="w-4 h-4 inline-block mr-1" alt="Ampulheta"> Gemini preenchendo lacunas...';
         deckTitleDisplay.textContent = "Completando informações com IA...";
 
         model = genAI.getGenerativeModel({
@@ -681,11 +681,11 @@ ${JSON.stringify(localCards, null, 2)}`;
     } catch (error) {
         console.error(error);
         if (error.message.includes("API key")) {
-            globalError.textContent = `Acesso negado: Reveja sua chave de API Gemini. (Detalhe: ${error.message})`;
+            globalError.innerHTML = `<img src="../assets/img/error.svg" class="w-6 h-6 inline-block mr-2" alt="Erro"> Acesso negado: Reveja sua chave de API Gemini. (Detalhe: ${error.message})`;
         } else if (error.message.includes("429") || error.message.includes("quota")) {
-            globalError.innerHTML = `⚠️ <strong>Quota Excedida:</strong> Você excedeu o limite de uso do Gemini Flash para sua API gratuita. Por favor, faça um upgrade ou tente novamente amanhã.`;
+            globalError.innerHTML = `<img src="../assets/img/cloud_alert.svg" class="w-6 h-6 inline-block mr-2" alt="Alerta"> <strong>Quota Excedida:</strong> Você excedeu o limite de uso do Gemini Flash para sua API gratuita. Por favor, faça um upgrade ou tente novamente amanhã.`;
         } else {
-            globalError.textContent = `Erro ao gerar flashcards: ${error.message}. Talvez o arquivo seja muito grande.`;
+            globalError.innerHTML = `<img src="../assets/img/error.svg" class="w-6 h-6 inline-block mr-2" alt="Erro"> Erro ao gerar flashcards: ${error.message}. Talvez o arquivo seja muito grande.`;
         }
         // Go back to dashboard if error occurred early
         if (deckCards.length === 0) {
@@ -778,12 +778,12 @@ function createCardElement(card, index) {
 
     const editBtn = document.createElement('button');
     editBtn.className = "p-1.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-300 rounded";
-    editBtn.innerHTML = '✏️';
+    editBtn.innerHTML = '<img src="../assets/img/edit.svg" class="w-4 h-4" alt="Editar">';
     editBtn.onclick = () => openEditModal(index);
 
     const delBtn = document.createElement('button');
     delBtn.className = "p-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 text-red-600 dark:text-red-300 rounded";
-    delBtn.innerHTML = '🗑️';
+    delBtn.innerHTML = '<img src="../assets/img/delete.svg" class="w-4 h-4" alt="Excluir">';
     delBtn.onclick = () => {
         if (confirm('Excluir este flashcard?')) {
             deckCards.splice(index, 1);
@@ -975,7 +975,9 @@ function handleEditorQuotaError() {
     const errorDiv = document.createElement('div');
     errorDiv.className = 'py-3 px-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/40 text-xs self-start max-w-[85%]';
     errorDiv.innerHTML = `
-        <p class="text-red-600 dark:text-red-400 mb-2 font-bold">⚠️ Quota Excedida: Você atingiu o limite do Gemini Flash.</p>
+        <p class="text-red-600 dark:text-red-400 mb-2 font-bold flex items-center gap-2">
+            <img src="../assets/img/cloud_alert.svg" class="w-5 h-5" alt="Alerta"> Quota Excedida: Você atingiu o limite do Gemini Flash.
+        </p>
         <button id="switch-to-lite-editor-btn" class="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-[10px] uppercase tracking-wider transition">
             Continuar com IA menor
         </button>
