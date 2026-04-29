@@ -22,6 +22,9 @@
     </script>
     <link rel="stylesheet" href="../css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="../js/console.js"></script>
 </head>
 
@@ -46,10 +49,17 @@
         </div>
     </button>
 
+    <!-- 
+        HEADER ARCHITECTURE NOTE:
+        The header has two states:
+        1. Mobile (< 768px): Full-width bar at the top, simplified UI.
+        2. Desktop (>= 768px): Pill-shaped floating bar, centered or offset, with full controls.
+    -->
     <header id="global-header"
         class="fixed z-50 transition-all duration-300 
         top-0 left-0 w-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex items-center justify-between
-        md:top-6 md:left-6 md:w-auto md:rounded-full md:px-6 md:py-3 md:shadow-2xl md:border md:border-gray-200 dark:md:border-gray-700">
+        lg:top-6 lg:left-6 lg:w-auto lg:rounded-full lg:px-6 lg:py-3 lg:shadow-2xl lg:border lg:border-gray-200 dark:lg:border-gray-700
+        md:landscape:top-6 md:landscape:left-6 md:landscape:w-auto md:landscape:rounded-full md:landscape:px-6 md:landscape:py-3 md:landscape:shadow-2xl md:landscape:border dark:md:landscape:border-gray-700">
         <div class="flex items-center gap-3">
             <div class="flex items-center gap-1">
                 <span id="reset-btn"
@@ -58,6 +68,14 @@
                     <img id="exit-icon" src="../assets/img/exit.svg" class="w-6 h-6 transition-all duration-300"
                         alt="Sair">
                 </span>
+                
+                <!-- CAST BUTTON (Desktop & Landscape Tablet) -->
+                <button id="transfer-session-btn"
+                    class="hidden lg:flex md:landscape:flex cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors items-center justify-center"
+                    title="Continuar no Celular">
+                    <img src="../assets/img/cast.svg" class="w-6 h-6" alt="Cast">
+                </button>
+
                 <span id="export-btn"
                     class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors flex items-center justify-center"
                     title="Baixar JSON Atualizado">
@@ -76,16 +94,26 @@
         </div>
 
         <div class="flex items-center gap-4 text-right ml-4">
-            <div>
+            <div class="hidden sm:block">
                 <p class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">
                     Restantes</p>
                 <p id="questions-left" class="text-sm font-bold text-blue-600 dark:text-blue-400 text-center">0</p>
             </div>
-            <div class="h-8 w-[1px] bg-gray-100 dark:bg-gray-700 mx-1"></div>
-            <div>
-                <p class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">Score
-                </p>
-                <p id="score" class="text-sm font-bold text-gray-900 dark:text-white text-center">0</p>
+            <div class="h-8 w-[1px] bg-gray-100 dark:bg-gray-700 mx-1 hidden sm:block"></div>
+            
+            <div id="score-wrapper" class="flex items-center min-w-[50px] justify-center">
+                <!-- MOBILE RECEIVE BUTTON (Hidden when score > 0 OR Landscape) -->
+                <button id="receive-session-btn"
+                    class="flex lg:hidden md:landscape:hidden cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors items-center justify-center"
+                    title="Sincronizar do PC">
+                    <img src="../assets/img/download.svg" class="w-6 h-6" alt="Download">
+                </button>
+
+                <!-- SCORE CONTAINER (Hidden when score == 0 on mobile/portrait) -->
+                <div id="score-container" class="hidden lg:block md:landscape:block">
+                    <p class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">Score</p>
+                    <p id="score" class="text-sm font-bold text-gray-900 dark:text-white text-center">0</p>
+                </div>
             </div>
         </div>
     </header>
@@ -360,6 +388,73 @@
         </div>
     </div>
 
+
+    <!-- MODAL DE TRANSFERÊNCIA PARA MOBILE (WEBRTC) -->
+    <div id="transfer-modal"
+        class="hidden fixed inset-0 modal-overlay z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl flex flex-col transform transition-all scale-95 opacity-0 duration-300"
+            id="transfer-modal-content">
+            <div class="px-6 py-5 flex justify-between items-center border-b dark:border-gray-700">
+                <h3 class="font-bold text-xl">Continuar no Celular</h3>
+                <button id="close-transfer-modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
+                    <img src="../assets/img/close.svg" class="w-8 h-8 opacity-70" alt="Fechar">
+                </button>
+            </div>
+            <div class="p-8 flex flex-col items-center space-y-6">
+                <canvas id="transfer-qrcode"
+                    class="bg-white p-2 rounded-xl shadow-inner w-48 h-48 border border-gray-100 dark:border-gray-800"></canvas>
+
+                <div class="text-center space-y-2">
+                    <p id="transfer-status" class="text-sm font-medium text-blue-600 dark:text-blue-400">Aguardando conexão...</p>
+                    <button id="force-sync-btn" class="mx-auto text-[10px] bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full hover:bg-gray-200 transition">Não sincronizou? Tente reenviar</button>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 px-4">Aponte a câmera do seu celular para o código acima para transferir sua sessão.</p>
+                </div>
+
+                <div class="w-full space-y-3 pt-2">
+                    <div class="space-y-1">
+                        <label class="text-[10px] uppercase tracking-wider font-bold text-gray-400 ml-1">IP do Computador</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="transfer-host-input" 
+                                class="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Ex: 192.168.1.5">
+                            <button id="update-qr-btn" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 transition">OK</button>
+                        </div>
+                        <p class="text-[10px] text-gray-400 mt-1 italic ml-1">Se estiver usando 'localhost', altere para o seu IP local.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 dark:bg-gray-800 flex justify-center border-t dark:border-gray-700">
+            </div>
+        </div>
+    </div>
+
+    <!-- SCANNER MODAL (Mobile Only) -->
+    <div id="scanner-modal" class="fixed inset-0 z-[60] hidden bg-black/90 flex flex-col items-center justify-center p-6">
+        <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-2xl relative">
+            <div class="px-6 py-4 flex justify-between items-center border-b dark:border-gray-700">
+                <h3 class="font-bold">Escanear QR Code</h3>
+                <button id="close-scanner-modal" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition">
+                    <img src="../assets/img/close.svg" class="w-6 h-6" alt="Fechar">
+                </button>
+            </div>
+            <div id="reader" class="w-full aspect-square bg-black"></div>
+            <div class="p-6 text-center">
+                <p class="text-sm text-gray-500 dark:text-gray-400">Aponte para o QR Code no seu PC</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOADING OVERLAY PARA RECEBIMENTO DE SESSÃO -->
+    <div id="sync-overlay" class="hidden fixed inset-0 z-[200] bg-white dark:bg-gray-900 flex flex-col items-center justify-center p-6 space-y-6">
+        <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div class="text-center">
+            <h2 class="text-2xl font-bold mb-2">Sincronizando Sessão</h2>
+            <p class="text-gray-500 mb-4">Recebendo seus flashcards e progresso...</p>
+            <div id="sync-debug-log" class="text-[10px] font-mono bg-gray-100 dark:bg-gray-800 p-4 rounded-lg w-full max-w-xs text-left overflow-y-auto max-h-32 opacity-70">
+                > Conectando ao servidor de dados...
+            </div>
+        </div>
+    </div>
 
     <script src="../js/game.js" type="module" defer></script>
 </body>

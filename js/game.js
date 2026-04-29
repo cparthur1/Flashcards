@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { normalizeString, calculateSimilarity, shuffleArray, callWithRetry, checkAndResetModelFallback, ROUTES } from './utils.js';
+import { initTransfer } from './transfer.js';
 
 // --- DOM ELEMENTS ---
 const deckTitle = document.getElementById('deck-title');
@@ -356,7 +357,7 @@ function showFeedback(isCorrect, element) {
 
     if (isCorrect) {
         score++;
-        scoreDisplay.textContent = score;
+        updateScoreDisplay();
         questionsPool.splice(currentQuestionIndexInPool, 1);
         saveGameState();
         setTimeout(loadQuestion, 2500);
@@ -384,6 +385,27 @@ function saveGameState() {
     localStorage.setItem('flashcardsSave', JSON.stringify({
         questionsPool, allQuestions, score, deckTitle: deckTitle.textContent
     }));
+}
+
+function updateScoreDisplay() {
+    const scoreVal = document.getElementById('score');
+    const receiveBtn = document.getElementById('receive-session-btn');
+    const scoreContainer = document.getElementById('score-container');
+    
+    if (scoreVal) scoreVal.textContent = score;
+
+    // Check if we are in "Desktop/Landscape" mode
+    const isLandscape = window.matchMedia("(orientation: landscape)").matches;
+    const isLargeScreen = window.innerWidth >= 1024;
+    const isPillMode = isLargeScreen || (window.innerWidth >= 768 && isLandscape);
+
+    if (score > 0 || isPillMode) {
+        receiveBtn?.classList.add('hidden');
+        scoreContainer?.classList.remove('hidden');
+    } else {
+        receiveBtn?.classList.remove('hidden');
+        scoreContainer?.classList.add('hidden');
+    }
 }
 
 // --- AI LOGIC ---
@@ -458,7 +480,7 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
             // Sucesso! A IA corrigiu o erro.
             balls[ballIdx].color = 'rgba(250, 204, 21, 0.8)'; // Amarelo/Dourado para correção IA
             score++;
-            scoreDisplay.textContent = score;
+            updateScoreDisplay();
 
             // Remove da pool se ainda for a mesma questão e salva
             const idx = questionsPool.findIndex(card => card.description === questionObj.description);
@@ -640,6 +662,9 @@ saveEditBtn.addEventListener('click', () => {
 document.addEventListener('DOMContentLoaded', () => {
     checkAndResetModelFallback();
     resizeCanvas(); animate();
+    
+    initTransfer(); // Initialize P2P logic from transfer.js
+
     const data = JSON.parse(localStorage.getItem('flashcardsSave'));
     if (!data) window.location.href = ROUTES.HOME;
     else {
@@ -647,7 +672,10 @@ document.addEventListener('DOMContentLoaded', () => {
         score = data.score;
         deckTitle.textContent = data.deckTitle || "Flashcards";
         document.title = data.deckTitle ? `${data.deckTitle} | Flashcards` : "Estudando Flashcards";
-        scoreDisplay.textContent = score; loadQuestion(); initializeAi();
+        scoreDisplay.textContent = score; 
+        updateScoreDisplay();
+        loadQuestion(); 
+        initializeAi();
     }
 });
 window.addEventListener('resize', resizeCanvas);

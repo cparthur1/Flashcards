@@ -1,0 +1,39 @@
+CHANGELOG: P2P SESSION SYNC MIGRATION
+Branch: webRTC_session-transfer
+Date: 2026-04-29
+
+OVERVIEW:
+Replaced the unstable WebRTC (PeerJS) handshake logic with a robust, 100% serverless QR-Data transfer system. Optimized for performance on Chromebooks and reliability across different network environments.
+
+1. CORE SYNC ARCHITECTURE
+- Removed all PeerJS/WebRTC dependencies (signal servers, handshake logic, STUN/TURN).
+- Implemented "Progress-Only" sync: The QR code now carries the actual session data.
+- Optimized data payload using Bitsets (binary representation of deck state).
+- Integrated LZString compression to ensure 300+ card sessions fit in a single QR code.
+
+2. UI/UX REFINEMENTS
+- Renamed icon 'send2phone.svg' to 'cast.svg' for better semantic meaning.
+- Implemented Orientation-Adaptive Header:
+  - Portrait (Vertical): Full-width header for maximum studying space.
+  - Landscape (Horizontal/Desktop): Pill-shaped floating header.
+- Dynamic Mobile Header:
+  - Shows 'Download/Import' button when Score is 0.
+  - Automatically hides Import button and shows Score counter once progress begins.
+- Performance: Removed high-GPU 'glow/pulse' animations from the QR modal to prevent lag on Chromebooks.
+
+3. IN-GAME SCANNING
+- Integrated 'html5-qrcode' library.
+- Added a built-in camera scanner modal to allow syncing without leaving the webapp.
+- Added HTTPS detection and security warnings for camera permissions.
+
+4. LOGIC & CLEANUP
+- Refactored 'transfer.js' to be a standalone, serverless module.
+- Updated 'game.js' to handle real-time UI state updates for the new header logic.
+- Purged all residual WebRTC diagnostic logs and UI elements.
+
+FILES MODIFIED:
+- pages/game.html (Header structure, library imports, scanner modal)
+- js/transfer.js (Complete rewrite: compression, bitset logic, QR generation, scanning)
+- js/game.js (Score display logic, UI toggle integration, cleanup)
+- assets/img/cast.svg (New icon)
+- assets/img/download.svg (Updated usage)
