@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 uploadError.textContent = '';
                 startBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
                 startBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-                startBtn.innerHTML = `<img src="assets/img/folder.svg" class="w-6 h-6 brightness-0 invert" alt="Pasta"> Abrir ${currentFile.name}`;
+                startBtn.innerHTML = `<img src="assets/img/folder.svg" class="w-6 h-6" alt="Pasta"> Abrir ${currentFile.name}`;
             }
         });
     }
