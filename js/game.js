@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { normalizeString, calculateSimilarity, shuffleArray, callWithRetry, checkAndResetModelFallback, ROUTES } from './utils.js';
+import { initTransfer } from './transfer.js';
 
 // --- DOM ELEMENTS ---
 const deckTitle = document.getElementById('deck-title');
@@ -640,6 +641,9 @@ saveEditBtn.addEventListener('click', () => {
 document.addEventListener('DOMContentLoaded', () => {
     checkAndResetModelFallback();
     resizeCanvas(); animate();
+    
+    initTransfer(); // Initialize P2P logic from transfer.js
+
     const data = JSON.parse(localStorage.getItem('flashcardsSave'));
     if (!data) window.location.href = ROUTES.HOME;
     else {
