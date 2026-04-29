@@ -58,7 +58,8 @@
     <header id="global-header"
         class="fixed z-50 transition-all duration-300 
         top-0 left-0 w-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex items-center justify-between
-        md:top-6 md:left-6 md:w-auto md:rounded-full md:px-6 md:py-3 md:shadow-2xl md:border md:border-gray-200 dark:md:border-gray-700">
+        lg:top-6 lg:left-6 lg:w-auto lg:rounded-full lg:px-6 lg:py-3 lg:shadow-2xl lg:border lg:border-gray-200 dark:lg:border-gray-700
+        md:landscape:top-6 md:landscape:left-6 md:landscape:w-auto md:landscape:rounded-full md:landscape:px-6 md:landscape:py-3 md:landscape:shadow-2xl md:landscape:border dark:md:landscape:border-gray-700">
         <div class="flex items-center gap-3">
             <div class="flex items-center gap-1">
                 <span id="reset-btn"
@@ -67,6 +68,14 @@
                     <img id="exit-icon" src="../assets/img/exit.svg" class="w-6 h-6 transition-all duration-300"
                         alt="Sair">
                 </span>
+                
+                <!-- CAST BUTTON (Desktop & Landscape Tablet) -->
+                <button id="transfer-session-btn"
+                    class="hidden lg:flex md:landscape:flex cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors items-center justify-center"
+                    title="Continuar no Celular">
+                    <img src="../assets/img/cast.svg" class="w-6 h-6" alt="Cast">
+                </button>
+
                 <span id="export-btn"
                     class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors flex items-center justify-center"
                     title="Baixar JSON Atualizado">
@@ -77,16 +86,6 @@
                     title="Editar com Assistente de IA">
                     <img src="../assets/img/edit.svg" class="w-6 h-6" alt="Editar">
                 </button>
-                <button id="transfer-session-btn"
-                    class="hidden md:flex cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors items-center justify-center"
-                    title="Continuar no Celular">
-                    <img src="../assets/img/send2phone.svg" class="w-6 h-6" alt="Mobile">
-                </button>
-                <button id="receive-session-btn"
-                    class="flex md:hidden cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors items-center justify-center"
-                    title="Sincronizar do PC">
-                    <img src="../assets/img/download.svg" class="w-6 h-6" alt="Download">
-                </button>
             </div>
             <div class="h-6 w-[1px] bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block"></div>
             <h1 id="deck-title"
@@ -95,16 +94,26 @@
         </div>
 
         <div class="flex items-center gap-4 text-right ml-4">
-            <div>
+            <div class="hidden sm:block">
                 <p class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">
                     Restantes</p>
                 <p id="questions-left" class="text-sm font-bold text-blue-600 dark:text-blue-400 text-center">0</p>
             </div>
-            <div class="h-8 w-[1px] bg-gray-100 dark:bg-gray-700 mx-1"></div>
-            <div>
-                <p class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">Score
-                </p>
-                <p id="score" class="text-sm font-bold text-gray-900 dark:text-white text-center">0</p>
+            <div class="h-8 w-[1px] bg-gray-100 dark:bg-gray-700 mx-1 hidden sm:block"></div>
+            
+            <div id="score-wrapper" class="flex items-center min-w-[50px] justify-center">
+                <!-- MOBILE RECEIVE BUTTON (Hidden when score > 0 OR Landscape) -->
+                <button id="receive-session-btn"
+                    class="flex lg:hidden md:landscape:hidden cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors items-center justify-center"
+                    title="Sincronizar do PC">
+                    <img src="../assets/img/download.svg" class="w-6 h-6" alt="Download">
+                </button>
+
+                <!-- SCORE CONTAINER (Hidden when score == 0 on mobile/portrait) -->
+                <div id="score-container" class="hidden lg:block md:landscape:block">
+                    <p class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">Score</p>
+                    <p id="score" class="text-sm font-bold text-gray-900 dark:text-white text-center">0</p>
+                </div>
             </div>
         </div>
     </header>
