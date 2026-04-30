@@ -94,26 +94,26 @@
         </div>
 
         <div class="flex items-center gap-4 text-right ml-4">
-            <div class="hidden sm:block">
+            <div class="block">
                 <p class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">
                     Restantes</p>
                 <p id="questions-left" class="text-sm font-bold text-blue-600 dark:text-blue-400 text-center">0</p>
             </div>
-            <div class="h-8 w-[1px] bg-gray-100 dark:bg-gray-700 mx-1 hidden sm:block"></div>
+            <div class="h-8 w-[1px] bg-gray-100 dark:bg-gray-700 mx-1 block"></div>
             
             <div id="score-wrapper" class="flex items-center min-w-[50px] justify-center">
-                <!-- MOBILE RECEIVE BUTTON (Hidden when score > 0 OR Landscape) -->
+                <!-- SCORE CONTAINER -->
+                <div id="score-container" class="hidden lg:block md:landscape:block">
+                    <p class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">Score</p>
+                    <p id="score" class="text-sm font-bold text-gray-900 dark:text-white text-center">0</p>
+                </div>
+
+                <!-- MOBILE RECEIVE BUTTON -->
                 <button id="receive-session-btn"
                     class="flex lg:hidden md:landscape:hidden cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors items-center justify-center"
                     title="Sincronizar do PC">
                     <img src="../assets/img/download.svg" class="w-6 h-6" alt="Download">
                 </button>
-
-                <!-- SCORE CONTAINER (Hidden when score == 0 on mobile/portrait) -->
-                <div id="score-container" class="hidden lg:block md:landscape:block">
-                    <p class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">Score</p>
-                    <p id="score" class="text-sm font-bold text-gray-900 dark:text-white text-center">0</p>
-                </div>
             </div>
         </div>
     </header>
@@ -404,10 +404,13 @@
                 <canvas id="transfer-qrcode"
                     class="bg-white p-2 rounded-xl shadow-inner w-48 h-48 border border-gray-100 dark:border-gray-800"></canvas>
 
-                <div class="text-center space-y-2">
+                <div class="text-center space-y-3">
                     <p id="transfer-status" class="text-sm font-medium text-blue-600 dark:text-blue-400">Aguardando conexão...</p>
                     <button id="force-sync-btn" class="mx-auto text-[10px] bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full hover:bg-gray-200 transition">Não sincronizou? Tente reenviar</button>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 px-4">Aponte a câmera do seu celular para o código acima para transferir sua sessão.</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 px-4">
+                        Aponte a câmera do seu celular para o código acima para transferir sua sessão. 
+                        Em seguida, clique no ícone <img src="../assets/img/download.svg" class="w-5 h-5 inline-block mx-1 align-middle" alt="Download"> no seu celular.
+                    </p>
                 </div>
 
                 <div class="w-full space-y-3 pt-2">

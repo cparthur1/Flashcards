@@ -399,12 +399,21 @@ function updateScoreDisplay() {
     const isLargeScreen = window.innerWidth >= 1024;
     const isPillMode = isLargeScreen || (window.innerWidth >= 768 && isLandscape);
 
-    if (score > 0 || isPillMode) {
+    if (isPillMode) {
+        // Desktop/Landscape: Show score, hide download (cast icon is on the left)
         receiveBtn?.classList.add('hidden');
         scoreContainer?.classList.remove('hidden');
     } else {
-        receiveBtn?.classList.remove('hidden');
-        scoreContainer?.classList.add('hidden');
+        // Mobile Portrait: 
+        if (score === 0) {
+            // Show only download icon to import session
+            receiveBtn?.classList.remove('hidden');
+            scoreContainer?.classList.add('hidden');
+        } else {
+            // Hide download icon, show score once progress starts
+            receiveBtn?.classList.add('hidden');
+            scoreContainer?.classList.remove('hidden');
+        }
     }
 }
 
