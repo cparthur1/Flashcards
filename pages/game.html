@@ -68,7 +68,7 @@
                     <img id="exit-icon" src="../assets/img/exit.svg" class="w-6 h-6 transition-all duration-300"
                         alt="Sair">
                 </span>
-                
+
                 <!-- CAST BUTTON (Desktop & Landscape Tablet) -->
                 <button id="transfer-session-btn"
                     class="hidden lg:flex md:landscape:flex cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors items-center justify-center"
@@ -100,11 +100,12 @@
                 <p id="questions-left" class="text-sm font-bold text-blue-600 dark:text-blue-400 text-center">0</p>
             </div>
             <div class="h-8 w-[1px] bg-gray-100 dark:bg-gray-700 mx-1 block"></div>
-            
+
             <div id="score-wrapper" class="flex items-center min-w-[50px] justify-center">
                 <!-- SCORE CONTAINER -->
                 <div id="score-container" class="hidden lg:block md:landscape:block">
-                    <p class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">Score</p>
+                    <p class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">
+                        Score</p>
                     <p id="score" class="text-sm font-bold text-gray-900 dark:text-white text-center">0</p>
                 </div>
 
@@ -405,11 +406,15 @@
                     class="bg-white p-2 rounded-xl shadow-inner w-48 h-48 border border-gray-100 dark:border-gray-800"></canvas>
 
                 <div class="text-center space-y-3">
-                    <p id="transfer-status" class="text-sm font-medium text-blue-600 dark:text-blue-400">Aguardando conexão...</p>
-                    <button id="force-sync-btn" class="mx-auto text-[10px] bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full hover:bg-gray-200 transition">Não sincronizou? Tente reenviar</button>
+                    <p id="transfer-status" class="text-sm font-medium text-blue-600 dark:text-blue-400">Aguardando
+                        conexão...</p>
+                    <button id="force-sync-btn"
+                        class="mx-auto text-[10px] bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full hover:bg-gray-200 transition">Não
+                        sincronizou? Tente reenviar</button>
                     <p class="text-xs text-gray-500 dark:text-gray-400 px-4">
-                        Aponte a câmera do seu celular para o código acima para transferir sua sessão. 
-                        Em seguida, clique no ícone <img src="../assets/img/download.svg" class="w-5 h-5 inline-block mx-1 align-middle" alt="Download"> no seu celular.
+                        Abra o mesmo arquivo de flashcards no seu celular.
+                        Em seguida, clique no ícone <img src="../assets/img/download.svg"
+                            class="w-5 h-5 inline-block mx-1 align-middle" alt="Download"> e escaneie o QR code acima.
                     </p>
                 </div>
 
@@ -420,11 +425,13 @@
     </div>
 
     <!-- SCANNER MODAL (Mobile Only) -->
-    <div id="scanner-modal" class="fixed inset-0 z-[60] hidden bg-black/90 flex flex-col items-center justify-center p-6">
+    <div id="scanner-modal"
+        class="fixed inset-0 z-[60] hidden bg-black/90 flex flex-col items-center justify-center p-6">
         <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-2xl relative">
             <div class="px-6 py-4 flex justify-between items-center border-b dark:border-gray-700">
                 <h3 class="font-bold">Escanear QR Code</h3>
-                <button id="close-scanner-modal" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition">
+                <button id="close-scanner-modal"
+                    class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition">
                     <img src="../assets/img/close.svg" class="w-6 h-6" alt="Fechar">
                 </button>
             </div>
@@ -436,12 +443,14 @@
     </div>
 
     <!-- LOADING OVERLAY PARA RECEBIMENTO DE SESSÃO -->
-    <div id="sync-overlay" class="hidden fixed inset-0 z-[200] bg-white dark:bg-gray-900 flex flex-col items-center justify-center p-6 space-y-6">
+    <div id="sync-overlay"
+        class="hidden fixed inset-0 z-[200] bg-white dark:bg-gray-900 flex flex-col items-center justify-center p-6 space-y-6">
         <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
         <div class="text-center">
             <h2 class="text-2xl font-bold mb-2">Sincronizando Sessão</h2>
             <p class="text-gray-500 mb-4">Recebendo seus flashcards e progresso...</p>
-            <div id="sync-debug-log" class="text-[10px] font-mono bg-gray-100 dark:bg-gray-800 p-4 rounded-lg w-full max-w-xs text-left overflow-y-auto max-h-32 opacity-70">
+            <div id="sync-debug-log"
+                class="text-[10px] font-mono bg-gray-100 dark:bg-gray-800 p-4 rounded-lg w-full max-w-xs text-left overflow-y-auto max-h-32 opacity-70">
                 > Conectando ao servidor de dados...
             </div>
         </div>
