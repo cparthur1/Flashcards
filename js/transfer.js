@@ -15,8 +15,6 @@ const closeScannerBtn = document.getElementById('close-scanner-modal');
 const qrCanvas = document.getElementById('transfer-qrcode');
 const transferStatus = document.getElementById('transfer-status');
 const forceSyncBtn = document.getElementById('force-sync-btn');
-const transferHostInput = document.getElementById('transfer-host-input');
-const updateQrBtn = document.getElementById('update-qr-btn');
 const syncOverlay = document.getElementById('sync-overlay');
 const syncDebugLog = document.getElementById('sync-debug-log');
 
@@ -45,9 +43,6 @@ export function initTransfer() {
 
     transferBtn?.addEventListener('click', openTransferModal);
     closeTransferBtn?.addEventListener('click', closeTransferModal);
-    updateQrBtn?.addEventListener('click', () => {
-        if (currentCompressedState) generateQR(currentCompressedState);
-    });
     
     if (forceSyncBtn) {
         forceSyncBtn.textContent = "Atualizar Progresso";
@@ -116,7 +111,7 @@ function startSender() {
 }
 
 function generateQR(stateString) {
-    const host = transferHostInput.value || window.location.host;
+    const host = window.location.host;
     const protocol = window.location.protocol;
     const path = window.location.pathname;
     const fullUrl = `${protocol}//${host}${path}?prog=${stateString}`;
