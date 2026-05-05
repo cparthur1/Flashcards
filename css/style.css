@@ -1,7 +1,8 @@
 /* Global Styles & Animations */
 body {
     font-family: 'Inter', sans-serif;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .glow-correct {
@@ -271,7 +272,8 @@ textarea::-webkit-scrollbar-thumb,
 /* Mobile Header Overlap Fix */
 @media (max-width: 767px) {
     #game-container {
-        margin-top: -180px;
+        margin-top: 80px;
+        margin-bottom: 30px;
     }
     #ai-toggle-btn {
         top: auto;
