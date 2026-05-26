@@ -11,6 +11,69 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="manifest" href="../manifest.json">
     <link rel="stylesheet" href="../css/style.css">
+    <style>
+        /* Light mode bot icon invert */
+        html:not(.dark) .light-invert {
+            filter: invert(1);
+        }
+
+        /* Gemini Collapsible Bottom Sheet on Mobile */
+        @media (max-width: 767px) {
+            #ai-editor-chat {
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                z-index: 40 !important;
+                border-radius: 24px 24px 0 0 !important;
+                box-shadow: 0 -10px 25px -5px rgba(0, 0, 0, 0.2), 0 -8px 10px -6px rgba(0, 0, 0, 0.2) !important;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                border-top: 1px solid rgba(229, 231, 235, 0.5);
+                background-color: white !important;
+            }
+
+            .dark #ai-editor-chat {
+                border-top: 1px solid rgba(75, 85, 99, 0.5);
+                background-color: #1f2937 !important; /* gray-800 */
+            }
+
+            #ai-editor-chat.collapsed {
+                background: transparent !important;
+                border: none !important;
+                border-top: none !important;
+                box-shadow: none !important;
+                height: auto !important;
+                bottom: 16px !important;
+                padding: 0 16px !important;
+            }
+
+            #ai-editor-chat.collapsed #chat-header,
+            #ai-editor-chat.collapsed #chat-history {
+                display: none !important;
+            }
+
+            #ai-editor-chat.collapsed > div:last-child {
+                border-top: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+            }
+
+            /* Make the input box stand out float when collapsed */
+            #ai-editor-chat.collapsed #chat-input {
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+            }
+
+            #ai-editor-chat.expanded {
+                height: 65vh !important;
+            }
+
+            /* Adjust page container bottom padding to avoid collapsed input overlap */
+            #editor-view {
+                padding-bottom: 96px !important;
+            }
+        }
+    </style>
     <script src="../js/console.js"></script>
     <!-- Import Map for Gemini API -->
     <script type="importmap">
@@ -157,12 +220,20 @@
     <div id="editor-view"
         class="w-full max-w-7xl h-full flex flex-col md:flex-row gap-6 hidden flex-grow box-border pb-8 text-gray-800 dark:text-gray-200">
         <!-- Left Column: Chat Interface -->
-        <div
-            class="w-full md:w-1/3 bg-white dark:bg-gray-800 rounded-2xl shadow-xl flex flex-col overflow-hidden h-[85vh]">
-            <div
-                class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex items-center gap-2">
-                <img src="../assets/img/robot.svg" class="w-6 h-6" alt="Robô">
-                <h3 class="font-bold">Assistente de IA</h3>
+        <div id="ai-editor-chat"
+            class="w-full md:w-1/3 bg-white dark:bg-gray-800 rounded-2xl shadow-xl flex flex-col overflow-hidden h-[50vh] md:h-[85vh] order-2 md:order-1 collapsed transition-all duration-300">
+            <div id="chat-header"
+                class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex items-center justify-between cursor-pointer md:cursor-default select-none">
+                <div class="flex items-center gap-2">
+                    <img src="../assets/img/robot.svg" class="w-6 h-6 light-invert" alt="Robô">
+                    <h3 class="font-bold">Assistente de IA</h3>
+                </div>
+                <!-- Collapse Toggle Icon (Mobile Only) -->
+                <button id="toggle-chat-btn" class="block md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
             </div>
 
             <div id="chat-history" class="flex-grow p-4 overflow-y-auto flex flex-col gap-3">
@@ -193,29 +264,29 @@
         </div>
 
         <!-- Right Column: Deck Preview & Editor -->
-        <div class="w-full md:w-2/3 bg-white dark:bg-gray-800 rounded-2xl shadow-xl flex flex-col h-[85vh]">
+        <div class="w-full md:w-2/3 bg-white dark:bg-gray-800 rounded-2xl shadow-xl flex flex-col h-[60vh] md:h-[85vh] order-1 md:order-2">
             <!-- Header actions -->
             <div
-                class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
-                <h3 class="font-bold flex items-center gap-2">
+                class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                <h3 class="font-bold flex items-center gap-2 min-w-0">
                     <span id="deck-size-badge"
-                        class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded-full">0</span>
-                    <span id="deck-title-display">Flashcards</span>
+                        class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded-full flex-shrink-0">0</span>
+                    <span id="deck-title-display" class="truncate font-bold">Flashcards</span>
                     <button id="add-card-btn" title="Adicionar flashcard manualmente"
-                        class="p-1 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition flex items-center justify-center w-6 h-6">
+                        class="p-1 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition flex items-center justify-center w-6 h-6 flex-shrink-0">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
                             </path>
                         </svg>
                     </button>
                 </h3>
-                <div class="flex gap-2 text-sm z-30">
+                <div class="flex gap-2 text-sm z-30 w-full sm:w-auto">
                     <button id="download-deck-btn"
-                        class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-2 px-3 rounded-lg flex items-center gap-2 transition">
+                        class="flex-1 sm:flex-none justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-2 px-3 rounded-lg flex items-center gap-2 transition">
                         <img src="../assets/img/save.svg" class="w-5 h-5" alt="Salvar"> Salvar Arquivo
                     </button>
                     <button id="play-deck-btn"
-                        class="group bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-lg transition shadow flex items-center gap-2">
+                        class="flex-1 sm:flex-none justify-center group bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-lg transition shadow flex items-center gap-2">
                         <img src="../assets/img/rocket.svg" class="w-5 h-5 group-hover:hidden" alt="Foguete">
                         <img src="../assets/img/rocket_launch.svg" class="w-5 h-5 hidden group-hover:block" alt="Foguete Lançando">
                         Jogar Agora
@@ -339,6 +410,76 @@
 
     <!-- External script -->
     <script type="module" src="../js/generate.js"></script>
+    <script>
+        (function() {
+            function initCollapsibleChat() {
+                const chatInput = document.getElementById('chat-input');
+                const chatContainer = document.getElementById('ai-editor-chat');
+                const toggleChatBtn = document.getElementById('toggle-chat-btn');
+                
+                if (!chatInput || !chatContainer) {
+                    setTimeout(initCollapsibleChat, 100);
+                    return;
+                }
+
+                function expandChat() {
+                    if (window.innerWidth < 768 && chatContainer.classList.contains('collapsed')) {
+                        chatContainer.classList.remove('collapsed');
+                        chatContainer.classList.add('expanded');
+                        const chatHistory = document.getElementById('chat-history');
+                        if (chatHistory) {
+                            setTimeout(() => {
+                                chatHistory.scrollTop = chatHistory.scrollHeight;
+                            }, 50);
+                        }
+                    }
+                }
+
+                function collapseChat() {
+                    if (window.innerWidth < 768 && chatContainer.classList.contains('expanded')) {
+                        chatContainer.classList.remove('expanded');
+                        chatContainer.classList.add('collapsed');
+                    }
+                }
+
+                // Expand on input interactions
+                chatInput.addEventListener('focus', expandChat);
+                chatInput.addEventListener('click', expandChat);
+                chatInput.addEventListener('input', expandChat);
+
+                // Expand when user clicks send button or submits
+                const chatSendBtn = document.getElementById('chat-send-btn');
+                if (chatSendBtn) {
+                    chatSendBtn.addEventListener('click', () => {
+                        setTimeout(expandChat, 10);
+                    });
+                }
+                chatInput.addEventListener('keyup', (e) => {
+                    if (e.key === 'Enter') {
+                        setTimeout(expandChat, 10);
+                    }
+                });
+
+                // Toggle chat button (Mobile only chevron)
+                if (toggleChatBtn) {
+                    toggleChatBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (chatContainer.classList.contains('expanded')) {
+                            collapseChat();
+                        } else {
+                            expandChat();
+                        }
+                    });
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initCollapsibleChat);
+            } else {
+                initCollapsibleChat();
+            }
+        })();
+    </script>
 </body>
 
 </html>

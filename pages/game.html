@@ -60,8 +60,8 @@
         top-0 left-0 w-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex items-center justify-between
         lg:top-6 lg:left-6 lg:w-auto lg:rounded-full lg:px-6 lg:py-3 lg:shadow-2xl lg:border lg:border-gray-200 dark:lg:border-gray-700
         md:landscape:top-6 md:landscape:left-6 md:landscape:w-auto md:landscape:rounded-full md:landscape:px-6 md:landscape:py-3 md:landscape:shadow-2xl md:landscape:border dark:md:landscape:border-gray-700">
-        <div class="flex items-center gap-3">
-            <div class="flex items-center gap-1">
+        <div class="flex items-center gap-3 min-w-0 flex-1 mr-2">
+            <div class="flex items-center gap-1 flex-shrink-0">
                 <span id="reset-btn"
                     class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors flex items-center justify-center"
                     title="Voltar ao início">
@@ -87,9 +87,9 @@
                     <img src="../assets/img/edit.svg" class="w-6 h-6" alt="Editar">
                 </button>
             </div>
-            <div class="h-6 w-[1px] bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block"></div>
+            <div class="h-6 w-[1px] bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block flex-shrink-0"></div>
             <h1 id="deck-title"
-                class="font-bold text-gray-800 dark:text-white truncate max-w-[180px] sm:max-w-[200px] md:max-w-xs text-lg">
+                class="font-bold text-gray-800 dark:text-white truncate text-base sm:text-lg min-w-0">
                 Flashcards</h1>
         </div>
 

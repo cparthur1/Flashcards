@@ -45,19 +45,9 @@ const ALLOWED_CDN_HOSTS = new Set([
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Strategy: Stale-While-Revalidate for local assets
+  // Strategy: Network-only for development to bypass stale cache
   if (ASSETS_TO_CACHE.includes(url.pathname) || url.origin === self.location.origin) {
-    event.respondWith(
-      caches.open(CACHE_NAME).then((cache) => {
-        return cache.match(event.request).then((cached) => {
-          const fetched = fetch(event.request).then((networkResponse) => {
-            cache.put(event.request, networkResponse.clone());
-            return networkResponse;
-          });
-          return cached || fetched;
-        });
-      })
-    );
+    event.respondWith(fetch(event.request));
     return;
   }
 
