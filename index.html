@@ -68,6 +68,12 @@
                 class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-4 rounded-xl text-lg transition-all transform hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2">
                 <img src="assets/img/ai.svg" class="w-6 h-6" alt="IA"> Criar Novo com IA
             </a>
+
+            <!-- Botão Caderno (visible only if notebook has cards) -->
+            <button id="open-notebook-btn"
+                class="hidden w-full bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold py-3.5 px-4 rounded-xl text-lg transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2 border border-blue-250 dark:border-blue-800">
+                <img src="assets/img/bookmark_check.svg" class="w-6 h-6" alt="Caderno"> Estudar Caderno (<span id="notebook-count">0</span> cards)
+            </button>
         </div>
         <p id="upload-error" class="text-red-500 mt-4 text-sm"></p>
     </div>

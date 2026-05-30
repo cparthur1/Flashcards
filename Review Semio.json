@@ -1,0 +1,3207 @@
+{
+  "__flashcards_watermark__": "notebook_backup_v1",
+  "deckTitle": "Caderno",
+  "cards": [
+    {
+      "type": "open",
+      "description": "Mancha vermelha por vasodilatação que some à digitopressão.",
+      "answer": "Eritema"
+    },
+    {
+      "type": "open",
+      "description": "Eritema que forma desenhos ou figuras com limites bem definidos.",
+      "answer": "Eritema Figurado"
+    },
+    {
+      "type": "open",
+      "description": "Eritema generalizado e crônico, quase sempre com descamação.",
+      "answer": "Eritrodermia"
+    },
+    {
+      "type": "open",
+      "description": "Eritema difuso e pontilhado de doenças infecciosas agudas e febris.",
+      "answer": "Exantema"
+    },
+    {
+      "type": "open",
+      "description": "Eritema que ocorre em mucosas (ex: dentro da boca).",
+      "answer": "Enantema"
+    },
+    {
+      "type": "open",
+      "description": "Mancha arroxeada/azulada devido à baixa oxigenação do sangue.",
+      "answer": "Cianose"
+    },
+    {
+      "type": "open",
+      "description": "Mancha avermelhada por neoformação de vasos, geralmente congênita.",
+      "answer": "Mancha Angiomatosa"
+    },
+    {
+      "type": "open",
+      "description": "Dilatação de capilares visíveis como linhas finas, vermelhas e sinuosas.",
+      "answer": "Telangiectasia"
+    },
+    {
+      "type": "open",
+      "description": "Mancha avermelhada/arroxeada por extravasamento de sangue que NÃO some à digitopressão.",
+      "answer": "Púrpura"
+    },
+    {
+      "type": "open",
+      "description": "Púrpuras puntiformes, como a ponta de uma caneta.",
+      "answer": "Petéquias"
+    },
+    {
+      "type": "open",
+      "description": "Púrpura em placas ou áreas maiores (o 'roxo' da pancada).",
+      "answer": "Equimose"
+    },
+    {
+      "type": "open",
+      "description": "Púrpura com formato linear.",
+      "answer": "Víbice"
+    },
+    {
+      "type": "open",
+      "description": "Diminuição parcial da melanina, resultando em manchas mais claras.",
+      "answer": "Hipocromia"
+    },
+    {
+      "type": "open",
+      "description": "Ausência total de melanina, resultando em manchas brancas.",
+      "answer": "Acromia"
+    },
+    {
+      "type": "open",
+      "description": "Aumento da deposição de melanina, resultando em manchas mais escuras.",
+      "answer": "Hipercromia"
+    },
+    {
+      "type": "open",
+      "description": "Lesão sólida, elevada, superficial, com até 1,0 cm de diâmetro.",
+      "answer": "Pápula"
+    },
+    {
+      "type": "open",
+      "description": "Lesão elevada, com mais de 1,0 cm, com aspecto de 'platô'.",
+      "answer": "Placa"
+    },
+    {
+      "type": "open",
+      "description": "Lesão sólida, elevada, com mais de 1,0 cm, que atinge a derme.",
+      "answer": "Tubérculo"
+    },
+    {
+      "type": "open",
+      "description": "Lesão sólida, na derme/hipoderme, mais sentida que vista (1 a 3 cm).",
+      "answer": "Nódulo"
+    },
+    {
+      "type": "open",
+      "description": "Lesão sólida com mais de 3 cm.",
+      "answer": "Nodosidade"
+    },
+    {
+      "type": "open",
+      "description": "Nódulo que amolece, ulcera e drena conteúdo.",
+      "answer": "Goma"
+    },
+    {
+      "type": "open",
+      "description": "Lesão sólida com aspecto de 'couve-flor' que cresce para fora.",
+      "answer": "Vegetação"
+    },
+    {
+      "type": "open",
+      "description": "Vegetação seca, dura e áspera (ex: verruga vulgar).",
+      "answer": "Verrucosa"
+    },
+    {
+      "type": "open",
+      "description": "Elevação com até 1,0 cm, contendo líquido claro.",
+      "answer": "Vesícula"
+    },
+    {
+      "type": "open",
+      "description": "Elevação com mais de 1,0 cm, contendo líquido claro.",
+      "answer": "Bolha"
+    },
+    {
+      "type": "open",
+      "description": "Vesícula (até 1,0 cm) contendo pus.",
+      "answer": "Pústula"
+    },
+    {
+      "type": "open",
+      "description": "Coleção de pus com mais de 1,0 cm, na derme ou subcutâneo.",
+      "answer": "Abscesso"
+    },
+    {
+      "type": "open",
+      "description": "Coleção de sangue que forma uma saliência (relevo).",
+      "answer": "Hematoma"
+    },
+    {
+      "type": "open",
+      "description": "Lesão elevada, edematosa, fugaz e pruriginosa.",
+      "answer": "Urtica"
+    },
+    {
+      "type": "open",
+      "description": "Inchaço difuso por acúmulo de líquido no interstício.",
+      "answer": "Edema"
+    },
+    {
+      "type": "open",
+      "description": "Espessamento da camada córnea, tornando-a dura e áspera (ex: calo).",
+      "answer": "Ceratose"
+    },
+    {
+      "type": "open",
+      "description": "Espessamento da epiderme com acentuação dos sulcos (aspecto quadriculado).",
+      "answer": "Liquenificação"
+    },
+    {
+      "type": "open",
+      "description": "Espessamento por acúmulo de células na derme, apagando os sulcos.",
+      "answer": "Infiltração"
+    },
+    {
+      "type": "open",
+      "description": "Adelgaçamento da pele, que se torna fina e transparente (ex: estrias).",
+      "answer": "Atrofia"
+    },
+    {
+      "type": "open",
+      "description": "Reparação de perda tecidual por tecido fibroso.",
+      "answer": "Cicatriz"
+    },
+    {
+      "type": "open",
+      "description": "Endurecimento da pele, tornando-a inelástica e aderida a planos profundos.",
+      "answer": "Esclerose"
+    },
+    {
+      "type": "open",
+      "description": "Perda superficial, atingindo apenas a epiderme, que cura sem cicatriz.",
+      "answer": "Erosão"
+    },
+    {
+      "type": "open",
+      "description": "Perda um pouco mais profunda, atingindo a derme papilar.",
+      "answer": "Exulceração"
+    },
+    {
+      "type": "open",
+      "description": "Perda profunda que atinge a derme/hipoderme e deixa cicatriz.",
+      "answer": "Úlcera"
+    },
+    {
+      "type": "open",
+      "description": "Úlcera por necrose tecidual devido à compressão prolongada.",
+      "answer": "Escara"
+    },
+    {
+      "type": "open",
+      "description": "Perda de tecido linear, como 'rachadura', em dobras ou orifícios.",
+      "answer": "Fissura"
+    },
+    {
+      "type": "open",
+      "description": "Trajeto anormal que comunica uma cavidade supurativa com a pele.",
+      "answer": "Fístula"
+    },
+    {
+      "type": "open",
+      "description": "Lâminas de queratina que se desprendem da pele.",
+      "answer": "Escamas"
+    },
+    {
+      "type": "open",
+      "description": "Ressecamento de secreções (pus, sangue) sobre a pele (a 'casquinha').",
+      "answer": "Crosta"
+    },
+    {
+      "type": "open",
+      "description": "Ausência congênita ou adquirida de uma ou mais unhas.",
+      "answer": "Anoníquia"
+    },
+    {
+      "type": "open",
+      "description": "Unhas pequenas, porém de formato normal.",
+      "answer": "Microníquia"
+    },
+    {
+      "type": "open",
+      "description": "Unhas grandes, porém de formato normal. Pode ser sinal de acromegalia.",
+      "answer": "Macroníquia"
+    },
+    {
+      "type": "open",
+      "description": "Unhas que se tornam progressivamente pequenas e finas devido a uma doença subjacente.",
+      "answer": "Onicoatrofia"
+    },
+    {
+      "type": "open",
+      "description": "Unhas moles e finas, que se dobram facilmente.",
+      "answer": "Hapaloníquia"
+    },
+    {
+      "type": "open",
+      "description": "Unhas anormalmente curtas no eixo longitudinal, frequentemente por onicofagia.",
+      "answer": "Braquioníquia"
+    },
+    {
+      "type": "open",
+      "description": "Unhas anormalmente longas no eixo longitudinal, de forma desproporcional.",
+      "answer": "Doliconíquia"
+    },
+    {
+      "type": "open",
+      "description": "Unha com formato côncavo, semelhante a uma colher. Sinal clássico de anemia ferropriva.",
+      "answer": "Coiloníquia"
+    },
+    {
+      "type": "open",
+      "description": "Termo genérico para unha com alteração grosseira de forma, espessa, opaca e deformada.",
+      "answer": "Onicodistrofia"
+    },
+    {
+      "type": "open",
+      "description": "Acúmulo de queratina e restos celulares sob a unha, comum na onicomicose.",
+      "answer": "Ceratose Subungueal"
+    },
+    {
+      "type": "open",
+      "description": "Alargamento da ponta dos dedos e aumento da convexidade da unha (unha em vidro de relógio).",
+      "answer": "Acropaquia"
+    },
+    {
+      "type": "open",
+      "description": "Aumento excessivo da curvatura transversal da unha, que 'pinça' a pele nas laterais.",
+      "answer": "Unha em Telha"
+    },
+    {
+      "type": "open",
+      "description": "Unha espessada, alongada e curvada, lembrando a garra de um animal.",
+      "answer": "Onicogrifose"
+    },
+    {
+      "type": "open",
+      "description": "Fissuras ou estrias longitudinais que podem levar à fragmentação da unha.",
+      "answer": "Onicorrexe"
+    },
+    {
+      "type": "open",
+      "description": "Descolamento da unha em lâminas na sua borda livre (ponta).",
+      "answer": "Onicosquizia"
+    },
+    {
+      "type": "open",
+      "description": "Formação de um sulco ou canal longitudinal único na unha.",
+      "answer": "Distrofia Canalicular"
+    },
+    {
+      "type": "open",
+      "description": "Presença de múltiplas depressões puntiformes na superfície da unha, lembrando um dedal.",
+      "answer": "Unha em Dedal"
+    },
+    {
+      "type": "open",
+      "description": "Manchas brancas na unha, geralmente por microtrauma.",
+      "answer": "Leuconíquia"
+    },
+    {
+      "type": "open",
+      "description": "Alteração da cor da unha para tons escuros (amarelo, marrom, preto).",
+      "answer": "Cromoníquia"
+    },
+    {
+      "type": "open",
+      "description": "Formação de uma faixa pigmentada (escura) longitudinal na unha.",
+      "answer": "Melanoníquia Estriada"
+    },
+    {
+      "type": "open",
+      "description": "Sulcos transversais que marcam a unha, indicando parada temporária no crescimento.",
+      "answer": "Linhas de Beau"
+    },
+    {
+      "type": "open",
+      "description": "Faixas transversais esbranquiçadas, associadas a intoxicações por metais pesados.",
+      "answer": "Faixas de Mee"
+    },
+    {
+      "type": "open",
+      "description": "Unha 'meio a meio', com metade proximal branca e distal avermelhada. Associada à doença renal crônica.",
+      "answer": "Unhas de Lindsay"
+    },
+    {
+      "type": "open",
+      "description": "Maior parte da unha branca e opaca, com pequena faixa distal normal. Sinal de hipoalbuminemia. Também descrito como: Qual alteração ungueal observada em pacientes cirróticos se caracteriza por unhas predominantemente brancas com uma faixa estreita rosada distal?",
+      "answer": "Unhas de Terry"
+    },
+    {
+      "type": "open",
+      "description": "Inflamação/infecção da pele ao redor da unha (dobras ungueais). O popular 'unheiro'.",
+      "answer": "Paroníquia"
+    },
+    {
+      "type": "open",
+      "description": "Descolamento completo da unha, que se inicia na base (matriz).",
+      "answer": "Onicomadese"
+    },
+    {
+      "type": "open",
+      "description": "Descolamento da unha que se inicia na ponta (borda livre).",
+      "answer": "Onicólise"
+    },
+    {
+      "type": "open",
+      "description": "Termo técnico para a unha encravada.",
+      "answer": "Onicocriptose"
+    },
+    {
+      "type": "open",
+      "description": "Malformação congênita com falha na fusão dos processos nasais e maxilares.",
+      "answer": "Fissura Nasolabial"
+    },
+    {
+      "type": "open",
+      "description": "Lesão pré-maligna no lábio por exposição solar crônica, com perda da definição da borda.",
+      "answer": "Queilite Actínica"
+    },
+    {
+      "type": "open",
+      "description": "Inflamação com fissuras nas comissuras labiais, associada a infecções ou deficiências nutricionais.",
+      "answer": "Queilite Angular"
+    },
+    {
+      "type": "open",
+      "description": "Úlcera de base endurecida e indolor no lábio, lesão primária da sífilis.",
+      "answer": "Cancro Sifilítico"
+    },
+    {
+      "type": "open",
+      "description": "Edema súbito e localizado nos lábios, geralmente por reação alérgica.",
+      "answer": "Angioedema"
+    },
+    {
+      "type": "open",
+      "description": "Infecção viral com vesículas agrupadas em 'cacho de uva' nos lábios.",
+      "answer": "Herpes Labial"
+    },
+    {
+      "type": "open",
+      "description": "Lesões verrucosas ou com aspecto de 'couve-flor' nos lábios, causadas por vírus.",
+      "answer": "HPV"
+    },
+    {
+      "type": "open",
+      "description": "Doença com máculas hiperpigmentadas nos lábios e mucosa oral, associada a pólipos gastrointestinais.",
+      "answer": "Síndrome de Peutz-Jeghers"
+    },
+    {
+      "type": "open",
+      "description": "Múltiplos pequenos vasos dilatados nos lábios e língua, que somem à digitopressão.",
+      "answer": "Telangiectasia Hemorrágica Hereditária"
+    },
+    {
+      "type": "open",
+      "description": "Malformação dentária em incisivos (entalhe na borda), patognomônica da sífilis congênita.",
+      "answer": "Dentes de Hutchinson"
+    },
+    {
+      "type": "open",
+      "description": "Desgaste acentuado da superfície dos dentes, sinal de bruxismo.",
+      "answer": "Atrito Dentário"
+    },
+    {
+      "type": "open",
+      "description": "Inflamação da gengiva, que fica vermelha, inchada e sangra facilmente.",
+      "answer": "Gengivite"
+    },
+    {
+      "type": "open",
+      "description": "Linha azulada na margem gengival, sinal de intoxicação por chumbo.",
+      "answer": "Orla Saturnina"
+    },
+    {
+      "type": "open",
+      "description": "Lesão nodular, vermelha e mole na gengiva que sangra facilmente.",
+      "answer": "Granuloma Piogênico"
+    },
+    {
+      "type": "open",
+      "description": "Aumento do volume da gengiva, podendo ser causado por medicamentos como fenitoína.",
+      "answer": "Gengivite Hipertrófica"
+    },
+    {
+      "type": "open",
+      "description": "Neoplasia vascular com lesões violáceas na gengiva, associada à AIDS.",
+      "answer": "Sarcoma de Kaposi"
+    },
+    {
+      "type": "open",
+      "description": "Múltiplas pápulas amareladas na mucosa da bochecha, são glândulas sebáceas ectópicas (variante do normal).",
+      "answer": "Grânulos de Fordyce"
+    },
+    {
+      "type": "open",
+      "description": "Placa ou mancha branca na mucosa que não pode ser removida por raspagem, lesão pré-maligna.",
+      "answer": "Leucoplasia"
+    },
+    {
+      "type": "open",
+      "description": "Áreas avermelhadas e despapiladas na língua que mudam de lugar, lembrando um mapa.",
+      "answer": "Língua Geográfica"
+    },
+    {
+      "type": "open",
+      "description": "Sulcos e fissuras profundas na superfície da língua.",
+      "answer": "Língua Fissurada"
+    },
+    {
+      "type": "open",
+      "description": "Alongamento das papilas da língua com coloração escura, parecendo 'pelos'.",
+      "answer": "Língua Pilosa Negra"
+    },
+    {
+      "type": "open",
+      "description": "Camada esbranquiçada na língua que não sai com raspagem, comum em febre e desidratação.",
+      "answer": "Língua Saburrosa"
+    },
+    {
+      "type": "open",
+      "description": "Língua com superfície lisa e avermelhada por atrofia das papilas, sinal de deficiência de vitamina B.",
+      "answer": "Língua Lisa e Despapilada"
+    },
+    {
+      "type": "open",
+      "description": "Tumor benigno de gordura, aparece como um nódulo amarelado e mole sob a mucosa.",
+      "answer": "Lipoma"
+    },
+    {
+      "type": "open",
+      "description": "Veias dilatadas na face de baixo da língua, comuns em idosos.",
+      "answer": "Varizes Sublinguais"
+    },
+    {
+      "type": "open",
+      "description": "Úlcera rasa, dolorosa, com fundo branco e halo vermelho.",
+      "answer": "Afta"
+    },
+    {
+      "type": "open",
+      "description": "Cisto de retenção de muco no assoalho da boca, translúcido e azulado.",
+      "answer": "Rânula"
+    },
+    {
+      "type": "open",
+      "description": "Placas brancas e cremosas na boca que SAEM com a raspagem, deixando base vermelha.",
+      "answer": "Candidíase Oral"
+    },
+    {
+      "type": "open",
+      "description": "Malformação congênita com comunicação entre a cavidade oral e a nasal.",
+      "answer": "Fenda Palatina"
+    },
+    {
+      "type": "open",
+      "description": "Crescimento ósseo benigno na linha média do palato duro.",
+      "answer": "Torus Palatino"
+    },
+    {
+      "type": "open",
+      "description": "Hiperemia difusa da orofaringe, com parede posterior vermelha.",
+      "answer": "Faringite Aguda"
+    },
+    {
+      "type": "open",
+      "description": "Aumento do volume das amígdalas, podendo causar roncos.",
+      "answer": "Hipertrofia de Amígdalas"
+    },
+    {
+      "type": "open",
+      "description": "Amígdalas inchadas e vermelhas com placas de pus. Também descrito como: O que indica a presença de exsudato purulento nas amígdalas?",
+      "answer": "Amigdalite Bacteriana"
+    },
+    {
+      "type": "open",
+      "description": "Pequenos pontos hemorrágicos no palato mole, sugestivos de infecção por Streptococcus.",
+      "answer": "Petéquias no Palato"
+    },
+    {
+      "type": "open",
+      "description": "Infecção viral com pequenas úlceras no palato mole e pilares, poupando as amígdalas.",
+      "answer": "Herpangina"
+    },
+    {
+      "type": "open",
+      "description": "Pseudomembrana acinzentada e aderida nas amígdalas, que sangra ao ser removida.",
+      "answer": "Difteria"
+    },
+    {
+      "type": "open",
+      "description": "Massa esbranquiçada com odor fétido nas criptas amigdalianas, causa de halitose.",
+      "answer": "Cáseo Amigdaliano"
+    },
+    {
+      "type": "open",
+      "description": "Vibração palpável sobre a artéria carótida, indicando fluxo turbulento.",
+      "answer": "Frêmito"
+    },
+    {
+      "type": "open",
+      "description": "Som de 'sopro' auscultado sobre a carótida, indica estenose.",
+      "answer": "Sopro Carotídeo"
+    },
+    {
+      "type": "open",
+      "description": "Distensão visível da veia jugular externa com paciente a 45 graus, sinal de insuficiência cardíaca.",
+      "answer": "Turgência Jugular"
+    },
+    {
+      "type": "open",
+      "description": "Manobra positiva (pletora facial ao elevar os braços) que indica bócio mergulhante.",
+      "answer": "Sinal de Pemberton"
+    },
+    {
+      "type": "open",
+      "description": "Massa cística na linha média do pescoço que se move quando o paciente põe a língua para fora.",
+      "answer": "Cisto Tireoglosso"
+    },
+    {
+      "type": "open",
+      "description": "Linfonodo aumentado na fossa supraclavicular esquerda, sinal de metástase abdominal (câncer de estômago).",
+      "answer": "Linfonodo de Virchow"
+    },
+    {
+      "type": "open",
+      "description": "S. DA CONSOLIDAÇÃO: Qual alteração é esperada na inspeção dinâmica? Também descrito como: S. DO PNEUMOTÓRAX: Qual o principal achado na inspeção dinâmica?",
+      "answer": "Expansibilidade diminuída/Expansibilidade reduzida"
+    },
+    {
+      "type": "open",
+      "description": "S. DA CONSOLIDAÇÃO: Qual som é obtido na percussão sobre a área afetada? Também descrito como: S. DA ATELECTASIA: Qual som é obtido na percussão?",
+      "answer": "Macicez/Submacicez"
+    },
+    {
+      "type": "open",
+      "description": "S. DA CONSOLIDAÇÃO: Quais ruídos adventícios são classicamente encontrados na ausculta? Também descrito como: S. DA CONGESTÃO PASSIVA: Qual ruído adventício é característico na ausculta das bases?",
+      "answer": "Estertores finos/Crepitação"
+    },
+    {
+      "type": "open",
+      "description": "S. DA CONSOLIDAÇÃO: Qual alteração vocal é esperada na ausculta (ressonância)?",
+      "answer": "Broncofonia/Pectorilóquia/Egofonia"
+    },
+    {
+      "type": "open",
+      "description": "S. DO DERRAME PLEURAL: Qual achado pode ser visto na inspeção estática no hemitórax afetado?",
+      "answer": "Abaulamento/Sinal de Lemos Torres"
+    },
+    {
+      "type": "open",
+      "description": "S. DO DERRAME PLEURAL: Qual o achado da expansibilidade na inspeção dinâmica?",
+      "answer": "Reduzida/Diminuída"
+    },
+    {
+      "type": "open",
+      "description": "S. DO DERRAME PLEURAL: Qual som é obtido na percussão sobre o líquido?",
+      "answer": "Macicez"
+    },
+    {
+      "type": "open",
+      "description": "S. DO DERRAME PLEURAL: Como estará o Murmúrio Vesicular (MV) na ausculta sobre o derrame?",
+      "answer": "Abolido/Ausente"
+    },
+    {
+      "type": "open",
+      "description": "S. DO DERRAME PLEURAL: Qual ruído adventício pode estar presente, especialmente em pleurites? Também descrito como: Qual som adventício é comparado a 'couro rangendo'?",
+      "answer": "Atrito pleural"
+    },
+    {
+      "type": "open",
+      "description": "S. DO PNEUMOTÓRAX: Em casos hipertensivos, qual achado pode ser visto na inspeção da traqueia?",
+      "answer": "Desvio da traqueia contralateral/Turgência jugular"
+    },
+    {
+      "type": "open",
+      "description": "S. DO PNEUMOTÓRAX: Como estará o Murmúrio Vesicular (MV) na ausculta?",
+      "answer": "Abolido/Ausente/Diminuído"
+    },
+    {
+      "type": "open",
+      "description": "S. DA ATELECTASIA: Qual alteração pode ser vista na inspeção estática?",
+      "answer": "Retração do hemitórax"
+    },
+    {
+      "type": "open",
+      "description": "S. DA ATELECTASIA: Para qual lado a traqueia pode estar desviada na inspeção?",
+      "answer": "Lado homolateral/Mesmo lado da lesão"
+    },
+    {
+      "type": "open",
+      "description": "S. DA ATELECTASIA: Como estará o Frêmito Toracovocal (FTV) na palpação? Também descrito como: S. DA ATELECTASIA: Como estará o Murmúrio Vesicular (MV) na ausculta?",
+      "answer": "Diminuído/Abolido"
+    },
+    {
+      "type": "open",
+      "description": "S. OBSTRUTIVA (ENFISEMA): Qual formato de tórax é clássico na inspeção estática?",
+      "answer": "Tórax em tonel"
+    },
+    {
+      "type": "open",
+      "description": "S. OBSTRUTIVA (ASMA/DPOC): Qual sinal é comum na inspeção dinâmica durante crises?",
+      "answer": "Tiragem intercostal/Respiração com lábios semicerrados"
+    },
+    {
+      "type": "open",
+      "description": "S. OBSTRUTIVA (ENFISEMA/DPOC): Como estará o Frêmito Toracovocal (FTV) na palpação?",
+      "answer": "Diminuído"
+    },
+    {
+      "type": "open",
+      "description": "S. OBSTRUTIVA (ASMA/DPOC): Quais ruídos adventícios são característicos na ausculta?",
+      "answer": "Sibilos/Roncos"
+    },
+    {
+      "type": "open",
+      "description": "S. OBSTRUTIVA (ENFISEMA/DPOC): Como está o tempo expiratório na ausculta?",
+      "answer": "Expiração prolongada"
+    },
+    {
+      "type": "open",
+      "description": "S. BRÔNQUICAS (BRONQUIECTASIA): Qual o principal achado na ausculta na área afetada?",
+      "answer": "Estertores grossos"
+    },
+    {
+      "type": "open",
+      "description": "S. DA CONGESTÃO PASSIVA: Qual o principal achado na inspeção?",
+      "answer": "Expansibilidade diminuída"
+    },
+    {
+      "type": "open",
+      "description": "S. DA CONGESTÃO PASSIVA: Como pode estar o FTV na palpação?",
+      "answer": "Normal/Aumentado"
+    },
+    {
+      "type": "open",
+      "description": "S. DA CONGESTÃO PASSIVA: Qual som pode ser encontrado na percussão das bases pulmonares?",
+      "answer": "Submacicez"
+    },
+    {
+      "type": "open",
+      "description": "S. DE ESCAVAÇÃO (CAVERNA): Qual alteração pode ser encontrada na inspeção? Também descrito como: S. PLEURÍTICA (PLEURITE): Qual o achado na inspeção dinâmica relacionado à dor?",
+      "answer": "Expansibilidade reduzida"
+    },
+    {
+      "type": "open",
+      "description": "S. DE ESCAVAÇÃO (CAVERNA): Como pode estar o FTV na palpação em caso de secreção?",
+      "answer": "Aumentado"
+    },
+    {
+      "type": "open",
+      "description": "S. DE ESCAVAÇÃO (CAVERNA): Qual som pode ser encontrado na percussão se houver nível hidroaéreo?",
+      "answer": "Hipersonoridade/Som timpânico"
+    },
+    {
+      "type": "open",
+      "description": "S. DE ESCAVAÇÃO (CAVERNA): Qual tipo de sopro pode ser auscultado?",
+      "answer": "Som broncovesicular/Som brônquico/Sopro cavitário"
+    },
+    {
+      "type": "open",
+      "description": "SEMIOLOGIA: Qual termo descreve a expulsão súbita de grande quantidade de pus, típica de abcessos ou cavernas?",
+      "answer": "Vômica"
+    },
+    {
+      "type": "open",
+      "description": "S. PLEURÍTICA (PLEURITE): Como está o FTV na palpação?",
+      "answer": "Normal/Diminuído"
+    },
+    {
+      "type": "open",
+      "description": "S. PLEURÍTICA (PLEURITE): Qual o som esperado na percussão?",
+      "answer": "Som claro pulmonar/Submacicez"
+    },
+    {
+      "type": "open",
+      "description": "S. PLEURÍTICA (PLEURITE): Qual a principal característica do sintoma dor torácica nesta síndrome?",
+      "answer": "Ventilatório-dependente"
+    },
+    {
+      "type": "open",
+      "description": "IVAS (RINITE/SINUSITE): Qual achado é comum na inspeção nasal (rinoscopia)?",
+      "answer": "Hiperemia da mucosa/Secreção/Rinorreia"
+    },
+    {
+      "type": "open",
+      "description": "IVAS (SINUSITE): Qual manobra semiológica de palpação pode ser feita na face?",
+      "answer": "Digitopressão dos seios paranasais"
+    },
+    {
+      "type": "open",
+      "description": "IVAS (FARINGITE/AMIGDALITE): Qual achado clássico é visto na inspeção (oroscopia)?",
+      "answer": "Hiperemia de orofaringe/Exsudato purulento"
+    },
+    {
+      "type": "open",
+      "description": "SEMIOLOGIA: Paciente infantil com respiração bucal e fácies alongada. Qual condição provável?",
+      "answer": "Hipertrofia de adenoide/Fácies adenoideana"
+    },
+    {
+      "type": "open",
+      "description": "SEMIOLOGIA: Paciente com rouquidão ou afonia súbita. Qual condição inflamatória provável?",
+      "answer": "Laringite"
+    },
+    {
+      "type": "open",
+      "description": "SEMIOLOGIA: Dor esternal ou retroesternal em queimação é característica de qual condição?",
+      "answer": "Traqueobronquite"
+    },
+    {
+      "type": "open",
+      "description": "SEMIOLOGIA: Paciente com tríade de dispneia súbita, dor torácica e hemoptise. Qual emergência médica?",
+      "answer": "Embolia Pulmonar/TEP"
+    },
+    {
+      "type": "open",
+      "description": "EMBOLIA PULMONAR (TEP): Na inspeção, quais sinais podem estar presentes?",
+      "answer": "Taquipneia/Agitação/Cianose"
+    },
+    {
+      "type": "open",
+      "description": "EMBOLIA PULMONAR (TEP): A ausculta pulmonar é tipicamente...",
+      "answer": "Normal/Sibilos inespecíficos/Estertores inespecíficos"
+    },
+    {
+      "type": "open",
+      "description": "NEOPLASIA PULMONAR: Qual mudança no padrão de tosse crônica é um sinal de alerta?",
+      "answer": "Hemoptise/Mudança de característica"
+    },
+    {
+      "type": "open",
+      "description": "SEMIOLOGIA: Qual síndrome é caracterizada pela tríade de ptose palpebral, miose e anidrose ipsilateral?",
+      "answer": "Claude-Bernard-Horner"
+    },
+    {
+      "type": "open_double",
+      "description": "DIFERENCIAL: Qual o FTV e a Percussão no DERRAME PLEURAL? Também descrito como: DIFERENCIAL: Qual o FTV e a Percussão no PNEUMOTÓRAX?",
+      "answer": "Abolido/Diminuído",
+      "answer2": "Macicez / Timpanismo/Hipersonoridade",
+      "placeholder1": "FTV (Palpação)",
+      "placeholder2": "Percussão"
+    },
+    {
+      "type": "open_double",
+      "description": "DIFERENCIAL: Qual o FTV e a Percussão na CONSOLIDAÇÃO?",
+      "answer": "Aumentado",
+      "answer2": "Macicez",
+      "placeholder1": "FTV (Palpação)",
+      "placeholder2": "Percussão"
+    },
+    {
+      "type": "open_double",
+      "description": "DIFERENCIAL: Qual o FTV e a Percussão no ENFISEMA (DPOC)?",
+      "answer": "Diminuído",
+      "answer2": "Timpanismo/Hipersonoridade",
+      "placeholder1": "FTV (Palpação)",
+      "placeholder2": "Percussão"
+    },
+    {
+      "type": "open_double",
+      "description": "DIFERENCIAL: Qual o FTV e a Percussão na ATELECTASIA?",
+      "answer": "Diminuído/Abolido",
+      "answer2": "Macicez",
+      "placeholder1": "FTV (Palpação)",
+      "placeholder2": "Percussão"
+    },
+    {
+      "type": "open",
+      "description": "Tipo de dor que funciona como um sinal de alerta imediato a uma lesão tecidual, sendo intensa e autolimitada.",
+      "answer": "Dor Aguda"
+    },
+    {
+      "type": "open",
+      "description": "Tipo de dor que persiste por no mínimo 3 meses, perdendo a função protetora e tornando-se a própria doença.",
+      "answer": "Dor Crônica"
+    },
+    {
+      "type": "open",
+      "description": "Fenômeno da dor neuropática em que um estímulo normalmente não doloroso (toque) provoca dor. Também descrito como: Dor causada por um estímulo que não é doloroso (ex: toque leve da roupa)",
+      "answer": "Alodinia"
+    },
+    {
+      "type": "open",
+      "description": "Fenômeno da dor neuropática caracterizado por uma resposta dolorosa exagerada a um estímulo. Também descrito como: Resposta exagerada a um estímulo que já é doloroso por natureza.",
+      "answer": "Hiperalgesia"
+    },
+    {
+      "type": "open",
+      "description": "Fenômeno da dor neuropática com sensação dolorosa aumentada e prolongada após estimulação repetitiva.",
+      "answer": "Hiperpatia"
+    },
+    {
+      "type": "open",
+      "description": "Tipo de dor que combina componentes nociceptivos e neuropáticos, como em uma hérnia de disco.",
+      "answer": "Dor Mista"
+    },
+    {
+      "type": "open",
+      "description": "Termo técnico para dor real na ausência de lesão identificável, onde a sensibilização central é um mecanismo chave (ex: fibromialgia).",
+      "answer": "Dor Psicogênica (Nociplástica)"
+    },
+    {
+      "type": "open",
+      "description": "Dor originada na pele e tecido subcutâneo, sendo bem localizada e nítida.",
+      "answer": "Dor Somática Superficial"
+    },
+    {
+      "type": "open",
+      "description": "Dor originada em músculos, fáscias e ossos, sendo mais difusa e descrita como 'dolorimento'.",
+      "answer": "Dor Somática Profunda"
+    },
+    {
+      "type": "open",
+      "description": "Dor originada em órgãos internos, sendo profunda, mal localizada e frequentemente acompanhada de náuseas e sudorese.",
+      "answer": "Dor Visceral"
+    },
+    {
+      "type": "open",
+      "description": "Dor sentida em uma área superficial distante da víscera que a originou, devido à convergência de neurônios na medula.",
+      "answer": "Dor Referida"
+    },
+    {
+      "type": "open",
+      "description": "Dor que segue o trajeto de uma raiz nervosa comprimida, como na dor ciática.",
+      "answer": "Dor Irradiada"
+    },
+    {
+      "type": "open",
+      "description": "Elevação da temperatura corporal controlada pelo hipotálamo, geralmente em resposta a uma infecção.",
+      "answer": "Febre"
+    },
+    {
+      "type": "open",
+      "description": "Elevação da temperatura corporal SEM o reajuste do 'termostato' hipotalâmico, por falha na perda de calor.",
+      "answer": "Hipertermia"
+    },
+    {
+      "type": "open",
+      "description": "Padrão de febre que permanece constantemente elevada, com variações diárias menores que 1°C.",
+      "answer": "Febre Contínua"
+    },
+    {
+      "type": "open",
+      "description": "Padrão de febre mais comum, com variações diárias maiores que 1°C, mas que nunca retorna ao normal.",
+      "answer": "Febre Remitente"
+    },
+    {
+      "type": "open",
+      "description": "Padrão de febre com picos que retornam ao normal pelo menos uma vez em 24 horas.",
+      "answer": "Febre Intermitente"
+    },
+    {
+      "type": "open",
+      "description": "Subtipo de febre intermitente com um pico febril a cada 24 horas.",
+      "answer": "Cotidiana (Quotidiana)"
+    },
+    {
+      "type": "open",
+      "description": "Subtipo de febre intermitente com picos a cada 48 horas, clássica da malária por P. vivax.",
+      "answer": "Terçã"
+    },
+    {
+      "type": "open",
+      "description": "Subtipo de febre intermitente com picos a cada 72 horas, clássica da malária por P. malariae.",
+      "answer": "Quartã"
+    },
+    {
+      "type": "open",
+      "description": "Padrão de febre onde períodos febris (dias) alternam com períodos de apirexia (dias).",
+      "answer": "Febre Recorrente (Ondulante)"
+    },
+    {
+      "type": "open",
+      "description": "Padrão específico de febre recorrente (uma semana com febre, uma sem), classicamente associado ao Linfoma de Hodgkin.",
+      "answer": "Febre de Pel-Ebstein"
+    },
+    {
+      "type": "open",
+      "description": "Impulso do ventrículo esquerdo contra a parede torácica, normalmente localizado no 5º EICE, linha hemiclavicular.",
+      "answer": "Ictus Cordis"
+    },
+    {
+      "type": "open",
+      "description": "Vibração tátil na parede torácica que corresponde a um sopro de intensidade grau ≥ IV/VI.",
+      "answer": "Frêmito Cardiovascular"
+    },
+    {
+      "type": "open",
+      "description": "Levantamento da região paraesternal esquerda que indica hipertrofia do ventrículo direito.",
+      "answer": "Impulso Paraesternal Esquerdo (IPEE)"
+    },
+    {
+      "type": "open",
+      "description": "Distensão visível das veias do pescoço com o paciente a 45º, indicando aumento da pressão venosa central.",
+      "answer": "Turgência Jugular Patológica"
+    },
+    {
+      "type": "open",
+      "description": "Separação audível de B2 em seus componentes aórtico e pulmonar durante a inspiração.",
+      "answer": "Desdobramento Fisiológico de B2"
+    },
+    {
+      "type": "open",
+      "description": "Ritmo de galope 'TUM-TÁ-TU', associado à presença de B3, indicando sobrecarga de volume.",
+      "answer": "Galope Ventricular"
+    },
+    {
+      "type": "open",
+      "description": "Ritmo de galope 'TUM-TUM-TÁ', associado à presença de B4, indicando um ventrículo rígido.",
+      "answer": "Galope Atrial"
+    },
+    {
+      "type": "open",
+      "description": "Som agudo após B2, característico da abertura de uma valva mitral estenosada.",
+      "answer": "Estalido de Abertura"
+    },
+    {
+      "type": "open",
+      "description": "Ruído áspero que 'raspa', audível na sístole e diástole, que melhora com a inclinação para frente.",
+      "answer": "Atrito Pericárdico"
+    },
+    {
+      "type": "open",
+      "description": "Aumento da intensidade do componente P2 da segunda bulha, indicando hipertensão pulmonar.",
+      "answer": "Hiperfonese de P2"
+    },
+    {
+      "type": "open",
+      "description": "Sinal caracterizado pela queda da pressão arterial sistólica (>10 mmHg) durante a inspiração, típico de tamponamento cardíaco.",
+      "answer": "Pulso Paradoxal"
+    },
+    {
+      "type": "open",
+      "description": "Sinal caracterizado pelo aumento da pressão venosa jugular durante a inspiração, indicando restrição ao enchimento do VD.",
+      "answer": "Sinal de Kussmaul"
+    },
+    {
+      "type": "open",
+      "description": "Manobra que aumenta a intensidade dos sopros do lado direito do coração durante a inspiração.",
+      "answer": "Sinal de Rivero-Carvalho"
+    },
+    {
+      "type": "open",
+      "description": "Fenômeno raro onde a hipertrofia do VD desvia o septo, causando sinais de insuficiência cardíaca esquerda.",
+      "answer": "Fenômeno de Bernheim"
+    },
+    {
+      "type": "open",
+      "description": "Pulso arterial de pequena amplitude e ascensão lenta, típico da estenose aórtica grave.",
+      "answer": "Pulso Parvus et Tardus"
+    },
+    {
+      "type": "open",
+      "description": "Pulso arterial de grande amplitude com rápida ascensão e colapso, típico da insuficiência aórtica grave.",
+      "answer": "Pulso em Martelo d'Água"
+    },
+    {
+      "type": "open",
+      "description": "Sinal cutâneo de edema por bloqueio linfático na mama, com aspecto de 'casca de laranja'.",
+      "answer": "Peau d'orange"
+    },
+    {
+      "type": "open",
+      "description": "Lesão eczematosa (vermelha, com crostas) no mamilo, associada a um carcinoma ductal.",
+      "answer": "Lesão de Paget"
+    },
+    {
+      "type": "open",
+      "description": "Qual consistência de um nódulo mamário é mais sugestiva de malignidade?",
+      "answer": "Pétrea (endurecida)"
+    },
+    {
+      "type": "open",
+      "description": "Qual característica de mobilidade de um nódulo mamário é mais sugestiva de malignidade?",
+      "answer": "Fixo (aderido)"
+    },
+    {
+      "type": "open",
+      "description": "Qual causa clássica está associada à Síndrome de Horner quando afeta o ápice pulmonar?",
+      "answer": "Tumor de Pancoast"
+    },
+    {
+      "type": "open",
+      "description": "Qual é a coloração amarelada da pele e mucosas causada pelo aumento da bilirrubina sérica acima de 2 a 3 mg/dL?",
+      "answer": "Icterícia"
+    },
+    {
+      "type": "open",
+      "description": "Qual condição clínica apresenta pele amarelada, mas mantém as escléricas brancas?",
+      "answer": "Hipercarotenemia"
+    },
+    {
+      "type": "open",
+      "description": "Por que a hiperbilirrubinemia não conjugada isolada não causa colúria?",
+      "answer": "Insolubilidade na água"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal clínico caracteriza-se por fezes esbranquiçadas ou cor de massa de vidraceiro devido à obstrução do fluxo biliar?",
+      "answer": "Acolia"
+    },
+    {
+      "type": "open",
+      "description": "Qual termo técnico descreve a urina de cor escura (cor de refrigerante de cola) devido à presença de bilirrubina direta?",
+      "answer": "Colúria"
+    },
+    {
+      "type": "open",
+      "description": "Qual sintoma cutâneo incômodo é altamente característico e frequente nos quadros de hiperbilirrubinemia direta/colestase?",
+      "answer": "Prurido"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal clínico de colestase crônica consiste em placas amareladas ricas em colesterol localizadas nas pálpebras?",
+      "answer": "Xantelasma"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal clínico de colestase crônica consiste em nódulos cutâneos amarelados por deposição de lipídeos, frequentemente localizados nas palmas das mãos?",
+      "answer": "Xantomas"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal clínico consiste na palpação de uma vesícula biliar distendida e indolor em paciente ictérico, sugerindo neoplasia de cabeça de pâncreas ou vias biliares?",
+      "answer": "Vesícula de Courvoisier-Terrier"
+    },
+    {
+      "type": "open",
+      "description": "Qual condição clínica cursa com vesícula biliar palpável e distendida por muco, mas sem icterícia, devido à obstrução isolada do ducto cístico?",
+      "answer": "Vesícula hidrópica"
+    },
+    {
+      "type": "open",
+      "description": "Qual síndrome dolorosa abdominal se caracteriza por dor súbita no hipocôndrio direito irradiando para o ombro direito, frequentemente após refeição gordurosa?",
+      "answer": "Cólica biliar"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal semiológico consiste na dor referida na região subescapular direita durante um quadro de cólica biliar ou colecistite?",
+      "answer": "Sinal de Boas"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal clínico de insuficiência hepática grave consiste em um hálito de odor adocicado e fétido?",
+      "answer": "Fetor hepaticus"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal clínico de hepatopatia crônica consiste em telangiectasias cutâneas centro-lobulares que empalidecem à compressão central?",
+      "answer": "Aranhas vasculares"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal de hepatopatia crônica é caracterizado por coloração avermelhada nas regiões tenar e hipotenar das palmas das mãos?",
+      "answer": "Eritema palmar"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal neurológico, também chamado de flapping, é caracterizado por tremores rápidos e rítmicos das mãos ao estender os punhos, típico de encefalopatia hepática?",
+      "answer": "Asterixis"
+    },
+    {
+      "type": "open",
+      "description": "Qual termo descreve a circulação colateral visível na parede abdominal anterior, que irradia a partir do umbigo, comum na hipertensão portal?",
+      "answer": "Cabeça de medusa"
+    },
+    {
+      "type": "open",
+      "description": "Qual epônimo descreve a presença de sopro e frêmito na região umbilical devido à recanalização da veia umbilical na hipertensão portal?",
+      "answer": "Sinal de Cruveilhier-Baumgarten"
+    },
+    {
+      "type": "open",
+      "description": "Qual termo médico designa o acúmulo patológico de líquido livre dentro da cavidade peritoneal, excluindo sangue e pus?",
+      "answer": "Ascite"
+    },
+    {
+      "type": "open",
+      "description": "Qual tipo de ascite apresenta líquido de aspecto leitoso/turvo e elevado teor de triglicerídeos devido à ruptura de vasos linfáticos?",
+      "answer": "Ascite quilosa"
+    },
+    {
+      "type": "open",
+      "description": "Qual tipo de ascite é caracterizada por líquido esverdeado com altos níveis de bilirrubina, secundária à lesão de vesícula ou ductos biliares?",
+      "answer": "Ascite biliar"
+    },
+    {
+      "type": "open",
+      "description": "Qual manobra de percussão abdominal na ascite revela timpanismo na região central e macicez na periferia do abdome?",
+      "answer": "Semicírculo de Skoda"
+    },
+    {
+      "type": "open",
+      "description": "Qual teste físico para ascite volumosa consiste em golpear um flanco e sentir a transmissão da onda líquida no flanco oposto?",
+      "answer": "Sinal do piparote"
+    },
+    {
+      "type": "open",
+      "description": "Qual manobra para detecção de pequenas quantidades de ascite exige que o paciente fique em posição de quatro apoios (geno-peitoral)?",
+      "answer": "Sinal de Puddle"
+    },
+    {
+      "type": "open",
+      "description": "Qual termo define qualquer condição dolorosa abdominal de início súbito que exige rápida decisão clínica ou cirúrgica?",
+      "answer": "Abdome agudo"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal físico clássico de peritonite generalizada consiste na contratura muscular involuntária e rígida de toda a parede abdominal anterior?",
+      "answer": "Abdome em tábua"
+    },
+    {
+      "type": "open",
+      "description": "Qual ponto doloroso, localizado na junção do terço externo com os dois terços internos de uma linha entre a espinha ilíaca anterossuperior direita e o umbigo, é o foco de dor na apendicite?",
+      "answer": "Ponto de McBurney"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal clínico na apendicite aguda é caracterizado pela temperatura retal estar mais de 1°C acima da temperatura axilar?",
+      "answer": "Sinal de Lenander"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal semiológico clássico de apendicite/peritonite consiste em dor intensa à descompressão brusca no ponto de McBurney?",
+      "answer": "Sinal de Blumberg"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal semiológico consiste na dor referida na fossa ilíaca direita ao se realizar a compressão retrógrada de gases na fossa ilíaca esquerda?",
+      "answer": "Sinal de Rovsing"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal semiológico, indicativo de apendicite retrocecal, consiste em dor na FID desencadeada pela extensão passiva do quadril direito?",
+      "answer": "Sinal do psoas"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal de apendicite pélvica consiste em dor na região hipogástrica à rotação interna passiva da coxa direita flexionada?",
+      "answer": "Sinal do obturador"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal físico clássico de colecistite aguda consiste na interrupção súbita da inspiração profunda durante a palpação do ponto cístico?",
+      "answer": "Sinal de Murphy"
+    },
+    {
+      "type": "open",
+      "description": "Qual conjunto de três achados (dor em hipocôndrio direito, febre com calafrios e icterícia) é clássico de colangite aguda?",
+      "answer": "Tríade de Charcot"
+    },
+    {
+      "type": "open",
+      "description": "Qual termo designa a associação da Tríade de Charcot com hipotensão arterial e confusão mental, indicando colangite supurativa grave?",
+      "answer": "Pêntade de Reynolds"
+    },
+    {
+      "type": "open",
+      "description": "Qual é a irradiação dolorosa típica da pancreatite aguda, que se estende do epigástrio para o dorso?",
+      "answer": "Dor em faixa"
+    },
+    {
+      "type": "open",
+      "description": "Qual epônimo descreve a equimose periumbilical observada na pancreatite necro-hemorrágica?",
+      "answer": "Sinal de Cullen"
+    },
+    {
+      "type": "open",
+      "description": "Qual epônimo descreve a equimose localizada nos flancos, sugestiva de hemorragia retroperitoneal por pancreatite grave?",
+      "answer": "Sinal de Grey-Turner"
+    },
+    {
+      "type": "open",
+      "description": "Qual epônimo descreve a equimose na base do pênis ou abaixo do ligamento inguinal em casos de pancreatite necro-hemorrágica?",
+      "answer": "Sinal de Fox"
+    },
+    {
+      "type": "open",
+      "description": "Qual abdome agudo inflamatório se apresenta tipicamente com dor na fossa ilíaca esquerda, sendo popularmente chamado de 'apendicite esquerda'?",
+      "answer": "Diverticulite cólica"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal semiológico consiste em dor referida no ombro esquerdo devido à irritação diafragmática por sangue ou pus na cavidade peritoneal?",
+      "answer": "Sinal de Kehr"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal físico consiste no aparecimento de timpanismo na linha axilar média direita sobre a área de projeção hepática, indicando pneumoperitônio?",
+      "answer": "Sinal de Jobert"
+    },
+    {
+      "type": "open",
+      "description": "Qual termo descreve a interposição temporária ou permanente do cólon entre o fígado e o diafragma, mimetizando pneumoperitônio no raio-X?",
+      "answer": "Sinal de Chilaiditi"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal semiológico consiste em dor intensa à palpação do fundo de saco de Douglas no toque retal, típica de peritonite ou líquido livre na pelve?",
+      "answer": "Sinal de Kullenkampf"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal auscultatório no abdome perfurativo consiste no som da passagem de ar pela fístula da víscera oca durante os movimentos respiratórios?",
+      "answer": "Sinal de Jakoucheff"
+    },
+    {
+      "type": "open",
+      "description": "Qual termo técnico designa o vômito de sangue vivo ou em 'borra de café', indicando sangramento do trato digestivo superior?",
+      "answer": "Hematêmese"
+    },
+    {
+      "type": "open",
+      "description": "Qual termo técnico designa a eliminação de fezes pretas, pastosas e de odor extremamente fétido, decorrente de sangramento digestivo alto?",
+      "answer": "Melena"
+    },
+    {
+      "type": "open",
+      "description": "Qual termo técnico designa a eliminação de sangue vermelho-vivo ou rutilante pelo ânus, misturado ou não com as fezes?",
+      "answer": "Hematoquezia"
+    },
+    {
+      "type": "open",
+      "description": "Qual síndrome hemorrágica é causada por laceração da mucosa na junção esofagogástrica após episódios de vômitos vigorosos ou incoercíveis?",
+      "answer": "Síndrome de Mallory-Weiss"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal na gravidez ectópica rota se caracteriza por dor referida no ombro direito devido à irritação do nervo frênico por sangue intraperitoneal?",
+      "answer": "Sinal de Lafont"
+    },
+    {
+      "type": "open",
+      "description": "Qual emergência vascular abdominal se caracteriza por dor abdominal desproporcionalmente intensa em relação aos achados discretos do exame físico inicial?",
+      "answer": "Isquemia mesentérica"
+    },
+    {
+      "type": "open",
+      "description": "Qual alteração fecal característica (fezes com muco e sangue avermelhado) é observada na isquemia intestinal avançada e na intussuscepção?",
+      "answer": "Fezes em gelatina de groselha"
+    },
+    {
+      "type": "open",
+      "description": "Como são chamadas as ondas peristálticas visíveis na parede abdominal que tentam vencer uma obstrução pilórica ou mecânica do estômago?",
+      "answer": "Ondas de Kussmaul"
+    },
+    {
+      "type": "open",
+      "description": "Qual nódulo metastático periumbilical, endurecido e indolor, pode sinalizar a presença oculta de um câncer gástrico avançado?",
+      "answer": "Nódulo de Irmã Maria José"
+    },
+    {
+      "type": "open",
+      "description": "Qual epônimo descreve a palpação de um linfonodo supraclavicular esquerdo metastático (Linfonodo de Virchow), indicando câncer abdominal avançado?",
+      "answer": "Sinal de Troisier"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal semiológico da obstrução mecânica do delgado consiste na visualização de uma alça distendida e assimétrica que apresenta timpanismo e ruídos metálicos?",
+      "answer": "Sinal de Wahl"
+    },
+    {
+      "type": "open",
+      "description": "Qual termo descreve a parada do peristaltismo intestinal por paralisia motora, sem que haja uma barreira mecânica ou física?",
+      "answer": "Íleo adinâmico"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal na palpação abdominal de um fecaloma consiste na sensação de crepitação devido ao afastamento lento da parede do cólon em relação à massa fecal?",
+      "answer": "Sinal de Gersuny"
+    },
+    {
+      "type": "open",
+      "description": "Qual teste semiológico ajuda a diferenciar a dor da parede abdominal (que aumenta) da dor visceral (que diminui) ao solicitar que o paciente contraia a musculatura abdominal?",
+      "answer": "Manobra de Carnett"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal físico consiste em dor aguda desencadeada pela percussão digital circunscrita na área hepática, altamente sugestivo de abscesso hepático?",
+      "answer": "Sinal de Torres-Homem"
+    },
+    {
+      "type": "open",
+      "description": "Qual manobra auscultatória consiste em arranhar suavemente a pele do abdome em direção ao fígado para delimitar a borda hepática inferior?",
+      "answer": "Técnica da arranhadura"
+    },
+    {
+      "type": "open",
+      "description": "Qual técnica de percussão do baço avalia a transição do som timpânico para maciço na linha axilar anterior esquerda durante a inspiração profunda?",
+      "answer": "Técnica de Castell"
+    },
+    {
+      "type": "open",
+      "description": "Qual sinal semiológico consiste em dor aguda à punho-percussão na região lombar, indicativo de pielonefrite ou litíase renal?",
+      "answer": "Sinal de Giordano"
+    },
+    {
+      "type": "open",
+      "description": "Qual manobra para palpação do ceco consiste em comprimir o cólon ascendente com a mão esquerda para distender o ceco e facilitar sua palpação com a mão direita?",
+      "answer": "Manobra de Sigaut"
+    },
+    {
+      "type": "open",
+      "description": "Qual termo técnico descreve a dor retroesternal associada ao ato de deglutir, comum nas esofagites?",
+      "answer": "Odinofagia"
+    },
+    {
+      "type": "open",
+      "description": "Qual termo descreve a sensação psicogênica de um nó ou corpo estranho na garganta, sem correlação física palpável?",
+      "answer": "Globus hystericus"
+    },
+    {
+      "type": "open",
+      "description": "Qual termo médico define a queimação retroesternal que sobe do estômago em direção à garganta, típica do refluxo gastroesofágico?",
+      "answer": "Pirose"
+    },
+    {
+      "type": "open",
+      "description": "Qual é o termo médico científico para o soluço, causado por contrações clônicas do diafragma?",
+      "answer": "Singulto"
+    },
+    {
+      "type": "open",
+      "description": "Qual termo designa a salivação excessiva, frequentemente observada em esofagopatias obstrutivas?",
+      "answer": "Sialorréia"
+    },
+    {
+      "type": "open",
+      "description": "Qual termo técnico designa a diarreia com excesso de gorduras não absorvidas, caracterizada por fezes volumosas, amareladas, espumosas e fétidas?",
+      "answer": "Esteatorreia"
+    },
+    {
+      "type": "open",
+      "description": "Como são chamadas as fezes ressecadas em forma de pequenas esferas endurecidas, típicas de constipação crônica e doença diverticular?",
+      "answer": "Cíbalos"
+    },
+    {
+      "type": "open",
+      "description": "Qual alteração no formato das fezes sugere estenose ou processo tumoral obstrutivo no cólon sigmóide ou reto?",
+      "answer": "Fezes em fita"
+    },
+    {
+      "type": "open",
+      "description": "Qual termo designa a contração espasmódica e dolorosa do esfíncter anal durante a tentativa de evacuação?",
+      "answer": "Puxo"
+    },
+    {
+      "type": "open",
+      "description": "Qual termo designa a sensação persistente de necessidade de evacuar, mesmo após o esvaziamento retal?",
+      "answer": "Tenesmo"
+    },
+    {
+      "type": "open",
+      "description": "Qual alteração vascular na hipertensão portal permite a ausculta de um sopro venoso contínuo na região umbilical?",
+      "answer": "Recanalização da veia umbilical"
+    },
+    {
+      "type": "open",
+      "description": "A presença do Sinal de Boas (dor referida na região subescapular direita) está tipicamente associada a qual patologia inflamatória aguda?",
+      "answer": "Colecistite aguda"
+    },
+    {
+      "type": "open",
+      "description": "dor nas articulações",
+      "answer": "artralgia"
+    },
+    {
+      "type": "open",
+      "description": "ocorre nas articulações que tem membrana sinovial por um acúmulo de células inflamatórias, neoformação de vasos, pannus",
+      "answer": "artrite"
+    },
+    {
+      "type": "open",
+      "description": "primeira crise de gota do paciente, dígito eritematoso com perda de função",
+      "answer": "podagra"
+    },
+    {
+      "type": "open",
+      "description": "dor, calor, rubor, perda de função, edema",
+      "answer": "sinais físicos de inflamação"
+    },
+    {
+      "type": "open",
+      "description": "sinal clínico de afastamento do joelho da linha média do corpo, comum em artrose",
+      "answer": "genu varum"
+    },
+    {
+      "type": "open",
+      "description": "sintoma resultado do acúmulo de substâncias inflamatórios nos locais acometidos resultado de falta de movimentação e, consequentemente, diminuição da troca de líquido sinovial cuja duração é proporcional à intensidade da inflamação",
+      "answer": "rigidez pós repouso"
+    },
+    {
+      "type": "open",
+      "description": "rigidez principalmente matinal maior que 1 hora, que melhora gradualmente e parcialmente com atividade, comum em artrite reumatóide, espondiloartrite, lúpus e síndrome de Sjogren",
+      "answer": "ritmo inflamatório"
+    },
+    {
+      "type": "open",
+      "description": "rigidez intermitente, com períodos de gelificação durante o dia após inatividade, com duração menor que uma hora e dificuldade para iniciar o movimento, comum em osteoartrite, rizartrose e gonartrose",
+      "answer": "ritmo mecânico/ritmo não inflamatório"
+    },
+    {
+      "type": "open",
+      "description": "dor cervical irradiada para o membro superior seguindo o trajeto de um nervo espinal, frequentemente agravada pelo Teste de Spurling e aliviada pela Distração Cervical",
+      "answer": "cervicobraquialgia"
+    },
+    {
+      "type": "open",
+      "description": "sinal de alerta para dor lombar indicando tumor ou infecção na coluna",
+      "answer": "dor em repouso"
+    },
+    {
+      "type": "open",
+      "description": "sinais de inflamação visíveis durante a inspeção",
+      "answer": "flogose"
+    },
+    {
+      "type": "open",
+      "description": "nódulos de ácido úrico acúmulado em outros locais do corpo indicando gota crônica",
+      "answer": "Tofos gotosos"
+    },
+    {
+      "type": "open",
+      "description": "sinal em que a superfície inguinal apresenta pequenas depressões pontiagudas indicando psoríase, sendo alerta para artrite psoríasica",
+      "answer": "unha em dedal (pitting)"
+    },
+    {
+      "type": "open",
+      "description": "resposta vascular exagerada ao frio ou ao estresse emocional, caracterizada por uma alteração de cor sequencial e bem definida nas extremidades do corpo, acometendo principalmente os quirodáctilos, mas podendo afetar também pododáctilos, orelhas e a ponta do nariz.",
+      "answer": "Fenômeno de Raynaud"
+    },
+    {
+      "type": "open",
+      "description": "vaso espasmo súbito e intenso das artérias digitais deixando o dedo em cor de cera, podendo haver perda de temperatura e perda de sensibilidade",
+      "answer": "Fase isquêmica do fenômeno de Raynaud"
+    },
+    {
+      "type": "open",
+      "description": "vasos começam a se dilatar discretamente, mas o fluxo ainda é extremamente lento, deixando os dígitos azulados ou roxos",
+      "answer": "Fase cianótica do fenômeno de Raynaud"
+    },
+    {
+      "type": "open",
+      "description": "vasodilatação reflexa massiva, provocando uma enxurrada de sangue oxigenado de volta aos capilares, deixando os dígitos vermelhos e quentes",
+      "answer": "Fase eritematosa do fenômeno de raynaud"
+    },
+    {
+      "type": "open",
+      "description": "rangido palpável durante o movimento articular importante se associado a dor",
+      "answer": "Crepitação articular"
+    },
+    {
+      "type": "open",
+      "description": "ruído audível durante o movimento de tendões ou ligamentos sobre os ossos, não patológico",
+      "answer": "Estalido"
+    },
+    {
+      "type": "open",
+      "description": "queixa relacionada a cápsula, cartilagem, sinóvia, líquido sinovial ou osso justa articular onde há limitação da amplitude de movimento passiva e ativa comumente associado a edema e deformidade",
+      "answer": "queixa articular"
+    },
+    {
+      "type": "open",
+      "description": "queixa relacionada à ligamentos, tendões, bursas, músculos, fáscia, ossos, nervos e pele,onde há limitação de amplitude de movimento ativa com piora nas manobras contra resistência, raramente associados a edema e deformidades",
+      "answer": "queixa extra articular"
+    },
+    {
+      "type": "open",
+      "description": "quadro de até 6 semanas, indicando associação com patologia virais",
+      "answer": "queixa aguda"
+    },
+    {
+      "type": "open",
+      "description": "quadro com mais de 6 semanas, descartando associação com patologias virais agudas",
+      "answer": "queixa crônica"
+    },
+    {
+      "type": "open",
+      "description": "manifestação em apenas uma articulação, como gota e artrite séptica",
+      "answer": "apresentação monoarticular"
+    },
+    {
+      "type": "open",
+      "description": "manifestação em menos de 4 articulações, como em artrite reativa e espongiloartite",
+      "answer": "apresentação oligoarticular"
+    },
+    {
+      "type": "open",
+      "description": "manifestação em mais de 4 articulações, como em artrite reumatóide e doenças virais",
+      "answer": "apresentação poliarticular"
+    },
+    {
+      "type": "open",
+      "description": "O que indica a presença de dor óssea localizada durante a palpação dos processos espinhosos da coluna vertebral?",
+      "answer": "Sinal de alerta para fraturas, metástase óssea ou infecções locais na coluna."
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar presença de radiculopatia cervical em que o médico, atrás do paciente, pede para que ele incline o pescoço para o lado afetado e aplica uma pressão vertical para baixo, resultado positivo se houver exacerbação da dor e irradiação para o membro superior afetado",
+      "answer": "teste da compressão cervical/teste de spurling"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar presença de radiculopatia cervical em que o examinador posiciona uma das mãos espalmada sob o queixo do paciente e a outra mão sob o occipício, levantando a cabeça do paciente. O resultado positivo é observado em casa do alívio do sintoma.",
+      "answer": "teste de distração cervical"
+    },
+    {
+      "type": "open",
+      "description": "teste em que o paciente precisa realizar a flexão anterior do tronco, utilizado para diferencial escoliose postural (diferença entre os lados desaparece com a flexão) e escoliose estrutural (diferença entre os lados se mantém durante a flexão anterior)",
+      "answer": "Teste de Adams"
+    },
+    {
+      "type": "open",
+      "description": "dor do nervo isquiático que inicia na coluna e vai até o pé",
+      "answer": "ciatalgia"
+    },
+    {
+      "type": "open",
+      "description": "teste em que é realizada a elevação passiva do membro inferior do paciente em que resultado positivo é observado por dor aguda em choque, queimação ou pontada que irradia abaixo do joelho em uma janela de elevação de 30-60 graus, indicando radiculopatia lombar nas raízes do nervo isquiático",
+      "answer": "Teste de Lasegue"
+    },
+    {
+      "type": "open",
+      "description": "teste complementar ao teste de lasegue, em que o examinador abaixa o pé do paciente até a dor provocada inicialmente sumir e, nessa altura, realiza a dorsiflexão do pé. Se a dor reaparecer, o teste é considerado positivo, indicando radiculopatia lombar do nervo isquiático",
+      "answer": "Teste de Bragard"
+    },
+    {
+      "type": "open",
+      "description": "Qual reflexo encontra-se diminuído na radiculopatia da raiz L4 (ex: hérnia L3-L4)? Também descrito como: reflexo profundo realizado com percussão sob o ligamento patelar avaliando L2, L3,L4",
+      "answer": "Reflexo Patelar"
+    },
+    {
+      "type": "open",
+      "description": "Qual é a principal alteração motora (fraqueza) observada na compressão da raiz L4?",
+      "answer": "Fraqueza na extensão da perna (Quadríceps)"
+    },
+    {
+      "type": "open",
+      "description": "Qual é a principal alteração de sensibilidade (dermátomo) observada na compressão da raiz L4?",
+      "answer": "Face medial da tíbia (perna)"
+    },
+    {
+      "type": "open",
+      "description": "Na avaliação dos reflexos profundos principais (Patelar e Aquileu), o que se espera na compressão isolada da raiz L5 (ex: hérnia L4-L5)?",
+      "answer": "Nenhuma alteração nos reflexos patelar e aquileu (ambos preservados)."
+    },
+    {
+      "type": "open",
+      "description": "Qual é o achado motor clássico (fraqueza) e a dificuldade funcional observada na compressão da raiz L5?",
+      "answer": "Fraqueza na extensão do hálux / dificuldade para andar nos calcanhares (queda do pé)."
+    },
+    {
+      "type": "open",
+      "description": "Onde se localiza a principal alteração de sensibilidade (dermátomo) na compressão da raiz L5?",
+      "answer": "Dorso do pé e Hálux."
+    },
+    {
+      "type": "open",
+      "description": "Qual reflexo encontra-se diminuído ou ausente na radiculopatia da raiz S1 (ex: hérnia L5-S1)?",
+      "answer": "Reflexo Aquileu"
+    },
+    {
+      "type": "open",
+      "description": "Qual é a principal alteração motora e dificuldade funcional observada na compressão da raiz S1?",
+      "answer": "Fraqueza na flexão plantar / dificuldade para andar na ponta dos pés."
+    },
+    {
+      "type": "open",
+      "description": "Onde se localiza a principal alteração de sensibilidade (dermátomo) na compressão da raiz S1?",
+      "answer": "Borda lateral do pé e 5º dedo."
+    },
+    {
+      "type": "open",
+      "description": "sinal em que há espaçamento entre clavícula e acrômio",
+      "answer": "Sinal do degrau"
+    },
+    {
+      "type": "open",
+      "description": "sinal em que o ombro apresenta um aspecto quadrado causado por luxação da articulação glenoumeral ou luxação anterior da cabeça do úmero",
+      "answer": "Sinal da dragona militar"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para determinar a preservação de movimentos do ombro, paciente precisa conseguir tocar a parte superior e inferior da escápula contralateral, teste positivo se houver dificuldades para realizar os movimentos, indicando comprometimento",
+      "answer": "Teste de Apley"
+    },
+    {
+      "type": "open",
+      "description": "síndrome causada pelo impacto da cabeça do úmero sobre o teto do acrômio, avaliada em testes de provocação de dor no manguito rotador",
+      "answer": "Síndrome do impacto do ombro"
+    },
+    {
+      "type": "open",
+      "description": "principal teste para avaliar lesão em manguito rotador, realizado a partir do movimento ativo do paciente levantando lentamente o braço até atingir 180 graus. Dor entre 60 e 120 graus indica lesão no manguito rotador, dor abaixo de 60 graus indica que a lesão não é no manguito rotador e dor acima de 120 graus pode indicar lesão em qualquer estrutura do ombro.",
+      "answer": "teste do arco doloroso"
+    },
+    {
+      "type": "open",
+      "description": "teste passivo utilizado para avaliar o acometimento do manguito rotador em que o médico faz a elevação do ombro do paciente com a escápula estabilizada e a mão em pronação. Se o paciente sentir dor no ombro a partir do nível do músculo peitoral o teste é positivo, indicando lesão no manguito.",
+      "answer": "Sinal de compressão de Neer"
+    },
+    {
+      "type": "open",
+      "description": "teste passivo para avaliar o acometimento do manguito rotador em que o médico deve fazer uma rotação interna do ombro do paciente no plano escapular",
+      "answer": "Sinal da compressão de Hawkins"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar se a lesão no manguito rotador é no músculo supraespinal, em que o paciente deve fazer força contra a resistência do médico em rotação interna no plano escapular. Teste positivo em caso de dor, e se o paciente não conseguir resistir a força e o braço cair, indica ruptura do tendão.",
+      "answer": "Teste de Jobe/Teste da lata vazia"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar se a lesão no manguito rotador é no músculo infraespinal e no redondo menor (tendões com inserção muito próxima, não sendo possível especificar). Paciente deve encostar os cotovelos nos flancos e tentar abrir os braços sem mover os cotovelos, médico deve fazer contra resistência. Teste positivo em caso de dor no ombro, em caso de não conseguir manter a posição é sugestivo de ruptura de tensão.",
+      "answer": "Teste de resistência da rotação externa"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar se a lesão no manguito rotador é no músculo subescapular, paciente deve colocar o dorso da mão nas costas com o cotovelo dobrado em 90 graus, em seguida, examinador deve erguer a mão do paciente, causando rotação interna do ombro. Teste positivo se o paciente sentir dor e em caso não conseguir sustentar a posição, sugere ruptura do tendão.",
+      "answer": "Teste de Gerber/Teste de rotação interna"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar lesão no bíceps braquial, flexão de ombro contra resistência do médico, dor na região anterior do ombro",
+      "answer": "Teste de Speed"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar lesão na articulação acromio clavicular em que, com o ombro do paciente estabilizado faz-se uma adução passiva do ombro até o final, teste positivo é indicado com dor na região em que a mão está estabilizando.",
+      "answer": "Teste de adução do corpo cruzado"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar epicondilite lateral do cotovelo, chamado de “cotovelo de tenista”. O paciente deve realizar uma extensão do pulso contra a resistência do médico com o cotovelo semi-fletido e se houver dor no epicôndilo lateral, o teste é positivo",
+      "answer": "Teste de Cozen"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar epicondilite lateral do cotovelo, chamado de “cotovelo de tenista”. O paciente deve realizar uma extensão do pulso contra a resistência do médico com o cotovelo esticado e se houver dor no epicôndilo lateral, o teste é positivo",
+      "answer": "Teste de Mill"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar epicondilite medial do cotovelo, chamado de “cotovelo de golfista”. O paciente deve realizar uma flexão do pulso contra a resistência do médico e se houver dor no epicôndilo medial, o teste é positivo",
+      "answer": "Teste de Cozen Reverso"
+    },
+    {
+      "type": "open",
+      "description": "sinal visto na inspeção das mãos que indica que o paciente não está realizando a flexão adequada dos dedos",
+      "answer": "Atrofia dos músculos interósseos da mão"
+    },
+    {
+      "type": "open",
+      "description": "sinal visto na inspeção de mãos indicando que o paciente não está tendo o movimento adequado do polegar",
+      "answer": "Atrofia tenar"
+    },
+    {
+      "type": "open",
+      "description": "sinal visto na inspeção de mãos indicando problemas com o nervo ulnar.",
+      "answer": "Atrofia hipotenar"
+    },
+    {
+      "type": "open",
+      "description": "doença que afeta articulação metacarpofalangeana do polegar, articulações interfalângicas distais e proximais, sem afetar outras articulações metacarpofalangeanas e nem articulação do pulso.",
+      "answer": "Osteoartrite de mãos"
+    },
+    {
+      "type": "open",
+      "description": "proeminência fibro óssea rígida localizada especificamente nas articulações interfalângicas proximais, comum em osteoartrite de mãos",
+      "answer": "Nódulo de Bouchard"
+    },
+    {
+      "type": "open",
+      "description": "proeminência fibro óssea rígida localizada especificamente nas articulações interfalângicas distais, comum em osteoartrite de mãos",
+      "answer": "Nódulo de Heberden"
+    },
+    {
+      "type": "open",
+      "description": "lesão típica de paciente com artrite reumatóide não tratada, caracterizada por hiperflexão fixa da articulação interfalângica proximal e hiperextensão da articulação interfalângica distal",
+      "answer": "Deformidade em botoeira"
+    },
+    {
+      "type": "open",
+      "description": "lesão típica de paciente com artrite reumatóide não tratada, caracterizada por hiperextensão da articulação interfalângica proximal e flexão da articulação interfalângica distal",
+      "answer": "Deformidade em pescoço de cisne"
+    },
+    {
+      "type": "open",
+      "description": "patologia causada por compressão do nervo mediano, podendo ser derivada de edema, tenossinovite dos flexores, acúmulo de líquido, crescimento de massa, hipotireoidismo ou acúmulo de tecido adiposo gerando parestesias dolorosas da metade do quarto dedo até o polegar, hipoestesia e anestesia.",
+      "answer": "Síndrome do túnel do carpo"
+    },
+    {
+      "type": "open",
+      "description": "sinal em que o paciente relata que, ao acordar no meio da noite ou realizar atividades diárias e sentir as mãos dormentes, doloridas ou formigando, ele realiza um movimento involuntário e repetitivo de sacudir ou balançar as mãos, indicativo de síndrome do túnel do carpo",
+      "answer": "Sinal de Flick"
+    },
+    {
+      "type": "open",
+      "description": "teste para avaliar síndrome do túnel do carpo em que se realiza a percussão em todo trajeto do nervo mediano, mais especificamente na prega distal da mão, com a mão do paciente levemente estendida, expondo os ligamentos. Resultado positivo em caso do paciente sentir choque intenso durante a percussão, choques leves são normais.",
+      "answer": "Teste do Sinal de Tinel"
+    },
+    {
+      "type": "open",
+      "description": "teste para avaliar se há síndrome do túnel do carpo, em que o paciente deve ficar de 30-60 segundos com o dorso das mãos encostadas, positivo se houver parestesia antes de 1 minuto.",
+      "answer": "Teste do Sinal de Phalen"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado quando paciente sente constante parestesia da mão, avaliando se a compressão do nervo mediano está afetando sua função motora. O paciente deve realizar abdução do polegar com a mão apoiada e contra a resistência do examinador, sendo positivo em caso de redução da força quando comparada com mão não afetada. Nesses casos, pode haver atrofia tenar associada, indicando caso avançado da síndrome do túnel do carpo. Também descrito como: teste de força realizado contra a resistência do médico para avaliar raízes de C8, T1, avaliando nervo mediano",
+      "answer": "Teste de abdução do polegar"
+    },
+    {
+      "type": "open",
+      "description": "tendinopatia do extensor curto do polegar e abdutor longo do polegar, comum em pessoas que trabalham digitando ou utilizando muito as mãos. Paciente refere dor no lado radial do braço, principalmente próximo ao polegar.",
+      "answer": "Tendinopatia de Quervain"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar se há tendinopatia de Quervain, estirando os tendões do polegar, positivo em caso de dor significativa.",
+      "answer": "Teste de Finkelstein"
+    },
+    {
+      "type": "open",
+      "description": "patologia que afeta mulheres causando dor na região do quadril ao ficar muito tempo sentadas ou não conseguindo dormir do lado afetado, causada pela forma de caminhar e posição que se senta.",
+      "answer": "Síndrome trocantérica"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para verificar a diferença entre o comprimento dos membros inferiores, importante na pediatria para rastrear displasia de desenvolvimento do quadril",
+      "answer": "teste de Galeazzi"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para verificar abdução, flexão e rotação externa de quadril, examinador estabiliza a crista ilíaca com a mão enquanto o paciente está com o pé no joelho contralateral, deve-se realizar uma força para baixo. Teste é positivo em caso de dor na virilha da perna flexionada, indicando patologia no quadril, se houver dor na região posterior da perna estendida suspeita-se de patologia na articulação sacroilíaca.",
+      "answer": "Teste de Patrick/Teste de fabere"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar patologias nos músculos glúteo mínimo e médio. O princípio do teste é realizar a flexão de um membro para avaliar o membro não fletido. Em caso positivo, a flexão de um membro inferior causa a elevação do quadril do lado oposto.",
+      "answer": "Teste de trendelenburg"
+    },
+    {
+      "type": "open",
+      "description": "ao traçar uma linha média entre as pernas do paciente, observa-se que os joelhos se aproximam da linha, podendo ser fisiológico, mas indicando maior suscetibilidade a lesões articulares",
+      "answer": "Joelhos Valgos"
+    },
+    {
+      "type": "open",
+      "description": "ao traçar uma linha média entre as pernas do paciente, observa-se que os joelhos se afastam da linha, típico de gonartrose",
+      "answer": "Joelhos varos"
+    },
+    {
+      "type": "open",
+      "description": "joelhos não patológicos em pessoas com hiperflexibilidade, mas que aumentam a suscetibilidade a problemas articulares",
+      "answer": "Joelhos em hiperextensão"
+    },
+    {
+      "type": "open",
+      "description": "sinal procurado em palpação de joelhos que se encontrado indica edema por acúmulo de líquido sinovial, processo inflamatório, sangue (hemartrose).",
+      "answer": "Derrame articular"
+    },
+    {
+      "type": "open",
+      "description": "local de inserção da musculatura da banda iliotibial, estabilização lateral do joelho, ponto comum de dor em corredores",
+      "answer": "Tubérculo de Gerdy"
+    },
+    {
+      "type": "open",
+      "description": "região de inserção dos tendões dos músculos sartório, grácil e semitendíneo, ponto comum de dor por tendinite, estabilização medial do joelho",
+      "answer": "Per Anserine"
+    },
+    {
+      "type": "open",
+      "description": "uma coleção de líquido sinovial que se projeta na fossa poplítea, se manifesta clinicamente como um abaulamento ou \"caroço\" atrás do joelho, frequentemente associado a uma sensação de opressão ou dor local, causado por fístula da bolsa sinovial do joelho para parte posterior.",
+      "answer": "Cisto de baker"
+    },
+    {
+      "type": "open",
+      "description": "manobra utilizada para determinar grandes volumes de derrame articular, em que ao empurrar a patela para baixo, ela afunda no líquido e bate contra o fêmur, gerando um clique tátil e retornando à posição inicial assim que você solta — exatamente como uma tecla de piano ou de computador.",
+      "answer": "Sinal da tecla/Sinal do rechaço patelar"
+    },
+    {
+      "type": "open",
+      "description": "manobra utilizada para detectar pequenos volumes de derrame articular, em que com o paciente deitado, deve-se deslocar todo o líquido difuso no joelho para a região inferior, depois para a parte medial e parte lateral do joelho, fazendo uma compressão e sentindo o líquido bater no lado medial (piparote do joelho).",
+      "answer": "Sinal do abaulamento"
+    },
+    {
+      "type": "open",
+      "description": "manobra utilizada para grandes derrames articulares, deslocando o líquido para baixo da patela através de uma compressão suprapatelar",
+      "answer": "Sinal do balão"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para detectar lesão em ligamento colateral medial do joelho, realizado estabilizando o joelho do paciente com a mão e puxando a perna do paciente para fora, em caso de lesão a articulação se “abre”, deslocando o joelho.",
+      "answer": "Teste de tensão em valgo"
+    },
+    {
+      "type": "open",
+      "description": "este utilizado para detectar lesão em ligamento colateral lateral do joelho realizado estabilizando o joelho do paciente com a mão e puxando a perna do paciente para dentro, em caso de lesão a articulação se “abre”, deslocando o joelho.",
+      "answer": "Teste de tensão em varo"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar lesão em ligamento cruzado anterior, com o joelho fletido a 60 graus e o pé firme na maca (geralmente com examinador sentado em cima do pé), o médico segura a perna do paciente apoiando no tubérculo tibial anterior e traciona a perna pra cima, em caso de lesão haverá dor.",
+      "answer": "Sinal da gaveta anterior"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar lesão em ligamento cruzado anterior, com o joelho fletido a 60 graus e o pé firme na maca (geralmente com examinador sentado em cima do pé), o médico segura a perna do paciente apoiando no tubérculo tibial anterior e traciona a perna para trás, em direção à maca, em caso de lesão haverá dor.",
+      "answer": "Sinal da gaveta posterior"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar lesão de menisco, cujo princípio é forçar a tíbia em direção ao fêmur com o paciente em decúbito dorsal e coxa fletida. Para avaliar o menisco lateral o pé precisa estar com o calcanhar voltado para fora. Para avaliar o menisco medial o calcanhar precisa estar voltado para dentro. Em ambos os casos haverá dor no menisco lesado.",
+      "answer": "Teste de Mc Murray"
+    },
+    {
+      "type": "open",
+      "description": "perda da curvatura normal do pé",
+      "answer": "Pé plano"
+    },
+    {
+      "type": "open",
+      "description": "curvatura acentuada do pé",
+      "answer": "pé cavo"
+    },
+    {
+      "type": "open",
+      "description": "pé com desvio lateral",
+      "answer": "pé varo"
+    },
+    {
+      "type": "open",
+      "description": "tipo de pé que indica alteração neurológica",
+      "answer": "pé valgo/pé calcâneo"
+    },
+    {
+      "type": "open",
+      "description": "conhecido popularmente como joanete, pode ser congênito ou adquirido, é o aumento do ângulo entre o primeiro e o segundo metatarso",
+      "answer": "hálux valgo"
+    },
+    {
+      "type": "open",
+      "description": "ao observar o pé na parte posterior, é possível identificar não só o quinto e quarto dedo, mas outros dedos, ocorre em pessoas com pé valgo, sugerindo lesão no tendão do músculo tibial posterior",
+      "answer": "Sinal dos muitos dedos"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar o ligamento talofibular anterior, com uma mão estabilizando a tíbia e outra no calcâneo, puxando para cima. Se houver lesão o pé será deslocado e haverá muita dor",
+      "answer": "teste da gaveta anterior do tornozelo"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar o ligamento calcaneofibular, com uma mão estabilizando a perna e a outra realizando a inversão forçada. Se houver lesão, haverá aumento excessivo da excursão e dor lateral.",
+      "answer": "Teste do Tilt Talar (Estresse em Inversão)"
+    },
+    {
+      "type": "open",
+      "description": "teste realizado em suspeita de fascite plantar, com o pé apoiado deve-se realizar uma flexão passiva do hálux, aumentando a dor em caso de lesões na fáscia.",
+      "answer": "Teste do molinete"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar a integridade do tendão calcâneo, com o pé para fora da maca e o paciente em decubito ventral, é realizada a compressão da panturrilha. Em caso de ruptura de tendão, a compressão da panturrilha não causa flexão plantar, sendo caracterizado como urgência ortopédica.",
+      "answer": "Teste de compressão da panturrilha/teste de thompson"
+    },
+    {
+      "type": "open",
+      "description": "Qual o padrão de limitação de movimento e exame físico característico de dor de origem Articular?",
+      "answer": "Limitação ativa e passiva, frequentemente indolor à manobra de contra-resistência, com presença de sinais flogísticos."
+    },
+    {
+      "type": "open",
+      "description": "Qual o padrão de limitação de movimento característico de dor de origem Extra-Articular (Periarticular)?",
+      "answer": "Limitação primariamente ativa (passiva livre e indolor), com dor acentuada à manobra de contra-resistência."
+    },
+    {
+      "type": "open",
+      "description": "Qual é o tempo de evolução clínico (ponto de corte) utilizado para diferenciar uma patologia aguda de uma patologia crônica?",
+      "answer": "6 semanas (42 dias)."
+    },
+    {
+      "type": "open",
+      "description": "Quais são os limites de idade considerados Sinal de Alarme (Red Flag) para dor lombar nova, sugerindo investigação de neoplasias ou doenças metabólicas?",
+      "answer": "Menores de 20 anos ou maiores de 50 anos."
+    },
+    {
+      "type": "open",
+      "description": "Quais achados neurológicos constituem a Síndrome da Cauda Equina (emergência cirúrgica)?",
+      "answer": "Anestesia em sela (perda de sensibilidade perineal) e incontinência urinária ou fecal associados à dor/fraqueza em membros inferiores."
+    },
+    {
+      "type": "open",
+      "description": "Qual pormenor propedêutico ajuda a diferenciar o eritema malar do Lúpus Eritematoso Sistêmico (LES) de outras condições como a rosácea?",
+      "answer": "O eritema do Lúpus tipicamente poupa o sulco nasolabial."
+    },
+    {
+      "type": "open",
+      "description": "Na inspeção dos membros inferiores, o que indica a presença de 'Dermatite Ocre' (manchas acastanhadas nos tornozelos)?",
+      "answer": "Insuficiência venosa crônica (extravasamento de hemácias/hemossiderina)."
+    },
+    {
+      "type": "open",
+      "description": "Qual é a 'janela de diagnóstico' (em graus) no Teste de Lasègue onde a dor em choque confirma compressão radicular (ciatalgia)?",
+      "answer": "Entre 30° e 70° de elevação."
+    },
+    {
+      "type": "open",
+      "description": "Na avaliação do nível de lesão radicular cervical, uma fraqueza na flexão do cotovelo e reflexo bicipital alterado indicam compressão de qual raiz nervosa?",
+      "answer": "Raiz C6."
+    },
+    {
+      "type": "open",
+      "description": "Na avaliação do nível de lesão radicular cervical, uma dor irradiada para o dedo médio e reflexo triceptal alterado indicam compressão de qual raiz nervosa?",
+      "answer": "Raiz C7."
+    },
+    {
+      "type": "open",
+      "description": "Qual é a diferença entre as referências anatômicas para a aferição da discrepância REAL de membros inferiores em relação à discrepância APARENTE?",
+      "answer": "A REAL mede-se da espinha ilíaca ântero-superior (EIAS) até o maléolo medial. A aparente mede-se do umbigo ao maléolo."
+    },
+    {
+      "type": "open",
+      "description": "Durante o Teste de Galeazzi, ao observar frontalmente o paciente com joelhos fletidos, se um joelho estiver mais projetado/avançado à frente que o outro, o encurtamento ocorre em qual osso?",
+      "answer": "No fêmur da perna mais recuada."
+    },
+    {
+      "type": "open",
+      "description": "No Teste de Schober para avaliação da mobilidade lombar, um ganho de expansão menor que 5 cm ao fletir a coluna é sinal sugestivo de qual patologia?",
+      "answer": "Espondilite Anquilosante (rigidez lombar)."
+    },
+    {
+      "type": "open",
+      "description": "Durante a Síndrome do Impacto no ombro, dor apenas no final do arco de elevação (entre 170° e 180°) sugere patologia de qual estrutura em vez do impacto subacromial?",
+      "answer": "Articulação acromioclavicular."
+    },
+    {
+      "type": "open",
+      "description": "O achado clínico 'Sinal do Popeye' (protuberância distal anormal no braço) está diretamente relacionado à falha estrutural de qual componente anatômico?",
+      "answer": "Ruptura completa do tendão da cabeça longa do bíceps braquial."
+    },
+    {
+      "type": "open",
+      "description": "A ocorrência simultânea de lesão do Ligamento Cruzado Anterior (LCA), Ligamento Colateral Medial (LCM) e Menisco Medial após trauma rotacional de alta energia é clinicamente chamada de:",
+      "answer": "Tríade Infeliz (Tríade de O'Donoghue)."
+    },
+    {
+      "type": "open",
+      "description": "Após detectar um derrame articular agudo no joelho, a punção (artrocentese) revelando sangue vivo (hemartrose) indica primariamente quais etiologias mecânicas?",
+      "answer": "Ruptura de ligamento cruzado ou fratura intrarticular."
+    },
+    {
+      "type": "open",
+      "description": "Em idosos, a inspeção da coluna mostrando um aumento da cifose torácica (curvatura dorsal) comumente reflete qual processo patológico subjacente?",
+      "answer": "Fraturas vertebrais por compressão secundárias a Osteoporose."
+    },
+    {
+      "type": "open",
+      "description": "Qual ligamento do tornozelo é o primeiro e mais frequentemente lesionado em entorses laterais comuns (mecanismo de inversão)?",
+      "answer": "Ligamento Talofibular Anterior (LTFA)."
+    },
+    {
+      "type": "open",
+      "description": "O que indica clinicamente a presença do chamado 'Esporão de Calcâneo' verificado no Raio-X em pacientes com queixa de fascite plantar?",
+      "answer": "Não é a causa primária da dor, mas sim um marcador (calcificação) indicando que o processo inflamatório de estresse mecânico é crônico e antigo."
+    },
+    {
+      "type": "open",
+      "description": "cefaléia, tontura, fraqueza, dormência, ausência de sensibilidade, síncope ou pré síncope são",
+      "answer": "sintomas comuns/relevantes na semiologia neurológica"
+    },
+    {
+      "type": "open",
+      "description": "frequência ou intensidade progressiva durante um período de 3 meses, início súbito com intensidade, início recente após 50 anos de idade, agravamento ou alívio com mudança de posição, precipitação por esforço, associação com febre, sudorese, perda de peso, TCE recente, ausência de sintoma parecido no passado, associação com papiledema, rigidez nucal ou déficits neurológicos focais, gravidez são",
+      "answer": "sinais de alerta para cefaleia"
+    },
+    {
+      "type": "open",
+      "description": "sintomas do tipo “B”, indicando câncer ou tuberculose secundária e sendo alarmantes quando associados à cefaleia",
+      "answer": "febre, sudorese noturna ou perda de peso"
+    },
+    {
+      "type": "open",
+      "description": "sintoma associado à cefaléia sugestivo de hipertensão craniana",
+      "answer": "Papiledema/vomito em jato"
+    },
+    {
+      "type": "open",
+      "description": "sintoma associado à cefaléia sugestivo de meningite. Também descrito como: resistência a flexão passiva da cabeça e retração dos músculos cervicais posteriores, indicando irritação meníngea",
+      "answer": "Rigidez de nuca"
+    },
+    {
+      "type": "open",
+      "description": "sintoma associado à cefaléia sugestivo de AVC",
+      "answer": "déficits neurológicos focais"
+    },
+    {
+      "type": "open",
+      "description": "sintoma inespecífico utilizado pelo paciente que precisa ser meticulosamente esclarecido para determinar etiologia primária",
+      "answer": "Tontura"
+    },
+    {
+      "type": "open",
+      "description": "sintoma que pode ser descrito como “tontura” mas que se refere a sensação rotatória acompanhada de nistagmo e ataxia. Também descrito como: disfunção vestibular periférica, lesão central no tronco encefálico como aterosclerose, esclerose múltipla e enxaqueca vertebrobasilar são possíveis causa de",
+      "answer": "Vertigem"
+    },
+    {
+      "type": "open",
+      "description": "sintoma que pode ser descrito como “tontura” mas que se refere a quase desmaio, fraqueza ou desfalecimento",
+      "answer": "Pré síncope"
+    },
+    {
+      "type": "open",
+      "description": "sintoma que pode ser descrito como “tontura” mas que se refere a instabilidade ou perda de equilíbrio ao andar, geralmente em idosos",
+      "answer": "Desequilíbrio"
+    },
+    {
+      "type": "open",
+      "description": "Sintoma de perda demonstrável de força muscular, pode ser confundida com fadiga, geralmente sem dor",
+      "answer": "Fraqueza"
+    },
+    {
+      "type": "open",
+      "description": "redução da força localizada no ombro ou na cintura pélvica, em que o paciente não consegue realizar movimentos como escovar os dentes ou levantar e caminhar",
+      "answer": "fraqueza proximal"
+    },
+    {
+      "type": "open",
+      "description": "redução da força em mãos e/ou pés, sugestivo de neuropatia diabética",
+      "answer": "fraqueza distal"
+    },
+    {
+      "type": "open",
+      "description": "redução da força em uma parte da face ou do membro",
+      "answer": "fraqueza focal"
+    },
+    {
+      "type": "open",
+      "description": "Sinal de redução de força",
+      "answer": "paresia"
+    },
+    {
+      "type": "open",
+      "description": "redução da força em um único membro",
+      "answer": "monoparesia"
+    },
+    {
+      "type": "open",
+      "description": "redução da força nos dois membros inferiores",
+      "answer": "paraparesia"
+    },
+    {
+      "type": "open",
+      "description": "redução da força em um lado do corpo",
+      "answer": "hemiparesia"
+    },
+    {
+      "type": "open",
+      "description": "perda de força total",
+      "answer": "plegia"
+    },
+    {
+      "type": "open",
+      "description": "sensação de alfinetadas, agulhadas ou pontadas",
+      "answer": "parestesia"
+    },
+    {
+      "type": "open",
+      "description": "distorção na sensação, podendo ser irritação, queimação ou formigamento ou neuropatias sensitivas dolorosas (paciente sente dor com estímulos que não deveria sentir), comum em diabetes mellitus",
+      "answer": "disestesias"
+    },
+    {
+      "type": "open",
+      "description": "padrão de sensibilidade anormal que acomete áreas irregulares sem relação com os dermátomos, doença que afeta nervos isolados",
+      "answer": "mononeurite múltipla"
+    },
+    {
+      "type": "open",
+      "description": "sensibilidade diminuída",
+      "answer": "hipoestesia"
+    },
+    {
+      "type": "open",
+      "description": "ausência de sensibilidade",
+      "answer": "anestesia"
+    },
+    {
+      "type": "open_double",
+      "description": "condições neurocardiogênicas, síndrome vasovagal, síncope do seio carotídeo, ,hipotensão ortostática, arritmias são causas de",
+      "answer": "síncope",
+      "answer2": "pré síncope",
+      "placeholder1": "Termo 1",
+      "placeholder2": "Termo 2"
+    },
+    {
+      "type": "open",
+      "description": "descarga elétrica excessiva súbita dos neurônios corticais, geralmente sem causa identificada. Também descrito como: crises causadas por distúrbio genético, sintoma de causa identificável, idiopático",
+      "answer": "convulsões"
+    },
+    {
+      "type": "open",
+      "description": "descarga elétrica excessiva súbita dos neurônios corticais limitadas a um hemisfério",
+      "answer": "convulsões focais"
+    },
+    {
+      "type": "open",
+      "description": "descarga elétrica excessiva súbita dos neurônios corticais com marcha motora sequencial de uma parte do corpo para outra...",
+      "answer": "convulsão Jacksoniana"
+    },
+    {
+      "type": "open",
+      "description": "descarga elétrica excessiva súbita dos neurônios corticais limitadas a um hemisfério que se tornam generalizadas",
+      "answer": "convulsões focais com perda de consciência"
+    },
+    {
+      "type": "open",
+      "description": "descarga elétrica excessiva súbita dos neurônios que se originam em um ponto, com envolvimento rápido de redes de distribuição bilateral, incluindo estruturas corticais e subcorticais, mas não necessariamente o córtex inteiro",
+      "answer": "convulsões generalizadas"
+    },
+    {
+      "type": "open",
+      "description": "tipo de convulsão que inicia com a perda súbita da consciência, seguida de corpo com rigidez extensora tônica, respirada interrompida e paciente cianótico, seguido por fase clônica de contração muscular rítmica, retorno da respiração de forma ruidosa, salivação excessiva, podendo ocorrer ferimentos e incontinência urinária.",
+      "answer": "Convulsão tônico-clônicas"
+    },
+    {
+      "type": "open",
+      "description": "lapso de consciência breve e repentino, com eventos momentâneos de piscadela, olhar fixo ou movimentos de lábios e mão, sem queda. Pode durar menos de 10 segundos (subtipo típico) ou mais de 10 segundos (subtipo atípico)",
+      "answer": "Convulsão de ausência"
+    },
+    {
+      "type": "open",
+      "description": "contrações espasmóditcas súbitas, breves e rápidas, envolvendo tronco ou membros",
+      "answer": "Convulsão mioclonica"
+    },
+    {
+      "type": "open",
+      "description": "perda súbita da consciência com perda súbita do tônus muscular, queda, sem movimentos. Não relacionada a causas vasculares",
+      "answer": "Convulsão atônica mioclônica"
+    },
+    {
+      "type": "open",
+      "description": "movimentos complexos e com frequência, sem padrão neuroanatômico, podem mimetizar convulsões mas são decorrentes de um transtorno conversivo (transtorno de sintoma neurológico funcional)",
+      "answer": "Convulsões não epilépticas"
+    },
+    {
+      "type": "open",
+      "description": "Crise caracterizada por período de confusão pós crise que pode durar de minutos a horas, sintomas premonitórios como presença de aura, alteração no olfato, sensação de aumento gástrico e dejavu, crises com mordedura de língua",
+      "answer": "Convulsão"
+    },
+    {
+      "type": "open",
+      "description": "Crise caracterizada por período de confusão pós crise dura no máximo 1-2 minutos, sintomas premonitórios como palpitação, diaforese, vertigem, escurecimento da visão ou visão em túnel, sem mordedura de língua durante as crises",
+      "answer": "Síncope"
+    },
+    {
+      "type": "open",
+      "description": "primeira etapa do exame físico neurológico, que avalia o nível e o conteúdo da consciência do paciente",
+      "answer": "Estado mental"
+    },
+    {
+      "type": "open",
+      "description": "nível de consciência em que o paciente consegue reconhecer a si mesmo e aos estímulos do ambiente, responde perguntas e obedece comandos, com abertura ocular espontânea.",
+      "answer": "Alerta/vigil"
+    },
+    {
+      "type": "open",
+      "description": "nível de consciência em que o paciente tem abertura ocular e outras respostas a estímulos leves (tátil, auditivo), orientado mas bradipsíquico",
+      "answer": "Sonolento/Letárgico"
+    },
+    {
+      "type": "open",
+      "description": "nível de consciência em que o paciente necessita de estímulos vigorosos e repetidos para despertar, voltando ao sono quando eles cessam, respondendo com sons incompreensíveis como gemidos e grunhidos",
+      "answer": "Torporoso"
+    },
+    {
+      "type": "open",
+      "description": "nível de consciência em que o paciente não responde a estímulos externos, somente apresente resposta de reatividade reflexa",
+      "answer": "Comatoso"
+    },
+    {
+      "type": "open",
+      "description": "Consciencia rebaixada, mantém reflexos de tronco cerebral, mantém sistemas funcionando, contém atividade cerebral e do córtex",
+      "answer": "Coma"
+    },
+    {
+      "type": "open",
+      "description": "avaliação do conteúdo da consciência mediada pela pergunta “sabe onde está e a data atual com dia, mês e ano?”",
+      "answer": "Orientação no tempo e espaço"
+    },
+    {
+      "type": "open",
+      "description": "Parâmetro da avaliação do conteúdo da consciência considerando o foco do paciente na interação com examinador",
+      "answer": "Atenção"
+    },
+    {
+      "type": "open",
+      "description": "Parâmetro da avaliação do conteúdo da consciência analisando como o paciente se sente e se o sentimento é adequado para a situação",
+      "answer": "Humor"
+    },
+    {
+      "type": "open",
+      "description": "Parâmetro da avaliação do conteúdo da consciência analisando se o paciente é agradável, cooperativo, agitado",
+      "answer": "Comportamento"
+    },
+    {
+      "type": "open",
+      "description": "Parâmetro da avaliação do conteúdo da consciência analisando tom, volume, quantidade e conteúdo",
+      "answer": "Fala"
+    },
+    {
+      "type": "open",
+      "description": "Parâmetro da avaliação do conteúdo da consciência analisando o curto e longo prazo",
+      "answer": "Memória"
+    },
+    {
+      "type": "open",
+      "description": "Parâmetro da avaliação do conteúdo da consciência analisando se há lógica e organização dos tópicos abordados pelo paciente",
+      "answer": "Processo de pensamento"
+    },
+    {
+      "type": "open",
+      "description": "avaliação do conteúdo da consciência analisando se o paciente está paranóia, delirante, com medo ou alucinações",
+      "answer": "Conteúdo do pensamento"
+    },
+    {
+      "type": "open",
+      "description": "Parâmetro da avaliação do conteúdo da consciência que consiste em realizar adição ou multiplicação, precisa ser adequada ao nível de instrução do paciente",
+      "answer": "Habilidade de realizar cálculos simples"
+    },
+    {
+      "type": "open",
+      "description": "perda da voz acompanhada de doenças que afetam laringe ou sua inervação",
+      "answer": "Afonia"
+    },
+    {
+      "type": "open",
+      "description": "comprometimento do volume, das características ou timbre da voz",
+      "answer": "Disfonia"
+    },
+    {
+      "type": "open",
+      "description": "defeito no controle muscular do aparelho fonador, prejudicando a parte mecânica da fala, podendo ser causado por lesões motoras no SNC ou SNP, parkinson e doença cerebelar",
+      "answer": "disartria"
+    },
+    {
+      "type": "open",
+      "description": "perturbação na produção ou compreensão da linguagem, causada por lesões no hemisfério cerebral dominante, geralmente o esquerdo.",
+      "answer": "Afasia"
+    },
+    {
+      "type": "open",
+      "description": "fala fluente, rápida e sem esforço, sentenças não fazem sentido e as palavras são mal formadas ou inventadas, significado pode ser totalmente incompreensível, compreensão das palavras, repetição, nomeação, compreensão da leitura e escrita totalmente comprometidas.",
+      "answer": "afasia de wernicke"
+    },
+    {
+      "type": "open",
+      "description": "fala não fluente, lenta e interrompida, com poucas palavras e esforço, inflexão e articulação comprometidas, mas as palavras fazem sentido, compreensão razoável, repetição comprometida, nomeação comprometida (paciente sabe o que é mas não consegue dizer), compreensão da leitura razoável, escrita comprometida",
+      "answer": "afasia de broca"
+    },
+    {
+      "type": "open",
+      "description": "ausência do olfato",
+      "answer": "Anosmia"
+    },
+    {
+      "type": "open",
+      "description": "percepção distorcida do olfato",
+      "answer": "Parosmia"
+    },
+    {
+      "type": "open",
+      "description": "olfato reduzido",
+      "answer": "Hiposmia"
+    },
+    {
+      "type": "open",
+      "description": "olfato aumentado",
+      "answer": "Hipersonia"
+    },
+    {
+      "type": "open",
+      "description": "teste do NCII que identifica lesões graves, testando a visão periférica ao tampar um olho e movimentar o dedo em arcos horizontais e longitudinais",
+      "answer": "Campimetria por confrontação"
+    },
+    {
+      "type": "open",
+      "description": "consequência de lesão do nervo óptico antes do quiasma óptico",
+      "answer": "Cegueira total ipsilateral"
+    },
+    {
+      "type": "open",
+      "description": "perda da visão lateral em ambos os olhos, sugestivo de lesão no quiasma óptico, como tumor de hipófise",
+      "answer": "Hemianopsia heterônima bitemporal"
+    },
+    {
+      "type": "open",
+      "description": "pupila dilata - via simpática",
+      "answer": "Midríase"
+    },
+    {
+      "type": "open",
+      "description": "pupilas puntiformes, diminuidas - via parassimpatica",
+      "answer": "Miose"
+    },
+    {
+      "type": "open",
+      "description": "perda de simetria entre as duas pupilas",
+      "answer": "anisocoria"
+    },
+    {
+      "type": "open",
+      "description": "pupila não consegue contrair adequadamente, causada por trauma fechado, glaucoma de ângulo aberto, comprometimento da inervação parassimpática e paralisia de NC III",
+      "answer": "Anisocoria acentuada em ambientes de luz forte"
+    },
+    {
+      "type": "open",
+      "description": "pupila maior não consegue dilatar adequadamente, indica interrupção da inervação parassimpática (síndrome de horner)",
+      "answer": "Anisocoria acentuada em ambientes de luz fraca"
+    },
+    {
+      "type": "open",
+      "description": "pupila dilatada geralmente unilateralmente, reação à luz com constrição mais lenta ou ausente, há constrição durante visão próxima, embora lenta, com acomodação lenta gerando visão borrada, comum em mulheres jovens, associada a hiperreflexia do aquileu e do patelar ou denervação parassimpática por trauma ou infecção viral",
+      "answer": "Pupila tônica/Pupila de Adie"
+    },
+    {
+      "type": "open",
+      "description": "tríade clássica da síndrome de horner",
+      "answer": "Miose, ptose e anidrose"
+    },
+    {
+      "type": "open",
+      "description": "pupila pequena, miótica e irregular, em que o reflexo fotomotor está abolido e o reflexo à acomodação está mantido, sugestivo de neurossifilis, diabetes mellitus e encefalopatia de wernicke",
+      "answer": "Pupila e Argyll-Robertson"
+    },
+    {
+      "type": "open",
+      "description": "Estado de pupilas causado por lesão nas vias simpáticas no hipotálamo, encefalopatía metabólica, uso de drogas ou medicamentos",
+      "answer": "Pupilas bilateralmente pequenas"
+    },
+    {
+      "type": "open",
+      "description": "pupilas menores que 1mm, causado por hemorragia pontina ou uso de opióides",
+      "answer": "pupilas puntiformes"
+    },
+    {
+      "type": "open",
+      "description": "pupilas discretamente dilatadas, fixas aos estímulos luminosos sugerindo lesão estrutural no mesencéfalo",
+      "answer": "pupilas fixas na posição média"
+    },
+    {
+      "type": "open",
+      "description": "pupilas fixas e dilatadas, não reagem a luz, causada geralmente por anoxia grave, como após uma parada cardíaca ou resultado de agentes com efeitos atropínicos, como fenotiazinas ou antidepressivos triciclicos",
+      "answer": "mídriase bilateral não reativa a luz"
+    },
+    {
+      "type": "open",
+      "description": "pupilas dilatadas mas reativas, decorrentes do uso de cocaína, anfetamina ou outros agonistas do sistema nervoso simpático, paciente com apresentação agitada",
+      "answer": "mídriase bilateral reativa a luz"
+    },
+    {
+      "type": "open",
+      "description": "Sinal de herniação do lobo temporal, causando compressão do NC III e mesencefálo",
+      "answer": "midriase unilateral/anisocoria fixa"
+    },
+    {
+      "type": "open",
+      "description": "condição com estrabismo divergente com desvio superior do olho",
+      "answer": "Déficit do troclear"
+    },
+    {
+      "type": "open",
+      "description": "condição com estrabismo convergente",
+      "answer": "Déficit do abducente"
+    },
+    {
+      "type": "open",
+      "description": "condição com ptose palpebral, midríase e estrabismo divergente com desvio inferior do olhar",
+      "answer": "Déficit do oculomotor"
+    },
+    {
+      "type": "open",
+      "description": "condição com reflexo corneopalpebral ausente em ambos os olhos",
+      "answer": "lesão de no trigêmio"
+    },
+    {
+      "type": "open",
+      "description": "condição com reflexo corneopalpebral ausente unilateralmente",
+      "answer": "lesão de facial"
+    },
+    {
+      "type": "open",
+      "description": "hemiface paralisada do mesmo lado do nervo lesado, lesão ocorre abaixo da decussação das pirâmides, geralmente causada por infecção viral do nervo facial, pode ser total (paciente não consegue fechar a pálpebra superior) ou periférica (paciente consegue fechar o olho do lado afetado com esforço - sinal da pestana)",
+      "answer": "Paralisia facial periférica"
+    },
+    {
+      "type": "open",
+      "description": "paralisia da parte inferior da face no lado contralateral, lesão ocorre acima da decussação das pirâmides",
+      "answer": "Paralisia facial central"
+    },
+    {
+      "type": "open",
+      "description": "Sinal que ocorre em paralisia periférica parcial, paciente fecha o olho do lado afetado com muito esforço “escondendo” os cílios",
+      "answer": "Sinal da pestana"
+    },
+    {
+      "type": "open",
+      "description": "Sinal de oscilação rítmica dos olhos causada por distúrbios do labirinto, do sistema cerebelar os toxicidade de medicamentos",
+      "answer": "Nistagmo"
+    },
+    {
+      "type": "open",
+      "description": "Sinal de voz que avaliada em exame do nervo glossofaríngeo, pode indicar paralisia do palato",
+      "answer": "Voz em tom anasalado"
+    },
+    {
+      "type": "open",
+      "description": "Sinal de voz que avaliada em exame do nervo glossofaríngeo, pode indicar paralisia unilateral das cordas vocais",
+      "answer": "Voz em tom rouco"
+    },
+    {
+      "type": "open",
+      "description": "Sinal com queda do palato no lado lesionado, indicando paralisia unilateral do vago ou do glossofaringeo, úvula desviada para o lado contra lateral ao nervo lesionado",
+      "answer": "Sinal da cortina"
+    },
+    {
+      "type": "open",
+      "description": "Condição onde o palato não se eleva",
+      "answer": "Paralisia bilateral do nervo vago e glossofaríngeo"
+    },
+    {
+      "type": "open",
+      "description": "sintoma que pode indicar lesão de nervo vago e glossofaríngeo, implicando realizar o exame de reflexo de vômito",
+      "answer": "Disfagia"
+    },
+    {
+      "type": "open",
+      "description": "responsável pela deglutição e paladar no ⅓ posterior da língua",
+      "answer": "Nervo glossofaríngeo/ NC IX"
+    },
+    {
+      "type": "open",
+      "description": "tensão residual que permanece nos músculos, mesmo em repouso, avaliado pela resistência do membro a mobilização passiva",
+      "answer": "tonus"
+    },
+    {
+      "type": "open",
+      "description": "rigidez que ocorre em todo arco do movimento, em forma de “roda dentada” ou “cano de chumbo”, comum em lesões extrapiramidais, como doença de parkinson",
+      "answer": "hipertonia plástica"
+    },
+    {
+      "type": "open",
+      "description": "rigidez de maior resistência no início ou final do movimento, típica de lesões pirâmides, como avc",
+      "answer": "Hipertonia espástica/em canivete"
+    },
+    {
+      "type": "open",
+      "description": "diminuição ou ausência de tônus, comum em lesões do segundo neurônio motor, na fase aguda de lesões encefálicas ou medulares, na síndrome de guillain barré e na poliomielite",
+      "answer": "Hipotonia"
+    },
+    {
+      "type": "open",
+      "description": "anormalidade da função dos centros motores diencefálicos que regulam o tônus muscular, manifestado como flexão aritimica das mãos e dedos com paciente na posição “parar o trânsito”, indicando encefalopatia hepática, uremia e hipercapnia",
+      "answer": "Asterixe/Flapping"
+    },
+    {
+      "type": "open",
+      "description": "teste de força realizado contra a resistência do médico para avaliar raízes de C5, C6, músculo deltoide",
+      "answer": "Teste de abdução do ombro"
+    },
+    {
+      "type": "open",
+      "description": "teste de força realizado contra a resistência do médico para avaliar raízes de C5, C6, músculos bíceps e braquiorradial",
+      "answer": "Teste de flexão do cotovelo"
+    },
+    {
+      "type": "open",
+      "description": "teste de força realizado contra a resistência do médico para avaliar raízes de C6, C7, C8, músculo tríceps",
+      "answer": "Teste de extensão do cotovelo"
+    },
+    {
+      "type": "open",
+      "description": "teste de força realizado contra a resistência do médico para avaliar raízes de C6,C7,C8, formadoras no nervo radial, responsável pela motricidade dos mm. extensor radial longo do carpo, extensor radial curto do carpo e extensor ulnar do carpo",
+      "answer": "Teste de extensão do punho"
+    },
+    {
+      "type": "open",
+      "description": "teste de força realizado contra a resistência do médico para avaliar raízes de C7, C8, músculo extensor dos dedos",
+      "answer": "teste de extensão dos dedos"
+    },
+    {
+      "type": "open",
+      "description": "teste de força realizado contra a resistência do médico para avaliar raízes de C8, T1, avaliando nervo ulnar",
+      "answer": "teste de abdução do dedo"
+    },
+    {
+      "type": "open",
+      "description": "teste de força realizado contra a resistência do médico para avaliar raízes de L2,L3 e L4, responsáveis pelo m. iliopsoas",
+      "answer": "teste de flexão do quadril"
+    },
+    {
+      "type": "open",
+      "description": "teste de força realizado contra a resistência do médico para avaliar raízes de L2,L3,L4, m quadríceps",
+      "answer": "Teste de extensão do joelho"
+    },
+    {
+      "type": "open",
+      "description": "teste de força realizado contra a resistência do médico para avaliar raízes de L5, S1, S2, mm. isquiotibiais",
+      "answer": "teste de flexão do joelho"
+    },
+    {
+      "type": "open",
+      "description": "teste de força realizado contra a resistência do médico para avaliar raízes de L4, L5, m. tibial anterior",
+      "answer": "Teste de dorsiflexão do pé"
+    },
+    {
+      "type": "open",
+      "description": "teste de força realizado contra a resistência do médico para avaliar raízes de S1, mm. gastrocnêmio e sóleo",
+      "answer": "Teste de flexão plantar"
+    },
+    {
+      "type": "open",
+      "description": "manobra utilizada para detectar déficits sutis de força, no membro superior consiste em manter os braços esticados e pronados por 30 segundos, com os olhos fechados, no membro inferior consiste em manter as pernas a 90 graus em decúbito dorsal, em ambos os casos o resultado positivo é indicado pela queda do membro parético e expõe uma força de grau menor 3.",
+      "answer": "Manobra de Mingazzini"
+    },
+    {
+      "type": "open",
+      "description": "manobra utilizada para detectar déficits sutis de força, no membro superior consiste em manter os braços estendidos e supinados por 30 segundos, resultado positivo indicado pela pronação do membro parético, já no membro inferior o paciente em decúbito ventral deverá manter as pernas flexionadas a 45 graus por 30 segundo, resultado positivo indicado pela queda do membro parético",
+      "answer": "Manobra de Barré"
+    },
+    {
+      "type": "open",
+      "description": "teste utilizado para avaliar lesão do trato corticoespinhal no hemisfério contralateral, em que o paciente se mantém de olhos fechados e braços abertos, o examinador deverá empurrar os braços rapidamente para baixo. Se os braços retornarem à posição horizontal sem interrupções tem-se um indicativo de força, coordenação e propriocepção preservados. Se houver a perda da propriocepção, os braços apresentam desvio para o lado ou para cima. Se houver incoordenação cerebelar, o braço sobe além da posição original.",
+      "answer": "Teste do pronador"
+    },
+    {
+      "type": "open",
+      "description": "responsável pela força muscular no movimento coordenado",
+      "answer": "Sistema motor"
+    },
+    {
+      "type": "open",
+      "description": "responsável pelos movimentos rítmicos e manter a postura no movimento coordenado",
+      "answer": "Sistema cerebelar"
+    },
+    {
+      "type": "open",
+      "description": "responsável por manter o equilíbrio e coordenação dos movimentos da cabeça, olhos e corpo durante o movimento coordenado",
+      "answer": "Sistema vestibular"
+    },
+    {
+      "type": "open",
+      "description": "responsável pela propriocepção durante o movimento coordenado",
+      "answer": "Sistema sensorial"
+    },
+    {
+      "type": "open",
+      "description": "Parametro de executar movimentos em direção a um alvo específico, avaliada com testes como prova dedo-nariz, prova dedo-nariz-dedo, prova calcanhar-joelho",
+      "answer": "Metria"
+    },
+    {
+      "type": "open",
+      "description": "Sinal onde paciente erra o alvo ao tentar executar movimentos em direção a um alvo específico",
+      "answer": "Dismetria"
+    },
+    {
+      "type": "open",
+      "description": "Sinal onde paciente acerta o alvo ao executar movimentos em direção a um alvo específico",
+      "answer": "Eumetria"
+    },
+    {
+      "type": "open",
+      "description": "responsável por coordenar movimentos rápidos, ritmados e simultâneos com ambos os membros, avaliado com teste do dedilhamento e prova de movimentos alternados",
+      "answer": "Diadococinesia"
+    },
+    {
+      "type": "open",
+      "description": "Sinal que paciente não consegue realizar movimentos alternados, como tocar a ponta dos dedos",
+      "answer": "Disdiadococinesia"
+    },
+    {
+      "type": "open",
+      "description": "fluidez dos movimentos avaliada na observação da marcha, manobra de resistência de Stewart-Holmes e flexão do tronco",
+      "answer": "Sinergia"
+    },
+    {
+      "type": "open",
+      "description": "movimentos que passam a ser decompostos",
+      "answer": "Assinergia"
+    },
+    {
+      "type": "open",
+      "description": "os reflexos mentoniano/massetérico, bicipital, braquiorradial/supinador, tricipital, patelar e aquileu são",
+      "answer": "Reflexos tendíneos profundos / proprioceptivos"
+    },
+    {
+      "type": "open",
+      "description": "os reflexos cutâneo plantar, manobra ou sinal de hoffman, cutaneo abdominal, corneopalpebral ou corneano e cremastérico são",
+      "answer": "Reflexos cutâneos superficiais / exteroceptivos"
+    },
+    {
+      "type": "open",
+      "description": "pinçamento da falange distal do dedo médio do paciente, com os outros dedos em relaxamento completo, examinador faz brusca fricção na unha do dedo médio. Na resposta normal, a mão se mantém em pronação ou neutra, na resposta patológica ocorre a contração dos mm. flexores do polegar e indica lesão do neurônio motor superior à nível de C5 e C6 (lesões que afetam a transmissão do estímulo para C8 e T1), pode ser fisiológico se for simétrico.",
+      "answer": "Sinal de Hoffman/ Manobra de Hoffman"
+    },
+    {
+      "type": "open",
+      "description": "reflexo que testa parte motora do nervo trigêmio",
+      "answer": "reflexo mentoniano/massetérico"
+    },
+    {
+      "type": "open",
+      "description": "reflexo profundo realizado com percussão na fossa cubital que testa raízes de C5 e C6",
+      "answer": "reflexo bicipital"
+    },
+    {
+      "type": "open",
+      "description": "reflexo profundo realizado com percussão 2 dedos acima do processo estilóide do rádio que testa raízes de C5 e C6",
+      "answer": "reflexo braquiorradial/supinador"
+    },
+    {
+      "type": "open",
+      "description": "reflexo profundo realizado segurando o braço do paciente e percutindo a fossa do olécrano que testa C6, C7",
+      "answer": "reflexo tricipital"
+    },
+    {
+      "type": "open",
+      "description": "é uma técnica de facilitação utilizada na semiologia quando os reflexos tendinosos profundos de um paciente parecem ausentes ou muito diminuídos, utiliza-se mãos entrelaçadas na frente do peito fazendo força uma contra a outra para testar reflexos profundos inferiores e os dentes cerrados para testar reflexos profundos superiores",
+      "answer": "manobra de Jendrassik"
+    },
+    {
+      "type": "open",
+      "description": "score da Escala de Graduação de Reflexos para reflexo ausente/ arreflexia",
+      "answer": "0"
+    },
+    {
+      "type": "open",
+      "description": "reflexo sustentado por alguns segundos mesmo após a cessação do estímulo do tendão, indicativo de lesão no trato corticoespinhal, especialmente no neurônio motor superior",
+      "answer": "Clono"
+    },
+    {
+      "type": "open",
+      "description": "reflexo cutâneo em que a resposta normal é a flexão dos dedos do pé e a patológica é a extensão dos dedos do pé, estando presente em síndromes piramidais, hipoglicemia, como por distúrbio metabólico, intoxicação alcoólica, anestesia geral e crises convulsivas, fisiológico em recém nascidos",
+      "answer": "Reflexo cutâneo plantar"
+    },
+    {
+      "type": "open",
+      "description": "reflexo cutâneo plantar causando extensão dos dedos do pé",
+      "answer": "Sinal de Babinski"
+    },
+    {
+      "type": "open",
+      "description": "teste reflexivo da região abdominal que pode indicar lesões no trato corticoespinal, neuropatias periféricas ou lesões medulares que podem ser supraumbilicais (T8,T9,T10) ou infraumbilicais (T10, T11, T12)",
+      "answer": "Reflexo cutâneo abdominal"
+    },
+    {
+      "type": "open",
+      "description": "reflexo realizado com um algodão na córnea do paciente, cujo resultado esperado é o fechamento bilateral das pálpebras. Os nervos envolvidos nessa avaliação são o trigêmio, com seu ramo oftálmico sendo a via aferente (leva a sensação do toque para o tronco encefálico) e o facial sendo a via eferente, estimulando os mm. orbiculares a fechar a pálpebra.",
+      "answer": "reflexo corneopalpebral/corneano"
+    },
+    {
+      "type": "open",
+      "description": "o que se espera de um paciente submetido ao reflexo corneano com lesão no nervo trigêmio",
+      "answer": "Nenhum dos olhos fecha"
+    },
+    {
+      "type": "open",
+      "description": "o que se espera de um paciente submetido ao reflexo corneano com lesão no nervo facial",
+      "answer": "Apenas o olho oposto fecha"
+    },
+    {
+      "type": "open",
+      "description": "reflexo cutâneo em que ao estimular a face súpero medial da coxa, observa-se a elevação ipsilateral do testiculo, ausente em casos de torção testicular",
+      "answer": "Reflexo cremastérico"
+    },
+    {
+      "type": "open",
+      "description": "reflexo cutâneo em que ao estimular a pele da região perianal ocorre a contração do esficter anal externo, ausência pode indicar sindrome da cauda equina",
+      "answer": "reflexo anal superficial"
+    },
+    {
+      "type": "open",
+      "description": "somatossensorial, vestibular, visão, modulações do cerebelo e da sensibilidade tátil são funções envolvidas no…",
+      "answer": "Equilíbrio estático"
+    },
+    {
+      "type": "open",
+      "description": "teste que avalia a integridade proprioceptiva e vestibular, realizado com o paciente em pé de olhos fechados",
+      "answer": "Teste de Romberg"
+    },
+    {
+      "type": "open",
+      "description": "desequilíbrio e tendência a queda ao fechar os olhos, indicando que a visão estava compensando um déficit vestibular ou proprioceptivo",
+      "answer": "Romberg positivo"
+    },
+    {
+      "type": "open",
+      "description": "ao realizar o teste de romberg, paciente cai para qualquer lado imediatamente ao fechar os olhos, indicando um…",
+      "answer": "Déficit de propriocepção"
+    },
+    {
+      "type": "open",
+      "description": "ao realizar o teste de romberg, paciente com tendência de queda sempre para o mesmo lado após alguns segundos de latência pode ser sugestivo de..",
+      "answer": "Lesão no aparelho vestibular"
+    },
+    {
+      "type": "open",
+      "description": "paciente desequilibrado, caindo para lados diferentes mesmo com os olhos abertos, indicando lesões cerebelares ou abuso de bebidas etílicas, Romberg?",
+      "answer": "negativo"
+    },
+    {
+      "type": "open",
+      "description": "tipo de marcha em que o paciente mantém o braço junto ao corpo, com flexão de cotovelo e punho, a perna é espática, fica em extensão e ao se mover desenha um semicírculo, indicando lesões hemisféricas unilaterais, como AVC, lesão no primeiro neurônio motor",
+      "answer": "Marcha ceifante"
+    },
+    {
+      "type": "open",
+      "description": "marcha em que a espasticidade dos membros inferiores é bilateral",
+      "answer": "Marcha em tesoura/paraparética"
+    },
+    {
+      "type": "open",
+      "description": "tipo de marcha em que o tronco é inclinado para frente, com cabeça e pescoço flexionados, passos curtos e os braços não se movimentam, com dificuldade para iniciar e interromper o movimento, indicando lesão dos gânglios da base na doença de parkinson",
+      "answer": "Marcha parkosiana"
+    },
+    {
+      "type": "open",
+      "description": "tipo de marcha em que há paralisia da flexão dorsal do pé, que fica pendente, como movimento compensatório, o paciente ergue acentuadamente o membro inferior como quem sobe uma escada, indicando lesão no neurônio motor inferior",
+      "answer": "Marcha escarvante"
+    },
+    {
+      "type": "open",
+      "description": "tipo de marcha em que o paciente é incapaz de andar em linha reta, pendendo para ambos os lados, indicando lesão cerebelar",
+      "answer": "Ataxia cerebelar"
+    },
+    {
+      "type": "open",
+      "description": "tipo de marcha em que o paciente mantém os olhos fixos no chão e faz movimentos bruscos, pisando no solo com força, incapaz de andar de olhos fechados. Indica perda de propriocepção por lesões da coluna posterior ou neuropatias periféricas, mediadas por neurossífilis ou deficiência de vitamina B12",
+      "answer": "Ataxia sensitiva/Talonante"
+    },
+    {
+      "type": "open",
+      "description": "avaliação que deve ser realizada de forma bilateral, permitindo comparações, com paciente de olhos fechados, cujo objetivo não é somente identificar a alteração mas sim mapea-lá, os segmentos fundamentais avaliados são mãos, antebraços, os pés, pernas e abdome",
+      "answer": "avaliação da função sensitiva"
+    },
+    {
+      "type": "open",
+      "description": "dermátomo do ombro",
+      "answer": "C4"
+    },
+    {
+      "type": "open",
+      "description": "dermátomo da região medial da perna",
+      "answer": "L4"
+    },
+    {
+      "type": "open",
+      "description": "dermátomo da fossa poplítea",
+      "answer": "S2"
+    },
+    {
+      "type": "open",
+      "description": "dermátomo da região lateral de braço",
+      "answer": "C5"
+    },
+    {
+      "type": "open",
+      "description": "dermátomo da região medial do braço",
+      "answer": "T2"
+    },
+    {
+      "type": "open",
+      "description": "dermátomo da região medial do antebraço",
+      "answer": "T1"
+    },
+    {
+      "type": "open",
+      "description": "tipo de sensibilidade que analisa resposta à dor, temperatura e tato protopático",
+      "answer": "Sensibilidade superficial"
+    },
+    {
+      "type": "open",
+      "description": "tipo de sensibilidade que avalia propriocepção, vibração/palestesia, pressão/barestesia",
+      "answer": "Sensibilidade profunda"
+    },
+    {
+      "type": "open",
+      "description": "capacidade de reconhecimento tátil de objetos",
+      "answer": "Estereognosia"
+    },
+    {
+      "type": "open",
+      "description": "incapacidade de reconhecimento tátil de objetos comuns como chave, moeda",
+      "answer": "Asterognosia"
+    },
+    {
+      "type": "open",
+      "description": "capacidade de reconhecer números, letras ou formas geométricas desenhadas na palma da mão",
+      "answer": "Grafestesia"
+    },
+    {
+      "type": "open",
+      "description": "incapacidade de reconhecer números, letras ou formas geométricas desenhadas na palma da mão",
+      "answer": "Agrafestesia"
+    },
+    {
+      "type": "open",
+      "description": "sinal em que a flexão da nuca determina flexão involuntária das pernas e coxas, indicando irritação meníngea",
+      "answer": "Sinal de Brudzinksi"
+    },
+    {
+      "type": "open",
+      "description": "sinal em que com o quadril fletido a 90 graus é feita a extensão de joelho, positivo em caso de resistência bilateral, indicando irritação meníngea",
+      "answer": "Sinal de Kernig"
+    },
+    {
+      "type": "open",
+      "description": "sinal em que com o paciente em decúbito dorsal, a perna estendida é elevada, positivo se houver dor entre 30 e 70 graus de elevação unilateralmente, indicando radiculopatia lombar",
+      "answer": "Sinal de Lasègue"
+    },
+    {
+      "type": "open",
+      "description": "lesão no primeiro ou segundo neurônio motor, causando fraqueza",
+      "answer": "Síndrome motora do trato corticospinal"
+    },
+    {
+      "type": "open",
+      "description": "lesão dos núcleos da base causando rigidez, bradicinesia, movimentos involuntários e perturbações na postura e marcha",
+      "answer": "Síndrome motora dos núcleos da base"
+    },
+    {
+      "type": "open",
+      "description": "lesão que compromete coordenação (ataxia), marcha, equilíbrio e diminui o tônus muscular, podendo ter sinais como nistagmo ou disartria, a fala é escandida, não ocorre alteração na força e o sinal de romberg é negativo, causada por intoxicação alcoólica aguda, tumores e avcs cerebelares",
+      "answer": "Síndrome motora do sistema cerebelar"
+    },
+    {
+      "type": "open",
+      "description": "síndrome do primeiro neurônio motor que ocorre imediatamente após a lesão, causando fraqueza muscular, hipotonia muscular e hiporreflexia",
+      "answer": "Síndrome piramidal deficitária"
+    },
+    {
+      "type": "open",
+      "description": "síndrome do primeiro neurônio motor que ocorre dias após a lesão, com fraqueza muscular, hipertonia espástica, hiperreflexia com ou sem clônus e sinal de babinski",
+      "answer": "Síndrome piramidal de liberação"
+    },
+    {
+      "type": "open",
+      "description": "síndrome em que há paresia, hipotonia, hiporreflexia, marcha escarvante, atrofia muscular e perda sensorial, podendo ser causada por miastenia gravis ou neuropatias periféricas como diabetes, etilismo, metronidazol, def de B12 e sifilis terciária",
+      "answer": "Síndrome do segundo neurônio motor"
+    },
+    {
+      "type": "open",
+      "description": "é um distúrbio do movemento caracterizado por movimentos involuntários lentos, sinuosos e contínuos, que lembram o rastejar de uma serpente ou o movimento de tentáculos, causado por alteração nos núcleos da base, paralisia cerebral, hipóxia neonatal",
+      "answer": "Atetose"
+    },
+    {
+      "type": "open",
+      "description": "é um distúrbio do movimento caracterizado por contrações musculares involuntárias, breves, rápidas e desordenadas, sinal de disfunção nos núcleos da base, como Coreia de Sydenham (com febre reumática) e doença de Huntington (doença neurodegenerativa genética)",
+      "answer": "Coreia"
+    },
+    {
+      "type": "open",
+      "description": "distúrbio do movimento caracterizado por movimentos involuntários, repetitivos, sem propósito e esteriotipados que afetam a face, a boca, a mandíbula e a língua, geralmente causado por complicação tardia de medicamentos antipsicóticos ou antieméticos (discinesia tardia)",
+      "answer": "Discinesia orofacial"
+    },
+    {
+      "type": "open",
+      "description": "movimentos coordenados breves, repetitivos e estereotipados que ocorrem em intervalos regulares, causados por síndrome de Tourette ou efeito tardio de medicamentos",
+      "answer": "Tiques"
+    },
+    {
+      "type": "open",
+      "description": "movimentos involuntários que lembram atetose ou tremor, geralmente acompanhada por posturas anormais que limitam o movimento voluntário, podendo ser dolorosa",
+      "answer": "Distonia"
+    },
+    {
+      "type": "open",
+      "description": "síndrome medular causada por traumatismos, tumores ou mielites, cujos achados clínicos são paraplegia/tetraplegia, anestesia bilateral completa, incontinência urinária, espasticidade e hiperreflexia",
+      "answer": "Secção medular"
+    },
+    {
+      "type": "open",
+      "description": "lesão unilateral da medula causando plelgia e perda da sensibilidade profunda do mesmo lado da lesão e perda da sensibilidade superficial do lado contrário à lesão",
+      "answer": "Hemissecção medular/ síndrome de Brown-Séquard"
+    },
+    {
+      "type": "open",
+      "description": "síndrome medular causada por sífilis ou deficiencia de vitamina B12 em que há perda bilateral de propriocepção, tato fino e sensibilidade vibratória, marcha escarvante e sinal de Romberg positivo",
+      "answer": "Síndrome do cordão posterior"
+    },
+    {
+      "type": "open",
+      "description": "síndrome que pode ser causada por aumento da massa cerebral, bloqueio do fluxo venoso, bloqueio da circulação ou reabsorção de líquor, sangue no interior do parênquima ou nos espaços subaracnóides",
+      "answer": "Síndrome da hipertensão intracraniana"
+    },
+    {
+      "type": "open",
+      "description": "tríade clássica da hipertensão intracraniana",
+      "answer": "Cefaleia, Vômito em jato e papiledema"
+    },
+    {
+      "type": "open",
+      "description": "sintomas como vertigem, convulsão, paralisia de nervos cranianos (geralmente VI), transtorno psíquicos e distúrbios autonômicos (bradicardia, HAS, taquipneia, respiração de Cheyne Stokes, Biot) podem estar associados à…",
+      "answer": "Hipertensão intracraniana"
+    },
+    {
+      "type": "open",
+      "description": "dor de cabeça unilateral mais comum no sexo masculino, sem mudar de lado, de intensidade alta/insuportável, acompanhada de lacrimejamento que só responde a O2",
+      "answer": "Cefalia em salvas"
+    },
+    {
+      "type": "open",
+      "description": "dor de cabeça unilateral que não muda de lado, mais comum no sexo femino, intesidade moderada desecandeada por movimentação ou pressão no pescoço com irradiação miofacial",
+      "answer": "Cefaleia cervicogênica"
+    },
+    {
+      "type": "open",
+      "description": "dor em choque provocada por toque em zonas de gatinho, unilateral não muda de lado, mais comum no sexo femino",
+      "answer": "Neuralgia do trigêmio"
+    },
+    {
+      "type": "open",
+      "description": "doença de alzheimer e doença do tipo frontotemporal são exemplos de",
+      "answer": "demência degenerativa"
+    },
+    {
+      "type": "open",
+      "description": "doença de parkinson e esclerose múltipla são exemplos de",
+      "answer": "demência com deterioração mental e distúrbios motores"
+    },
+    {
+      "type": "open",
+      "description": "encefalopatia demencial diabética e doença da vaca louca são exemplos de",
+      "answer": "demência infecciosa"
+    },
+    {
+      "type": "open",
+      "description": "carência crônica de vit B12, alcoolismo, hipotireoidismo, síndrome de Cushing, hipercalcemias, tumores cerebrais, hidrocefalias podem causar…",
+      "answer": "demência"
+    },
+    {
+      "type": "open_double",
+      "description": "Exemplos de condições clínicas que frequentemente causam o padrão de sensibilidade em “meia e luva” (polineuropatia simétrica distal):",
+      "answer": "Diabetes Mellitus",
+      "answer2": "Deficiência de Vitamina B12"
+    },
+    {
+      "type": "open",
+      "description": "Na avaliação do nível de consciência, o que pode indicar um estado de confusão mental?",
+      "answer": "Sepse/Hipóxia/Distúrbios metabólicos/Delirium"
+    },
+    {
+      "type": "open_double",
+      "description": "Quais são as duas principais causas fisiopatológicas para Palidez (descorado)?",
+      "answer": "Anemia",
+      "answer2": "Vasoconstrição periférica (choque)",
+      "placeholder1": "Causa hematológica",
+      "placeholder2": "Causa vascular"
+    },
+    {
+      "type": "open",
+      "description": "Quais são os três sinais físicos clássicos de desidratação citados no texto?",
+      "answer": "Sinal da prega/Mucosas secas/Olhos encovados"
+    },
+    {
+      "type": "open",
+      "description": "Uma diferença de Pressão Arterial (PA) > 10-15 mmHg entre os braços sugere quais patologias?",
+      "answer": "Estenose de subclávia/Dissecção aórtica"
+    },
+    {
+      "type": "open_double",
+      "description": "Cite uma causa patológica para Taquicardia e uma causa para Bradicardia, respectivamente.",
+      "answer": "Sepse/Ansiedade/IC",
+      "answer2": "Bloqueios AV/Uso de beta-bloqueadores",
+      "placeholder1": "Taquicardia",
+      "placeholder2": "Bradicardia"
+    },
+    {
+      "type": "open",
+      "description": "O que a dor à digitopressão nos seios da face sugere?",
+      "answer": "Sinusite aguda (frontal ou maxilar)"
+    },
+    {
+      "type": "open_double",
+      "description": "Quais são as causas toxicológicas/medicamentosas citadas para Miose e Midríase?",
+      "answer": "Opioides",
+      "answer2": "Atropínicos/Cocaína",
+      "placeholder1": "Miose",
+      "placeholder2": "Midríase"
+    },
+    {
+      "type": "open",
+      "description": "A ausência do Reflexo Fotomotor indica lesão em quais nervos?",
+      "answer": "Nervo óptico (II) ou Oculomotor (III)"
+    },
+    {
+      "type": "open",
+      "description": "Para qual lado a mandíbula desvia em caso de lesão muscular ou hipomobilidade articular?",
+      "answer": "Para o lado da lesão"
+    },
+    {
+      "type": "open",
+      "description": "Qual classificação é usada para descrever a hipertrofia de amígdalas?",
+      "answer": "Classificação de Brodsky"
+    },
+    {
+      "type": "open_double",
+      "description": "Em uma lesão do Nervo Vago (X par), para onde desvia a úvula? E na lesão do Hipoglosso (XII), para onde desvia a língua?",
+      "answer": "Lado saudável",
+      "answer2": "Lado afetado",
+      "placeholder1": "Úvula (X)",
+      "placeholder2": "Língua (XII)"
+    },
+    {
+      "type": "open_double",
+      "description": "Quais as características palpatórias de um linfonodo Inflamatório versus um Neoplásico?",
+      "answer": "Doloroso/Móvel/Elástico",
+      "answer2": "Endurecido/Pétreo/Aderido/Indolor",
+      "placeholder1": "Inflamatório",
+      "placeholder2": "Neoplásico"
+    },
+    {
+      "type": "open",
+      "description": "Quais são as três causas citadas para Bócio (aumento difuso da tireoide)?",
+      "answer": "Deficiência de iodo/Doença de Graves/Hashimoto"
+    },
+    {
+      "type": "open",
+      "description": "O formato de tórax em 'Tonel' (Barril) é típico de qual patologia?",
+      "answer": "DPOC (Enfisema)"
+    },
+    {
+      "type": "open",
+      "description": "O que a Tiragem Intercostal indica?",
+      "answer": "Insuficiência respiratória iminente"
+    },
+    {
+      "type": "open_double",
+      "description": "Cite uma causa para redução unilateral e uma para redução bilateral da expansibilidade torácica.",
+      "answer": "Pneumotórax/Derrame/Atelectasia",
+      "answer2": "DPOC/Fibrose",
+      "placeholder1": "Unilateral",
+      "placeholder2": "Bilateral"
+    },
+    {
+      "type": "open",
+      "description": "Por que o FTV está diminuído ou abolido no Derrame Pleural e Pneumotórax?",
+      "answer": "Há uma barreira (líquido ou ar) impedindo o som"
+    },
+    {
+      "type": "open",
+      "description": "Na percussão do tórax, o som de 'Macicez' indica quais condições?",
+      "answer": "Pneumonia ou Derrame Pleural"
+    },
+    {
+      "type": "open",
+      "description": "A Hipersonoridade à percussão torácica sugere qual condição?",
+      "answer": "Enfisema pulmonar"
+    },
+    {
+      "type": "open",
+      "description": "Quais condições podem causar diminuição do Murmúrio Vesicular (MV)?",
+      "answer": "Derrame pleural/Pneumotórax/Hipoventilação"
+    },
+    {
+      "type": "open_double",
+      "description": "Descreva o som dos Estertores Finos e cite uma patologia associada.",
+      "answer": "Velcro/Cabelo esfregando",
+      "answer2": "Pneumonia/Edema Agudo de Pulmão",
+      "placeholder1": "Descrição do som",
+      "placeholder2": "Patologia Típica"
+    },
+    {
+      "type": "open",
+      "description": "O que gera o som dos Roncos na ausculta pulmonar?",
+      "answer": "Secreção em vias aéreas grossas (brônquios)"
+    },
+    {
+      "type": "open_double",
+      "description": "O deslocamento do Ictus Cordis indica ___, enquanto um Ictus propulsivo indica ___.",
+      "answer": "Cardiomegalia (HVE excêntrica)",
+      "answer2": "Sobrecarga de pressão (HVE concêntrica)",
+      "placeholder1": "Deslocado",
+      "placeholder2": "Propulsivo"
+    },
+    {
+      "type": "open",
+      "description": "A hiperfonese de B1 sugere qual valvopatia?",
+      "answer": "Estenose Mitral"
+    },
+    {
+      "type": "open_double",
+      "description": "A B2 hiperfonética pode indicar hipertensão em quais sistemas?",
+      "answer": "Sistêmica (foco aórtico)",
+      "answer2": "Pulmonar (foco pulmonar)",
+      "placeholder1": "Foco Aórtico",
+      "placeholder2": "Foco Pulmonar"
+    },
+    {
+      "type": "open",
+      "description": "O que representa o som da terceira bulha (B3)?",
+      "answer": "Enchimento ventricular rápido em ventrículo complacente ou dilatado"
+    },
+    {
+      "type": "open_double",
+      "description": "Cite um exemplo de sopro Sistólico e um de sopro Diastólico.",
+      "answer": "Estenose Aórtica/Insuficiência Mitral",
+      "answer2": "Insuficiência Aórtica/Estenose Mitral",
+      "placeholder1": "Sistólico",
+      "placeholder2": "Diastólico"
+    },
+    {
+      "type": "open",
+      "description": "O sopro diastólico é fisiológico ou patológico?",
+      "answer": "Sempre patológico"
+    },
+    {
+      "type": "open",
+      "description": "O pulso filiforme (fraco) está associado a quais condições?",
+      "answer": "Choque/Desidratação/Estenose aórtica grave"
+    },
+    {
+      "type": "open",
+      "description": "Pulsos assimétricos sugerem quais patologias vasculares?",
+      "answer": "DAOP ou Dissecção"
+    },
+    {
+      "type": "open",
+      "description": "O sopro carotídeo indica turbulência devido a:",
+      "answer": "Placa de ateroma"
+    },
+    {
+      "type": "open",
+      "description": "Qual a definição de Macrocefalia/Microcefalia no exame do crânio?",
+      "answer": "Alterações do desenvolvimento"
+    },
+    {
+      "type": "open",
+      "description": "Quais as características dos Roncos em relação à tosse?",
+      "answer": "Modificam-se com a tosse"
+    },
+    {
+      "type": "open",
+      "description": "Quais são nódulos ou massas benignos comuns no crânio?",
+      "answer": "Cistos sebáceos/Lipomas"
+    },
+    {
+      "type": "open",
+      "description": "Qual patologia cardiovascular gera uma B2 hiperfonética especificamente no foco aórtico?",
+      "answer": "Hipertensão Arterial Sistêmica (HAS)"
+    }
+  ]
+}

@@ -2,10 +2,28 @@
 import { ROUTES } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Redirect to game if session exists
+    // Redirect to game if active deck session exists
     if (localStorage.getItem('flashcardsSave')) {
         window.location.href = ROUTES.GAME;
         return;
+    }
+
+    const openNotebookBtn = document.getElementById('open-notebook-btn');
+    const notebookCount = document.getElementById('notebook-count');
+    if (openNotebookBtn && notebookCount) {
+        try {
+            const notebookData = JSON.parse(localStorage.getItem('flashcardsNotebook'));
+            if (notebookData && notebookData.allQuestions && notebookData.allQuestions.length > 0) {
+                notebookCount.textContent = notebookData.allQuestions.length;
+                openNotebookBtn.classList.remove('hidden');
+                openNotebookBtn.addEventListener('click', () => {
+                    localStorage.setItem('flashcardsActiveMode', 'notebook');
+                    window.location.href = ROUTES.GAME;
+                });
+            }
+        } catch (e) {
+            console.error("Erro ao carregar contador do Caderno:", e);
+        }
     }
 
     const fileInput = document.getElementById('file-input');
@@ -37,13 +55,39 @@ document.addEventListener('DOMContentLoaded', () => {
             const reader = new FileReader();
             reader.onload = (event) => {
                 try {
-                    const parsedQuestions = JSON.parse(event.target.result);
-                    if (!Array.isArray(parsedQuestions) || parsedQuestions.length === 0) {
-                        throw new Error("O arquivo JSON deve ser um array de questões.");
+                    const parsed = JSON.parse(event.target.result);
+                    let questions = [];
+                    let deckTitle = currentFile.name.replace(/\.json$/i, '');
+                    let isNotebook = false;
+
+                    if (parsed && parsed.__flashcards_watermark__ === "notebook_backup_v1") {
+                        questions = parsed.cards || [];
+                        deckTitle = parsed.deckTitle || "Caderno";
+                        isNotebook = true;
+                    } else if (Array.isArray(parsed)) {
+                        questions = parsed;
+                    } else {
+                        throw new Error("O arquivo JSON deve ser um array de questões ou um backup do Caderno.");
+                    }
+
+                    if (questions.length === 0) {
+                        throw new Error("O arquivo JSON está vazio.");
                     }
                     
-                    const fileName = currentFile.name.replace(/\.json$/i, '');
-                    saveAndRedirect(parsedQuestions, fileName);
+                    if (isNotebook) {
+                        const notebookState = {
+                            questionsPool: [...questions],
+                            allQuestions: [...questions],
+                            score: 0,
+                            deckTitle: deckTitle
+                        };
+                        localStorage.setItem('flashcardsNotebook', JSON.stringify(notebookState));
+                        localStorage.setItem('flashcardsActiveMode', 'notebook');
+                        window.location.href = ROUTES.GAME;
+                    } else {
+                        localStorage.setItem('flashcardsActiveMode', 'normal');
+                        saveAndRedirect(questions, deckTitle);
+                    }
                 } catch (e) {
                     uploadError.innerHTML = `<img src="assets/img/error.svg" class="w-5 h-5 inline-block mr-1" alt="Erro"> Erro ao ler o arquivo: ${e.message}`;
                 }

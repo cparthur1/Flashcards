@@ -1013,13 +1013,21 @@ downloadDeckBtn.addEventListener('click', () => {
 playDeckBtn.addEventListener('click', () => {
     if (deckCards.length === 0) return;
 
+    const title = deckTitleDisplay.textContent;
     const gameState = {
         questionsPool: [...deckCards],
         allQuestions: [...deckCards],
         score: 0,
-        deckTitle: deckTitleDisplay.textContent
+        deckTitle: title
     };
-    localStorage.setItem('flashcardsSave', JSON.stringify(gameState));
+
+    if (title === "Caderno") {
+        localStorage.setItem('flashcardsNotebook', JSON.stringify(gameState));
+        localStorage.setItem('flashcardsActiveMode', 'notebook');
+    } else {
+        localStorage.setItem('flashcardsSave', JSON.stringify(gameState));
+        localStorage.setItem('flashcardsActiveMode', 'normal');
+    }
 
     window.location.href = 'game.html';
 });

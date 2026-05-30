@@ -4,6 +4,15 @@ import { initTransfer } from './transfer.js';
 
 // --- DOM ELEMENTS ---
 const deckTitle = document.getElementById('deck-title');
+const deckSelectTrigger = document.getElementById('deck-select-trigger');
+const deckSelectDropdown = document.getElementById('deck-select-dropdown');
+const deckSelectArrow = document.getElementById('deck-select-arrow');
+const deckItemNormal = document.getElementById('deck-item-normal');
+const deckItemNormalName = document.getElementById('deck-item-normal-name');
+const deckItemNotebook = document.getElementById('deck-item-notebook');
+const bookmarkCardBtn = document.getElementById('bookmark-card-btn');
+const bookmarkCardIcon = document.getElementById('bookmark-card-icon');
+
 const resetBtn = document.getElementById('reset-btn');
 const exportBtn = document.getElementById('export-btn');
 const gameContainer = document.getElementById('game-container');
@@ -63,6 +72,7 @@ const canvas = document.getElementById('background-canvas');
 const ctx = canvas.getContext('2d');
 
 // --- GAME STATE ---
+let activeMode = 'normal'; // 'normal' or 'notebook'
 let allQuestions = [];
 let questionsPool = [];
 let score = 0;
@@ -178,6 +188,7 @@ function loadQuestion() {
     if (questionsPool.length === 0) {
         questionText.textContent = "Parabéns! Você concluiu todas as questões. Reiniciando...";
         deleteCardBtn.classList.add('hidden');
+        bookmarkCardBtn.classList.add('hidden');
         setTimeout(() => {
             balls = [];
             score = 0;
@@ -189,10 +200,17 @@ function loadQuestion() {
     }
 
     resetUI();
+    bookmarkCardBtn.classList.remove('hidden');
     questionsLeftDisplay.textContent = questionsPool.length;
     currentQuestionIndexInPool = Math.floor(Math.random() * questionsPool.length);
     currentQuestion = questionsPool[currentQuestionIndexInPool];
-    questionText.textContent = currentQuestion.description;
+    renderBookmarkIcon();
+    
+    if (activeMode === 'notebook' && currentQuestion.sourceDeck) {
+        questionText.innerHTML = `<span class="text-xs uppercase tracking-wider text-blue-500 font-bold mb-1.5 block">${currentQuestion.sourceDeck}</span>${currentQuestion.description}`;
+    } else {
+        questionText.textContent = currentQuestion.description;
+    }
 
     openAnswerArea.classList.add('hidden');
     openDoubleAnswerArea.classList.add('hidden');
@@ -382,9 +400,15 @@ function updateFeedbackText() {
 }
 
 function saveGameState() {
-    localStorage.setItem('flashcardsSave', JSON.stringify({
-        questionsPool, allQuestions, score, deckTitle: deckTitle.textContent
-    }));
+    if (activeMode === 'notebook') {
+        localStorage.setItem('flashcardsNotebook', JSON.stringify({
+            questionsPool, allQuestions, score, deckTitle: "Caderno"
+        }));
+    } else {
+        localStorage.setItem('flashcardsSave', JSON.stringify({
+            questionsPool, allQuestions, score, deckTitle: deckTitle.textContent
+        }));
+    }
 }
 
 function updateScoreDisplay() {
@@ -609,11 +633,30 @@ function showTyping() {
 function hideTyping(id) { document.getElementById(id)?.remove(); }
 
 // --- EVENT LISTENERS ---
-resetBtn.addEventListener('click', () => { if (confirm("Sair?")) { localStorage.removeItem('flashcardsSave'); window.location.href = ROUTES.HOME; } });
+resetBtn.addEventListener('click', () => { 
+    if (confirm("Sair?")) { 
+        localStorage.removeItem('flashcardsSave'); 
+        localStorage.removeItem('flashcardsActiveMode');
+        window.location.href = ROUTES.HOME; 
+    } 
+});
 exportBtn.addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify(allQuestions, null, 2)], { type: "application/json" });
+    let exportData;
+    let filename;
+    if (activeMode === 'notebook') {
+        exportData = {
+            __flashcards_watermark__: "notebook_backup_v1",
+            deckTitle: "Caderno",
+            cards: allQuestions
+        };
+        filename = `caderno_backup.json`;
+    } else {
+        exportData = allQuestions;
+        filename = `${deckTitle.textContent}.json`;
+    }
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `${deckTitle.textContent}.json`; a.click();
+    const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
 });
 goToEditorBtn.addEventListener('click', () => {
     localStorage.setItem('editing_deck', JSON.stringify(allQuestions));
@@ -668,23 +711,229 @@ saveEditBtn.addEventListener('click', () => {
 });
 [closeModalBtn, cancelEditBtn].forEach(b => b.addEventListener('click', () => editModal.classList.add('hidden')));
 
+// --- BOOKMARK & DROPDOWN SELECTOR LOGIC ---
+function toggleBookmark() {
+    const isBookmarked = isCardBookmarked(currentQuestion);
+    
+    // Load notebook state
+    let notebookState = JSON.parse(localStorage.getItem('flashcardsNotebook')) || {
+        questionsPool: [], allQuestions: [], score: 0, deckTitle: "Caderno"
+    };
+
+    if (isBookmarked) {
+        // Un-bookmark: Remove from Notebook
+        notebookState.allQuestions = notebookState.allQuestions.filter(q => q.description !== currentQuestion.description);
+        notebookState.questionsPool = notebookState.questionsPool.filter(q => q.description !== currentQuestion.description);
+        
+        // Also un-bookmark in normal deck (if present)
+        let normalData = JSON.parse(localStorage.getItem('flashcardsSave'));
+        if (normalData) {
+            const findAndUnbookmark = (arr) => arr.forEach(q => {
+                if (q.description === currentQuestion.description) q.bookmarked = false;
+            });
+            findAndUnbookmark(normalData.allQuestions);
+            findAndUnbookmark(normalData.questionsPool);
+            localStorage.setItem('flashcardsSave', JSON.stringify(normalData));
+        }
+
+        // Also update the active session's in-memory references if we are in normal mode
+        if (activeMode === 'normal') {
+            currentQuestion.bookmarked = false;
+            const cardInAll = allQuestions.find(q => q.description === currentQuestion.description);
+            if (cardInAll) cardInAll.bookmarked = false;
+        }
+
+        localStorage.setItem('flashcardsNotebook', JSON.stringify(notebookState));
+        showNotificationPill("Card removido do Caderno", "add_bookmark.svg");
+
+        // If we are currently in notebook mode, remove from in-memory and go to next question
+        if (activeMode === 'notebook') {
+            allQuestions = allQuestions.filter(q => q.description !== currentQuestion.description);
+            questionsPool = questionsPool.filter(q => q.description !== currentQuestion.description);
+            loadQuestion();
+            return;
+        }
+    } else {
+        // Bookmark: Add to Notebook
+        currentQuestion.bookmarked = true;
+        
+        const normalData = JSON.parse(localStorage.getItem('flashcardsSave'));
+        const sourceDeckTitle = normalData ? normalData.deckTitle : "Flashcards";
+        currentQuestion.sourceDeck = sourceDeckTitle;
+        
+        // Also mark as bookmarked in normal deck in storage
+        if (normalData) {
+            const findAndBookmark = (arr) => arr.forEach(q => {
+                if (q.description === currentQuestion.description) {
+                    q.bookmarked = true;
+                    q.sourceDeck = sourceDeckTitle;
+                }
+            });
+            findAndBookmark(normalData.allQuestions);
+            findAndBookmark(normalData.questionsPool);
+            localStorage.setItem('flashcardsSave', JSON.stringify(normalData));
+        }
+
+        // Also update current session's in-memory reference
+        const cardInAll = allQuestions.find(q => q.description === currentQuestion.description);
+        if (cardInAll) {
+            cardInAll.bookmarked = true;
+            cardInAll.sourceDeck = sourceDeckTitle;
+        }
+
+        notebookState.allQuestions.push({ ...currentQuestion });
+        notebookState.questionsPool.push({ ...currentQuestion });
+
+        localStorage.setItem('flashcardsNotebook', JSON.stringify(notebookState));
+        showNotificationPill("Card adicionado ao Caderno", "bookmark_check.svg");
+    }
+
+    renderBookmarkIcon();
+}
+
+function isCardBookmarked(question) {
+    if (!question || !question.description) return false;
+    let notebookState = JSON.parse(localStorage.getItem('flashcardsNotebook'));
+    if (!notebookState || !notebookState.allQuestions) return false;
+    return notebookState.allQuestions.some(q => q.description === question.description);
+}
+
+function renderBookmarkIcon() {
+    if (isCardBookmarked(currentQuestion)) {
+        bookmarkCardIcon.src = "../assets/img/bookmark_check.svg";
+    } else {
+        bookmarkCardIcon.src = "../assets/img/add_bookmark.svg";
+    }
+}
+
+function openDeckDropdown() {
+    deckSelectDropdown.classList.remove('hidden');
+    deckSelectArrow.classList.add('rotate-180');
+    
+    const normalData = JSON.parse(localStorage.getItem('flashcardsSave'));
+    const normalTitle = normalData ? normalData.deckTitle : "Flashcards";
+    deckItemNormalName.textContent = normalTitle;
+    
+    if (activeMode === 'notebook') {
+        deckItemNotebook.classList.add('bg-blue-50', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
+        deckItemNormal.classList.remove('bg-blue-50', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
+    } else {
+        deckItemNormal.classList.add('bg-blue-50', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
+        deckItemNotebook.classList.remove('bg-blue-50', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
+    }
+}
+
+function closeDeckDropdown() {
+    deckSelectDropdown?.classList.add('hidden');
+    deckSelectArrow?.classList.remove('rotate-180');
+}
+
+function switchActiveMode(newMode) {
+    saveGameState();
+    
+    activeMode = newMode;
+    localStorage.setItem('flashcardsActiveMode', newMode);
+    
+    const storageKey = newMode === 'notebook' ? 'flashcardsNotebook' : 'flashcardsSave';
+    let data = JSON.parse(localStorage.getItem(storageKey));
+    
+    if (newMode === 'notebook' && (!data || !data.allQuestions)) {
+        data = {
+            allQuestions: [],
+            questionsPool: [],
+            score: 0,
+            deckTitle: "Caderno"
+        };
+        localStorage.setItem('flashcardsNotebook', JSON.stringify(data));
+    }
+    
+    allQuestions = data.allQuestions || [];
+    questionsPool = data.questionsPool || [];
+    score = data.score || 0;
+    deckTitle.textContent = data.deckTitle || (newMode === 'notebook' ? "Caderno" : "Flashcards");
+    document.title = data.deckTitle ? `${data.deckTitle} | Flashcards` : "Estudando Flashcards";
+    
+    balls = [];
+    scoreDisplay.textContent = score;
+    updateScoreDisplay();
+    isFirstQuestion = true;
+    
+    loadQuestion();
+    
+    showNotificationPill(`Estudando: ${deckTitle.textContent}`, newMode === 'notebook' ? "collection.svg" : "uploaded.svg");
+}
+
+// Bind Bookmark & Dropdown Listeners
+bookmarkCardBtn.addEventListener('click', toggleBookmark);
+
+deckSelectTrigger.addEventListener('click', (e) => {
+    const isOpen = !deckSelectDropdown.classList.contains('hidden');
+    if (isOpen) {
+        closeDeckDropdown();
+    } else {
+        openDeckDropdown();
+    }
+    e.stopPropagation();
+});
+
+document.addEventListener('click', () => {
+    closeDeckDropdown();
+});
+
+deckItemNormal.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeDeckDropdown();
+    if (activeMode === 'normal') return;
+    switchActiveMode('normal');
+});
+
+deckItemNotebook.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeDeckDropdown();
+    if (activeMode === 'notebook') return;
+    switchActiveMode('notebook');
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     checkAndResetModelFallback();
     resizeCanvas(); animate();
     
     initTransfer(); // Initialize P2P logic from transfer.js
 
-    const data = JSON.parse(localStorage.getItem('flashcardsSave'));
-    if (!data) window.location.href = ROUTES.HOME;
-    else {
-        allQuestions = data.allQuestions; questionsPool = data.questionsPool;
-        score = data.score;
-        deckTitle.textContent = data.deckTitle || "Flashcards";
-        document.title = data.deckTitle ? `${data.deckTitle} | Flashcards` : "Estudando Flashcards";
-        scoreDisplay.textContent = score; 
-        updateScoreDisplay();
-        loadQuestion(); 
-        initializeAi();
+    activeMode = localStorage.getItem('flashcardsActiveMode') || 'normal';
+
+    const saveState = localStorage.getItem('flashcardsSave');
+    const notebookState = localStorage.getItem('flashcardsNotebook');
+
+    if (!saveState && !notebookState) {
+        window.location.href = ROUTES.HOME;
+        return;
     }
+
+    const storageKey = activeMode === 'notebook' ? 'flashcardsNotebook' : 'flashcardsSave';
+    let data = JSON.parse(localStorage.getItem(storageKey));
+
+    if (!data) {
+        activeMode = activeMode === 'notebook' ? 'normal' : 'notebook';
+        localStorage.setItem('flashcardsActiveMode', activeMode);
+        const fallbackKey = activeMode === 'notebook' ? 'flashcardsNotebook' : 'flashcardsSave';
+        data = JSON.parse(localStorage.getItem(fallbackKey));
+    }
+
+    allQuestions = data.allQuestions || [];
+    questionsPool = data.questionsPool || [];
+    score = data.score || 0;
+    deckTitle.textContent = data.deckTitle || (activeMode === 'notebook' ? "Caderno" : "Flashcards");
+    document.title = data.deckTitle ? `${data.deckTitle} | Flashcards` : "Estudando Flashcards";
+    scoreDisplay.textContent = score; 
+    
+    const normalData = JSON.parse(localStorage.getItem('flashcardsSave'));
+    if (normalData && deckItemNormalName) {
+        deckItemNormalName.textContent = normalData.deckTitle || "Flashcards";
+    }
+
+    updateScoreDisplay();
+    loadQuestion(); 
+    initializeAi();
 });
 window.addEventListener('resize', resizeCanvas);
