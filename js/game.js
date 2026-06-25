@@ -583,13 +583,83 @@ async function sendChatMessage() {
     }
 }
 
+function renderMathAndMarkdown(text) {
+    const mathBlocks = [];
+    
+    // 1. Temporarily extract block math ($$...$$)
+    let placeholderText = text.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
+        const placeholder = `%%BLOCK_MATH_${mathBlocks.length}%%`;
+        mathBlocks.push({
+            type: 'block',
+            text: math
+        });
+        return placeholder;
+    });
+
+    // 2. Temporarily extract inline math ($...$)
+    placeholderText = placeholderText.replace(/\$(?!\s)((?:\\\$|[^\$])+?)(?<!\s)\$/g, (match, math) => {
+        const placeholder = `%%INLINE_MATH_${mathBlocks.length}%%`;
+        mathBlocks.push({
+            type: 'inline',
+            text: math
+        });
+        return placeholder;
+    });
+
+    // 3. Parse Markdown
+    let html = typeof marked !== 'undefined' ? marked.parse(placeholderText) : placeholderText;
+
+    // 4. Extract code blocks from HTML to prevent rendering math inside them
+    const codeBlocks = [];
+    html = html.replace(/<code[\s\S]*?<\/code>/gi, (match) => {
+        const placeholder = `%%CODE_BLOCK_${codeBlocks.length}%%`;
+        codeBlocks.push(match);
+        return placeholder;
+    });
+
+    // 5. Restore math blocks and render them with KaTeX
+    if (typeof katex !== 'undefined') {
+        html = html.replace(/%%(BLOCK|INLINE)_MATH_(\d+)%%/g, (match, type, index) => {
+            const mathItem = mathBlocks[parseInt(index, 10)];
+            try {
+                return katex.renderToString(mathItem.text, {
+                    displayMode: type === 'BLOCK',
+                    throwOnError: false
+                });
+            } catch (err) {
+                console.error("KaTeX error:", err);
+                return match;
+            }
+        });
+    } else {
+        // Fallback: restore raw math text
+        html = html.replace(/%%(BLOCK|INLINE)_MATH_(\d+)%%/g, (match, type, index) => {
+            const mathItem = mathBlocks[parseInt(index, 10)];
+            return type === 'BLOCK' ? `$$${mathItem.text}$$` : `$${mathItem.text}$`;
+        });
+    }
+
+    // 6. Restore code blocks
+    html = html.replace(/%%CODE_BLOCK_(\d+)%%/g, (match, index) => {
+        return codeBlocks[parseInt(index, 10)];
+    });
+
+    // 7. Restore any remaining math placeholders (which were inside code blocks)
+    html = html.replace(/%%(BLOCK|INLINE)_MATH_(\d+)%%/g, (match, type, index) => {
+        const mathItem = mathBlocks[parseInt(index, 10)];
+        return type === 'BLOCK' ? `$$${mathItem.text}$$` : `$${mathItem.text}$`;
+    });
+
+    return html;
+}
+
 function addMsg(sender, text) {
     const div = document.createElement('div');
     div.className = sender === 'ai' ? 'chat-message-ai' : 'chat-message-user';
 
     if (sender === 'ai' && typeof marked !== 'undefined') {
-        // AI content is parsed as markdown
-        div.innerHTML = marked.parse(text);
+        // AI content is parsed as markdown with math rendering
+        div.innerHTML = renderMathAndMarkdown(text);
     } else {
         // User content is strictly plain text to prevent XSS
         div.textContent = text;
@@ -915,3 +985,4 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeAi();
 });
 window.addEventListener('resize', resizeCanvas);
+window.addMsg = addMsg;
