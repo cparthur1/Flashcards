@@ -496,6 +496,7 @@ Gere aproximadamente 100 flashcards.`;
         if (!hasGeminiTag) {
             deckCards = localCards;
             renderCardsList(true);
+            deckTitleDisplay.value = txtUpload.files[0].name.replace(/\.[^/.]+$/, "");
             deckContainer.classList.remove('generating-deck-bg');
             deckContainer.classList.add('bg-white', 'dark:bg-gray-800');
             generateTxtBtn.disabled = false;
@@ -511,7 +512,7 @@ Gere aproximadamente 100 flashcards.`;
 
         // Fill placeholders with Gemini
         txtLoadingMsg.innerHTML = '<img src="../assets/img/hourglass.svg" class="w-4 h-4 inline-block mr-1" alt="Ampulheta"> Gemini preenchendo lacunas...';
-        deckTitleDisplay.textContent = "Completando informações com IA...";
+        deckTitleDisplay.value = "Completando informações com IA...";
 
         model = genAI.getGenerativeModel({
             model: "gemini-flash-latest", // Geração inicial SEMPRE flash-latest
@@ -559,6 +560,7 @@ ${JSON.stringify(localCards, null, 2)}`;
             // After completion, finalize UI
             deckContainer.classList.remove('generating-deck-bg');
             deckContainer.classList.add('bg-white', 'dark:bg-gray-800');
+            deckTitleDisplay.value = txtUpload.files[0].name.replace(/\.[^/.]+$/, "");
 
             // Initialize chat for subsequent edits
             geminiChatSession = model.startChat({ history: [] });
@@ -589,7 +591,7 @@ ${JSON.stringify(localCards, null, 2)}`;
 
         deckCards = [];
         renderCardsList();
-        deckTitleDisplay.textContent = "Gerando flashcards... (Isso pode levar alguns minutos)";
+        deckTitleDisplay.value = "Gerando flashcards... (Isso pode levar alguns minutos)";
 
         const result = await callWithRetry(() => model.generateContentStream(parts));
         let fullText = "";
@@ -653,13 +655,12 @@ ${JSON.stringify(localCards, null, 2)}`;
             }
         }
 
-        if (deckCards.length > 0 && (deckTitleDisplay.textContent === "Gerando flashcards..." || deckTitleDisplay.textContent === "Gerando título...")) {
-            // Title should already be generating or done
-        }
-
         deckContainer.classList.remove('generating-deck-bg');
         deckContainer.classList.add('bg-white', 'dark:bg-gray-800');
         cardsList.classList.remove('bg-transparent');
+
+        const defaultTitle = filesUpload.files[0] ? filesUpload.files[0].name.replace(/\.[^/.]+$/, "") : "Meu Baralho";
+        deckTitleDisplay.value = defaultTitle;
 
         // Start chat session with Agent context and separate generation config (no JSON constraint)
         const chatGenerationConfig = {
@@ -673,10 +674,6 @@ ${JSON.stringify(localCards, null, 2)}`;
             history: [],
             generationConfig: chatGenerationConfig
         });
-
-        // Trigger title generation at the end using the actual generated content
-        const deckAsText = deckCards.map(c => `P: ${c.description}\nR: ${c.answer}`).join('\n\n');
-        generateDeckTitle(deckAsText, genAI);
 
     } catch (error) {
         console.error(error);
@@ -708,32 +705,6 @@ ${JSON.stringify(localCards, null, 2)}`;
 
 generateFilesBtn.addEventListener('click', () => generateFlashcards('files'));
 generateTxtBtn.addEventListener('click', () => generateFlashcards('txt'));
-
-async function generateDeckTitle(deckText, genAI) {
-    if (!deckText || !genAI) return;
-
-    deckTitleDisplay.textContent = "Gerando título...";
-
-    try {
-        const liteModel = genAI.getGenerativeModel({ model: "gemini-flash-lite-latest" });
-        const titlePrompt = "Com base nos flashcards abaixo, sugira um título curto, criativo e profissional para este baralho (máximo de 4 palavras). Retorne APENAS o título, sem aspas ou pontuação extra.\n\nCONTEÚDO:\n" + deckText;
-
-        const result = await callWithRetry(() => liteModel.generateContent(titlePrompt));
-        const response = await result.response;
-        const title = response.text().trim().replace(/["']/g, '');
-
-        if (title) {
-            deckTitleDisplay.textContent = title;
-            document.title = `${title} | Gerador`;
-        } else {
-            deckTitleDisplay.textContent = "Meu Baralho";
-            document.title = "Meu Baralho | Gerador";
-        }
-    } catch (e) {
-        console.error("Erro ao gerar título:", e);
-        deckTitleDisplay.textContent = "Meu Baralho";
-    }
-}
 
 // Render Cards List
 function renderCardsList(fullReRender = false) {
@@ -1001,7 +972,7 @@ downloadDeckBtn.addEventListener('click', () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    const safeTitle = deckTitleDisplay.textContent.trim().replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const safeTitle = deckTitleDisplay.value.trim().replace(/[^a-z0-9]/gi, '_').toLowerCase();
     a.download = `${safeTitle || 'flashcards'}.json`;
     document.body.appendChild(a);
     a.click();
@@ -1013,7 +984,7 @@ downloadDeckBtn.addEventListener('click', () => {
 playDeckBtn.addEventListener('click', () => {
     if (deckCards.length === 0) return;
 
-    const title = deckTitleDisplay.textContent;
+    const title = deckTitleDisplay.value;
     const gameState = {
         questionsPool: [...deckCards],
         allQuestions: [...deckCards],
@@ -1035,7 +1006,7 @@ playDeckBtn.addEventListener('click', () => {
 // Start from Scratch
 startScratchBtn.addEventListener('click', () => {
     deckCards = [];
-    deckTitleDisplay.textContent = "Novo Baralho";
+    deckTitleDisplay.value = "Novo Baralho";
     renderCardsList(true);
     dashboardView.classList.add('hidden');
     editorView.classList.remove('hidden');
@@ -1053,7 +1024,7 @@ window.addEventListener('DOMContentLoaded', () => {
         try {
             deckCards = JSON.parse(savedDeck);
             const displayTitle = savedTitle || "Flashcards";
-            deckTitleDisplay.textContent = displayTitle;
+            deckTitleDisplay.value = displayTitle;
             document.title = `${displayTitle} | Gerador`;
 
             // Switch view

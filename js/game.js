@@ -88,7 +88,7 @@ let geminiApiKey = sessionStorage.getItem('gemini_api_key') || '';
 let genAI = null;
 let lastUserAnswerForChat = "";
 let currentChatSession = null;
-let currentChatModel = localStorage.getItem('model_fallback_active') === 'true' ? "gemini-flash-lite-latest" : "gemini-flash-latest";
+let currentChatModel = "gemini-flash-lite-latest";
 let ai503ErrorCount = 0;
 let lastLatencyNotificationTime = 0;
 
@@ -575,34 +575,12 @@ async function sendChatMessage() {
     } catch (e) {
         console.error(e);
         hideTyping(tid);
-        if ((e.message.includes("429") || e.message.includes("quota")) && currentChatModel === "gemini-flash-latest") {
-            handleChatQuotaError();
+        if (e.message.includes("429") || e.message.includes("quota")) {
+            addMsg('ai', "Erro de cota excedida na API do Gemini. Por favor, tente novamente mais tarde.");
         } else {
             addMsg('ai', "Erro ao conectar com a IA.");
         }
     }
-}
-
-function handleChatQuotaError() {
-    const div = document.createElement('div');
-    div.className = 'chat-message-ai border-2 border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/10 p-3';
-    div.innerHTML = `
-        <p class="text-xs text-red-600 dark:text-red-400 mb-2 flex items-center gap-2">
-            <img src="../assets/img/cloud_alert.svg" class="w-5 h-5" alt="Alerta"> Quota Excedida: Você excedeu o limite de uso do Gemini Flash para sua API gratuita.
-        </p>
-        <button id="switch-to-lite-chat-btn" class="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-[10px] uppercase tracking-wider transition">
-            Continuar com IA menor
-        </button>
-    `;
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-
-    document.getElementById('switch-to-lite-chat-btn').addEventListener('click', (e) => {
-        localStorage.setItem('model_fallback_active', 'true');
-        currentChatModel = "gemini-flash-lite-latest";
-        currentChatSession = null;
-        e.target.parentElement.innerHTML = "IA alterada para Lite. Você já pode reenviar sua dúvida.";
-    });
 }
 
 function addMsg(sender, text) {
