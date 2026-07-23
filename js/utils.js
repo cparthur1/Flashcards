@@ -95,3 +95,48 @@ export function checkAndResetModelFallback() {
         console.log("AI Model fallback reset for the new day.");
     }
 }
+
+// --- FETCH INTERCEPTOR FOR GEMINI API ROLE FIX ---
+// Fixes GoogleGenerativeAI SDK sending deprecated role 'function' instead of 'user' for function responses
+if (typeof window !== 'undefined' && window.fetch) {
+    const originalFetch = window.fetch;
+    window.fetch = async function (resource, options) {
+        if (options && options.body && typeof options.body === 'string') {
+            const url = typeof resource === 'string' ? resource : (resource && resource.url) ? resource.url : '';
+            if (url.includes('generativelanguage.googleapis.com')) {
+                try {
+                    const body = JSON.parse(options.body);
+                    if (body.contents && Array.isArray(body.contents)) {
+                        let modified = false;
+                        for (const content of body.contents) {
+                            if (content.role === 'function') {
+                                content.role = 'user';
+                                modified = true;
+                            }
+                        }
+                        if (modified) {
+                            options = { ...options, body: JSON.stringify(body) };
+                        }
+                    }
+                } catch (e) {
+                    // Ignore JSON parsing errors
+                }
+            }
+        }
+        return originalFetch.call(this, resource, options);
+    };
+}
+
+/**
+ * Ensures all history items in a Gemini ChatSession use valid roles ('user' instead of 'function').
+ */
+export function sanitizeChatHistory(chatSession) {
+    if (chatSession && Array.isArray(chatSession._history)) {
+        chatSession._history.forEach(item => {
+            if (item.role === 'function') {
+                item.role = 'user';
+            }
+        });
+    }
+}
+

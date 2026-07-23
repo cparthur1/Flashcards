@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { callWithRetry, checkAndResetModelFallback } from './utils.js';
+import { callWithRetry, checkAndResetModelFallback, sanitizeChatHistory } from './utils.js';
 
 function compressPDFWithWorker(file) {
     return new Promise((resolve, reject) => {
@@ -554,6 +554,7 @@ ${JSON.stringify(localCards, null, 2)}`;
                 }));
 
                 result = await callWithRetry(() => chat.sendMessage(functionResponses));
+                sanitizeChatHistory(chat);
                 response = result.response;
             }
 
@@ -918,6 +919,7 @@ chatSendBtn.addEventListener('click', async () => {
 
             // Send tool outputs back
             result = await callWithRetry(() => geminiChatSession.sendMessage(functionResponses));
+            sanitizeChatHistory(geminiChatSession);
             response = result.response;
         }
 
