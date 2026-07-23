@@ -12,6 +12,7 @@ const ASSETS_TO_CACHE = [
   '/js/config.js',
   '/js/pdf-worker.js',
   '/manifest.json',
+  '/favicon.png',
   '/assets/img/favicon.png'
 ];
 
