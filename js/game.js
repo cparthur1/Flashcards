@@ -456,38 +456,42 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
     try {
         const model = genAI.getGenerativeModel({
             model: "gemini-flash-lite-latest",
-            tools: [{
-                functionDeclarations: [{
-                    name: "marcar_como_correto",
-                    description: "Marca a resposta do usuário como correta se ela for semanticamente igual à resposta esperada, ignorando erros de digitação ou pequenas omissões.",
-                    parameters: {
-                        type: "OBJECT",
-                        properties: {
-                            justificativa: { type: "STRING", description: "Breve explicação do porquê a resposta foi aceita." }
+            generationConfig: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: "OBJECT",
+                    properties: {
+                        correto: {
+                            type: "BOOLEAN",
+                            description: "true se a resposta do usuário for semanticamente correta ou variação aceitável, false se estiver incorreta ou contiver erros factuais."
                         },
-                        required: ["justificativa"]
-                    }
-                }]
-            }]
+                        justificativa: {
+                            type: "STRING",
+                            description: "Breve explicação do porquê a resposta foi considerada correta ou incorreta."
+                        }
+                    },
+                    required: ["correto", "justificativa"]
+                }
+            }
         });
 
         const expected = [questionObj.answer, questionObj.answer2].filter(Boolean).join(' / ');
 
         const prompt = `
-            Você é um revisor de flashcards. 
-            O usuário deu uma resposta que o sistema automático marcou como incorreta, mas você deve avaliar se ela é semanticamente válida ou uma variação aceitável (como abreviações, sinônimos ou partes fundamentais da resposta) de forma bem rigorosa.
+            Você é um revisor de flashcards acadêmicos rigoroso. 
+            O sistema automático marcou a resposta do usuário como incorreta. Avalie se a resposta digitada é semanticamente válida ou uma variação aceitável em relação à resposta esperada.
 
             Pergunta: "${questionObj.description}"
             Resposta(s) Esperada(s) no Banco: "${expected}"
             Resposta Digitada pelo Usuário: "${actualAnswer}"
 
             DIRETRIZES DE AVALIAÇÃO:
-            1. Se o usuário digitou uma parte fundamental da resposta que é suficiente para demonstrar conhecimento (ex: "Braquial" para "Músculo braquial"), considere CORRETO, seja rígido nesse critério.
-            2. Se o usuário usou um sinônimo exato ou termo equivalente, aceito pela comunidade acadêmica, considere CORRETO.
-            3. Se uma questão tiver 2 respostas, ambas devem estar corretas.
-            4. Se a resposta for apenas uma descrição vaga, sobre outra estrutura que não a perguntada, confusa ou estiver errada, NÃO chame a função 'marcar_como_correto'.
+            1. Se o usuário usou um sinônimo exato, termo equivalente aceito pela comunidade acadêmica ou abreviação padrão, considere CORRETO (correto: true).
+            2. Se o usuário digitou uma parte fundamental suficiente para demonstrar conhecimento técnico exato (ex: "Braquial" para "Músculo braquial"), considere CORRETO (correto: true).
+            3. Se a questão pedir múltiplos valores, durações ou sequências (ex: em ordem ou 'respectivamente'), TODOS os valores/sequências devem estar corretos. Se qualquer valor numérico ou duração estiver incorreto (ex: 50 ms em vez de 40 ms, ou números errados na sequência), considere INCORRETO (correto: false).
+            4. Se a resposta contiver erros factuais, dados numéricos incorretos, for vaga ou sobre outra estrutura, considere INCORRETO (correto: false).
 
-            Se a resposta for semanticamente equivalente ou uma variação aceitável, baseado nos critérios, mantendo a especificidade e falando da mesma estrutura da resposta original, chame a função 'marcar_como_correto'.
+            Retorne um JSON com 'correto' (boolean) e 'justificativa' (string).
         `;
 
         const startTime = Date.now();
@@ -505,10 +509,17 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
             }
         }
 
-        const calls = result.response.candidates[0].content.parts.filter(p => !!p.functionCall);
+        const responseText = result.response.text();
+        let evalData = null;
+        try {
+            evalData = JSON.parse(responseText);
+        } catch (parseErr) {
+            console.error("Erro ao analisar JSON da avaliação IA:", parseErr, responseText);
+            return;
+        }
 
-        if (calls.length > 0 && calls[0].functionCall.name === 'marcar_como_correto') {
-            console.log("Agente corrigiu a resposta:", calls[0].functionCall.args.justificativa);
+        if (evalData && evalData.correto) {
+            console.log("Agente corrigiu a resposta (ACEITA):", evalData.justificativa);
 
             // Sucesso! A IA corrigiu o erro.
             balls[ballIdx].color = 'rgba(250, 204, 21, 0.8)'; // Amarelo/Dourado para correção IA
@@ -531,6 +542,8 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
                 // Se o usuário já passou de fase, apenas atualizamos o contador visual
                 questionsLeftDisplay.textContent = questionsPool.length;
             }
+        } else if (evalData) {
+            console.log("Agente manteve a resposta como incorreta (REJEITADA):", evalData.justificativa);
         }
     } catch (e) {
         console.error("Erro na correção IA:", e);
