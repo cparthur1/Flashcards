@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { normalizeString, calculateSimilarity, shuffleArray, callWithRetry, checkAndResetModelFallback, ROUTES } from './utils.js';
+import { normalizeString, calculateSimilarity, shuffleArray, callWithRetry, checkAndResetModelFallback, compressImageFile, ROUTES } from './utils.js';
 import { initTransfer } from './transfer.js';
 
 // --- DOM ELEMENTS ---
@@ -23,6 +23,8 @@ const scoreDisplay = document.getElementById('score');
 const questionsLeftDisplay = document.getElementById('questions-left');
 const questionCard = document.getElementById('question-card');
 const deleteCardBtn = document.getElementById('delete-card-btn');
+const questionImageContainer = document.getElementById('question-image-container');
+const questionImage = document.getElementById('question-image');
 
 const correctionOptions = document.getElementById('correction-options');
 const editBtn = document.getElementById('edit-btn');
@@ -33,9 +35,18 @@ const editQuestionInput = document.getElementById('edit-question-input');
 const editAnswerInput = document.getElementById('edit-answer-input');
 const editAnswer2Group = document.getElementById('edit-answer-2-group');
 const editAnswer2Input = document.getElementById('edit-answer-2-input');
+const editImagePreviewContainer = document.getElementById('edit-image-preview-container');
+const editImagePreview = document.getElementById('edit-image-preview');
+const editRemoveImageBtn = document.getElementById('edit-remove-image-btn');
+const editImageFileInput = document.getElementById('edit-image-file-input');
+const editImageUrlInput = document.getElementById('edit-image-url-input');
 const closeModalBtn = document.getElementById('close-modal-btn');
 const cancelEditBtn = document.getElementById('cancel-edit-btn');
 const saveEditBtn = document.getElementById('save-edit-btn');
+
+const imageZoomModal = document.getElementById('image-zoom-modal');
+const zoomedImage = document.getElementById('zoomed-image');
+const closeImageZoomBtn = document.getElementById('close-image-zoom-btn');
 
 const openAnswerArea = document.getElementById('open-answer-area');
 const answerInput = document.getElementById('answer-input');
@@ -210,6 +221,14 @@ function loadQuestion() {
         questionText.innerHTML = `<span class="text-xs uppercase tracking-wider text-blue-500 font-bold mb-1.5 block">${currentQuestion.sourceDeck}</span>${currentQuestion.description}`;
     } else {
         questionText.textContent = currentQuestion.description;
+    }
+
+    if (currentQuestion.image && questionImage && questionImageContainer) {
+        questionImage.src = currentQuestion.image;
+        questionImageContainer.classList.remove('hidden');
+    } else if (questionImageContainer) {
+        questionImageContainer.classList.add('hidden');
+        questionImage.src = '';
     }
 
     openAnswerArea.classList.add('hidden');
@@ -757,18 +776,99 @@ const handleDelete = () => {
 deleteCardBtn.addEventListener('click', handleDelete);
 deleteCorrectionBtn.addEventListener('click', handleDelete);
 
+// --- IMAGE LIGHTBOX ZOOM ---
+if (questionImage && imageZoomModal && zoomedImage) {
+    questionImage.addEventListener('click', () => {
+        if (questionImage.src) {
+            zoomedImage.src = questionImage.src;
+            imageZoomModal.classList.remove('hidden');
+        }
+    });
+}
+if (closeImageZoomBtn && imageZoomModal) {
+    closeImageZoomBtn.addEventListener('click', () => {
+        imageZoomModal.classList.add('hidden');
+    });
+}
+if (imageZoomModal) {
+    imageZoomModal.addEventListener('click', (e) => {
+        if (e.target === imageZoomModal) {
+            imageZoomModal.classList.add('hidden');
+        }
+    });
+}
+
+// --- EDIT MODAL IMAGE HANDLING ---
+let pendingEditImage = '';
+
+function updateEditImagePreviewUI(imgSrc) {
+    if (imgSrc && editImagePreview && editImagePreviewContainer) {
+        editImagePreview.src = imgSrc;
+        editImagePreviewContainer.classList.remove('hidden');
+    } else if (editImagePreviewContainer) {
+        if (editImagePreview) editImagePreview.src = '';
+        editImagePreviewContainer.classList.add('hidden');
+    }
+}
+
+if (editImageFileInput) {
+    editImageFileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            try {
+                pendingEditImage = await compressImageFile(file);
+                updateEditImagePreviewUI(pendingEditImage);
+            } catch (err) {
+                console.error('Erro ao comprimir imagem:', err);
+            }
+        }
+    });
+}
+
+if (editImageUrlInput) {
+    editImageUrlInput.addEventListener('input', (e) => {
+        const url = e.target.value.trim();
+        if (url) {
+            pendingEditImage = url;
+            updateEditImagePreviewUI(pendingEditImage);
+        }
+    });
+}
+
+if (editRemoveImageBtn) {
+    editRemoveImageBtn.addEventListener('click', () => {
+        pendingEditImage = '';
+        if (editImageFileInput) editImageFileInput.value = '';
+        if (editImageUrlInput) editImageUrlInput.value = '';
+        updateEditImagePreviewUI('');
+    });
+}
+
 editBtn.addEventListener('click', () => {
     editQuestionInput.value = currentQuestion.description;
     editAnswerInput.value = currentQuestion.answer;
     editAnswer2Group.classList.toggle('hidden', currentQuestion.type !== 'open_double');
     editAnswer2Input.value = currentQuestion.answer2 || '';
+
+    pendingEditImage = currentQuestion.image || '';
+    if (editImageFileInput) editImageFileInput.value = '';
+    if (editImageUrlInput) editImageUrlInput.value = '';
+    updateEditImagePreviewUI(pendingEditImage);
+
     editModal.classList.remove('hidden');
 });
 saveEditBtn.addEventListener('click', () => {
     currentQuestion.description = editQuestionInput.value;
     currentQuestion.answer = editAnswerInput.value;
     if (currentQuestion.type === 'open_double') currentQuestion.answer2 = editAnswer2Input.value;
-    saveGameState(); editModal.classList.add('hidden'); updateFeedbackText();
+    
+    if (pendingEditImage) {
+        currentQuestion.image = pendingEditImage;
+    } else {
+        delete currentQuestion.image;
+    }
+
+    saveGameState(); editModal.classList.add('hidden'); updateFeedbackText(); loadQuestion();
 });
 [closeModalBtn, cancelEditBtn].forEach(b => b.addEventListener('click', () => editModal.classList.add('hidden')));
 

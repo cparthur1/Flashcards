@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { callWithRetry, checkAndResetModelFallback, sanitizeChatHistory } from './utils.js';
+import { callWithRetry, checkAndResetModelFallback, sanitizeChatHistory, compressImageFile } from './utils.js';
 
 function compressPDFWithWorker(file) {
     return new Promise((resolve, reject) => {
@@ -65,6 +65,11 @@ const editCardDesc = document.getElementById('edit-card-desc');
 const editCardAns1 = document.getElementById('edit-card-ans1');
 const editCardAns2 = document.getElementById('edit-card-ans2');
 const editCardAns2Group = document.getElementById('edit-card-ans2-group');
+const inlineEditImagePreviewContainer = document.getElementById('inline-edit-image-preview-container');
+const inlineEditImagePreview = document.getElementById('inline-edit-image-preview');
+const inlineEditRemoveImageBtn = document.getElementById('inline-edit-remove-image-btn');
+const inlineEditImageFile = document.getElementById('inline-edit-image-file');
+const inlineEditImageUrl = document.getElementById('inline-edit-image-url');
 
 // Instructions Modal
 const instructionsModal = document.getElementById('instructions-modal');
@@ -98,7 +103,8 @@ const deckTools = [
                         description: { type: "STRING", description: "Pergunta ou descrição" },
                         answer: { type: "STRING", description: "Resposta principal" },
                         answer2: { type: "STRING", description: "Resposta secundária (apenas para open_double)" },
-                        options: { type: "ARRAY", items: { type: "STRING" }, description: "Opções (apenas para multiple_choice)" }
+                        options: { type: "ARRAY", items: { type: "STRING" }, description: "Opções (apenas para multiple_choice)" },
+                        image: { type: "STRING", description: "URL ou Base64 da imagem (opcional)" }
                     },
                     required: ["type", "description", "answer"]
                 }
@@ -113,7 +119,8 @@ const deckTools = [
                         description: { type: "STRING" },
                         answer: { type: "STRING" },
                         answer2: { type: "STRING" },
-                        options: { type: "ARRAY", items: { type: "STRING" } }
+                        options: { type: "ARRAY", items: { type: "STRING" } },
+                        image: { type: "STRING", description: "URL ou Base64 da imagem (opcional)" }
                     },
                     required: ["index"]
                 }
@@ -160,7 +167,8 @@ const deckTools = [
                                     description: { type: "STRING" },
                                     answer: { type: "STRING" },
                                     answer2: { type: "STRING" },
-                                    options: { type: "ARRAY", items: { type: "STRING" } }
+                                    options: { type: "ARRAY", items: { type: "STRING" } },
+                                    image: { type: "STRING", description: "URL ou Base64 da imagem (opcional)" }
                                 },
                                 required: ["type", "description", "answer"]
                             }
@@ -744,6 +752,13 @@ function createCardElement(card, index) {
     textCont.innerHTML = `<p class="mb-1 text-sm mt-3">${descStr}</p><p class="text-sm">${ansStr}</p>`;
     cardEl.appendChild(textCont);
 
+    if (card.image) {
+        const imgDiv = document.createElement('div');
+        imgDiv.className = "w-full max-h-32 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center justify-center p-1 mt-1";
+        imgDiv.innerHTML = `<img src="${card.image}" alt="Imagem" class="max-h-28 w-auto object-contain rounded">`;
+        cardEl.appendChild(imgDiv);
+    }
+
     // Actions (Edit, Delete)
     const actionsDiv = document.createElement('div');
     actionsDiv.className = "absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity";
@@ -775,6 +790,52 @@ addCardBtn.addEventListener('click', () => {
     openEditModal(-1);
 });
 
+// Inline Edit Modal Image Handling
+let pendingInlineEditImage = '';
+
+function updateInlineEditImagePreviewUI(imgSrc) {
+    if (imgSrc && inlineEditImagePreview && inlineEditImagePreviewContainer) {
+        inlineEditImagePreview.src = imgSrc;
+        inlineEditImagePreviewContainer.classList.remove('hidden');
+    } else if (inlineEditImagePreviewContainer) {
+        if (inlineEditImagePreview) inlineEditImagePreview.src = '';
+        inlineEditImagePreviewContainer.classList.add('hidden');
+    }
+}
+
+if (inlineEditImageFile) {
+    inlineEditImageFile.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            try {
+                pendingInlineEditImage = await compressImageFile(file);
+                updateInlineEditImagePreviewUI(pendingInlineEditImage);
+            } catch (err) {
+                console.error('Erro ao comprimir imagem:', err);
+            }
+        }
+    });
+}
+
+if (inlineEditImageUrl) {
+    inlineEditImageUrl.addEventListener('input', (e) => {
+        const url = e.target.value.trim();
+        if (url) {
+            pendingInlineEditImage = url;
+            updateInlineEditImagePreviewUI(pendingInlineEditImage);
+        }
+    });
+}
+
+if (inlineEditRemoveImageBtn) {
+    inlineEditRemoveImageBtn.addEventListener('click', () => {
+        pendingInlineEditImage = '';
+        if (inlineEditImageFile) inlineEditImageFile.value = '';
+        if (inlineEditImageUrl) inlineEditImageUrl.value = '';
+        updateInlineEditImagePreviewUI('');
+    });
+}
+
 // Edit Modal Handlers
 function openEditModal(index) {
     if (index === -1) {
@@ -799,6 +860,11 @@ function openEditModal(index) {
         }
     }
 
+    pendingInlineEditImage = index === -1 ? '' : (deckCards[index].image || '');
+    if (inlineEditImageFile) inlineEditImageFile.value = '';
+    if (inlineEditImageUrl) inlineEditImageUrl.value = '';
+    updateInlineEditImagePreviewUI(pendingInlineEditImage);
+
     editModal.classList.remove('hidden');
 }
 
@@ -819,6 +885,7 @@ saveEditBtn.addEventListener('click', () => {
     if (i === -1) {
         // Add new card (default to 'open' type for manual addition)
         newCardData.type = 'open';
+        if (pendingInlineEditImage) newCardData.image = pendingInlineEditImage;
         deckCards.push(newCardData);
     } else {
         // Update existing card
@@ -826,6 +893,11 @@ saveEditBtn.addEventListener('click', () => {
         deckCards[i].answer = newCardData.answer;
         if (deckCards[i].type === 'open_double') {
             deckCards[i].answer2 = editCardAns2.value;
+        }
+        if (pendingInlineEditImage) {
+            deckCards[i].image = pendingInlineEditImage;
+        } else {
+            delete deckCards[i].image;
         }
     }
 

@@ -166,6 +166,11 @@
                     <line x1="14" y1="11" x2="14" y2="17"></line>
                 </svg>
             </button>
+            <!-- Image Display Area -->
+            <div id="question-image-container" class="hidden mb-4 w-full flex justify-center">
+                <img id="question-image" src="" alt="Imagem do Flashcard"
+                    class="max-h-64 sm:max-h-80 w-auto rounded-xl shadow-md border border-gray-200 dark:border-gray-600 card-img-zoomable object-contain">
+            </div>
             <p id="question-text" class="text-center text-lg font-medium text-gray-700 dark:text-gray-300"></p>
         </div>
 
@@ -262,6 +267,21 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Resposta 2</label>
                     <input type="text" id="edit-answer-2-input"
                         class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Imagem (Opcional)</label>
+                    <div class="space-y-2">
+                        <div id="edit-image-preview-container" class="hidden relative group w-full max-h-48 overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-2">
+                            <img id="edit-image-preview" src="" alt="Preview" class="max-h-40 w-auto object-contain rounded">
+                            <button type="button" id="edit-remove-image-btn" class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-full shadow transition" title="Remover Imagem">
+                                <img src="../assets/img/close.svg" class="w-4 h-4 invert" alt="Remover">
+                            </button>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input type="file" id="edit-image-file-input" accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/40 dark:file:text-blue-300 cursor-pointer">
+                            <input type="text" id="edit-image-url-input" placeholder="ou cole a URL da imagem..." class="w-full p-2 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white">
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -484,6 +504,16 @@
                 class="text-[10px] font-mono bg-gray-100 dark:bg-gray-800 p-4 rounded-lg w-full max-w-xs text-left overflow-y-auto max-h-32 opacity-70">
                 > Conectando ao servidor de dados...
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE ZOOM DE IMAGEM (LIGHTBOX) -->
+    <div id="image-zoom-modal" class="hidden fixed inset-0 modal-overlay z-[100] flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
+            <button id="close-image-zoom-btn" class="absolute -top-10 right-0 text-white hover:text-gray-300 p-2">
+                <img src="../assets/img/close.svg" class="w-8 h-8 invert" alt="Fechar">
+            </button>
+            <img id="zoomed-image" src="" alt="Imagem Ampliada" class="lightbox-content bg-white dark:bg-gray-800">
         </div>
     </div>
 

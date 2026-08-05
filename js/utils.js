@@ -140,3 +140,69 @@ export function sanitizeChatHistory(chatSession) {
     }
 }
 
+/**
+ * Compresses an image file or Data URL to a maximum dimension and returns a JPEG Data URL.
+ * @param {File|Blob|string} imageInput - File, Blob, or URL string
+ * @param {number} maxDimension - Max width or height in pixels (default 800)
+ * @param {number} quality - Compression quality 0.0 to 1.0 (default 0.85)
+ * @returns {Promise<string>} Base64 Data URL
+ */
+export function compressImageFile(imageInput, maxDimension = 800, quality = 0.85) {
+    return new Promise((resolve, reject) => {
+        if (!imageInput) {
+            resolve('');
+            return;
+        }
+
+        const processLoadedImage = (img) => {
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxDimension || height > maxDimension) {
+                if (width > height) {
+                    height = Math.round((height * maxDimension) / width);
+                    width = maxDimension;
+                } else {
+                    width = Math.round((width * maxDimension) / height);
+                    height = maxDimension;
+                }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const dataUrl = canvas.toDataURL('image/jpeg', quality);
+            resolve(dataUrl);
+        };
+
+        if (typeof imageInput === 'string') {
+            if (imageInput.startsWith('data:') && imageInput.length < 50000) {
+                // Short enough data URL, no re-compression needed
+                resolve(imageInput);
+                return;
+            }
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => processLoadedImage(img);
+            img.onerror = () => resolve(imageInput); // fallback to original string if error
+            img.src = imageInput;
+        } else if (imageInput instanceof File || imageInput instanceof Blob) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => processLoadedImage(img);
+                img.onerror = (err) => reject(err);
+                img.src = e.target.result;
+            };
+            reader.onerror = (err) => reject(err);
+            reader.readAsDataURL(imageInput);
+        } else {
+            resolve('');
+        }
+    });
+}
+
+
