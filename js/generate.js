@@ -77,6 +77,82 @@ const openInstructionsBtn = document.getElementById('open-instructions-btn');
 const closeInstructionsBtn = document.getElementById('close-instructions-btn');
 const instructionsReadyBtn = document.getElementById('instructions-ready-btn');
 
+// Gemini Down Modal
+const geminiDownModal = document.getElementById('gemini-down-modal');
+const useTraditionalTxtBtn = document.getElementById('use-traditional-txt-btn');
+const retryGeminiBtn = document.getElementById('retry-gemini-btn');
+const closeGeminiDownModalBtn = document.getElementById('close-gemini-down-modal-btn');
+
+let lastFailedSourceType = null;
+let lastFailedLocalCards = null;
+
+function showGeminiDownModal(errorMsg, sourceType, localCards = null) {
+    lastFailedSourceType = sourceType;
+    lastFailedLocalCards = localCards;
+    if (geminiDownModal) {
+        geminiDownModal.classList.remove('hidden');
+    }
+}
+
+function closeGeminiDownModal() {
+    if (geminiDownModal) {
+        geminiDownModal.classList.add('hidden');
+    }
+}
+
+function applyTraditionalTxtConversion(localCards) {
+    let targetCards = localCards;
+
+    if (!targetCards || targetCards.length === 0) {
+        if (txtUpload.files && txtUpload.files.length > 0) {
+            readTextFile(txtUpload.files[0]).then(text => {
+                const parsed = parseTxtToJSON(text);
+                applyTraditionalTxtConversion(parsed);
+            }).catch(err => {
+                console.error("Erro ao ler TXT para conversão tradicional:", err);
+            });
+            return;
+        } else {
+            globalError.textContent = "A conversão tradicional requer um arquivo .txt formatado. Por favor, selecione um arquivo .txt.";
+            dashboardView.classList.remove('hidden');
+            editorView.classList.add('hidden');
+            editorView.classList.remove('flex');
+            return;
+        }
+    }
+
+    // Clean up [GEMINI] placeholder tags for traditional text conversion
+    const cleanedCards = targetCards.map(card => {
+        const copy = { ...card };
+        if (copy.type === 'open_double') {
+            if (copy.placeholder1 === '[GEMINI]') copy.placeholder1 = 'Label 1';
+            if (copy.placeholder2 === '[GEMINI]') copy.placeholder2 = 'Label 2';
+        } else if (copy.type === 'multiple_choice') {
+            if (Array.isArray(copy.options)) {
+                copy.options = copy.options.map((opt, i) => opt === '[GEMINI]' ? `Opção ${i + 1}` : opt);
+            }
+        }
+        return copy;
+    });
+
+    deckCards = cleanedCards;
+
+    // Transition UI to editor view
+    dashboardView.classList.add('hidden');
+    editorView.classList.remove('hidden');
+    editorView.classList.add('flex');
+
+    const deckContainer = cardsList.parentNode;
+    deckContainer.classList.remove('generating-deck-bg');
+    deckContainer.classList.add('bg-white', 'dark:bg-gray-800');
+    cardsList.classList.remove('bg-transparent');
+
+    const fileName = (txtUpload.files && txtUpload.files[0]) ? txtUpload.files[0].name.replace(/\.[^/.]+$/, "") : "Meu Baralho";
+    deckTitleDisplay.value = fileName;
+
+    renderCardsList(true);
+}
+
 let deckCards = [];
 let geminiChatSession = null;
 let currentGenModel = null;
@@ -577,6 +653,8 @@ ${JSON.stringify(localCards, null, 2)}`;
         } catch (e) {
             console.error("Erro no preenchimento Gemini:", e);
             globalError.textContent = "Erro ao preencher lacunas com Gemini: " + e.message;
+            // Show error popup modal for Gemini 503 / API down
+            showGeminiDownModal(e.message, 'txt', localCards);
             // Fallback: show local cards even if incomplete
             deckCards = localCards;
             renderCardsList(true);
@@ -686,15 +764,20 @@ ${JSON.stringify(localCards, null, 2)}`;
 
     } catch (error) {
         console.error(error);
-        if (error.message.includes("API key")) {
+        const errorStr = (error.message || '').toLowerCase();
+        const is503 = errorStr.includes("503") || errorStr.includes("service unavailable") || errorStr.includes("high demand") || errorStr.includes("overloaded");
+
+        if (is503) {
+            showGeminiDownModal(error.message, sourceType, sourceType === 'txt' ? localCards : null);
+        } else if (error.message.includes("API key")) {
             globalError.innerHTML = `<img src="../assets/img/error.svg" class="w-6 h-6 inline-block mr-2" alt="Erro"> Acesso negado: Reveja sua chave de API Gemini. (Detalhe: ${error.message})`;
         } else if (error.message.includes("429") || error.message.includes("quota")) {
             globalError.innerHTML = `<img src="../assets/img/cloud_alert.svg" class="w-6 h-6 inline-block mr-2" alt="Alerta"> <strong>Quota Excedida:</strong> Você excedeu o limite de uso do Gemini Flash para sua API gratuita. Por favor, faça um upgrade ou tente novamente amanhã.`;
         } else {
-            globalError.innerHTML = `<img src="../assets/img/error.svg" class="w-6 h-6 inline-block mr-2" alt="Erro"> Erro ao gerar flashcards: ${error.message}. Talvez o arquivo seja muito grande.`;
+            showGeminiDownModal(error.message, sourceType, sourceType === 'txt' ? localCards : null);
         }
-        // Go back to dashboard if error occurred early
-        if (deckCards.length === 0) {
+        // Go back to dashboard if error occurred early and we haven't loaded cards
+        if (deckCards.length === 0 && (!geminiDownModal || geminiDownModal.classList.contains('hidden'))) {
             dashboardView.classList.remove('hidden');
             editorView.classList.add('hidden');
             editorView.classList.remove('flex');
@@ -918,13 +1001,36 @@ closeInstructionsBtn.addEventListener('click', closeInstructionsModalFn);
 instructionsReadyBtn.addEventListener('click', closeInstructionsModalFn);
 
 // Close modals on overlay click
-[editModal, instructionsModal].forEach(modal => {
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.classList.add('hidden');
+[editModal, instructionsModal, geminiDownModal].forEach(modal => {
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    }
+});
+
+// Gemini Down Modal Action Listeners
+if (retryGeminiBtn) {
+    retryGeminiBtn.addEventListener('click', () => {
+        closeGeminiDownModal();
+        if (lastFailedSourceType) {
+            generateFlashcards(lastFailedSourceType);
         }
     });
-});
+}
+
+if (useTraditionalTxtBtn) {
+    useTraditionalTxtBtn.addEventListener('click', () => {
+        closeGeminiDownModal();
+        applyTraditionalTxtConversion(lastFailedLocalCards);
+    });
+}
+
+if (closeGeminiDownModalBtn) {
+    closeGeminiDownModalBtn.addEventListener('click', closeGeminiDownModal);
+}
 
 // Chat integration
 function addChatMessage(role, text) {
