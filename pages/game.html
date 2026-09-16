@@ -178,6 +178,15 @@
                     class="max-h-64 sm:max-h-80 w-auto rounded-xl shadow-md border border-gray-200 dark:border-gray-600 card-img-zoomable object-contain">
             </div>
             <p id="question-text" class="text-center text-lg font-medium text-gray-700 dark:text-gray-300"></p>
+
+            <!-- Anki-like Answer Reveal Area (Question at top, Answer below) -->
+            <div id="anki-answer-container" class="hidden w-full mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 flex flex-col items-center">
+                <span class="text-xs uppercase tracking-wider font-extrabold text-blue-600 dark:text-blue-400 mb-1">Resposta</span>
+                <p id="anki-answer-text" class="text-center text-lg font-medium text-gray-800 dark:text-gray-100"></p>
+                <div id="anki-answer-image-container" class="hidden mt-3 w-full flex justify-center">
+                    <img id="anki-answer-image" src="" alt="Imagem da Resposta" class="max-h-60 sm:max-h-72 w-auto rounded-xl shadow-md border border-gray-200 dark:border-gray-600 card-img-zoomable object-contain">
+                </div>
+            </div>
         </div>
 
         <div id="open-answer-area" class="relative z-10 hidden">
@@ -202,15 +211,52 @@
             </div>
         </div>
 
-        <div id="mc-answer-area" class="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10 hidden">
-            <button
-                class="mc-option-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-blue-200 dark:hover:bg-blue-800 text-gray-800 dark:text-gray-200 font-semibold py-4 px-4 rounded-lg text-md transition"></button>
-            <button
-                class="mc-option-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-blue-200 dark:hover:bg-blue-800 text-gray-800 dark:text-gray-200 font-semibold py-4 px-4 rounded-lg text-md transition"></button>
-            <button
-                class="mc-option-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-blue-200 dark:hover:bg-blue-800 text-gray-800 dark:text-gray-200 font-semibold py-4 px-4 rounded-lg text-md transition"></button>
-            <button
-                class="mc-option-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-blue-200 dark:hover:bg-blue-800 text-gray-800 dark:text-gray-200 font-semibold py-4 px-4 rounded-lg text-md transition"></button>
+        <!-- Dynamic Multiple Choice Area (2 to 6 options) -->
+        <div id="mc-answer-area" class="relative z-10 hidden">
+            <!-- Buttons dynamically generated in game.js -->
+        </div>
+
+        <!-- Anki Gamepad / Control Area -->
+        <div id="anki-controls-area" class="mt-6 relative z-10 hidden">
+            <!-- Unflipped: Flip button -->
+            <div id="anki-unflipped-controls">
+                <button id="anki-flip-btn"
+                    class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold py-4 px-4 rounded-xl text-lg transition shadow-lg flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Virar Cartão <span class="text-xs opacity-75 font-normal ml-1">(Espaço)</span>
+                </button>
+            </div>
+
+            <!-- Flipped: Gamepad Rating Buttons (Errei, Difícil, Médio, Fácil) -->
+            <div id="anki-flipped-controls" class="hidden flex flex-col gap-2">
+                <p class="text-xs text-center text-gray-500 dark:text-gray-400 font-medium mb-1">Como foi lembrar este cartão?</p>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <!-- 1. Errei (Left button, red) -->
+                    <button id="anki-btn-again"
+                        class="bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold py-3.5 px-2 rounded-xl text-sm sm:text-base transition shadow flex flex-col items-center justify-center gap-0.5">
+                        <span>Errei</span>
+                        <span class="text-[10px] opacity-75 font-mono">[1]</span>
+                    </button>
+                    <!-- 2. Difícil (Orange) -->
+                    <button id="anki-btn-hard"
+                        class="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-bold py-3.5 px-2 rounded-xl text-sm sm:text-base transition shadow flex flex-col items-center justify-center gap-0.5">
+                        <span>Difícil</span>
+                        <span class="text-[10px] opacity-75 font-mono">[2]</span>
+                    </button>
+                    <!-- 3. Médio (Green) -->
+                    <button id="anki-btn-good"
+                        class="bg-green-600 hover:bg-green-700 active:scale-95 text-white font-bold py-3.5 px-2 rounded-xl text-sm sm:text-base transition shadow flex flex-col items-center justify-center gap-0.5">
+                        <span>Médio</span>
+                        <span class="text-[10px] opacity-75 font-mono">[3]</span>
+                    </button>
+                    <!-- 4. Fácil (Blue) -->
+                    <button id="anki-btn-easy"
+                        class="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold py-3.5 px-2 rounded-xl text-sm sm:text-base transition shadow flex flex-col items-center justify-center gap-0.5">
+                        <span>Fácil</span>
+                        <span class="text-[10px] opacity-75 font-mono">[4]</span>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div id="action-buttons-area" class="mt-6 relative z-10 hidden">
@@ -256,26 +302,40 @@
                 </button>
             </div>
 
-            <div class="p-6 space-y-4">
+            <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pergunta /
-                        Descrição</label>
+                        Conceito</label>
                     <textarea id="edit-question-input" rows="3"
-                        class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white resize-none"></textarea>
+                        class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white resize-none text-sm"></textarea>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Resposta
-                        Principal</label>
+                <div id="edit-answer-1-group">
+                    <label id="edit-answer-1-label" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Resposta Principal</label>
                     <input type="text" id="edit-answer-input"
-                        class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white">
+                        class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white text-sm">
                 </div>
                 <div id="edit-answer-2-group" class="hidden">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Resposta 2</label>
                     <input type="text" id="edit-answer-2-input"
-                        class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white">
+                        class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white text-sm">
+                </div>
+                <div id="edit-anki-answer-group" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Resposta Detalhada</label>
+                    <textarea id="edit-anki-answer-input" rows="3"
+                        class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white resize-none text-sm"></textarea>
+                </div>
+                <div id="edit-mc-options-group" class="hidden space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Alternativas (2 a 6)</label>
+                        <span class="text-xs text-gray-500">Marque a correta</span>
+                    </div>
+                    <div id="edit-mc-options-list" class="space-y-2"></div>
+                    <button type="button" id="edit-add-mc-opt-btn" class="w-full py-1.5 border border-dashed border-gray-300 dark:border-gray-600 text-xs font-bold text-blue-600 rounded-lg hover:border-blue-500 transition flex items-center justify-center gap-1">
+                        + Adicionar Alternativa
+                    </button>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Imagem (Opcional)</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Imagem da Pergunta (Opcional)</label>
                     <div class="space-y-2">
                         <div id="edit-image-preview-container" class="hidden relative group w-full max-h-48 overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-2">
                             <img id="edit-image-preview" src="" alt="Preview" class="max-h-40 w-auto object-contain rounded">
@@ -286,6 +346,20 @@
                         <div class="flex flex-col sm:flex-row gap-2">
                             <input type="file" id="edit-image-file-input" accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/40 dark:file:text-blue-300 cursor-pointer">
                             <input type="text" id="edit-image-url-input" placeholder="ou cole a URL da imagem..." class="w-full p-2 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white">
+                        </div>
+                    </div>
+                </div>
+                <div id="edit-ans-image-group" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Imagem da Resposta (Anki)</label>
+                    <div class="space-y-2">
+                        <div id="edit-ans-image-preview-container" class="hidden relative group w-full max-h-48 overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-2">
+                            <img id="edit-ans-image-preview" src="" alt="Preview" class="max-h-40 w-auto object-contain rounded">
+                            <button type="button" id="edit-remove-ans-image-btn" class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-full shadow transition" title="Remover Imagem">
+                                <img src="../assets/img/close.svg" class="w-4 h-4 invert" alt="Remover">
+                            </button>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input type="file" id="edit-ans-image-file-input" accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/40 dark:file:text-blue-300 cursor-pointer">
                         </div>
                     </div>
                 </div>

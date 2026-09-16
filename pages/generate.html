@@ -4,22 +4,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Flashcards de IA</title>
+    <title>Criar Baralho de Flashcards</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="../js/config.js"></script>
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="manifest" href="../manifest.json">
     <link rel="stylesheet" href="../css/style.css">
+    <!-- Mammoth.js for .docx text extraction in the browser -->
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+    <!-- JSZip for PPTX text extraction in the browser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../js/console.js"></script>
+    <!-- Import Map for Gemini API -->
+    <script type="importmap">
+        {
+            "imports": {
+                "@google/generative-ai": "https://esm.run/@google/generative-ai"
+            }
+        }
+    </script>
     <style>
         /* Light mode bot icon invert */
         html:not(.dark) .light-invert {
             filter: invert(1);
         }
 
+        /* Netflix-style Card Hover & Focus */
+        .netflix-box {
+            transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+        }
+        .netflix-box:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+        }
+
         /* Gemini Collapsible Bottom Sheet on Mobile */
         @media (max-width: 767px) {
-            #ai-editor-chat {
+            #editor-left-sidebar {
                 position: fixed !important;
                 bottom: 0 !important;
                 left: 0 !important;
@@ -33,260 +55,538 @@
                 background-color: white !important;
             }
 
-            .dark #ai-editor-chat {
+            .dark #editor-left-sidebar {
                 border-top: 1px solid rgba(75, 85, 99, 0.5);
-                background-color: #1f2937 !important; /* gray-800 */
+                background-color: #1f2937 !important;
             }
 
-            #ai-editor-chat.collapsed {
-                background: transparent !important;
-                border: none !important;
-                border-top: none !important;
-                box-shadow: none !important;
-                height: auto !important;
-                bottom: 16px !important;
-                padding: 0 16px !important;
-            }
-
-            #ai-editor-chat.collapsed #chat-header,
-            #ai-editor-chat.collapsed #chat-history {
-                display: none !important;
-            }
-
-            #ai-editor-chat.collapsed > div:last-child {
-                border-top: none !important;
-                background: transparent !important;
-                padding: 0 !important;
-            }
-
-            /* Make the input box stand out float when collapsed */
-            #ai-editor-chat.collapsed #chat-input {
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05) !important;
-            }
-
-            #ai-editor-chat.expanded {
-                height: 65vh !important;
-            }
-
-            /* Adjust page container bottom padding to avoid collapsed input overlap */
             #editor-view {
                 padding-bottom: 96px !important;
             }
         }
     </style>
-    <script src="../js/console.js"></script>
-    <!-- Import Map for Gemini API -->
-    <script type="importmap">
-        {
-            "imports": {
-                "@google/generative-ai": "https://esm.run/@google/generative-ai"
-            }
-        }
-    </script>
 </head>
 
-<body
-    class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen p-4 sm:p-8 flex flex-col items-center overflow-y-auto">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen p-4 sm:p-8 flex flex-col items-center overflow-y-auto">
 
-    <!-- VIEW 1: PRE-GENERATION DASHBOARD -->
-    <div id="dashboard-view" class="w-full max-w-5xl flex flex-col items-center">
-        <!-- Header: API Key Login -->
-        <div class="w-full mb-8">
-            <label class="block text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Login com sua chave de
-                API</label>
-            <div class="relative w-full max-w-md">
-                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                            clip-rule="evenodd"></path>
+    <!-- VIEW 1: NETFLIX-STYLE CREATION DASHBOARD -->
+    <div id="dashboard-view" class="w-full max-w-5xl flex flex-col">
+        <!-- Top Navigation Bar -->
+        <div class="flex items-center justify-between w-full mb-8 pb-4 border-b border-gray-200 dark:border-gray-800">
+            <a href="../index.html" class="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Voltar ao início
+            </a>
+
+            <div class="flex items-center gap-3">
+                <button id="open-api-key-modal-btn" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:border-blue-500 transition shadow-sm text-gray-700 dark:text-gray-300">
+                    <svg class="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
                     </svg>
-                </div>
-                <!-- Hidden username to prevent Chrome from using other fields as a username -->
-                <input type="text" name="username" value="gemini-api-user" style="display:none" autocomplete="username">
-                <input type="password" id="api-key-input"
-                    class="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                    placeholder="Gemini API Key" autocomplete="current-password" name="api-key">
+                    <span id="dashboard-key-status">Chave Gemini API</span>
+                </button>
             </div>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                Ainda não tem uma API key? <button id="open-instructions-btn" class="text-blue-500 hover:underline">Crie
-                    uma grátis</button>
-            </p>
-            <p class="text-xs text-gray-500 mt-1">As suas API key serão salvas localmente, não serão compartilhadas
-                conosco.</p>
         </div>
 
-        <!-- The Two Main Options -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+        <!-- Header Titles -->
+        <div class="mb-10 text-left">
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">Criar Baralho</h1>
+            <p class="text-gray-500 dark:text-gray-400 text-base sm:text-lg mt-1">Selecione o modo de criação para os seus flashcards</p>
+        </div>
 
-            <!-- Box 1: Slides and Notes -->
-            <div
-                class="bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-3xl p-6 md:p-10 flex flex-col items-center text-center shadow-md">
-                <h2 class="text-xl font-semibold mb-6">Crie a partir dos seus slides e anotações!</h2>
+        <!-- SECTION 1: TRADICIONAL -->
+        <section class="mb-12">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-blue-600 text-white font-bold text-sm shadow">1</div>
+                <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Tradicional</h2>
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-200/70 dark:bg-gray-800 px-2.5 py-0.5 rounded-full ml-auto">Manual & Direto</span>
+            </div>
 
-                <div class="w-full mb-6 relative hover:border-blue-400 transition">
-                    <input type="file" id="files-upload" multiple
-                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-2xl z-20">
-                    <div class="border-2 border-dashed border-gray-400 bg-gray-200 dark:bg-gray-700 dark:border-gray-500 rounded-2xl p-6 min-h-[160px] flex flex-col items-center justify-center transition"
-                        id="files-upload-indicator">
-                        <div id="files-icons-container" class="flex flex-wrap justify-center gap-2 mb-2">
-                            <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                            </svg>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 1.1 Crie agora -->
+                <div id="card-mode-1-1" class="netflix-box group relative bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 rounded-3xl p-6 sm:p-8 flex flex-col justify-between cursor-pointer shadow-sm overflow-hidden">
+                    <div class="absolute -right-6 -top-6 w-28 h-28 bg-blue-500/10 rounded-full blur-xl pointer-events-none group-hover:bg-blue-500/20 transition-all"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center transition-transform group-hover:scale-110">
+                                <img src="../assets/img/new_file.svg" class="w-6 h-6" alt="Criar">
+                            </div>
+                            <span class="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 rounded-full">1.1</span>
                         </div>
-                        <span class="text-gray-600 dark:text-gray-300 font-medium text-lg" id="files-upload-text">Upload
-                            arquivos</span>
-                        <span class="text-xs text-gray-500 mt-1" id="files-count">Nenhum arquivo selecionado</span>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Crie agora</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                            Escreva cada cartão direto no aplicativo. Suporte para Tradicional, Resposta Dupla, Anki-like e Múltipla Escolha.
+                        </p>
+                    </div>
+                    <div class="mt-8 flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                        <span class="text-sm font-bold text-blue-600 dark:text-blue-400 group-hover:underline">Abrir editor direto</span>
+                        <div class="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </div>
                     </div>
                 </div>
 
-                <div class="w-full mb-6 relative z-30">
-                    <textarea id="custom-prompt" rows="2"
-                        class="w-full p-4 bg-gray-200 dark:bg-gray-700 border border-gray-400 dark:border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-gray-800 dark:text-gray-200 placeholder-gray-500 resize-none font-medium text-center"
-                        placeholder="Demandas específicas para criar?"></textarea>
-                </div>
-
-                <div class="relative w-full z-30">
-                    <button id="generate-files-btn"
-                        class="w-full flex justify-center items-center gap-2 bg-[#8B00FF] hover:bg-purple-700 text-white font-bold py-4 rounded-xl text-xl shadow-lg hover:scale-[1.02] transition">
-                        <img src="../assets/img/ai.svg" class="w-6 h-6" alt="IA"> Gerar
-                        <div id="spinner-files" class="spinner hidden"></div>
-                    </button>
-                    <p id="files-loading-msg"
-                        class="text-xs text-purple-600 dark:text-purple-400 mt-2 font-medium hidden flex items-center justify-center gap-1">
-                        <img src="../assets/img/hourglass.svg" class="w-4 h-4" alt="Ampulheta"> Isso pode levar
-                        alguns minutos, estamos processando...</p>
+                <!-- 1.2 Converta um doc -->
+                <div id="card-mode-1-2" class="netflix-box group relative bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 rounded-3xl p-6 sm:p-8 flex flex-col justify-between cursor-pointer shadow-sm overflow-hidden">
+                    <div class="absolute -right-6 -top-6 w-28 h-28 bg-blue-500/10 rounded-full blur-xl pointer-events-none group-hover:bg-blue-500/20 transition-all"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center transition-transform group-hover:scale-110">
+                                <img src="../assets/img/folder.svg" class="w-6 h-6" alt="Importar">
+                            </div>
+                            <span class="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 rounded-full">1.2</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Converta um doc</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                            Importe um txt ou word já feito (.txt, .doc, .docx). Escolha entre conversão tradicional ou no novo formato Anki-like.
+                        </p>
+                    </div>
+                    <div class="mt-8 flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                        <span class="text-sm font-bold text-blue-600 dark:text-blue-400 group-hover:underline">Importar documento</span>
+                        <div class="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </section>
 
-            <!-- Box 2: Pre-written txt -->
-            <div
-                class="bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-3xl p-6 md:p-10 flex flex-col items-center text-center shadow-md">
-                <h2 class="text-xl font-semibold mb-6">Converta o que você já escreveu</h2>
+        <!-- SECTION 2: AI POWERED -->
+        <section class="mb-12">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-purple-600 text-white font-bold text-sm shadow">2</div>
+                <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
+                    AI Powered
+                    <img src="../assets/img/ai.svg" class="w-5 h-5 inline" alt="IA">
+                </h2>
+                <span class="text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/40 px-2.5 py-0.5 rounded-full ml-auto">Gemini Flash</span>
+            </div>
 
-                <div class="w-full mb-6 relative hover:border-blue-400 transition">
-                    <input type="file" id="txt-upload" accept=".txt"
-                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-2xl z-20">
-                    <div class="border-2 border-dashed border-gray-400 bg-gray-200 dark:bg-gray-700 dark:border-gray-500 rounded-2xl p-6 min-h-[160px] flex flex-col items-center justify-center transition"
-                        id="txt-upload-indicator">
-                        <div id="txt-icons-container" class="flex flex-wrap justify-center gap-2 mb-2">
-                            <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                </path>
-                            </svg>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 2.1 Crie de materiais -->
+                <div id="card-mode-2-1" class="netflix-box group relative bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 rounded-3xl p-6 sm:p-8 flex flex-col justify-between cursor-pointer shadow-sm overflow-hidden">
+                    <div class="absolute -right-6 -top-6 w-28 h-28 bg-purple-500/10 rounded-full blur-xl pointer-events-none group-hover:bg-purple-500/20 transition-all"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 flex items-center justify-center transition-transform group-hover:scale-110">
+                                <img src="../assets/img/rocket.svg" class="w-6 h-6" alt="Materiais">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/60 px-2 py-0.5 rounded-full">Até 10 arquivos</span>
+                                <span class="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 px-2.5 py-1 rounded-full">2.1</span>
+                            </div>
                         </div>
-                        <span class="text-gray-600 dark:text-gray-300 font-medium text-lg"
-                            id="txt-upload-text">Upload<br>.txt</span>
-                        <span class="text-xs text-gray-500 mt-1" id="txt-count">Nenhum arquivo selecionado</span>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Crie de materiais</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                            Transforme slides, pdf, fotos... em cards. Carregue até 10 arquivos (PDF, PPTX, Imagens) e o Gemini criará os cartões técnicos automaticamente.
+                        </p>
+                    </div>
+                    <div class="mt-8 flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                        <span class="text-sm font-bold text-purple-600 dark:text-purple-400 group-hover:underline">Enviar slides & materiais</span>
+                        <div class="w-8 h-8 rounded-full bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 group-hover:translate-x-1 transition-transform">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </div>
                     </div>
                 </div>
 
-                <div class="w-full mb-6 text-gray-700 dark:text-gray-300 font-medium z-30">
-                    <p>O arquivo deve estar escrito como:</p>
-                    <p class="mt-1">RESPOSTA: Pergunta</p>
-                    <p class="mt-1">Cada linha separada por "enter", será um flashcard</p>
-                    <p class="mt-1">Tag (open_double) no começo e separe as alternativas com ;</p>
-                    <p class="mt-1">Tag (multiple_choice) no começo e cite a resposta correta, o Gemini vai gerar os
-                        distratores</p>
-                </div>
-
-                <div class="relative w-full z-30 mt-auto">
-                    <button id="generate-txt-btn"
-                        class="w-full flex justify-center items-center gap-2 bg-[#8B00FF] hover:bg-purple-700 text-white font-bold py-4 rounded-xl text-xl shadow-lg hover:scale-[1.02] transition">
-                        <img src="../assets/img/ai.svg" class="w-6 h-6" alt="IA"> Gerar
-                        <div id="spinner-txt" class="spinner hidden"></div>
-                    </button>
-                    <p id="txt-loading-msg"
-                        class="text-xs text-purple-600 dark:text-purple-400 mt-2 font-medium hidden flex items-center justify-center gap-1">
-                        <img src="../assets/img/hourglass.svg" class="w-4 h-4" alt="Ampulheta"> Isso pode levar
-                        alguns minutos, estamos processando...</p>
+                <!-- 2.2 Aprimore um doc -->
+                <div id="card-mode-2-2" class="netflix-box group relative bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 rounded-3xl p-6 sm:p-8 flex flex-col justify-between cursor-pointer shadow-sm overflow-hidden">
+                    <div class="absolute -right-6 -top-6 w-28 h-28 bg-purple-500/10 rounded-full blur-xl pointer-events-none group-hover:bg-purple-500/20 transition-all"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 flex items-center justify-center transition-transform group-hover:scale-110">
+                                <img src="../assets/img/ai.svg" class="w-6 h-6" alt="Aprimorar">
+                            </div>
+                            <span class="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 px-2.5 py-1 rounded-full">2.2</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Aprimore um doc</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                            A partir de um txt ou word, aprimore cartões de múltipla escolha ou resposta dupla. A IA completa alternativas plausíveis e rótulos contextuais.
+                        </p>
+                    </div>
+                    <div class="mt-8 flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                        <span class="text-sm font-bold text-purple-600 dark:text-purple-400 group-hover:underline">Aprimorar com Gemini</span>
+                        <div class="w-8 h-8 rounded-full bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 group-hover:translate-x-1 transition-transform">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Option 3: Start from Scratch -->
-        <div class="mt-8 w-full max-w-md">
-            <button id="start-scratch-btn"
-                class="w-full flex justify-center items-center gap-2 bg-white dark:bg-gray-800 border-2 border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 font-bold py-3 rounded-xl text-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition shadow-md">
-                <img src="../assets/img/new_file.svg" class="w-6 h-6" alt="Novo Arquivo"> Começar do Zero (Manualmente)
-            </button>
-        </div>
+        </section>
 
-        <p id="global-error" class="text-red-500 mt-4 text-center font-medium"></p>
+        <p id="global-error" class="text-red-500 text-center font-medium my-4"></p>
     </div>
 
-    <!-- VIEW 2: POST-GENERATION EDITOR -->
-    <div id="editor-view"
-        class="w-full max-w-7xl h-full flex flex-col md:flex-row gap-6 hidden flex-grow box-border pb-8 text-gray-800 dark:text-gray-200">
-        <!-- Left Column: Chat Interface -->
-        <div id="ai-editor-chat"
-            class="w-full md:w-1/3 bg-white dark:bg-gray-800 rounded-2xl shadow-xl flex flex-col overflow-hidden h-[50vh] md:h-[85vh] order-2 md:order-1 collapsed transition-all duration-300">
-            <div id="chat-header"
-                class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex items-center justify-between cursor-pointer md:cursor-default select-none">
+    <!-- MODAL 1.2: CONVERTER DOCUMENTO -->
+    <div id="modal-1-2" class="hidden fixed inset-0 modal-overlay bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
                 <div class="flex items-center gap-2">
-                    <img src="../assets/img/robot.svg" class="w-6 h-6 light-invert" alt="Robô">
-                    <h3 class="font-bold">Assistente de IA</h3>
+                    <span class="w-6 h-6 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center">1.2</span>
+                    <h3 class="font-bold text-lg text-gray-900 dark:text-white">Converta um documento</h3>
                 </div>
-                <!-- Collapse Toggle Icon (Mobile Only) -->
-                <button id="toggle-chat-btn" class="block md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
+                <button id="close-modal-1-2-btn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
+                    <img src="../assets/img/close.svg" class="w-6 h-6 opacity-70 hover:opacity-100 transition-opacity" alt="Fechar">
                 </button>
             </div>
 
-            <div id="chat-history" class="flex-grow p-4 overflow-y-auto flex flex-col gap-3">
-                <div
-                    class="self-start bg-gray-200 dark:bg-gray-700 py-2 px-4 rounded-xl rounded-tl-sm max-w-[85%] text-sm">
-                    Olá! Quer que eu ajuste algo? Diga, por exemplo: "Reescreva a pergunta 5 para ser mais curta" ou
-                    "Adicione 3 questões sobre mitocôndria".
+            <div class="p-6 overflow-y-auto space-y-6">
+                <!-- Explanation -->
+                <div class="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 p-4 rounded-2xl text-sm leading-relaxed text-blue-900 dark:text-blue-200">
+                    <p class="font-semibold mb-1">Como funciona a formatação:</p>
+                    <p>
+                        Cada linha do documento vai ser um card, o que vem antes do <strong>":"</strong> vai ser a pergunta/frente do cartão e o que vem depois vai ser a resposta/verso do cartão. Se quiser digitar a resposta, selecione tradicional, se não, anki-like.
+                    </p>
                 </div>
+
+                <!-- Format Selection (Radio Cards) -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Selecione o Formato dos Cards</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label class="cursor-pointer border-2 border-gray-200 dark:border-gray-700 rounded-2xl p-4 flex flex-col gap-1 transition has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50/50 dark:has-[:checked]:bg-blue-950/20">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">Tradicional</span>
+                                <input type="radio" name="modal-1-2-type" value="traditional" class="text-blue-600 focus:ring-blue-500">
+                            </div>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">Você digita a resposta ao estudar no jogo.</span>
+                        </label>
+                        <label class="cursor-pointer border-2 border-gray-200 dark:border-gray-700 rounded-2xl p-4 flex flex-col gap-1 transition has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50/50 dark:has-[:checked]:bg-blue-950/20">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-gray-900 dark:text-white text-sm">Anki-like</span>
+                                <input type="radio" name="modal-1-2-type" value="anki" checked class="text-blue-600 focus:ring-blue-500">
+                            </div>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">Apenas virar e avaliar dificuldade (Errei/Fácil).</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- File Upload -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Arquivo (.txt, .doc, .docx)</label>
+                    <div class="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-6 text-center hover:border-blue-500 transition cursor-pointer bg-gray-50 dark:bg-gray-900/50" id="modal-1-2-dropzone">
+                        <input type="file" id="modal-1-2-file" accept=".txt,.doc,.docx" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
+                        <div class="flex flex-col items-center justify-center">
+                            <img src="../assets/img/folder.svg" class="w-8 h-8 mb-2 text-gray-400" alt="Arquivo">
+                            <p class="font-medium text-sm text-gray-700 dark:text-gray-300" id="modal-1-2-file-name">Clique ou arraste o arquivo aqui</p>
+                            <p class="text-xs text-gray-500 mt-1">Suporta arquivos .txt, .doc ou .docx</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p id="modal-1-2-error" class="text-xs text-red-500 font-medium"></p>
             </div>
 
-            <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
-                <div class="relative flex items-center">
-                    <input type="text" id="chat-input"
-                        class="w-full pl-4 pr-12 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
-                        placeholder="Peça um ajuste ao baralho...">
-                    <button id="chat-send-btn"
-                        class="absolute right-2 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition disabled:bg-gray-400">
-                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                        </svg>
+            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-end gap-3">
+                <button id="cancel-modal-1-2-btn" class="px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition">Cancelar</button>
+                <button id="submit-modal-1-2-btn" class="px-6 py-2.5 text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg transition">Converter e Abrir Editor</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2.1: CRIAR DE MATERIAIS (IA) -->
+    <div id="modal-2-1" class="hidden fixed inset-0 modal-overlay bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-lg bg-purple-600 text-white font-bold text-xs flex items-center justify-center">2.1</span>
+                    <h3 class="font-bold text-lg text-gray-900 dark:text-white">Crie de materiais com IA</h3>
+                </div>
+                <button id="close-modal-2-1-btn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
+                    <img src="../assets/img/close.svg" class="w-6 h-6 opacity-70 hover:opacity-100 transition-opacity" alt="Fechar">
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto space-y-6">
+                <!-- API Key Field -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Sua Gemini API Key</label>
+                        <button class="open-instructions-link text-xs text-blue-500 hover:underline">Como obter chave grátis?</button>
+                    </div>
+                    <input type="password" id="modal-2-1-api-key" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 text-sm" placeholder="Cole sua Gemini API Key...">
+                    <p class="text-[11px] text-gray-500 mt-1">Sua chave é salva apenas localmente no navegador.</p>
+                </div>
+
+                <!-- Files Upload (Up to 10 files) -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Materiais de Estudo</label>
+                        <span class="text-xs font-semibold text-purple-600 dark:text-purple-400">Até 10 arquivos</span>
+                    </div>
+                    <div class="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-6 text-center hover:border-purple-500 transition cursor-pointer bg-gray-50 dark:bg-gray-900/50" id="modal-2-1-dropzone">
+                        <input type="file" id="modal-2-1-files" multiple accept=".pdf,.pptx,.ppt,image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
+                        <div id="modal-2-1-icons-container" class="flex flex-wrap justify-center gap-2 mb-2">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        </div>
+                        <p class="font-medium text-sm text-gray-700 dark:text-gray-300" id="modal-2-1-files-text">Upload de slides, PDFs ou fotos</p>
+                        <p class="text-xs text-gray-500 mt-1" id="modal-2-1-files-count">Nenhum arquivo selecionado</p>
+                    </div>
+                </div>
+
+                <!-- Custom Prompt -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Demandas Específicas (Opcional)</label>
+                    <textarea id="modal-2-1-prompt" rows="2" class="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 text-sm resize-none" placeholder="Ex: Priorize mecanismos de ação e diagnósticos diferenciais..."></textarea>
+                </div>
+
+                <p id="modal-2-1-error" class="text-xs text-red-500 font-medium"></p>
+                <p id="modal-2-1-loading-msg" class="text-xs text-purple-600 dark:text-purple-400 font-medium hidden flex items-center gap-1.5">
+                    <img src="../assets/img/hourglass.svg" class="w-4 h-4" alt="Ampulheta">
+                    <span>Processando arquivos e gerando flashcards com o Gemini...</span>
+                </p>
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-end gap-3">
+                <button id="cancel-modal-2-1-btn" class="px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition">Cancelar</button>
+                <button id="submit-modal-2-1-btn" class="px-6 py-2.5 text-sm font-bold bg-purple-600 hover:bg-purple-700 text-white rounded-xl shadow-lg transition flex items-center gap-2">
+                    <img src="../assets/img/ai.svg" class="w-5 h-5" alt="IA">
+                    <span>Gerar com IA</span>
+                    <div id="modal-2-1-spinner" class="spinner hidden"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2.2: APRIMORAR DOCUMENTO (IA) -->
+    <div id="modal-2-2" class="hidden fixed inset-0 modal-overlay bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-lg bg-purple-600 text-white font-bold text-xs flex items-center justify-center">2.2</span>
+                    <h3 class="font-bold text-lg text-gray-900 dark:text-white">Aprimore um documento com IA</h3>
+                </div>
+                <button id="close-modal-2-2-btn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
+                    <img src="../assets/img/close.svg" class="w-6 h-6 opacity-70 hover:opacity-100 transition-opacity" alt="Fechar">
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto space-y-6">
+                <!-- Instructions on AI enhancements -->
+                <div class="bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-900/60 p-4 rounded-2xl text-sm leading-relaxed text-purple-900 dark:text-purple-200 space-y-2">
+                    <p class="font-semibold">Como estruturar para aprimoramento:</p>
+                    <p class="text-xs">• Linha padrão: <code>RESPOSTA: Pergunta</code></p>
+                    <p class="text-xs">• Resposta dupla: inicie com <code>(open_double) Resposta1;Resposta2: Pergunta</code> (o Gemini criará os rótulos adequados).</p>
+                    <p class="text-xs">• Múltipla escolha: inicie com <code>(multiple_choice) RespostaCorreta: Pergunta</code> (o Gemini criará distratores plausíveis).</p>
+                </div>
+
+                <!-- API Key Field -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Sua Gemini API Key</label>
+                        <button class="open-instructions-link text-xs text-blue-500 hover:underline">Como obter chave grátis?</button>
+                    </div>
+                    <input type="password" id="modal-2-2-api-key" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 text-sm" placeholder="Cole sua Gemini API Key...">
+                    <p class="text-[11px] text-gray-500 mt-1">Sua chave é salva apenas localmente no navegador.</p>
+                </div>
+
+                <!-- File Upload -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Documento (.txt, .doc, .docx)</label>
+                    <div class="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-6 text-center hover:border-purple-500 transition cursor-pointer bg-gray-50 dark:bg-gray-900/50" id="modal-2-2-dropzone">
+                        <input type="file" id="modal-2-2-file" accept=".txt,.doc,.docx" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
+                        <div class="flex flex-col items-center justify-center">
+                            <img src="../assets/img/ai.svg" class="w-8 h-8 mb-2 text-purple-500" alt="IA">
+                            <p class="font-medium text-sm text-gray-700 dark:text-gray-300" id="modal-2-2-file-name">Clique ou arraste o arquivo .txt ou Word</p>
+                            <p class="text-xs text-gray-500 mt-1">O Gemini completará distratores e rótulos automaticamente</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p id="modal-2-2-error" class="text-xs text-red-500 font-medium"></p>
+                <p id="modal-2-2-loading-msg" class="text-xs text-purple-600 dark:text-purple-400 font-medium hidden flex items-center gap-1.5">
+                    <img src="../assets/img/hourglass.svg" class="w-4 h-4" alt="Ampulheta">
+                    <span>O Gemini está aprimorando e preenchendo as alternativas...</span>
+                </p>
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-end gap-3">
+                <button id="cancel-modal-2-2-btn" class="px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition">Cancelar</button>
+                <button id="submit-modal-2-2-btn" class="px-6 py-2.5 text-sm font-bold bg-purple-600 hover:bg-purple-700 text-white rounded-xl shadow-lg transition flex items-center gap-2">
+                    <img src="../assets/img/ai.svg" class="w-5 h-5" alt="IA">
+                    <span>Aprimorar com IA</span>
+                    <div id="modal-2-2-spinner" class="spinner hidden"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUICK API KEY MODAL -->
+    <div id="quick-api-modal" class="hidden fixed inset-0 modal-overlay bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col p-6">
+            <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-2">Configurar Chave da API Gemini</h3>
+            <p class="text-xs text-gray-600 dark:text-gray-300 mb-4">Insira sua chave para habilitar a geração e o assistente inteligente.</p>
+            <input type="password" id="quick-api-input" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm mb-2" placeholder="AIzaSy...">
+            <div class="flex justify-between items-center mb-6">
+                <button class="open-instructions-link text-xs text-blue-500 hover:underline">Como criar chave grátis?</button>
+                <button id="clear-quick-api-btn" class="text-xs text-red-500 hover:underline">Remover chave salva</button>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button id="close-quick-api-btn" class="px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition">Cancelar</button>
+                <button id="save-quick-api-btn" class="px-6 py-2 text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition">Salvar Chave</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW 2: POST-GENERATION EDITOR -->
+    <div id="editor-view" class="w-full max-w-7xl h-full flex flex-col md:flex-row gap-6 hidden flex-grow box-border pb-8 text-gray-800 dark:text-gray-200">
+        
+        <!-- Left Column: Card Creator UI & AI Assistant -->
+        <div id="editor-left-sidebar" class="w-full md:w-5/12 lg:w-4/12 bg-white dark:bg-gray-800 rounded-2xl shadow-xl flex flex-col overflow-hidden h-[60vh] md:h-[85vh] order-2 md:order-1 transition-all duration-300">
+            <!-- Sidebar Mode Tabs -->
+            <div class="p-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex items-center gap-2">
+                <button id="tab-creator-btn" class="flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition bg-blue-600 text-white shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Criador de Cards
+                </button>
+                <button id="tab-ai-chat-btn" class="flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <img src="../assets/img/robot.svg" class="w-4 h-4 light-invert" alt="Robô">
+                    Assistente IA
+                </button>
+            </div>
+
+            <!-- PANEL 1: CARD CREATOR UI -->
+            <div id="card-creator-panel" class="flex-grow p-4 overflow-y-auto flex flex-col gap-4">
+                <!-- Card Type Selector -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Tipo de Cartão</label>
+                    <select id="creator-card-type" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 font-semibold text-sm">
+                        <option value="open">Tradicional (Aberto)</option>
+                        <option value="open_double">Tradicional duplo (Resposta Dupla)</option>
+                        <option value="anki">Anki-like [Novo]</option>
+                        <option value="multiple_choice">Múltipla Escolha (2 a 6 opções)</option>
+                    </select>
+                    <p id="creator-type-hint" class="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">
+                        Pergunta é uma descrição e você digita o nome do conceito.
+                    </p>
+                </div>
+
+                <!-- Field: Question / Description -->
+                <div>
+                    <label id="creator-question-label" class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Pergunta / Descrição</label>
+                    <textarea id="creator-question" rows="2" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Escreva a pergunta ou conceito..."></textarea>
+                </div>
+
+                <!-- Field: Question Image (Optional) -->
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Imagem da Pergunta (Opcional)</label>
+                        <button type="button" id="creator-remove-q-img" class="text-[11px] text-red-500 hidden hover:underline">Remover</button>
+                    </div>
+                    <div id="creator-q-img-preview-container" class="hidden mb-2 max-h-32 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-1">
+                        <img id="creator-q-img-preview" src="" class="max-h-28 w-auto object-contain rounded" alt="Preview">
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="file" id="creator-q-img-file" accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- GROUP: TRADITIONAL (OPEN) -->
+                <div id="creator-group-open" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Resposta Principal (Conceito)</label>
+                        <input type="text" id="creator-ans-open" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Nome do conceito...">
+                    </div>
+                </div>
+
+                <!-- GROUP: TRADITIONAL DOUBLE (OPEN_DOUBLE) -->
+                <div id="creator-group-open-double" class="space-y-3 hidden">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Resposta 1</label>
+                        <input type="text" id="creator-ans-double-1" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Primeira resposta...">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Resposta 2</label>
+                        <input type="text" id="creator-ans-double-2" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Segunda resposta...">
+                    </div>
+                </div>
+
+                <!-- GROUP: ANKI LIKE -->
+                <div id="creator-group-anki" class="space-y-3 hidden">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Resposta / Descrição Longa</label>
+                        <textarea id="creator-ans-anki" rows="3" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Explicação detalhada revelada ao virar o cartão..."></textarea>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Imagem da Resposta (Opcional)</label>
+                            <button type="button" id="creator-remove-ans-img" class="text-[11px] text-red-500 hidden hover:underline">Remover</button>
+                        </div>
+                        <div id="creator-ans-img-preview-container" class="hidden mb-2 max-h-32 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-1">
+                            <img id="creator-ans-img-preview" src="" class="max-h-28 w-auto object-contain rounded" alt="Preview">
+                        </div>
+                        <input type="file" id="creator-ans-img-file" accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- GROUP: MULTIPLE CHOICE (2 TO 6 OPTIONS) -->
+                <div id="creator-group-mc" class="space-y-3 hidden">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Alternativas (2 a 6)</label>
+                        <span class="text-xs text-gray-500">Marque a correta</span>
+                    </div>
+                    <div id="creator-mc-options-list" class="space-y-2">
+                        <!-- Dynamically populated options -->
+                    </div>
+                    <button type="button" id="creator-add-mc-opt-btn" class="w-full py-1.5 border border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-500 text-xs font-bold text-blue-600 dark:text-blue-400 rounded-xl transition flex items-center justify-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Adicionar Alternativa
                     </button>
-                    <!-- Small spinner for chat loading -->
-                    <div id="chat-spinner"
-                        class="spinner absolute right-4 hidden w-5 h-5 border-blue-600 border-top-white"></div>
+                </div>
+
+                <p id="creator-feedback" class="text-xs font-bold text-green-600 hidden"></p>
+
+                <!-- Add Card Button -->
+                <button type="button" id="creator-submit-card-btn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg transition flex items-center justify-center gap-2 mt-auto">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Adicionar Card ao Baralho
+                </button>
+            </div>
+
+            <!-- PANEL 2: AI ASSISTANT CHAT -->
+            <div id="ai-editor-chat-panel" class="hidden flex-grow flex flex-col overflow-hidden">
+                <div id="chat-header" class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex items-center justify-between select-none">
+                    <div class="flex items-center gap-2">
+                        <img src="../assets/img/robot.svg" class="w-5 h-5 light-invert" alt="Robô">
+                        <h3 class="font-bold text-sm">Assistente de IA</h3>
+                    </div>
+                </div>
+
+                <div id="chat-history" class="flex-grow p-4 overflow-y-auto flex flex-col gap-3">
+                    <div class="self-start bg-gray-200 dark:bg-gray-700 py-2 px-4 rounded-xl rounded-tl-sm max-w-[85%] text-sm">
+                        Olá! Quer que eu ajuste algo? Diga, por exemplo: "Adicione 3 questões de múltipla escolha" ou "Reescreva a pergunta 2".
+                    </div>
+                </div>
+
+                <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
+                    <div class="relative flex items-center">
+                        <input type="text" id="chat-input" class="w-full pl-4 pr-12 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50 text-sm" placeholder="Peça um ajuste ao baralho...">
+                        <button id="chat-send-btn" class="absolute right-2 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition disabled:bg-gray-400">
+                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </button>
+                        <div id="chat-spinner" class="spinner absolute right-4 hidden w-5 h-5 border-blue-600 border-top-white"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right Column: Deck Preview & Editor -->
-        <div class="w-full md:w-2/3 bg-white dark:bg-gray-800 rounded-2xl shadow-xl flex flex-col h-[60vh] md:h-[85vh] order-1 md:order-2">
+        <!-- Right Column: Deck Preview & Cards List -->
+        <div class="w-full md:w-7/12 lg:w-8/12 bg-white dark:bg-gray-800 rounded-2xl shadow-xl flex flex-col h-[60vh] md:h-[85vh] order-1 md:order-2">
             <!-- Header actions -->
-            <div
-                class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                 <h3 class="font-bold flex items-center gap-2 min-w-0">
-                    <span id="deck-size-badge"
-                        class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded-full flex-shrink-0">0</span>
-                    <input type="text" id="deck-title-display" class="bg-transparent border-b border-dashed border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:outline-none font-bold text-gray-800 dark:text-white px-1 py-0.5 rounded w-48 sm:w-64 truncate" value="Flashcards" title="Clique para editar o título do baralho">
-                    <button id="add-card-btn" title="Adicionar flashcard manualmente"
-                        class="p-1 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition flex items-center justify-center w-6 h-6 flex-shrink-0">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
-                            </path>
-                        </svg>
+                    <span id="deck-size-badge" class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded-full flex-shrink-0">0</span>
+                    <input type="text" id="deck-title-display" class="bg-transparent border-b border-dashed border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:outline-none font-bold text-gray-800 dark:text-white px-1 py-0.5 rounded w-48 sm:w-64 truncate" value="Meu Baralho" title="Clique para editar o título do baralho">
+                    <button id="add-card-btn" title="Adicionar flashcard manualmente" class="p-1 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition flex items-center justify-center w-6 h-6 flex-shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     </button>
                 </h3>
                 <div class="flex gap-2 text-sm z-30 w-full sm:w-auto">
-                    <button id="download-deck-btn"
-                        class="flex-1 sm:flex-none justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-2 px-3 rounded-lg flex items-center gap-2 transition">
+                    <button id="download-deck-btn" class="flex-1 sm:flex-none justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-2 px-3 rounded-lg flex items-center gap-2 transition">
                         <img src="../assets/img/save.svg" class="w-5 h-5" alt="Salvar"> Salvar Arquivo
                     </button>
-                    <button id="play-deck-btn"
-                        class="flex-1 sm:flex-none justify-center group bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-lg transition shadow flex items-center gap-2">
+                    <button id="play-deck-btn" class="flex-1 sm:flex-none justify-center group bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-lg transition shadow flex items-center gap-2">
                         <img src="../assets/img/rocket.svg" class="w-5 h-5 group-hover:hidden" alt="Foguete">
                         <img src="../assets/img/rocket_launch.svg" class="w-5 h-5 hidden group-hover:block" alt="Foguete Lançando">
                         Jogar Agora
@@ -296,152 +596,160 @@
 
             <!-- List of cards -->
             <div id="cards-list" class="p-4 overflow-y-auto flex-grow flex flex-col gap-3">
-                <!-- Cards will be populated here -->
+                <!-- Cards will be dynamically populated here -->
             </div>
         </div>
     </div>
 
-    <!-- Edit Card Modal -->
-    <div id="inline-edit-modal"
-        class="hidden fixed inset-0 modal-overlay bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-lg overflow-hidden shadow-2xl">
-            <div
-                class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between">
+    <!-- INLINE EDIT CARD MODAL -->
+    <div id="inline-edit-modal" class="hidden fixed inset-0 modal-overlay bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
                 <h3 class="font-bold text-gray-800 dark:text-white">Editar Flashcard</h3>
-                <button id="close-inline-edit-btn"
-                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
+                <button id="close-inline-edit-btn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
                     <img src="../assets/img/close.svg" class="w-6 h-6 opacity-70 hover:opacity-100 transition-opacity" alt="Fechar">
                 </button>
             </div>
-            <div class="p-6 space-y-4">
+            <div class="p-6 space-y-4 overflow-y-auto">
                 <input type="hidden" id="edit-card-index">
+                <input type="hidden" id="edit-card-type">
+
                 <div>
-                    <label class="block text-sm font-medium mb-1">Pergunta</label>
-                    <textarea id="edit-card-desc" rows="3"
-                        class="w-full p-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded focus:ring-2"></textarea>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Pergunta / Conceito</label>
+                    <textarea id="edit-card-desc" rows="3" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 text-sm"></textarea>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Resposta Principal</label>
-                    <input type="text" id="edit-card-ans1"
-                        class="w-full p-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded focus:ring-2">
+
+                <!-- Traditional Open Answer -->
+                <div id="edit-card-ans1-group">
+                    <label id="edit-card-ans1-label" class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Resposta Principal</label>
+                    <input type="text" id="edit-card-ans1" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 text-sm">
                 </div>
+
+                <!-- Traditional Double Second Answer -->
                 <div id="edit-card-ans2-group" class="hidden">
-                    <label class="block text-sm font-medium mb-1">Resposta Secundária (Para duplas)</label>
-                    <input type="text" id="edit-card-ans2"
-                        class="w-full p-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded focus:ring-2">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Resposta 2</label>
+                    <input type="text" id="edit-card-ans2" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 text-sm">
                 </div>
+
+                <!-- Anki Answer -->
+                <div id="edit-card-anki-group" class="hidden space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Resposta Detalhada</label>
+                        <textarea id="edit-card-anki-answer" rows="3" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 text-sm"></textarea>
+                    </div>
+                </div>
+
+                <!-- Multiple Choice Options Editor -->
+                <div id="edit-card-mc-group" class="hidden space-y-3">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Alternativas (2 a 6)</label>
+                        <span class="text-xs text-gray-500">Marque a correta</span>
+                    </div>
+                    <div id="edit-card-mc-list" class="space-y-2"></div>
+                    <button type="button" id="edit-card-add-mc-opt-btn" class="w-full py-1.5 border border-dashed border-gray-300 dark:border-gray-600 text-xs font-bold text-blue-600 rounded-xl transition flex items-center justify-center gap-1">
+                        + Adicionar Alternativa
+                    </button>
+                </div>
+
+                <!-- Card Image -->
                 <div>
-                    <label class="block text-sm font-medium mb-1">Imagem (Opcional)</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Imagem da Pergunta (Opcional)</label>
                     <div class="space-y-2">
-                        <div id="inline-edit-image-preview-container" class="hidden relative group w-full max-h-48 overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-2">
-                            <img id="inline-edit-image-preview" src="" alt="Preview" class="max-h-40 w-auto object-contain rounded">
+                        <div id="inline-edit-image-preview-container" class="hidden relative group w-full max-h-40 overflow-hidden rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-2">
+                            <img id="inline-edit-image-preview" src="" alt="Preview" class="max-h-36 w-auto object-contain rounded">
                             <button type="button" id="inline-edit-remove-image-btn" class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-full shadow transition" title="Remover Imagem">
                                 <img src="../assets/img/close.svg" class="w-4 h-4 invert" alt="Remover">
                             </button>
                         </div>
-                        <div class="flex flex-col sm:flex-row gap-2">
-                            <input type="file" id="inline-edit-image-file" accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/40 dark:file:text-blue-300 cursor-pointer">
-                            <input type="text" id="inline-edit-image-url" placeholder="ou cole a URL da imagem..." class="w-full p-2 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded focus:ring-2">
+                        <input type="file" id="inline-edit-image-file" accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Anki Answer Image (if applicable) -->
+                <div id="inline-edit-ans-image-group" class="hidden">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Imagem da Resposta (Anki Opcional)</label>
+                    <div class="space-y-2">
+                        <div id="inline-edit-ans-image-preview-container" class="hidden relative group w-full max-h-40 overflow-hidden rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-2">
+                            <img id="inline-edit-ans-image-preview" src="" alt="Preview" class="max-h-36 w-auto object-contain rounded">
+                            <button type="button" id="inline-edit-remove-ans-image-btn" class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-full shadow transition" title="Remover Imagem">
+                                <img src="../assets/img/close.svg" class="w-4 h-4 invert" alt="Remover">
+                            </button>
                         </div>
+                        <input type="file" id="inline-edit-ans-image-file" accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
                     </div>
                 </div>
             </div>
-            <div
-                class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-gray-750">
-                <button id="cancel-inline-edit-btn"
-                    class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded hover:bg-gray-400">Cancelar</button>
-                <button id="save-inline-edit-btn"
-                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button>
+            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-gray-750">
+                <button id="cancel-inline-edit-btn" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-400">Cancelar</button>
+                <button id="save-inline-edit-btn" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700">Salvar Alterações</button>
             </div>
         </div>
     </div>
 
-    <!-- API Key Instructions Modal -->
-    <div id="instructions-modal"
-        class="hidden fixed inset-0 modal-overlay bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
-        <div
-            class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-            <div
-                class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
+    <!-- API KEY INSTRUCTIONS MODAL -->
+    <div id="instructions-modal" class="hidden fixed inset-0 modal-overlay bg-black bg-opacity-60 z-[60] flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
                 <h3 class="font-bold text-xl text-gray-800 dark:text-white">Como criar sua API Key</h3>
-                <button id="close-instructions-btn"
-                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
+                <button id="close-instructions-btn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
                     <img src="../assets/img/close.svg" class="w-8 h-8 opacity-70 hover:opacity-100 transition-opacity" alt="Fechar">
                 </button>
             </div>
 
             <div class="p-6 space-y-8 overflow-y-auto">
-                <!-- Step 1 -->
                 <div class="space-y-3">
                     <div class="flex items-center gap-3">
-                        <span
-                            class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">1</span>
+                        <span class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">1</span>
                         <p class="font-semibold text-lg">Aceite os termos</p>
                     </div>
-                    <img src="../assets/img/instruction1.png" alt="Passo 1"
-                        class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <img src="../assets/img/instruction1.png" alt="Passo 1" class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 </div>
 
-                <!-- Step 2 -->
                 <div class="space-y-3">
                     <div class="flex items-center gap-3">
-                        <span
-                            class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">2</span>
+                        <span class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">2</span>
                         <p class="font-semibold text-lg">Aguarde a chave ser criada</p>
                     </div>
-                    <img src="../assets/img/instruction2.png" alt="Passo 2"
-                        class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <img src="../assets/img/instruction2.png" alt="Passo 2" class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 </div>
 
-                <!-- Step 3 -->
                 <div class="space-y-3">
                     <div class="flex items-center gap-3">
-                        <span
-                            class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">3</span>
+                        <span class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">3</span>
                         <p class="font-semibold text-lg">Copie a chave</p>
                     </div>
-                    <img src="../assets/img/instruction3.png" alt="Passo 3"
-                        class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <img src="../assets/img/instruction3.png" alt="Passo 3" class="w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 </div>
             </div>
 
-            <div
-                class="px-6 py-5 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-4 bg-gray-50 dark:bg-gray-750">
-                <a href="https://aistudio.google.com/app/api-keys" target="_blank" id="create-key-external-btn"
-                    class="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg">
-                    Criar
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                    </svg>
+            <div class="px-6 py-5 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-4 bg-gray-50 dark:bg-gray-750">
+                <a href="https://aistudio.google.com/app/api-keys" target="_blank" id="create-key-external-btn" class="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg">
+                    Criar Chave no Google
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                 </a>
-                <button id="instructions-ready-btn"
-                    class="px-8 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white font-bold rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                <button id="instructions-ready-btn" class="px-8 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white font-bold rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition">
                     Pronto
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Gemini API Error / Down Modal -->
-    <div id="gemini-down-modal"
-        class="hidden fixed inset-0 modal-overlay bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+    <!-- GEMINI API DOWN MODAL -->
+    <div id="gemini-down-modal" class="hidden fixed inset-0 modal-overlay bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
         <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col p-6 text-center">
             <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 dark:text-red-400">
                 <img src="../assets/img/cloud_alert.svg" class="w-10 h-10" alt="Alerta de Conexão">
             </div>
             <h3 class="font-bold text-xl text-gray-800 dark:text-white mb-2">API do Gemini Indisponível</h3>
             <p class="text-sm text-gray-600 dark:text-gray-300 mb-6" id="gemini-down-modal-msg">
-                A API do Gemini está temporariamente fora do ar ou enfrentando alta demanda (Erro 503). Como você prefere prosseguir?
+                A API do Gemini está temporariamente fora do ar ou enfrentando alta demanda. Como você prefere prosseguir?
             </p>
             <div class="flex flex-col gap-3">
-                <button id="use-traditional-txt-btn"
-                    class="w-full py-3 px-4 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold rounded-xl text-sm transition flex items-center justify-center gap-2">
+                <button id="use-traditional-txt-btn" class="w-full py-3 px-4 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold rounded-xl text-sm transition flex items-center justify-center gap-2">
                     <img src="../assets/img/edit.svg" class="w-4 h-4 opacity-70" alt="Texto">
                     Usar apenas conversão tradicional (TXT)
                 </button>
-                <button id="retry-gemini-btn"
-                    class="w-full py-3 px-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-sm shadow-md transition flex items-center justify-center gap-2">
+                <button id="retry-gemini-btn" class="w-full py-3 px-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-sm shadow-md transition flex items-center justify-center gap-2">
                     <img src="../assets/img/ai.svg" class="w-4 h-4" alt="IA">
                     Tentar Novamente
                 </button>
@@ -452,78 +760,8 @@
         </div>
     </div>
 
-    <!-- External script -->
+    <!-- External Script Module -->
     <script type="module" src="../js/generate.js"></script>
-    <script>
-        (function() {
-            function initCollapsibleChat() {
-                const chatInput = document.getElementById('chat-input');
-                const chatContainer = document.getElementById('ai-editor-chat');
-                const toggleChatBtn = document.getElementById('toggle-chat-btn');
-                
-                if (!chatInput || !chatContainer) {
-                    setTimeout(initCollapsibleChat, 100);
-                    return;
-                }
-
-                function expandChat() {
-                    if (window.innerWidth < 768 && chatContainer.classList.contains('collapsed')) {
-                        chatContainer.classList.remove('collapsed');
-                        chatContainer.classList.add('expanded');
-                        const chatHistory = document.getElementById('chat-history');
-                        if (chatHistory) {
-                            setTimeout(() => {
-                                chatHistory.scrollTop = chatHistory.scrollHeight;
-                            }, 50);
-                        }
-                    }
-                }
-
-                function collapseChat() {
-                    if (window.innerWidth < 768 && chatContainer.classList.contains('expanded')) {
-                        chatContainer.classList.remove('expanded');
-                        chatContainer.classList.add('collapsed');
-                    }
-                }
-
-                // Expand on input interactions
-                chatInput.addEventListener('focus', expandChat);
-                chatInput.addEventListener('click', expandChat);
-                chatInput.addEventListener('input', expandChat);
-
-                // Expand when user clicks send button or submits
-                const chatSendBtn = document.getElementById('chat-send-btn');
-                if (chatSendBtn) {
-                    chatSendBtn.addEventListener('click', () => {
-                        setTimeout(expandChat, 10);
-                    });
-                }
-                chatInput.addEventListener('keyup', (e) => {
-                    if (e.key === 'Enter') {
-                        setTimeout(expandChat, 10);
-                    }
-                });
-
-                // Toggle chat button (Mobile only chevron)
-                if (toggleChatBtn) {
-                    toggleChatBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        if (chatContainer.classList.contains('expanded')) {
-                            collapseChat();
-                        } else {
-                            expandChat();
-                        }
-                    });
-                }
-            }
-
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initCollapsibleChat);
-            } else {
-                initCollapsibleChat();
-            }
-        })();
-    </script>
 </body>
 
 </html>

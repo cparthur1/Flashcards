@@ -55,7 +55,36 @@ const openDoubleAnswerArea = document.getElementById('open-double-answer-area');
 const answerInput1 = document.getElementById('answer-input-1');
 const answerInput2 = document.getElementById('answer-input-2');
 const mcAnswerArea = document.getElementById('mc-answer-area');
-const mcOptionBtns = document.querySelectorAll('.mc-option-btn');
+let mcOptionBtns = document.querySelectorAll('.mc-option-btn');
+
+// Anki DOM Elements
+const ankiAnswerContainer = document.getElementById('anki-answer-container');
+const ankiAnswerText = document.getElementById('anki-answer-text');
+const ankiAnswerImageContainer = document.getElementById('anki-answer-image-container');
+const ankiAnswerImage = document.getElementById('anki-answer-image');
+
+const ankiControlsArea = document.getElementById('anki-controls-area');
+const ankiUnflippedControls = document.getElementById('anki-unflipped-controls');
+const ankiFlippedControls = document.getElementById('anki-flipped-controls');
+const ankiFlipBtn = document.getElementById('anki-flip-btn');
+const ankiBtnAgain = document.getElementById('anki-btn-again');
+const ankiBtnHard = document.getElementById('anki-btn-hard');
+const ankiBtnGood = document.getElementById('anki-btn-good');
+const ankiBtnEasy = document.getElementById('anki-btn-easy');
+
+// Edit Modal Additional Fields
+const editAnswer1Group = document.getElementById('edit-answer-1-group');
+const editAnswer1Label = document.getElementById('edit-answer-1-label');
+const editAnkiAnswerGroup = document.getElementById('edit-anki-answer-group');
+const editAnkiAnswerInput = document.getElementById('edit-anki-answer-input');
+const editMcOptionsGroup = document.getElementById('edit-mc-options-group');
+const editMcOptionsList = document.getElementById('edit-mc-options-list');
+const editAddMcOptBtn = document.getElementById('edit-add-mc-opt-btn');
+const editAnsImageGroup = document.getElementById('edit-ans-image-group');
+const editAnsImagePreviewContainer = document.getElementById('edit-ans-image-preview-container');
+const editAnsImagePreview = document.getElementById('edit-ans-image-preview');
+const editRemoveAnsImageBtn = document.getElementById('edit-remove-ans-image-btn');
+const editAnsImageFileInput = document.getElementById('edit-ans-image-file-input');
 
 const submitBtn = document.getElementById('submit-btn');
 const nextQuestionBtn = document.getElementById('next-question-btn');
@@ -94,6 +123,9 @@ let balls = [];
 let isFirstQuestion = true;
 let hasChatInteraction = false;
 let isAnimating = false;
+let currentStep = 0;
+let isAnkiFlipped = false;
+let pendingEditAnsImage = '';
 
 // --- AI STATE ---
 let isAiEnabled = false;
@@ -454,27 +486,58 @@ function loadQuestion() {
         questionText.textContent = "Parabéns! Você concluiu todas as questões. Reiniciando...";
         deleteCardBtn.classList.add('hidden');
         bookmarkCardBtn.classList.add('hidden');
+        if (ankiControlsArea) ankiControlsArea.classList.add('hidden');
+        if (ankiAnswerContainer) ankiAnswerContainer.classList.add('hidden');
         setTimeout(() => {
             balls = [];
             score = 0;
             scoreDisplay.textContent = '0';
             questionsPool = [...allQuestions];
+            currentStep = 0;
             loadQuestion();
         }, 3000);
         return;
     }
 
+    currentStep++;
     resetUI();
     bookmarkCardBtn.classList.remove('hidden');
     questionsLeftDisplay.textContent = questionsPool.length;
-    currentQuestionIndexInPool = Math.floor(Math.random() * questionsPool.length);
+
+    // Selection algorithm:
+    // 1. Check if there are due Anki cards (dueStep <= currentStep)
+    const dueAnkiCards = questionsPool
+        .map((card, idx) => ({ card, idx }))
+        .filter(item => item.card.type === 'anki' && item.card.dueStep !== undefined && item.card.dueStep <= currentStep);
+
+    if (dueAnkiCards.length > 0) {
+        dueAnkiCards.sort((a, b) => a.card.dueStep - b.card.dueStep);
+        currentQuestionIndexInPool = dueAnkiCards[0].idx;
+    } else {
+        // 2. Otherwise pick randomly among available cards (non-Anki cards or ready Anki cards)
+        const availableCards = questionsPool
+            .map((card, idx) => ({ card, idx }))
+            .filter(item => item.card.dueStep === undefined || item.card.dueStep <= currentStep);
+
+        if (availableCards.length > 0) {
+            const randItem = availableCards[Math.floor(Math.random() * availableCards.length)];
+            currentQuestionIndexInPool = randItem.idx;
+        } else {
+            // 3. Fallback: all remaining cards are future Anki cards, pick the closest one
+            const sortedAll = questionsPool
+                .map((card, idx) => ({ card, idx }))
+                .sort((a, b) => (a.card.dueStep || 0) - (b.card.dueStep || 0));
+            currentQuestionIndexInPool = sortedAll[0].idx;
+        }
+    }
+
     currentQuestion = questionsPool[currentQuestionIndexInPool];
     renderBookmarkIcon();
     
     if (activeMode === 'notebook' && currentQuestion.sourceDeck) {
-        questionText.innerHTML = `<span class="text-xs uppercase tracking-wider text-blue-500 font-bold mb-1.5 block">${currentQuestion.sourceDeck}</span>${currentQuestion.description}`;
+        questionText.innerHTML = `<span class="text-xs uppercase tracking-wider text-blue-500 font-bold mb-1.5 block">${currentQuestion.sourceDeck}</span>${currentQuestion.description || ''}`;
     } else {
-        questionText.textContent = currentQuestion.description;
+        questionText.textContent = currentQuestion.description || '';
     }
 
     if (currentQuestion.image && questionImage && questionImageContainer) {
@@ -488,22 +551,25 @@ function loadQuestion() {
     openAnswerArea.classList.add('hidden');
     openDoubleAnswerArea.classList.add('hidden');
     mcAnswerArea.classList.add('hidden');
+    if (ankiAnswerContainer) ankiAnswerContainer.classList.add('hidden');
+    if (ankiControlsArea) ankiControlsArea.classList.add('hidden');
+
     const actionButtonsArea = document.getElementById('action-buttons-area');
     if (actionButtonsArea) actionButtonsArea.classList.remove('hidden');
     deleteCardBtn.classList.remove('hidden');
 
-    if (currentQuestion.type === 'multiple_choice' && currentQuestion.options) {
+    if (currentQuestion.type === 'anki') {
+        if (actionButtonsArea) actionButtonsArea.classList.add('hidden');
+        if (ankiControlsArea) {
+            ankiControlsArea.classList.remove('hidden');
+            ankiUnflippedControls.classList.remove('hidden');
+            ankiFlippedControls.classList.add('hidden');
+        }
+        isAnkiFlipped = false;
+    } else if (currentQuestion.type === 'multiple_choice' && currentQuestion.options) {
         mcAnswerArea.classList.remove('hidden');
         submitBtn.classList.add('hidden'); // MCQ submits on click
-        const options = [...currentQuestion.options];
-        shuffleArray(options);
-        mcOptionBtns.forEach((btn, i) => {
-            if (options[i]) {
-                btn.textContent = options[i];
-                btn.classList.remove('hidden');
-                btn.onclick = () => handleMCSubmit(btn);
-            } else btn.classList.add('hidden');
-        });
+        renderDynamicMcOptions(currentQuestion.options);
     } else if (currentQuestion.type === 'open_double') {
         openDoubleAnswerArea.classList.remove('hidden');
         submitBtn.classList.remove('hidden');
@@ -548,6 +614,102 @@ function loadQuestion() {
     }
 }
 
+function renderDynamicMcOptions(rawOptions) {
+    mcAnswerArea.innerHTML = '';
+    const options = [...rawOptions].filter(Boolean);
+    shuffleArray(options);
+
+    // Responsive grid classes for 2 to 6 options
+    if (options.length === 2) {
+        mcAnswerArea.className = "grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10";
+    } else if (options.length === 3) {
+        mcAnswerArea.className = "grid grid-cols-1 sm:grid-cols-3 gap-3 relative z-10";
+    } else if (options.length === 4) {
+        mcAnswerArea.className = "grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10";
+    } else {
+        mcAnswerArea.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 relative z-10";
+    }
+
+    options.forEach(optText => {
+        const btn = document.createElement('button');
+        btn.className = "mc-option-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-blue-200 dark:hover:bg-blue-800 text-gray-800 dark:text-gray-200 font-semibold py-3.5 px-4 rounded-xl text-md transition text-left sm:text-center shadow-sm";
+        btn.textContent = optText;
+        btn.onclick = () => handleMCSubmit(btn);
+        mcAnswerArea.appendChild(btn);
+    });
+}
+
+function flipAnkiCard() {
+    if (currentQuestion.type !== 'anki' || isAnkiFlipped) return;
+    isAnkiFlipped = true;
+
+    if (ankiAnswerContainer) {
+        ankiAnswerText.textContent = currentQuestion.answer || '';
+        if (currentQuestion.answerImage && ankiAnswerImage && ankiAnswerImageContainer) {
+            ankiAnswerImage.src = currentQuestion.answerImage;
+            ankiAnswerImageContainer.classList.remove('hidden');
+        } else if (ankiAnswerImageContainer) {
+            ankiAnswerImageContainer.classList.add('hidden');
+            ankiAnswerImage.src = '';
+        }
+        ankiAnswerContainer.classList.remove('hidden');
+    }
+
+    if (ankiUnflippedControls) ankiUnflippedControls.classList.add('hidden');
+    if (ankiFlippedControls) ankiFlippedControls.classList.remove('hidden');
+}
+
+function handleAnkiRating(rating) {
+    if (currentQuestion.type !== 'anki' || !isAnkiFlipped) return;
+    if (isAnimating) return;
+
+    if (rating === 'easy') {
+        // "easy": removes card from deck
+        createBall(true);
+        questionCard.classList.add('glow-correct');
+        score++;
+        questionsPool.splice(currentQuestionIndexInPool, 1);
+        saveGameState();
+        setTimeout(() => {
+            animateCardToHeader(() => {
+                updateScoreDisplay();
+                loadQuestion();
+            });
+        }, 300);
+    } else if (rating === 'good') {
+        // "medium": keeps card in rotation with moderate repetition frequency (+8)
+        createBall(true);
+        currentQuestion.dueStep = currentStep + 8;
+        saveGameState();
+        animateCardToBack(() => {
+            loadQuestion();
+        });
+    } else if (rating === 'hard') {
+        // "hard": keeps card in rotation with medium-high repetition frequency (+4)
+        createBall(false);
+        currentQuestion.dueStep = currentStep + 4;
+        saveGameState();
+        animateCardToBack(() => {
+            loadQuestion();
+        });
+    } else if (rating === 'again') {
+        // "errei": keeps card in rotation with high repetition frequency (+2)
+        createBall(false);
+        questionCard.classList.remove('card-shake');
+        void questionCard.offsetWidth;
+        questionCard.classList.add('card-shake');
+        setTimeout(() => questionCard.classList.remove('card-shake'), 450);
+
+        currentQuestion.dueStep = currentStep + 2;
+        saveGameState();
+        setTimeout(() => {
+            animateCardToBack(() => {
+                loadQuestion();
+            });
+        }, 400);
+    }
+}
+
 function resetUI() {
     [answerInput, answerInput1, answerInput2].forEach(inp => {
         inp.value = ''; inp.disabled = false;
@@ -556,6 +718,10 @@ function resetUI() {
     answerInput.placeholder = 'Digite sua resposta aqui...';
 
     delete currentQuestion.isBeingCorrected;
+    isAnkiFlipped = false;
+    if (ankiAnswerContainer) ankiAnswerContainer.classList.add('hidden');
+    if (ankiControlsArea) ankiControlsArea.classList.add('hidden');
+
     submitBtn.disabled = false;
     submitBtn.classList.remove('hidden');
     nextQuestionBtn.classList.add('hidden');
@@ -564,7 +730,8 @@ function resetUI() {
     questionCard.classList.remove('glow-correct', 'glow-incorrect', 'card-shake');
     questionText.classList.remove('text-red-500', 'text-green-500');
 
-    mcOptionBtns.forEach(btn => {
+    const dynamicMcBtns = mcAnswerArea.querySelectorAll('.mc-option-btn');
+    dynamicMcBtns.forEach(btn => {
         btn.disabled = false;
         btn.classList.remove('bg-green-500', 'bg-red-500', 'text-white');
         btn.classList.add('bg-gray-200', 'dark:bg-gray-600');
@@ -633,10 +800,11 @@ function showFeedback(isCorrect, element) {
     }
 
     if (element) {
-        mcOptionBtns.forEach(b => b.disabled = true);
+        const dynamicMcBtns = mcAnswerArea.querySelectorAll('.mc-option-btn');
+        dynamicMcBtns.forEach(b => b.disabled = true);
         element.classList.add(isCorrect ? 'bg-green-500' : 'bg-red-500', 'text-white');
         if (!isCorrect) {
-            mcOptionBtns.forEach(b => {
+            dynamicMcBtns.forEach(b => {
                 if (normalizeString(b.textContent) === normalizeString(currentQuestion.answer)) b.classList.add('bg-green-500', 'text-white');
             });
         }
@@ -681,8 +849,10 @@ function updateFeedbackText() {
                 <span class="text-green-500 font-semibold mt-2 block">${label1}: ${currentQuestion.answer.replace('/', ' ou ')}</span>
                 <span class="text-green-500 font-semibold mt-2 block">${label2}: ${currentQuestion.answer2.replace('/', ' ou ')}</span>
             `;
+        } else if (currentQuestion.type === 'anki') {
+            questionText.innerHTML = `${currentQuestion.description}<br><span class="text-indigo-500 font-semibold mt-2 block">Resposta: ${currentQuestion.answer || ''}</span>`;
         } else {
-            const a1 = currentQuestion.answer.replace('/', ' ou ');
+            const a1 = (currentQuestion.answer || '').replace('/', ' ou ');
             questionText.innerHTML = `${currentQuestion.description}<br><span class="text-green-500 font-semibold mt-2 block">Resposta: ${a1}</span>`;
         }
     } else questionText.textContent = currentQuestion.description;
@@ -1080,6 +1250,125 @@ const handleDelete = () => {
 deleteCardBtn.addEventListener('click', handleDelete);
 deleteCorrectionBtn.addEventListener('click', handleDelete);
 
+// --- ANKI CONTROLS & GAMEPAD LOGIC ---
+if (ankiFlipBtn) ankiFlipBtn.addEventListener('click', flipAnkiCard);
+if (ankiBtnAgain) ankiBtnAgain.addEventListener('click', () => handleAnkiRating('again'));
+if (ankiBtnHard) ankiBtnHard.addEventListener('click', () => handleAnkiRating('hard'));
+if (ankiBtnGood) ankiBtnGood.addEventListener('click', () => handleAnkiRating('good'));
+if (ankiBtnEasy) ankiBtnEasy.addEventListener('click', () => handleAnkiRating('easy'));
+
+// Question card click to flip for Anki
+if (questionCard) {
+    questionCard.addEventListener('click', (e) => {
+        if (currentQuestion && currentQuestion.type === 'anki' && !isAnkiFlipped) {
+            // Ignore if clicked on bookmark, delete, or image zoom
+            if (e.target.closest('#bookmark-card-btn') || e.target.closest('#delete-card-btn') || e.target.closest('#question-image-container')) {
+                return;
+            }
+            flipAnkiCard();
+        }
+    });
+}
+
+// Keyboard shortcuts for study flow
+document.addEventListener('keydown', (e) => {
+    // Ignore when typing in inputs or textareas
+    const activeEl = document.activeElement;
+    if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+        return;
+    }
+    // Ignore when any modal is open
+    const isModalOpen = [editModal, apiModal, instructionsModal, imageZoomModal].some(m => m && !m.classList.contains('hidden'));
+    if (isModalOpen) return;
+
+    if (currentQuestion && currentQuestion.type === 'anki') {
+        if (!isAnkiFlipped) {
+            if (e.code === 'Space' || e.key === 'Enter') {
+                e.preventDefault();
+                flipAnkiCard();
+            }
+        } else {
+            if (e.key === '1' || e.code === 'Numpad1') {
+                e.preventDefault();
+                handleAnkiRating('again');
+            } else if (e.key === '2' || e.code === 'Numpad2') {
+                e.preventDefault();
+                handleAnkiRating('hard');
+            } else if (e.key === '3' || e.code === 'Numpad3' || e.code === 'Space' || e.key === 'Enter') {
+                e.preventDefault();
+                handleAnkiRating('good');
+            } else if (e.key === '4' || e.code === 'Numpad4') {
+                e.preventDefault();
+                handleAnkiRating('easy');
+            }
+        }
+    } else if (currentQuestion && currentQuestion.type === 'multiple_choice') {
+        const keyNum = parseInt(e.key);
+        if (!isNaN(keyNum) && keyNum >= 1 && keyNum <= 6) {
+            const btns = mcAnswerArea.querySelectorAll('.mc-option-btn');
+            if (btns[keyNum - 1] && !btns[keyNum - 1].disabled) {
+                e.preventDefault();
+                btns[keyNum - 1].click();
+            }
+        }
+    }
+});
+
+// Gamepad API controller polling
+let lastGamepadButtonState = {};
+
+function pollGamepad() {
+    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+    for (const gp of gamepads) {
+        if (!gp) continue;
+        
+        const isPressed = (btnIndex) => {
+            const b = gp.buttons[btnIndex];
+            if (!b) return false;
+            return typeof b === 'object' ? b.pressed : b > 0.5;
+        };
+
+        const justPressed = (btnIndex) => {
+            const pressed = isPressed(btnIndex);
+            const key = `${gp.index}_${btnIndex}`;
+            const wasPressed = !!lastGamepadButtonState[key];
+            lastGamepadButtonState[key] = pressed;
+            return pressed && !wasPressed;
+        };
+
+        const isModalOpen = [editModal, apiModal, instructionsModal, imageZoomModal].some(m => m && !m.classList.contains('hidden'));
+        if (isModalOpen) continue;
+
+        if (currentQuestion && currentQuestion.type === 'anki') {
+            if (!isAnkiFlipped) {
+                // Any face button or shoulder triggers card flip
+                if (justPressed(0) || justPressed(1) || justPressed(2) || justPressed(3) || justPressed(4) || justPressed(5)) {
+                    flipAnkiCard();
+                }
+            } else {
+                // Gamepad layout:
+                // Errei (Left / red): X (button 2), Dpad Left (button 14), L1 (button 4)
+                if (justPressed(2) || justPressed(14) || justPressed(4)) {
+                    handleAnkiRating('again');
+                }
+                // Difícil (Top / orange): Y (button 3), Dpad Up (button 12)
+                else if (justPressed(3) || justPressed(12)) {
+                    handleAnkiRating('hard');
+                }
+                // Médio (Bottom / green): A (button 0), Dpad Down (button 13), R1 (button 5)
+                else if (justPressed(0) || justPressed(13) || justPressed(5)) {
+                    handleAnkiRating('good');
+                }
+                // Fácil (Right / blue): B (button 1), Dpad Right (button 15)
+                else if (justPressed(1) || justPressed(15)) {
+                    handleAnkiRating('easy');
+                }
+            }
+        }
+    }
+    requestAnimationFrame(pollGamepad);
+}
+
 // --- IMAGE LIGHTBOX ZOOM ---
 if (questionImage && imageZoomModal && zoomedImage) {
     questionImage.addEventListener('click', () => {
@@ -1102,7 +1391,7 @@ if (imageZoomModal) {
     });
 }
 
-// --- EDIT MODAL IMAGE HANDLING ---
+// --- EDIT MODAL HANDLING (FOR ALL CARD TYPES) ---
 let pendingEditImage = '';
 
 function updateEditImagePreviewUI(imgSrc) {
@@ -1112,6 +1401,16 @@ function updateEditImagePreviewUI(imgSrc) {
     } else if (editImagePreviewContainer) {
         if (editImagePreview) editImagePreview.src = '';
         editImagePreviewContainer.classList.add('hidden');
+    }
+}
+
+function updateEditAnsImagePreviewUI(imgSrc) {
+    if (imgSrc && editAnsImagePreview && editAnsImagePreviewContainer) {
+        editAnsImagePreview.src = imgSrc;
+        editAnsImagePreviewContainer.classList.remove('hidden');
+    } else if (editAnsImagePreviewContainer) {
+        if (editAnsImagePreview) editAnsImagePreview.src = '';
+        editAnsImagePreviewContainer.classList.add('hidden');
     }
 }
 
@@ -1148,23 +1447,129 @@ if (editRemoveImageBtn) {
     });
 }
 
+if (editAnsImageFileInput) {
+    editAnsImageFileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            try {
+                pendingEditAnsImage = await compressImageFile(file);
+                updateEditAnsImagePreviewUI(pendingEditAnsImage);
+            } catch (err) {
+                console.error('Erro ao comprimir imagem de resposta:', err);
+            }
+        }
+    });
+}
+
+if (editRemoveAnsImageBtn) {
+    editRemoveAnsImageBtn.addEventListener('click', () => {
+        pendingEditAnsImage = '';
+        if (editAnsImageFileInput) editAnsImageFileInput.value = '';
+        updateEditAnsImagePreviewUI('');
+    });
+}
+
+// Edit Modal MCQ Options
+function renderEditMcOptions(options = ["", "", "", ""], correctAnswer = "") {
+    if (!editMcOptionsList) return;
+    editMcOptionsList.innerHTML = '';
+    options.forEach((optText, i) => {
+        const isCorrect = optText === correctAnswer;
+        const row = document.createElement('div');
+        row.className = "flex items-center gap-2";
+        row.innerHTML = `
+            <input type="radio" name="edit-mc-correct" value="${i}" ${isCorrect ? 'checked' : ''} class="w-4 h-4 text-blue-600 focus:ring-blue-500 cursor-pointer" title="Marcar como correta">
+            <input type="text" class="edit-mc-opt-val flex-1 p-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm" value="${optText}">
+            <button type="button" class="edit-mc-remove-opt-btn p-1 text-gray-400 hover:text-red-500 transition" title="Remover alternativa">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </button>
+        `;
+        const removeBtn = row.querySelector('.edit-mc-remove-opt-btn');
+        removeBtn.addEventListener('click', () => {
+            const currentVals = Array.from(document.querySelectorAll('.edit-mc-opt-val')).map(inp => inp.value);
+            if (currentVals.length <= 2) {
+                alert("A questão de múltipla escolha deve conter pelo menos 2 alternativas.");
+                return;
+            }
+            currentVals.splice(i, 1);
+            renderEditMcOptions(currentVals, correctAnswer);
+        });
+        editMcOptionsList.appendChild(row);
+    });
+
+    if (editAddMcOptBtn) {
+        editAddMcOptBtn.classList.toggle('hidden', options.length >= 6);
+    }
+}
+
+if (editAddMcOptBtn) {
+    editAddMcOptBtn.addEventListener('click', () => {
+        const currentVals = Array.from(document.querySelectorAll('.edit-mc-opt-val')).map(inp => inp.value);
+        if (currentVals.length >= 6) return;
+        currentVals.push("");
+        const checkedRadio = document.querySelector('input[name="edit-mc-correct"]:checked');
+        const correctIdx = checkedRadio ? parseInt(checkedRadio.value) : 0;
+        const curCorrect = currentVals[correctIdx] || "";
+        renderEditMcOptions(currentVals, curCorrect);
+    });
+}
+
 editBtn.addEventListener('click', () => {
-    editQuestionInput.value = currentQuestion.description;
-    editAnswerInput.value = currentQuestion.answer;
-    editAnswer2Group.classList.toggle('hidden', currentQuestion.type !== 'open_double');
-    editAnswer2Input.value = currentQuestion.answer2 || '';
+    editQuestionInput.value = currentQuestion.description || '';
+
+    const t = currentQuestion.type || 'open';
+    if (editAnswer1Group) editAnswer1Group.classList.toggle('hidden', t === 'anki' || t === 'multiple_choice');
+    if (editAnswer2Group) editAnswer2Group.classList.toggle('hidden', t !== 'open_double');
+    if (editAnkiAnswerGroup) editAnkiAnswerGroup.classList.toggle('hidden', t !== 'anki');
+    if (editMcOptionsGroup) editMcOptionsGroup.classList.toggle('hidden', t !== 'multiple_choice');
+    if (editAnsImageGroup) editAnsImageGroup.classList.toggle('hidden', t !== 'anki');
+
+    if (t === 'open') {
+        if (editAnswer1Label) editAnswer1Label.textContent = "Resposta Principal";
+        editAnswerInput.value = currentQuestion.answer || '';
+    } else if (t === 'open_double') {
+        if (editAnswer1Label) editAnswer1Label.textContent = "Resposta 1";
+        editAnswerInput.value = currentQuestion.answer || '';
+        editAnswer2Input.value = currentQuestion.answer2 || '';
+    } else if (t === 'anki') {
+        editAnkiAnswerInput.value = currentQuestion.answer || '';
+    } else if (t === 'multiple_choice') {
+        renderEditMcOptions(currentQuestion.options || ["", "", "", ""], currentQuestion.answer);
+    }
 
     pendingEditImage = currentQuestion.image || '';
     if (editImageFileInput) editImageFileInput.value = '';
     if (editImageUrlInput) editImageUrlInput.value = '';
     updateEditImagePreviewUI(pendingEditImage);
 
+    pendingEditAnsImage = currentQuestion.answerImage || '';
+    if (editAnsImageFileInput) editAnsImageFileInput.value = '';
+    updateEditAnsImagePreviewUI(pendingEditAnsImage);
+
     editModal.classList.remove('hidden');
 });
+
 saveEditBtn.addEventListener('click', () => {
     currentQuestion.description = editQuestionInput.value;
-    currentQuestion.answer = editAnswerInput.value;
-    if (currentQuestion.type === 'open_double') currentQuestion.answer2 = editAnswer2Input.value;
+
+    const t = currentQuestion.type || 'open';
+    if (t === 'open') {
+        currentQuestion.answer = editAnswerInput.value;
+    } else if (t === 'open_double') {
+        currentQuestion.answer = editAnswerInput.value;
+        currentQuestion.answer2 = editAnswer2Input.value;
+    } else if (t === 'anki') {
+        currentQuestion.answer = editAnkiAnswerInput.value;
+        if (pendingEditAnsImage) currentQuestion.answerImage = pendingEditAnsImage;
+        else delete currentQuestion.answerImage;
+    } else if (t === 'multiple_choice') {
+        const optInputs = Array.from(document.querySelectorAll('.edit-mc-opt-val'));
+        const options = optInputs.map(inp => inp.value.trim()).filter(Boolean);
+        const checkedRadio = document.querySelector('input[name="edit-mc-correct"]:checked');
+        const correctIdx = checkedRadio ? parseInt(checkedRadio.value) : 0;
+        currentQuestion.options = options;
+        currentQuestion.answer = optInputs[correctIdx]?.value.trim() || options[0];
+    }
     
     if (pendingEditImage) {
         currentQuestion.image = pendingEditImage;
@@ -1405,6 +1810,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateScoreDisplay();
     loadQuestion(); 
     initializeAi();
+    requestAnimationFrame(pollGamepad);
 });
 window.addEventListener('resize', resizeCanvas);
 window.addMsg = addMsg;

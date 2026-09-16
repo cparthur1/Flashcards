@@ -17,63 +17,64 @@ function compressPDFWithWorker(file) {
     });
 }
 
-
-// Elements
-const apiKeyInput = document.getElementById('api-key-input');
-const filesUpload = document.getElementById('files-upload');
-const filesCount = document.getElementById('files-count');
-const filesIconsContainer = document.getElementById('files-icons-container');
-const filesUploadText = document.getElementById('files-upload-text');
-const customPrompt = document.getElementById('custom-prompt');
-const generateFilesBtn = document.getElementById('generate-files-btn');
-const spinnerFiles = document.getElementById('spinner-files');
-const filesLoadingMsg = document.getElementById('files-loading-msg');
-
-const txtUpload = document.getElementById('txt-upload');
-const txtCount = document.getElementById('txt-count');
-const txtIconsContainer = document.getElementById('txt-icons-container');
-const txtUploadText = document.getElementById('txt-upload-text');
-const generateTxtBtn = document.getElementById('generate-txt-btn');
-const spinnerTxt = document.getElementById('spinner-txt');
-const txtLoadingMsg = document.getElementById('txt-loading-msg');
-
-const globalError = document.getElementById('global-error');
-const startScratchBtn = document.getElementById('start-scratch-btn');
-
+// --- DOM ELEMENTS ---
 const dashboardView = document.getElementById('dashboard-view');
 const editorView = document.getElementById('editor-view');
+const globalError = document.getElementById('global-error');
 
-const cardsList = document.getElementById('cards-list');
-const deckSizeBadge = document.getElementById('deck-size-badge');
-const deckTitleDisplay = document.getElementById('deck-title-display');
-const downloadDeckBtn = document.getElementById('download-deck-btn');
-const playDeckBtn = document.getElementById('play-deck-btn');
-const addCardBtn = document.getElementById('add-card-btn');
+// Mode Selection Cards (Netflix Style)
+const cardMode11 = document.getElementById('card-mode-1-1');
+const cardMode12 = document.getElementById('card-mode-1-2');
+const cardMode21 = document.getElementById('card-mode-2-1');
+const cardMode22 = document.getElementById('card-mode-2-2');
 
-const chatHistory = document.getElementById('chat-history');
-const chatInput = document.getElementById('chat-input');
-const chatSendBtn = document.getElementById('chat-send-btn');
-const chatSpinner = document.getElementById('chat-spinner');
+// Quick API Key Modal & Button
+const openApiKeyModalBtn = document.getElementById('open-api-key-modal-btn');
+const quickApiModal = document.getElementById('quick-api-modal');
+const quickApiInput = document.getElementById('quick-api-input');
+const saveQuickApiBtn = document.getElementById('save-quick-api-btn');
+const closeQuickApiBtn = document.getElementById('close-quick-api-btn');
+const clearQuickApiBtn = document.getElementById('clear-quick-api-btn');
+const dashboardKeyStatus = document.getElementById('dashboard-key-status');
 
-// Edit Modal
-const editModal = document.getElementById('inline-edit-modal');
-const closeEditBtn = document.getElementById('close-inline-edit-btn');
-const cancelEditBtn = document.getElementById('cancel-inline-edit-btn');
-const saveEditBtn = document.getElementById('save-inline-edit-btn');
-const editCardIndex = document.getElementById('edit-card-index');
-const editCardDesc = document.getElementById('edit-card-desc');
-const editCardAns1 = document.getElementById('edit-card-ans1');
-const editCardAns2 = document.getElementById('edit-card-ans2');
-const editCardAns2Group = document.getElementById('edit-card-ans2-group');
-const inlineEditImagePreviewContainer = document.getElementById('inline-edit-image-preview-container');
-const inlineEditImagePreview = document.getElementById('inline-edit-image-preview');
-const inlineEditRemoveImageBtn = document.getElementById('inline-edit-remove-image-btn');
-const inlineEditImageFile = document.getElementById('inline-edit-image-file');
-const inlineEditImageUrl = document.getElementById('inline-edit-image-url');
+// Modal 1.2 Elements (Convert Doc)
+const modal12 = document.getElementById('modal-1-2');
+const closeModal12Btn = document.getElementById('close-modal-1-2-btn');
+const cancelModal12Btn = document.getElementById('cancel-modal-1-2-btn');
+const submitModal12Btn = document.getElementById('submit-modal-1-2-btn');
+const modal12File = document.getElementById('modal-1-2-file');
+const modal12FileName = document.getElementById('modal-1-2-file-name');
+const modal12Error = document.getElementById('modal-1-2-error');
+
+// Modal 2.1 Elements (AI Materials)
+const modal21 = document.getElementById('modal-2-1');
+const closeModal21Btn = document.getElementById('close-modal-2-1-btn');
+const cancelModal21Btn = document.getElementById('cancel-modal-2-1-btn');
+const submitModal21Btn = document.getElementById('submit-modal-2-1-btn');
+const modal21ApiKey = document.getElementById('modal-2-1-api-key');
+const modal21Files = document.getElementById('modal-2-1-files');
+const modal21FilesText = document.getElementById('modal-2-1-files-text');
+const modal21FilesCount = document.getElementById('modal-2-1-files-count');
+const modal21IconsContainer = document.getElementById('modal-2-1-icons-container');
+const modal21Prompt = document.getElementById('modal-2-1-prompt');
+const modal21Error = document.getElementById('modal-2-1-error');
+const modal21LoadingMsg = document.getElementById('modal-2-1-loading-msg');
+const modal21Spinner = document.getElementById('modal-2-1-spinner');
+
+// Modal 2.2 Elements (AI Enhance Doc)
+const modal22 = document.getElementById('modal-2-2');
+const closeModal22Btn = document.getElementById('close-modal-2-2-btn');
+const cancelModal22Btn = document.getElementById('cancel-modal-2-2-btn');
+const submitModal22Btn = document.getElementById('submit-modal-2-2-btn');
+const modal22ApiKey = document.getElementById('modal-2-2-api-key');
+const modal22File = document.getElementById('modal-2-2-file');
+const modal22FileName = document.getElementById('modal-2-2-file-name');
+const modal22Error = document.getElementById('modal-2-2-error');
+const modal22LoadingMsg = document.getElementById('modal-2-2-loading-msg');
+const modal22Spinner = document.getElementById('modal-2-2-spinner');
 
 // Instructions Modal
 const instructionsModal = document.getElementById('instructions-modal');
-const openInstructionsBtn = document.getElementById('open-instructions-btn');
 const closeInstructionsBtn = document.getElementById('close-instructions-btn');
 const instructionsReadyBtn = document.getElementById('instructions-ready-btn');
 
@@ -83,87 +84,105 @@ const useTraditionalTxtBtn = document.getElementById('use-traditional-txt-btn');
 const retryGeminiBtn = document.getElementById('retry-gemini-btn');
 const closeGeminiDownModalBtn = document.getElementById('close-gemini-down-modal-btn');
 
-let lastFailedSourceType = null;
-let lastFailedLocalCards = null;
+// Editor Sidebar Tabs & Panels
+const tabCreatorBtn = document.getElementById('tab-creator-btn');
+const tabAiChatBtn = document.getElementById('tab-ai-chat-btn');
+const cardCreatorPanel = document.getElementById('card-creator-panel');
+const aiEditorChatPanel = document.getElementById('ai-editor-chat-panel');
 
-function showGeminiDownModal(errorMsg, sourceType, localCards = null) {
-    lastFailedSourceType = sourceType;
-    lastFailedLocalCards = localCards;
-    if (geminiDownModal) {
-        geminiDownModal.classList.remove('hidden');
-    }
-}
+// Card Creator UI Elements
+const creatorCardType = document.getElementById('creator-card-type');
+const creatorTypeHint = document.getElementById('creator-type-hint');
+const creatorQuestionLabel = document.getElementById('creator-question-label');
+const creatorQuestion = document.getElementById('creator-question');
+const creatorQImgFile = document.getElementById('creator-q-img-file');
+const creatorQImgPreviewContainer = document.getElementById('creator-q-img-preview-container');
+const creatorQImgPreview = document.getElementById('creator-q-img-preview');
+const creatorRemoveQImg = document.getElementById('creator-remove-q-img');
 
-function closeGeminiDownModal() {
-    if (geminiDownModal) {
-        geminiDownModal.classList.add('hidden');
-    }
-}
+const creatorGroupOpen = document.getElementById('creator-group-open');
+const creatorAnsOpen = document.getElementById('creator-ans-open');
 
-function applyTraditionalTxtConversion(localCards) {
-    let targetCards = localCards;
+const creatorGroupOpenDouble = document.getElementById('creator-group-open-double');
+const creatorAnsDouble1 = document.getElementById('creator-ans-double-1');
+const creatorAnsDouble2 = document.getElementById('creator-ans-double-2');
 
-    if (!targetCards || targetCards.length === 0) {
-        if (txtUpload.files && txtUpload.files.length > 0) {
-            readTextFile(txtUpload.files[0]).then(text => {
-                const parsed = parseTxtToJSON(text);
-                applyTraditionalTxtConversion(parsed);
-            }).catch(err => {
-                console.error("Erro ao ler TXT para conversão tradicional:", err);
-            });
-            return;
-        } else {
-            globalError.textContent = "A conversão tradicional requer um arquivo .txt formatado. Por favor, selecione um arquivo .txt.";
-            dashboardView.classList.remove('hidden');
-            editorView.classList.add('hidden');
-            editorView.classList.remove('flex');
-            return;
-        }
-    }
+const creatorGroupAnki = document.getElementById('creator-group-anki');
+const creatorAnsAnki = document.getElementById('creator-ans-anki');
+const creatorAnsImgFile = document.getElementById('creator-ans-img-file');
+const creatorAnsImgPreviewContainer = document.getElementById('creator-ans-img-preview-container');
+const creatorAnsImgPreview = document.getElementById('creator-ans-img-preview');
+const creatorRemoveAnsImg = document.getElementById('creator-remove-ans-img');
 
-    // Clean up [GEMINI] placeholder tags for traditional text conversion
-    const cleanedCards = targetCards.map(card => {
-        const copy = { ...card };
-        if (copy.type === 'open_double') {
-            if (copy.placeholder1 === '[GEMINI]') copy.placeholder1 = 'Label 1';
-            if (copy.placeholder2 === '[GEMINI]') copy.placeholder2 = 'Label 2';
-        } else if (copy.type === 'multiple_choice') {
-            if (Array.isArray(copy.options)) {
-                copy.options = copy.options.map((opt, i) => opt === '[GEMINI]' ? `Opção ${i + 1}` : opt);
-            }
-        }
-        return copy;
-    });
+const creatorGroupMc = document.getElementById('creator-group-mc');
+const creatorMcOptionsList = document.getElementById('creator-mc-options-list');
+const creatorAddMcOptBtn = document.getElementById('creator-add-mc-opt-btn');
 
-    deckCards = cleanedCards;
+const creatorFeedback = document.getElementById('creator-feedback');
+const creatorSubmitCardBtn = document.getElementById('creator-submit-card-btn');
 
-    // Transition UI to editor view
-    dashboardView.classList.add('hidden');
-    editorView.classList.remove('hidden');
-    editorView.classList.add('flex');
+// AI Chat Elements
+const chatHistory = document.getElementById('chat-history');
+const chatInput = document.getElementById('chat-input');
+const chatSendBtn = document.getElementById('chat-send-btn');
+const chatSpinner = document.getElementById('chat-spinner');
 
-    const deckContainer = cardsList.parentNode;
-    deckContainer.classList.remove('generating-deck-bg');
-    deckContainer.classList.add('bg-white', 'dark:bg-gray-800');
-    cardsList.classList.remove('bg-transparent');
+// Deck Preview (Right Column)
+const cardsList = document.getElementById('cards-list');
+const deckSizeBadge = document.getElementById('deck-size-badge');
+const deckTitleDisplay = document.getElementById('deck-title-display');
+const downloadDeckBtn = document.getElementById('download-deck-btn');
+const playDeckBtn = document.getElementById('play-deck-btn');
+const addCardBtn = document.getElementById('add-card-btn');
 
-    const fileName = (txtUpload.files && txtUpload.files[0]) ? txtUpload.files[0].name.replace(/\.[^/.]+$/, "") : "Meu Baralho";
-    deckTitleDisplay.value = fileName;
+// Inline Edit Modal
+const inlineEditModal = document.getElementById('inline-edit-modal');
+const closeInlineEditBtn = document.getElementById('close-inline-edit-btn');
+const cancelInlineEditBtn = document.getElementById('cancel-inline-edit-btn');
+const saveInlineEditBtn = document.getElementById('save-inline-edit-btn');
+const editCardIndex = document.getElementById('edit-card-index');
+const editCardType = document.getElementById('edit-card-type');
+const editCardDesc = document.getElementById('edit-card-desc');
+const editCardAns1 = document.getElementById('edit-card-ans1');
+const editCardAns1Group = document.getElementById('edit-card-ans1-group');
+const editCardAns1Label = document.getElementById('edit-card-ans1-label');
+const editCardAns2Group = document.getElementById('edit-card-ans2-group');
+const editCardAns2 = document.getElementById('edit-card-ans2');
+const editCardAnkiGroup = document.getElementById('edit-card-anki-group');
+const editCardAnkiAnswer = document.getElementById('edit-card-anki-answer');
+const editCardMcGroup = document.getElementById('edit-card-mc-group');
+const editCardMcList = document.getElementById('edit-card-mc-list');
+const editCardAddMcOptBtn = document.getElementById('edit-card-add-mc-opt-btn');
 
-    renderCardsList(true);
-}
+const inlineEditImagePreviewContainer = document.getElementById('inline-edit-image-preview-container');
+const inlineEditImagePreview = document.getElementById('inline-edit-image-preview');
+const inlineEditRemoveImageBtn = document.getElementById('inline-edit-remove-image-btn');
+const inlineEditImageFile = document.getElementById('inline-edit-image-file');
 
+const inlineEditAnsImageGroup = document.getElementById('inline-edit-ans-image-group');
+const inlineEditAnsImagePreviewContainer = document.getElementById('inline-edit-ans-image-preview-container');
+const inlineEditAnsImagePreview = document.getElementById('inline-edit-ans-image-preview');
+const inlineEditRemoveAnsImageBtn = document.getElementById('inline-edit-remove-ans-image-btn');
+const inlineEditAnsImageFile = document.getElementById('inline-edit-ans-image-file');
+
+// --- STATE ---
 let deckCards = [];
 let geminiChatSession = null;
 let currentGenModel = null;
 let currentEditorModel = localStorage.getItem('model_fallback_active') === 'true' ? "gemini-flash-lite-latest" : "gemini-flash-latest";
 
+let pendingCreatorQImage = '';
+let pendingCreatorAnsImage = '';
+let pendingInlineEditQImage = '';
+let pendingInlineEditAnsImage = '';
+
+let lastFailedSourceType = null;
+let lastFailedLocalCards = null;
+
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
-const FILES_DEFAULT_SVG = '<svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>';
-const TXT_DEFAULT_SVG = '<svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>';
+const FILES_DEFAULT_SVG = '<svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>';
 
-const systemInstruction = "Sua função é gerenciar um baralho de flashcards (Anki-style) para um estudante universitário. Você pode adicionar, editar ou remover cards usando as ferramentas fornecidas. Mantenha o tom profissional, analítico e pragmático. Ao editar, busque clareza terminológica e precisão técnica. Você deve atuar como um agente, executando as ações solicitadas e confirmando-as de forma concisa.";
-
+const systemInstruction = "Sua função é gerenciar um baralho de flashcards para um estudante universitário. Você pode adicionar, editar ou remover cards usando as ferramentas fornecidas. Tipos suportados: 'open' (conceito aberto), 'open_double' (dupla resposta), 'multiple_choice' (múltipla escolha com 2 a 6 opções), e 'anki' (conceito/pergunta e explicação detalhada para repetição espaçada). Mantenha o tom profissional, analítico e pragmático.";
 
 // Gemini Tools Definitions for Agentic Editing
 const deckTools = [
@@ -175,28 +194,31 @@ const deckTools = [
                 parameters: {
                     type: "OBJECT",
                     properties: {
-                        type: { type: "STRING", enum: ["open", "open_double", "multiple_choice"], description: "Tipo do card" },
-                        description: { type: "STRING", description: "Pergunta ou descrição" },
-                        answer: { type: "STRING", description: "Resposta principal" },
+                        type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki"], description: "Tipo do card" },
+                        description: { type: "STRING", description: "Pergunta ou conceito" },
+                        answer: { type: "STRING", description: "Resposta principal ou explicação detalhada" },
                         answer2: { type: "STRING", description: "Resposta secundária (apenas para open_double)" },
                         options: { type: "ARRAY", items: { type: "STRING" }, description: "Opções (apenas para multiple_choice)" },
-                        image: { type: "STRING", description: "URL ou Base64 da imagem (opcional)" }
+                        image: { type: "STRING", description: "URL ou Base64 da imagem da pergunta (opcional)" },
+                        answerImage: { type: "STRING", description: "URL ou Base64 da imagem da resposta (opcional)" }
                     },
                     required: ["type", "description", "answer"]
                 }
             },
             {
                 name: "editar_card",
-                description: "Edita um flashcard existente pelo índice. Envie apenas os campos que deseja atualizar.",
+                description: "Edita um flashcard existente pelo índice.",
                 parameters: {
                     type: "OBJECT",
                     properties: {
                         index: { type: "NUMBER", description: "O índice (começando em 0) do card a ser editado." },
+                        type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki"] },
                         description: { type: "STRING" },
                         answer: { type: "STRING" },
                         answer2: { type: "STRING" },
                         options: { type: "ARRAY", items: { type: "STRING" } },
-                        image: { type: "STRING", description: "URL ou Base64 da imagem (opcional)" }
+                        image: { type: "STRING" },
+                        answerImage: { type: "STRING" }
                     },
                     required: ["index"]
                 }
@@ -214,7 +236,7 @@ const deckTools = [
             },
             {
                 name: "remover_cards_por_indice",
-                description: "Remove múltiplos flashcards de uma vez usando uma lista de índices. Use esta ferramenta quando o usuário pedir para deletar vários cards.",
+                description: "Remove múltiplos flashcards de uma vez usando uma lista de índices.",
                 parameters: {
                     type: "OBJECT",
                     properties: {
@@ -227,10 +249,9 @@ const deckTools = [
                     required: ["indices"]
                 }
             },
-
             {
                 name: "adicionar_varios_cards",
-                description: "Adiciona múltiplos cards de uma vez. Útil para geração em lote.",
+                description: "Adiciona múltiplos cards de uma vez.",
                 parameters: {
                     type: "OBJECT",
                     properties: {
@@ -239,12 +260,13 @@ const deckTools = [
                             items: {
                                 type: "OBJECT",
                                 properties: {
-                                    type: { type: "STRING", enum: ["open", "open_double", "multiple_choice"] },
+                                    type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki"] },
                                     description: { type: "STRING" },
                                     answer: { type: "STRING" },
                                     answer2: { type: "STRING" },
                                     options: { type: "ARRAY", items: { type: "STRING" } },
-                                    image: { type: "STRING", description: "URL ou Base64 da imagem (opcional)" }
+                                    image: { type: "STRING" },
+                                    answerImage: { type: "STRING" }
                                 },
                                 required: ["type", "description", "answer"]
                             }
@@ -257,7 +279,7 @@ const deckTools = [
     }
 ];
 
-// Local implementations for Gemni to call
+// Local implementations for Gemini to call
 const toolFunctions = {
     adicionar_card: (args) => {
         deckCards.push(args);
@@ -284,7 +306,6 @@ const toolFunctions = {
     },
     remover_cards_por_indice: (args) => {
         const { indices } = args;
-        // IMPORTANTE: Ordenar decrescente para evitar o deslocamento dos índices ao dar splice
         const sortedIndices = [...new Set(indices)].sort((a, b) => b - a);
         let count = 0;
         sortedIndices.forEach(idx => {
@@ -296,7 +317,6 @@ const toolFunctions = {
         renderCardsList(true);
         return { success: true, message: `${count} cards foram removidos com sucesso.` };
     },
-
     adicionar_varios_cards: (args) => {
         deckCards.push(...args.cards);
         renderCardsList(true);
@@ -304,9 +324,37 @@ const toolFunctions = {
     }
 };
 
+// --- HELPER FUNCTIONS ---
+function getApiKey() {
+    return sessionStorage.getItem('gemini_api_key') || '';
+}
+
+function setApiKey(key) {
+    if (key) {
+        sessionStorage.setItem('gemini_api_key', key);
+    } else {
+        sessionStorage.removeItem('gemini_api_key');
+    }
+    updateApiKeyStatusUI();
+}
+
+function updateApiKeyStatusUI() {
+    const key = getApiKey();
+    if (dashboardKeyStatus) {
+        dashboardKeyStatus.textContent = key ? "API Key Configurada ✓" : "Configurar API Key";
+        if (key) {
+            dashboardKeyStatus.classList.add("text-green-600", "dark:text-green-400");
+        } else {
+            dashboardKeyStatus.classList.remove("text-green-600", "dark:text-green-400");
+        }
+    }
+    if (quickApiInput) quickApiInput.value = key;
+    if (modal21ApiKey) modal21ApiKey.value = key;
+    if (modal22ApiKey) modal22ApiKey.value = key;
+}
 
 function getFileExtension(filename) {
-    return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2);
+    return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2).toLowerCase();
 }
 
 function renderFileIcons(files, container, defaultSvg) {
@@ -326,66 +374,6 @@ function renderFileIcons(files, container, defaultSvg) {
     });
 }
 
-// File Upload UI Handlers
-filesUpload.addEventListener('change', () => {
-    globalError.textContent = '';
-    const files = filesUpload.files;
-
-    for (let file of files) {
-        if (file.size > MAX_FILE_SIZE) {
-            globalError.textContent = `O arquivo "${file.name}" excede o limite de 100MB e foi rejeitado.`;
-            filesUpload.value = '';
-            filesCount.textContent = 'Nenhum arquivo selecionado';
-            renderFileIcons([], filesIconsContainer, FILES_DEFAULT_SVG);
-            filesUploadText.classList.remove('hidden');
-            return;
-        }
-    }
-
-    if (files.length > 0) {
-        filesCount.textContent = `${files.length} arquivo(s) selecionado(s)`;
-        filesUploadText.classList.add('hidden');
-    } else {
-        filesCount.textContent = 'Nenhum arquivo selecionado';
-        filesUploadText.classList.remove('hidden');
-    }
-    renderFileIcons(files, filesIconsContainer, FILES_DEFAULT_SVG);
-});
-
-txtUpload.addEventListener('change', () => {
-    globalError.textContent = '';
-    const files = txtUpload.files;
-
-    if (files.length > 0) {
-        const file = files[0];
-        if (file.size > MAX_FILE_SIZE) {
-            globalError.textContent = `O arquivo "${file.name}" excede o limite de 100MB e foi rejeitado.`;
-            txtUpload.value = '';
-            txtCount.textContent = 'Nenhum arquivo selecionado';
-            renderFileIcons([], txtIconsContainer, TXT_DEFAULT_SVG);
-            txtUploadText.classList.remove('hidden');
-            return;
-        }
-        txtCount.textContent = file.name;
-        txtUploadText.classList.add('hidden');
-    } else {
-        txtCount.textContent = 'Nenhum arquivo selecionado';
-        txtUploadText.classList.remove('hidden');
-    }
-    renderFileIcons(files, txtIconsContainer, TXT_DEFAULT_SVG);
-});
-
-// Load saved key from sessionStorage (clears on tab close)
-const savedKey = sessionStorage.getItem('gemini_api_key');
-if (savedKey) {
-    apiKeyInput.value = savedKey;
-}
-
-apiKeyInput.addEventListener('change', () => {
-    sessionStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
-});
-
-// Helper: Read file as Base64 for Gemini Parts
 async function fileToGenerativePart(file) {
     const base64EncodedDataPromise = new Promise((resolve) => {
         const reader = new FileReader();
@@ -393,11 +381,10 @@ async function fileToGenerativePart(file) {
         reader.readAsDataURL(file);
     });
     return {
-        inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
+        inlineData: { data: await base64EncodedDataPromise, mimeType: file.type || 'application/octet-stream' },
     };
 }
 
-// Helper: Read text file
 async function readTextFile(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -407,8 +394,145 @@ async function readTextFile(file) {
     });
 }
 
-function parseTxtToJSON(text) {
-    const lines = text.split('\n').filter(line => line.trim().length > 0);
+// Robust text extractor supporting .txt, .docx (with mammoth), and .doc
+async function extractTextFromFile(file) {
+    const ext = getFileExtension(file.name);
+    if (ext === 'txt') {
+        return await readTextFile(file);
+    } else if (ext === 'docx') {
+        if (typeof mammoth !== 'undefined') {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer });
+            return result.value || '';
+        } else {
+            throw new Error("Biblioteca Mammoth não disponível para ler arquivo .docx.");
+        }
+    } else if (ext === 'doc') {
+        try {
+            if (typeof mammoth !== 'undefined') {
+                const arrayBuffer = await file.arrayBuffer();
+                const result = await mammoth.extractRawText({ arrayBuffer });
+                if (result.value && result.value.trim().length > 0) return result.value;
+            }
+        } catch (e) {
+            // Mammoth is for docx, doc may throw
+        }
+        // Binary .doc fallback: string extraction
+        const arrayBuffer = await file.arrayBuffer();
+        const decoder = new TextDecoder('utf-8', { fatal: false });
+        const raw = decoder.decode(arrayBuffer);
+        const matches = raw.match(/[\x20-\x7E\xC0-\xFF\n\r]{4,}/g);
+        return matches ? matches.join('\n') : raw;
+    } else {
+        return await readTextFile(file);
+    }
+}
+
+// PPTX text extractor using JSZip
+async function extractTextFromPPTX(file) {
+    if (typeof JSZip !== 'undefined') {
+        try {
+            const zip = await JSZip.loadAsync(file);
+            const slideTexts = [];
+            const slidePaths = Object.keys(zip.files)
+                .filter(name => name.startsWith('ppt/slides/slide') && name.endsWith('.xml'))
+                .sort((a, b) => {
+                    const numA = parseInt((a.match(/\d+/) || [0])[0]);
+                    const numB = parseInt((b.match(/\d+/) || [0])[0]);
+                    return numA - numB;
+                });
+
+            for (const path of slidePaths) {
+                const xml = await zip.files[path].async('text');
+                const matches = xml.match(/<a:t[^>]*>(.*?)<\/a:t>/g);
+                if (matches) {
+                    const slideStr = matches.map(m => m.replace(/<[^>]+>/g, '')).join(' ');
+                    if (slideStr.trim()) slideTexts.push(slideStr.trim());
+                }
+            }
+            if (slideTexts.length > 0) {
+                return `Conteúdo do slide (${file.name}):\n` + slideTexts.join('\n---\n');
+            }
+        } catch (e) {
+            console.warn("Erro ao extrair slides PPTX:", e);
+        }
+    }
+    return null;
+}
+
+// --- DOCUMENT PARSING (TRADITIONAL & ANKI) ---
+function convertDocumentToCards(text, mode = 'anki') {
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+    const cards = [];
+
+    for (let line of lines) {
+        if (mode === 'anki') {
+            // In Anki-like: line is Pergunta/Frente : Resposta/Verso
+            const colonIndex = line.indexOf(':');
+            if (colonIndex !== -1) {
+                const question = line.substring(0, colonIndex).trim();
+                const answer = line.substring(colonIndex + 1).trim();
+                if (question && answer) {
+                    cards.push({
+                        type: 'anki',
+                        description: question,
+                        answer: answer
+                    });
+                }
+            }
+        } else {
+            // Traditional mode: use old format & tags without AI
+            if (line.startsWith('(open_double)')) {
+                const content = line.replace('(open_double)', '').trim();
+                const colonIndex = content.indexOf(':');
+                if (colonIndex !== -1) {
+                    const answersPart = content.substring(0, colonIndex).trim();
+                    const description = content.substring(colonIndex + 1).trim();
+                    const [ans1, ans2] = answersPart.split(';');
+                    cards.push({
+                        type: "open_double",
+                        description: description,
+                        answer: ans1 ? ans1.trim() : "",
+                        answer2: ans2 ? ans2.trim() : "",
+                        placeholder1: "Resposta 1",
+                        placeholder2: "Resposta 2"
+                    });
+                }
+            } else if (line.startsWith('(multiple_choice)')) {
+                const content = line.replace('(multiple_choice)', '').trim();
+                const colonIndex = content.indexOf(':');
+                if (colonIndex !== -1) {
+                    const answer = content.substring(0, colonIndex).trim();
+                    const description = content.substring(colonIndex + 1).trim();
+                    cards.push({
+                        type: "multiple_choice",
+                        description: description,
+                        answer: answer,
+                        options: ["Opção 1", "Opção 2", answer, "Opção 4"]
+                    });
+                }
+            } else {
+                // Front : Back (or Answer : Question)
+                const colonIndex = line.indexOf(':');
+                if (colonIndex !== -1) {
+                    const question = line.substring(0, colonIndex).trim();
+                    const answer = line.substring(colonIndex + 1).trim();
+                    if (question && answer) {
+                        cards.push({
+                            type: "open",
+                            description: question,
+                            answer: answer
+                        });
+                    }
+                }
+            }
+        }
+    }
+    return cards;
+}
+
+function parseTxtToJSONWithPlaceholders(text) {
+    const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
     const cards = [];
 
     for (let line of lines) {
@@ -416,7 +540,6 @@ function parseTxtToJSON(text) {
         let card = null;
 
         if (line.startsWith('(open_double)')) {
-            // (open_double) Resposta1;Resposta2:Pergunta?
             const content = line.replace('(open_double)', '').trim();
             const colonIndex = content.indexOf(':');
             if (colonIndex !== -1) {
@@ -433,7 +556,6 @@ function parseTxtToJSON(text) {
                 };
             }
         } else if (line.startsWith('(multiple_choice)')) {
-            // (multiple_choice) Resposta:Pergunta
             const content = line.replace('(multiple_choice)', '').trim();
             const colonIndex = content.indexOf(':');
             if (colonIndex !== -1) {
@@ -447,7 +569,6 @@ function parseTxtToJSON(text) {
                 };
             }
         } else {
-            // Resposta:Pergunta?
             const colonIndex = line.indexOf(':');
             if (colonIndex !== -1) {
                 const answer = line.substring(0, colonIndex).trim();
@@ -465,43 +586,170 @@ function parseTxtToJSON(text) {
     return cards;
 }
 
-// Generate Flashcards logic
-async function generateFlashcards(sourceType) {
-    globalError.textContent = '';
-    const apiKey = apiKeyInput.value.trim();
-    if (!apiKey) {
-        globalError.textContent = 'Por favor, insira uma chave de API do Gemini válida.';
+// Transition from Dashboard to Editor
+function openEditorView(initialTab = 'creator') {
+    dashboardView.classList.add('hidden');
+    editorView.classList.remove('hidden');
+    editorView.classList.add('flex');
+
+    if (initialTab === 'creator') {
+        switchSidebarTab('creator');
+    } else {
+        switchSidebarTab('ai');
+    }
+
+    renderCardsList(true);
+}
+
+function switchSidebarTab(tab) {
+    if (tab === 'creator') {
+        tabCreatorBtn.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition bg-blue-600 text-white shadow-sm";
+        tabAiChatBtn.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700";
+        cardCreatorPanel.classList.remove('hidden');
+        aiEditorChatPanel.classList.add('hidden');
+    } else {
+        tabAiChatBtn.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition bg-purple-600 text-white shadow-sm";
+        tabCreatorBtn.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700";
+        cardCreatorPanel.classList.add('hidden');
+        aiEditorChatPanel.classList.remove('hidden');
+    }
+}
+
+tabCreatorBtn.addEventListener('click', () => switchSidebarTab('creator'));
+tabAiChatBtn.addEventListener('click', () => switchSidebarTab('ai'));
+
+// --- DASHBOARD CARD HANDLERS ---
+
+// 1.1 Crie agora — Escreva cada cartão direto no aplicativo
+cardMode11.addEventListener('click', () => {
+    deckCards = [];
+    deckTitleDisplay.value = "Novo Baralho";
+    openEditorView('creator');
+});
+
+// 1.2 Converta um doc — Importe um txt ou word já feito
+cardMode12.addEventListener('click', () => {
+    modal12Error.textContent = '';
+    modal12File.value = '';
+    modal12FileName.textContent = 'Clique ou arraste o arquivo aqui';
+    modal12.classList.remove('hidden');
+});
+
+closeModal12Btn.addEventListener('click', () => modal12.classList.add('hidden'));
+cancelModal12Btn.addEventListener('click', () => modal12.classList.add('hidden'));
+
+modal12File.addEventListener('change', () => {
+    if (modal12File.files.length > 0) {
+        modal12FileName.textContent = modal12File.files[0].name;
+    }
+});
+
+submitModal12Btn.addEventListener('click', async () => {
+    modal12Error.textContent = '';
+    if (!modal12File.files || modal12File.files.length === 0) {
+        modal12Error.textContent = 'Por favor, selecione um arquivo (.txt, .doc ou .docx).';
         return;
     }
 
-    // Initialize Gemini
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const deckContainer = cardsList.parentNode;
-    const deckHeader = cardsList.previousElementSibling;
+    const file = modal12File.files[0];
+    const selectedMode = document.querySelector('input[name="modal-1-2-type"]:checked')?.value || 'anki';
 
-    // Config specifically for Gemini 3 Reasoning - High depth for initial generation
-    const generationConfig = {
-        temperature: 1.0,
-        responseMimeType: "application/json",
-        thinkingConfig: {
-            thinkingLevel: "high"
-        }
-    };
+    try {
+        const text = await extractTextFromFile(file);
+        const cards = convertDocumentToCards(text, selectedMode);
 
-    let model;
-    let parts = [];
-
-    if (sourceType === 'files') {
-        if (filesUpload.files.length === 0) {
-            globalError.textContent = 'Por favor, selecione pelo menos um arquivo.';
+        if (cards.length === 0) {
+            modal12Error.textContent = 'Nenhum flashcard válido encontrado no arquivo. Certifique-se de usar ":" para separar pergunta e resposta.';
             return;
         }
-        generateFilesBtn.disabled = true;
-        spinnerFiles.classList.remove('hidden');
-        filesLoadingMsg.classList.remove('hidden');
 
+        deckCards = cards;
+        deckTitleDisplay.value = file.name.replace(/\.[^/.]+$/, "");
+        modal12.classList.add('hidden');
+        openEditorView('creator');
+    } catch (err) {
+        modal12Error.textContent = `Erro ao ler o documento: ${err.message}`;
+    }
+});
 
-        model = genAI.getGenerativeModel({
+// 2.1 Crie de materiais — Transforme slides, pdf, fotos... em cards
+cardMode21.addEventListener('click', () => {
+    modal21Error.textContent = '';
+    modal21ApiKey.value = getApiKey();
+    modal21Files.value = '';
+    modal21FilesCount.textContent = 'Nenhum arquivo selecionado';
+    modal21FilesText.classList.remove('hidden');
+    renderFileIcons([], modal21IconsContainer, FILES_DEFAULT_SVG);
+    modal21.classList.remove('hidden');
+});
+
+closeModal21Btn.addEventListener('click', () => modal21.classList.add('hidden'));
+cancelModal21Btn.addEventListener('click', () => modal21.classList.add('hidden'));
+
+modal21Files.addEventListener('change', () => {
+    modal21Error.textContent = '';
+    const files = Array.from(modal21Files.files);
+
+    if (files.length > 10) {
+        modal21Error.textContent = 'Limite excedido: você pode enviar no máximo 10 arquivos.';
+        modal21Files.value = '';
+        modal21FilesCount.textContent = 'Nenhum arquivo selecionado';
+        renderFileIcons([], modal21IconsContainer, FILES_DEFAULT_SVG);
+        return;
+    }
+
+    for (let f of files) {
+        if (f.size > MAX_FILE_SIZE) {
+            modal21Error.textContent = `O arquivo "${f.name}" excede 100MB e foi rejeitado.`;
+            modal21Files.value = '';
+            modal21FilesCount.textContent = 'Nenhum arquivo selecionado';
+            renderFileIcons([], modal21IconsContainer, FILES_DEFAULT_SVG);
+            return;
+        }
+    }
+
+    if (files.length > 0) {
+        modal21FilesCount.textContent = `${files.length} de 10 arquivo(s) selecionado(s)`;
+        modal21FilesText.classList.add('hidden');
+    } else {
+        modal21FilesCount.textContent = 'Nenhum arquivo selecionado';
+        modal21FilesText.classList.remove('hidden');
+    }
+    renderFileIcons(files, modal21IconsContainer, FILES_DEFAULT_SVG);
+});
+
+submitModal21Btn.addEventListener('click', async () => {
+    modal21Error.textContent = '';
+    const apiKey = modal21ApiKey.value.trim();
+    if (!apiKey) {
+        modal21Error.textContent = 'Por favor, insira sua Gemini API Key.';
+        return;
+    }
+    setApiKey(apiKey);
+
+    const files = Array.from(modal21Files.files);
+    if (files.length === 0) {
+        modal21Error.textContent = 'Selecione pelo menos um arquivo.';
+        return;
+    }
+    if (files.length > 10) {
+        modal21Error.textContent = 'Você pode enviar no máximo 10 arquivos.';
+        return;
+    }
+
+    submitModal21Btn.disabled = true;
+    modal21Spinner.classList.remove('hidden');
+    modal21LoadingMsg.classList.remove('hidden');
+
+    try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const generationConfig = {
+            temperature: 1.0,
+            responseMimeType: "application/json",
+            thinkingConfig: { thinkingLevel: "high" }
+        };
+
+        const model = genAI.getGenerativeModel({
             model: "gemini-flash-latest",
             generationConfig,
             tools: deckTools,
@@ -510,84 +758,162 @@ async function generateFlashcards(sourceType) {
 
         currentGenModel = model;
 
-        const basePrompt = `Com base nos arquivos enviados, o objetivo é processar todo o conteúdo e gerar flashcards de termos técnicos para revisão, incluindo nomes de moléculas, estruturas, etapas de processos e quaisquer conceitos com nomes específicos. Gere um arquivo .json baseado em todo o conteúdo que juntou. O nível de detalhe deve ser apropriado para um estudante universitário. Busque sempre fazer a pergunta como uma descrição e a(s) resposta(s) com o menor numero de palavras possíveis, preferencialmente o nome de um termo, conceito, molécula... Ao final revise se os flashcards criados realmente abordam por extenso tudo que foi enviado. 
-PROIBIDO incluir títulos, explicações, preâmbulos ou qualquer texto fora do JSON.
-O JSON deve ser uma lista ([]) contendo vários objetos de questão ({ }).
-
+        const basePrompt = `Com base nos arquivos enviados, o objetivo é processar todo o conteúdo e gerar flashcards técnicos para revisão, incluindo conceitos, definições, moléculas, etapas e estruturas. Gere um arquivo JSON baseado em todo o conteúdo reunido. Nível de detalhe universitário.
+PROIBIDO incluir títulos ou texto fora do JSON.
+O JSON deve ser uma lista ([]) de objetos de questão.
 Formatos permitidos:
-1. open: {"type": "open", "description": "Pergunta?", "answer": "Resposta"}
-2. open_double: {"type": "open_double", "description": "Pergunta?", "answer": "Resposta1", "answer2": "Resposta2", "placeholder1": "Label1", "placeholder2":"Label2"}
+1. open: {"type": "open", "description": "Pergunta?", "answer": "Resposta curta"}
+2. open_double: {"type": "open_double", "description": "Pergunta?", "answer": "Resp1", "answer2": "Resp2", "placeholder1": "L1", "placeholder2":"L2"}
 3. multiple_choice: {"type": "multiple_choice", "description": "Pergunta?", "answer": "Certa", "options": ["A", "B", "Certa", "D"]}
+4. anki: {"type": "anki", "description": "Conceito?", "answer": "Descrição detalhada"}
 
-Gere aproximadamente 100 flashcards.`;
+Gere aproximadamente 60 a 100 flashcards cobrindo todo o material.`;
 
-        let extraPrompt = customPrompt.value.trim();
         let promptToSend = basePrompt;
-        if (extraPrompt) {
-            promptToSend += `\n\nInstruções Específicas Adicionais:\n${extraPrompt}`;
+        const customText = modal21Prompt.value.trim();
+        if (customText) {
+            promptToSend += `\n\nDemandas adicionais:\n${customText}`;
         }
 
-        parts.push(promptToSend);
-        const sourceParts = [promptToSend];
+        const parts = [promptToSend];
 
-        for (let i = 0; i < filesUpload.files.length; i++) {
-            let fileToProcess = filesUpload.files[i];
-
-            // Se for PDF e for maior que 5MB, comprimimos
-            if (fileToProcess.type === 'application/pdf' && fileToProcess.size > 5 * 1024 * 1024) {
-                filesLoadingMsg.innerHTML = `<img src="../assets/img/hourglass.svg" class="w-4 h-4 inline-block mr-1" alt="Ampulheta"> Comprimindo ${fileToProcess.name}... (Isto pode levar um momento)`;
+        for (let file of files) {
+            const ext = getFileExtension(file.name);
+            if (ext === 'pptx') {
+                const pptxText = await extractTextFromPPTX(file);
+                if (pptxText) {
+                    parts.push(pptxText);
+                    continue;
+                }
+            } else if (file.type === 'application/pdf' && file.size > 5 * 1024 * 1024) {
                 try {
-                    const compressedBlob = await compressPDFWithWorker(fileToProcess);
-                    fileToProcess = new File([compressedBlob], fileToProcess.name, {
-                        type: 'application/pdf'
-                    });
-                } catch (err) {
-                    console.error("Erro na compressão:", err);
-                    // Se falhar, segue com o original
+                    const compressed = await compressPDFWithWorker(file);
+                    file = new File([compressed], file.name, { type: 'application/pdf' });
+                } catch (e) {
+                    console.warn("Falha ao comprimir PDF:", e);
                 }
             }
-
-            const filePart = await fileToGenerativePart(fileToProcess);
-            parts.push(filePart);
-            sourceParts.push(filePart);
+            const part = await fileToGenerativePart(file);
+            parts.push(part);
         }
 
+        modal21.classList.add('hidden');
+        openEditorView('ai');
 
-    } else if (sourceType === 'txt') {
-        if (txtUpload.files.length === 0) {
-            globalError.textContent = 'Por favor, selecione um arquivo .txt.';
-            return;
-        }
-        generateTxtBtn.disabled = true;
-        spinnerTxt.classList.remove('hidden');
-        txtLoadingMsg.classList.remove('hidden');
-
-        const textContent = await readTextFile(txtUpload.files[0]);
-        const localCards = parseTxtToJSON(textContent);
-
-
-        // Transition to editor view
-        dashboardView.classList.add('hidden');
-        editorView.classList.remove('hidden');
-        editorView.classList.add('flex');
-
-        deckContainer.classList.add('generating-deck-bg');
         deckCards = [];
-        renderCardsList();
+        renderCardsList(true);
+        deckTitleDisplay.value = files[0].name.replace(/\.[^/.]+$/, "");
 
-        const hasGeminiTag = JSON.stringify(localCards).includes("[GEMINI]");
+        const result = await callWithRetry(() => model.generateContentStream(parts));
+        let fullText = "";
+        let processedIndex = 0;
 
-        if (!hasGeminiTag) {
-            deckCards = localCards;
-            renderCardsList(true);
-            deckTitleDisplay.value = txtUpload.files[0].name.replace(/\.[^/.]+$/, "");
-            deckContainer.classList.remove('generating-deck-bg');
-            deckContainer.classList.add('bg-white', 'dark:bg-gray-800');
-            generateTxtBtn.disabled = false;
-            spinnerTxt.classList.add('hidden');
-            txtLoadingMsg.classList.add('hidden');
+        for await (const chunk of result.stream) {
+            fullText += chunk.text();
+            if (processedIndex === 0) {
+                const startIdx = fullText.search(/[\{\[]/);
+                if (startIdx !== -1) processedIndex = startIdx;
+                else continue;
+            }
 
-            // Initialize chat
+            let possibleObjects = fullText.substring(processedIndex);
+            const regex = /\{[^{}]*\}/g;
+            let match;
+
+            while ((match = regex.exec(possibleObjects)) !== null) {
+                const objStr = match[0];
+                try {
+                    const card = JSON.parse(objStr);
+                    if (card.type && card.description && card.answer) {
+                        deckCards.push(card);
+                        renderCardsList();
+                    }
+                    processedIndex += match.index + objStr.length;
+                    possibleObjects = fullText.substring(processedIndex);
+                    regex.lastIndex = 0;
+                } catch (e) {
+                    // Incomplete JSON chunk, continue
+                }
+            }
+        }
+
+        if (deckCards.length === 0) {
+            try {
+                const arrayMatch = fullText.match(/\[\s*\{[\s\S]*\}\s*\]/);
+                const textResult = arrayMatch ? arrayMatch[0] : fullText.substring(fullText.search(/[\{\[]/));
+                const cleaned = textResult.replace(/^```json\n/g, '').replace(/^```\n/g, '').replace(/```$/g, '').trim();
+                deckCards = JSON.parse(cleaned);
+                renderCardsList(true);
+            } catch (e) {
+                console.error("Erro ao fazer parse final do JSON:", e);
+            }
+        }
+
+        // Initialize chat session for agentic edits
+        geminiChatSession = model.startChat({ history: [] });
+
+    } catch (err) {
+        console.error("Erro na geração 2.1:", err);
+        showGeminiDownModal(err.message, 'files');
+    } finally {
+        submitModal21Btn.disabled = false;
+        modal21Spinner.classList.add('hidden');
+        modal21LoadingMsg.classList.add('hidden');
+    }
+});
+
+// 2.2 Aprimore um doc — A partir de um txt ou word, aprimore cartões
+cardMode22.addEventListener('click', () => {
+    modal22Error.textContent = '';
+    modal22ApiKey.value = getApiKey();
+    modal22File.value = '';
+    modal22FileName.textContent = 'Clique ou arraste o arquivo .txt ou Word';
+    modal22.classList.remove('hidden');
+});
+
+closeModal22Btn.addEventListener('click', () => modal22.classList.add('hidden'));
+cancelModal22Btn.addEventListener('click', () => modal22.classList.add('hidden'));
+
+modal22File.addEventListener('change', () => {
+    if (modal22File.files.length > 0) {
+        modal22FileName.textContent = modal22File.files[0].name;
+    }
+});
+
+submitModal22Btn.addEventListener('click', async () => {
+    modal22Error.textContent = '';
+    const apiKey = modal22ApiKey.value.trim();
+    if (!apiKey) {
+        modal22Error.textContent = 'Por favor, insira sua Gemini API Key.';
+        return;
+    }
+    setApiKey(apiKey);
+
+    if (!modal22File.files || modal22File.files.length === 0) {
+        modal22Error.textContent = 'Selecione um arquivo .txt ou Word.';
+        return;
+    }
+
+    submitModal22Btn.disabled = true;
+    modal22Spinner.classList.remove('hidden');
+    modal22LoadingMsg.classList.remove('hidden');
+
+    const file = modal22File.files[0];
+    try {
+        const textContent = await extractTextFromFile(file);
+        const localCards = parseTxtToJSONWithPlaceholders(textContent);
+
+        modal22.classList.add('hidden');
+        openEditorView('ai');
+
+        deckTitleDisplay.value = file.name.replace(/\.[^/.]+$/, "");
+        deckCards = localCards;
+        renderCardsList(true);
+
+        const hasPlaceholders = JSON.stringify(localCards).includes("[GEMINI]");
+        const genAI = new GoogleGenerativeAI(apiKey);
+
+        if (!hasPlaceholders) {
             const model = genAI.getGenerativeModel({ model: currentEditorModel, systemInstruction, tools: deckTools });
             currentGenModel = model;
             geminiChatSession = model.startChat({ history: [] });
@@ -595,210 +921,335 @@ Gere aproximadamente 100 flashcards.`;
         }
 
         // Fill placeholders with Gemini
-        txtLoadingMsg.innerHTML = '<img src="../assets/img/hourglass.svg" class="w-4 h-4 inline-block mr-1" alt="Ampulheta"> Gemini preenchendo lacunas...';
-        deckTitleDisplay.value = "Completando informações com IA...";
-
-        model = genAI.getGenerativeModel({
-            model: "gemini-flash-latest", // Geração inicial SEMPRE flash-latest
-            generationConfig: { ...generationConfig, responseMimeType: "text/plain" }, // Tools often work better with text/plain
+        const model = genAI.getGenerativeModel({
+            model: "gemini-flash-latest",
+            generationConfig: { temperature: 0.7, responseMimeType: "text/plain" },
             tools: deckTools,
-            systemInstruction: systemInstruction + "\nSua tarefa agora é preencher os placeholders '[GEMINI]' em um JSON de flashcards e entregá-los usando a ferramenta 'adicionar_varios_cards'."
+            systemInstruction: systemInstruction + "\nPreencha os placeholders '[GEMINI]' no JSON de flashcards e retorne-os usando a ferramenta 'adicionar_varios_cards'."
         });
 
         currentGenModel = model;
 
-        const fillPrompt = `Aqui está uma lista de flashcards convertidos localmente, mas que precisam que você preencha os campos '[GEMINI]'. 
-Para 'open_double', preencha 'placeholder1' e 'placeholder2' com labels curtas e apropriadas para as respostas dadas (ex: se as respostas são datas, use 'Data 1' e 'Data 2', ou labels mais descritivas como 'Início' e 'Fim').
-Para 'multiple_choice', complete o array 'options' com 3 alternativas incorretas porém plausíveis, mantendo a resposta correta que já está lá.
-Após completar o processamento, use a ferramenta 'adicionar_varios_cards' para enviar o resultado final.
+        const fillPrompt = `Aqui está uma lista de flashcards que precisam que você preencha os campos '[GEMINI]'.
+Para 'open_double', preencha 'placeholder1' e 'placeholder2' com rótulos descritivos curtos para as respostas.
+Para 'multiple_choice', complete o array 'options' com alternativas incorretas porém plausíveis (distratores), mantendo a resposta correta informada.
+Ao terminar, chame 'adicionar_varios_cards' para enviar o baralho finalizado.
 
 JSON:
 ${JSON.stringify(localCards, null, 2)}`;
 
-        try {
-            const chat = model.startChat({ history: [] });
-            let result = await callWithRetry(() => chat.sendMessage(fillPrompt));
-            let response = result.response;
+        const chat = model.startChat({ history: [] });
+        deckCards = []; // Will be populated via function call
+        renderCardsList(true);
 
-            // Agentic loop to handle the tool call
-            for (let i = 0; i < 3; i++) {
-                const candidate = response.candidates[0];
-                const calls = candidate.content.parts.filter(p => !!p.functionCall);
-                if (calls.length === 0) break;
+        let result = await callWithRetry(() => chat.sendMessage(fillPrompt));
+        let response = result.response;
 
-                const functionResponses = await Promise.all(calls.map(async (call) => {
-                    const { name, args } = call.functionCall;
-                    const output = toolFunctions[name] ? toolFunctions[name](args) : { error: "Função não encontrada" };
-                    return {
-                        functionResponse: {
-                            name,
-                            response: output
-                        }
-                    };
-                }));
+        for (let i = 0; i < 4; i++) {
+            const candidate = response.candidates[0];
+            const calls = candidate.content.parts.filter(p => !!p.functionCall);
+            if (calls.length === 0) break;
 
-                result = await callWithRetry(() => chat.sendMessage(functionResponses));
-                sanitizeChatHistory(chat);
-                response = result.response;
-            }
+            const functionResponses = calls.map(call => {
+                const { name, args } = call.functionCall;
+                const output = toolFunctions[name] ? toolFunctions[name](args) : { error: "Função não encontrada" };
+                return {
+                    functionResponse: { name, response: output }
+                };
+            });
 
-            // After completion, finalize UI
-            deckContainer.classList.remove('generating-deck-bg');
-            deckContainer.classList.add('bg-white', 'dark:bg-gray-800');
-            deckTitleDisplay.value = txtUpload.files[0].name.replace(/\.[^/.]+$/, "");
-
-            // Initialize chat for subsequent edits
-            geminiChatSession = model.startChat({ history: [] });
-
-        } catch (e) {
-            console.error("Erro no preenchimento Gemini:", e);
-            globalError.textContent = "Erro ao preencher lacunas com Gemini: " + e.message;
-            // Show error popup modal for Gemini 503 / API down
-            showGeminiDownModal(e.message, 'txt', localCards);
-            // Fallback: show local cards even if incomplete
-            deckCards = localCards;
-            renderCardsList(true);
-        } finally {
-            generateTxtBtn.disabled = false;
-            spinnerTxt.classList.add('hidden');
-            txtLoadingMsg.classList.add('hidden');
-        }
-        return; // Exit generateFlashcards as we handled the TXT case fully
-    }
-
-    try {
-        // Transition to editor view early to show cards appearing
-        dashboardView.classList.add('hidden');
-        editorView.classList.remove('hidden');
-        editorView.classList.add('flex');
-
-        deckContainer.classList.add('generating-deck-bg');
-        deckContainer.classList.remove('bg-white', 'dark:bg-gray-800');
-        cardsList.classList.add('bg-transparent');
-
-        deckCards = [];
-        renderCardsList();
-        deckTitleDisplay.value = "Gerando flashcards... (Isso pode levar alguns minutos)";
-
-        const result = await callWithRetry(() => model.generateContentStream(parts));
-        let fullText = "";
-        let processedIndex = 0;
-
-        for await (const chunk of result.stream) {
-            const chunkText = chunk.text();
-            fullText += chunkText;
-
-            // Preamble stripping: find the first JSON-like start
-            if (processedIndex === 0) {
-                const startIdx = fullText.search(/[\{\[]/);
-                if (startIdx !== -1) {
-                    processedIndex = startIdx;
-                } else {
-                    // Still no JSON found, skip processing this chunk for now
-                    continue;
-                }
-            }
-
-            let possibleObjects = fullText.substring(processedIndex);
-
-            // Regex to find complete JSON objects: {...}
-            // We use a simplified regex that matches opening { and balanced closing }
-            // Since we know the items are flat objects in this schema, this is relatively safe.
-            const regex = /\{[^{}]*\}/g;
-            let match;
-
-            while ((match = regex.exec(possibleObjects)) !== null) {
-                const objectStr = match[0];
-                try {
-                    const card = JSON.parse(objectStr);
-                    // Basic validation to ensure it's a valid flashcard
-                    if (card.type && card.description && (card.answer || card.answer2 || card.options)) {
-                        deckCards.push(card);
-                        renderCardsList();
-                    }
-                    processedIndex += match.index + objectStr.length;
-                    // Reset regex lastIndex because we modified the string we are searching or the index
-                    possibleObjects = fullText.substring(processedIndex);
-                    regex.lastIndex = 0;
-                } catch (e) {
-                    // Not a full object yet or invalid JSON, skip and wait for more data
-                }
-            }
+            result = await callWithRetry(() => chat.sendMessage(functionResponses));
+            sanitizeChatHistory(chat);
+            response = result.response;
         }
 
-        // Final attempt to parse using a robust regex extractor if stream parsing missed items
-        if (deckCards.length === 0) {
-            try {
-                // Find anything between [ and ] or first { and last }
-                const arrayMatch = fullText.match(/\[\s*\{[\s\S]*\}\s*\]/);
-                const textResult = arrayMatch ? arrayMatch[0] : fullText.substring(fullText.search(/[\{\[]/));
+        geminiChatSession = model.startChat({ history: [] });
 
-                // Clean markdown blocks
-                const cleaned = textResult.replace(/^```json\n/g, '').replace(/^```\n/g, '').replace(/```$/g, '').trim();
-                deckCards = JSON.parse(cleaned);
-                renderCardsList(true);
-            } catch (e) {
-                console.error("Erro ao processar JSON final:", e);
-            }
-        }
-
-        deckContainer.classList.remove('generating-deck-bg');
-        deckContainer.classList.add('bg-white', 'dark:bg-gray-800');
-        cardsList.classList.remove('bg-transparent');
-
-        const defaultTitle = filesUpload.files[0] ? filesUpload.files[0].name.replace(/\.[^/.]+$/, "") : "Meu Baralho";
-        deckTitleDisplay.value = defaultTitle;
-
-        // Start chat session with Agent context and separate generation config (no JSON constraint)
-        const chatGenerationConfig = {
-            temperature: 1.0,
-            thinkingConfig: {
-                thinkingLevel: "low"
-            }
-        };
-
-        geminiChatSession = model.startChat({
-            history: [],
-            generationConfig: chatGenerationConfig
-        });
-
-    } catch (error) {
-        console.error(error);
-        const errorStr = (error.message || '').toLowerCase();
-        const is503 = errorStr.includes("503") || errorStr.includes("service unavailable") || errorStr.includes("high demand") || errorStr.includes("overloaded");
-
-        if (is503) {
-            showGeminiDownModal(error.message, sourceType, sourceType === 'txt' ? localCards : null);
-        } else if (error.message.includes("API key")) {
-            globalError.innerHTML = `<img src="../assets/img/error.svg" class="w-6 h-6 inline-block mr-2" alt="Erro"> Acesso negado: Reveja sua chave de API Gemini. (Detalhe: ${error.message})`;
-        } else if (error.message.includes("429") || error.message.includes("quota")) {
-            globalError.innerHTML = `<img src="../assets/img/cloud_alert.svg" class="w-6 h-6 inline-block mr-2" alt="Alerta"> <strong>Quota Excedida:</strong> Você excedeu o limite de uso do Gemini Flash para sua API gratuita. Por favor, faça um upgrade ou tente novamente amanhã.`;
-        } else {
-            showGeminiDownModal(error.message, sourceType, sourceType === 'txt' ? localCards : null);
-        }
-        // Go back to dashboard if error occurred early and we haven't loaded cards
-        if (deckCards.length === 0 && (!geminiDownModal || geminiDownModal.classList.contains('hidden'))) {
-            dashboardView.classList.remove('hidden');
-            editorView.classList.add('hidden');
-            editorView.classList.remove('flex');
-        }
-        deckContainer.classList.remove('generating-deck-bg');
-        deckContainer.classList.add('bg-white', 'dark:bg-gray-800');
-        cardsList.classList.remove('bg-transparent');
+    } catch (err) {
+        console.error("Erro na aprimoração 2.2:", err);
+        showGeminiDownModal(err.message, 'txt', localCards);
     } finally {
-        generateFilesBtn.disabled = false;
-        spinnerFiles.classList.add('hidden');
-        filesLoadingMsg.classList.add('hidden');
-        generateTxtBtn.disabled = false;
-        spinnerTxt.classList.add('hidden');
-        txtLoadingMsg.classList.add('hidden');
+        submitModal22Btn.disabled = false;
+        modal22Spinner.classList.add('hidden');
+        modal22LoadingMsg.classList.add('hidden');
     }
+});
+
+// Quick API Key Modal Listeners
+openApiKeyModalBtn.addEventListener('click', () => {
+    quickApiInput.value = getApiKey();
+    quickApiModal.classList.remove('hidden');
+});
+closeQuickApiBtn.addEventListener('click', () => quickApiModal.classList.add('hidden'));
+saveQuickApiBtn.addEventListener('click', () => {
+    setApiKey(quickApiInput.value.trim());
+    quickApiModal.classList.add('hidden');
+});
+clearQuickApiBtn.addEventListener('click', () => {
+    setApiKey('');
+    quickApiInput.value = '';
+    quickApiModal.classList.add('hidden');
+});
+
+// Instructions Modal Listeners
+document.querySelectorAll('.open-instructions-link').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        instructionsModal.classList.remove('hidden');
+    });
+});
+closeInstructionsBtn.addEventListener('click', () => instructionsModal.classList.add('hidden'));
+instructionsReadyBtn.addEventListener('click', () => instructionsModal.classList.add('hidden'));
+
+// Gemini Down Modal Listeners
+function showGeminiDownModal(errorMsg, sourceType, localCards = null) {
+    lastFailedSourceType = sourceType;
+    lastFailedLocalCards = localCards;
+    if (geminiDownModal) geminiDownModal.classList.remove('hidden');
+}
+function closeGeminiDownModal() {
+    if (geminiDownModal) geminiDownModal.classList.add('hidden');
+}
+closeGeminiDownModalBtn.addEventListener('click', closeGeminiDownModal);
+if (useTraditionalTxtBtn) {
+    useTraditionalTxtBtn.addEventListener('click', () => {
+        closeGeminiDownModal();
+        if (lastFailedLocalCards) {
+            deckCards = lastFailedLocalCards.map(c => {
+                const copy = { ...c };
+                if (copy.type === 'multiple_choice' && Array.isArray(copy.options)) {
+                    copy.options = copy.options.map((o, i) => o === '[GEMINI]' ? `Opção ${i + 1}` : o);
+                }
+                return copy;
+            });
+            openEditorView('creator');
+            renderCardsList(true);
+        }
+    });
+}
+if (retryGeminiBtn) {
+    retryGeminiBtn.addEventListener('click', () => {
+        closeGeminiDownModal();
+        if (lastFailedSourceType === 'files') {
+            modal21.classList.remove('hidden');
+        } else if (lastFailedSourceType === 'txt') {
+            modal22.classList.remove('hidden');
+        }
+    });
 }
 
-generateFilesBtn.addEventListener('click', () => generateFlashcards('files'));
-generateTxtBtn.addEventListener('click', () => generateFlashcards('txt'));
+// Close modals on backdrop click
+[modal12, modal21, modal22, quickApiModal, instructionsModal, geminiDownModal, inlineEditModal].forEach(modal => {
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.add('hidden');
+        });
+    }
+});
 
-// Render Cards List
+// --- CARD CREATOR UI LOGIC (LEFT SIDEBAR) ---
+const typeHints = {
+    open: "Pergunta é uma descrição e você digita o nome do conceito.",
+    open_double: "Uma pergunta, você digita duas respostas.",
+    anki: "Pergunta é um conceito (curto), ou imagem, e resposta é uma descrição longa, ou imagem. Sem digitação.",
+    multiple_choice: "Pergunta é um conceito, você escolhe entre alternativas (2 a 6 opções)."
+};
+
+creatorCardType.addEventListener('change', () => {
+    const t = creatorCardType.value;
+    creatorTypeHint.textContent = typeHints[t] || '';
+
+    // Adjust visibility
+    creatorGroupOpen.classList.toggle('hidden', t !== 'open');
+    creatorGroupOpenDouble.classList.toggle('hidden', t !== 'open_double');
+    creatorGroupAnki.classList.toggle('hidden', t !== 'anki');
+    creatorGroupMc.classList.toggle('hidden', t !== 'multiple_choice');
+
+    if (t === 'anki') {
+        creatorQuestionLabel.textContent = "Pergunta / Conceito (Curto)";
+    } else {
+        creatorQuestionLabel.textContent = "Pergunta / Descrição";
+    }
+
+    if (t === 'multiple_choice' && creatorMcOptionsList.children.length === 0) {
+        renderCreatorMcOptions(["", "", "", ""], 0);
+    }
+});
+
+// Creator MCQ Options (between 2 and 6 options)
+function renderCreatorMcOptions(options = ["", "", "", ""], selectedIdx = 0) {
+    creatorMcOptionsList.innerHTML = '';
+    options.forEach((optText, i) => {
+        const row = document.createElement('div');
+        row.className = "flex items-center gap-2";
+        row.innerHTML = `
+            <input type="radio" name="creator-mc-correct" value="${i}" ${i === selectedIdx ? 'checked' : ''} class="w-4 h-4 text-blue-600 focus:ring-blue-500 cursor-pointer" title="Marcar como alternativa correta">
+            <input type="text" class="creator-mc-opt-val flex-1 p-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm" placeholder="Opção ${i + 1}" value="${optText}">
+            <button type="button" class="creator-mc-remove-opt-btn p-1 text-gray-400 hover:text-red-500 transition" title="Remover alternativa">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </button>
+        `;
+
+        const removeBtn = row.querySelector('.creator-mc-remove-opt-btn');
+        removeBtn.addEventListener('click', () => {
+            const currentVals = Array.from(document.querySelectorAll('.creator-mc-opt-val')).map(inp => inp.value);
+            if (currentVals.length <= 2) {
+                alert("A questão de múltipla escolha deve ter pelo menos 2 alternativas.");
+                return;
+            }
+            currentVals.splice(i, 1);
+            let nextSelected = 0;
+            const checkedRadio = document.querySelector('input[name="creator-mc-correct"]:checked');
+            if (checkedRadio) {
+                const oldCheckedIdx = parseInt(checkedRadio.value);
+                if (oldCheckedIdx === i) nextSelected = 0;
+                else if (oldCheckedIdx > i) nextSelected = oldCheckedIdx - 1;
+                else nextSelected = oldCheckedIdx;
+            }
+            renderCreatorMcOptions(currentVals, nextSelected);
+        });
+
+        creatorMcOptionsList.appendChild(row);
+    });
+
+    creatorAddMcOptBtn.classList.toggle('hidden', options.length >= 6);
+}
+
+creatorAddMcOptBtn.addEventListener('click', () => {
+    const currentVals = Array.from(document.querySelectorAll('.creator-mc-opt-val')).map(inp => inp.value);
+    if (currentVals.length >= 6) return;
+    const checkedRadio = document.querySelector('input[name="creator-mc-correct"]:checked');
+    const checkedIdx = checkedRadio ? parseInt(checkedRadio.value) : 0;
+    currentVals.push("");
+    renderCreatorMcOptions(currentVals, checkedIdx);
+});
+
+// Creator Image Handling
+creatorQImgFile.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        pendingCreatorQImage = await compressImageFile(file);
+        creatorQImgPreview.src = pendingCreatorQImage;
+        creatorQImgPreviewContainer.classList.remove('hidden');
+        creatorRemoveQImg.classList.remove('hidden');
+    }
+});
+creatorRemoveQImg.addEventListener('click', () => {
+    pendingCreatorQImage = '';
+    creatorQImgFile.value = '';
+    creatorQImgPreviewContainer.classList.add('hidden');
+    creatorRemoveQImg.classList.add('hidden');
+});
+
+creatorAnsImgFile.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        pendingCreatorAnsImage = await compressImageFile(file);
+        creatorAnsImgPreview.src = pendingCreatorAnsImage;
+        creatorAnsImgPreviewContainer.classList.remove('hidden');
+        creatorRemoveAnsImg.classList.remove('hidden');
+    }
+});
+creatorRemoveAnsImg.addEventListener('click', () => {
+    pendingCreatorAnsImage = '';
+    creatorAnsImgFile.value = '';
+    creatorAnsImgPreviewContainer.classList.add('hidden');
+    creatorRemoveAnsImg.classList.add('hidden');
+});
+
+// Submit New Card
+creatorSubmitCardBtn.addEventListener('click', () => {
+    creatorFeedback.classList.add('hidden');
+    const type = creatorCardType.value;
+    const desc = creatorQuestion.value.trim();
+
+    if (!desc && !pendingCreatorQImage) {
+        alert("Por favor, informe a pergunta ou selecione uma imagem.");
+        creatorQuestion.focus();
+        return;
+    }
+
+    const newCard = {
+        type,
+        description: desc
+    };
+
+    if (pendingCreatorQImage) newCard.image = pendingCreatorQImage;
+
+    if (type === 'open') {
+        const ans = creatorAnsOpen.value.trim();
+        if (!ans) {
+            alert("Por favor, digite a resposta principal.");
+            creatorAnsOpen.focus();
+            return;
+        }
+        newCard.answer = ans;
+    } else if (type === 'open_double') {
+        const a1 = creatorAnsDouble1.value.trim();
+        const a2 = creatorAnsDouble2.value.trim();
+        if (!a1 || !a2) {
+            alert("Por favor, preencha as duas respostas.");
+            return;
+        }
+        newCard.answer = a1;
+        newCard.answer2 = a2;
+        newCard.placeholder1 = "Resposta 1";
+        newCard.placeholder2 = "Resposta 2";
+    } else if (type === 'anki') {
+        const ans = creatorAnsAnki.value.trim();
+        if (!ans && !pendingCreatorAnsImage) {
+            alert("Por favor, informe a resposta ou uma imagem de resposta para o cartão Anki.");
+            creatorAnsAnki.focus();
+            return;
+        }
+        newCard.answer = ans;
+        if (pendingCreatorAnsImage) newCard.answerImage = pendingCreatorAnsImage;
+    } else if (type === 'multiple_choice') {
+        const optInputs = Array.from(document.querySelectorAll('.creator-mc-opt-val'));
+        const options = optInputs.map(inp => inp.value.trim()).filter(Boolean);
+        if (options.length < 2 || options.length > 6) {
+            alert("A questão de múltipla escolha deve conter entre 2 e 6 alternativas válidas.");
+            return;
+        }
+        const checkedRadio = document.querySelector('input[name="creator-mc-correct"]:checked');
+        const correctIdx = checkedRadio ? parseInt(checkedRadio.value) : 0;
+        const correctText = optInputs[correctIdx]?.value.trim();
+        if (!correctText) {
+            alert("A alternativa correta selecionada não pode estar vazia.");
+            return;
+        }
+        newCard.answer = correctText;
+        newCard.options = options;
+    }
+
+    deckCards.push(newCard);
+    renderCardsList(true);
+
+    // Reset Form Fields
+    creatorQuestion.value = '';
+    creatorAnsOpen.value = '';
+    creatorAnsDouble1.value = '';
+    creatorAnsDouble2.value = '';
+    creatorAnsAnki.value = '';
+    creatorRemoveQImg.click();
+    creatorRemoveAnsImg.click();
+
+    if (type === 'multiple_choice') {
+        renderCreatorMcOptions(["", "", "", ""], 0);
+    }
+
+    creatorFeedback.textContent = "Card adicionado com sucesso!";
+    creatorFeedback.classList.remove('hidden');
+    setTimeout(() => creatorFeedback.classList.add('hidden'), 2000);
+
+    // Scroll card list to bottom
+    cardsList.scrollTop = cardsList.scrollHeight;
+});
+
+// Initialize default creator MCQ options
+renderCreatorMcOptions(["", "", "", ""], 0);
+
+// --- RENDER CARDS LIST IN EDITOR VIEW ---
 function renderCardsList(fullReRender = false) {
     deckSizeBadge.textContent = deckCards.length;
 
@@ -806,9 +1257,8 @@ function renderCardsList(fullReRender = false) {
         cardsList.innerHTML = '';
     }
 
-    const currentRenderedCount = cardsList.children.length;
-
-    for (let i = currentRenderedCount; i < deckCards.length; i++) {
+    const currentCount = cardsList.children.length;
+    for (let i = currentCount; i < deckCards.length; i++) {
         const cardEl = createCardElement(deckCards[i], i);
         cardsList.appendChild(cardEl);
     }
@@ -816,25 +1266,46 @@ function renderCardsList(fullReRender = false) {
 
 function createCardElement(card, index) {
     const cardEl = document.createElement('div');
-    cardEl.className = "bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative group shadow-sm flex flex-col gap-2";
+    cardEl.className = "bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative group shadow-sm flex flex-col gap-2 transition";
 
     const typeBadge = document.createElement('span');
-    typeBadge.className = "absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-100 dark:bg-gray-600 dark:text-gray-300 px-2 py-1 rounded";
-    typeBadge.textContent = card.type === 'open' ? 'Aberto' : (card.type === 'multiple_choice' ? 'Múltipla Escolha' : 'Duplo Aberto');
+    typeBadge.className = "absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded";
+
+    if (card.type === 'anki') {
+        typeBadge.className += " bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-300";
+        typeBadge.textContent = "Anki-like";
+    } else if (card.type === 'multiple_choice') {
+        typeBadge.className += " bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-300";
+        typeBadge.textContent = `Múltipla Escolha (${card.options ? card.options.length : 4})`;
+    } else if (card.type === 'open_double') {
+        typeBadge.className += " bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300";
+        typeBadge.textContent = "Duplo Aberto";
+    } else {
+        typeBadge.className += " bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300";
+        typeBadge.textContent = "Aberto";
+    }
     cardEl.appendChild(typeBadge);
 
-    const descStr = `<strong>P:</strong> <span class="text-gray-800 dark:text-gray-200">${card.description}</span>`;
-    let ansStr = `<strong>R:</strong> <span class="text-green-600 dark:text-green-400">${card.answer}</span>`;
+    const descStr = `<strong>P:</strong> <span class="text-gray-800 dark:text-gray-200">${card.description || '(Sem texto)'}</span>`;
+    let ansStr = `<strong>R:</strong> <span class="text-green-600 dark:text-green-400">${card.answer || ''}</span>`;
+
     if (card.type === 'open_double') {
-        ansStr += `<br><strong>R2:</strong> <span class="text-green-600 dark:text-green-400">${card.answer2}</span>`;
+        ansStr += `<br><strong>R2:</strong> <span class="text-green-600 dark:text-green-400">${card.answer2 || ''}</span>`;
     } else if (card.type === 'multiple_choice') {
-        ansStr += `<br><span class="text-xs text-gray-500">Opções: ${card.options?.join(', ')}</span>`;
+        const optsList = (card.options || []).map(opt => {
+            const isCorrect = opt === card.answer;
+            return isCorrect ? `<strong class="text-green-600 dark:text-green-400">✓ ${opt}</strong>` : opt;
+        }).join(' | ');
+        ansStr = `<span class="text-xs text-gray-500">Opções: ${optsList}</span>`;
+    } else if (card.type === 'anki') {
+        ansStr = `<strong>Resposta:</strong> <span class="text-indigo-600 dark:text-indigo-400">${card.answer || ''}</span>`;
     }
 
     const textCont = document.createElement('div');
-    textCont.innerHTML = `<p class="mb-1 text-sm mt-3">${descStr}</p><p class="text-sm">${ansStr}</p>`;
+    textCont.innerHTML = `<p class="mb-1 text-sm mt-3 pr-20">${descStr}</p><p class="text-sm">${ansStr}</p>`;
     cardEl.appendChild(textCont);
 
+    // Question Image
     if (card.image) {
         const imgDiv = document.createElement('div');
         imgDiv.className = "w-full max-h-32 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center justify-center p-1 mt-1";
@@ -842,22 +1313,30 @@ function createCardElement(card, index) {
         cardEl.appendChild(imgDiv);
     }
 
-    // Actions (Edit, Delete)
+    // Answer Image (Anki)
+    if (card.answerImage) {
+        const ansImgDiv = document.createElement('div');
+        ansImgDiv.className = "w-full max-h-32 overflow-hidden rounded-lg border border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-950/30 flex items-center justify-center p-1 mt-1";
+        ansImgDiv.innerHTML = `<img src="${card.answerImage}" alt="Imagem Resposta" class="max-h-28 w-auto object-contain rounded">`;
+        cardEl.appendChild(ansImgDiv);
+    }
+
+    // Action buttons
     const actionsDiv = document.createElement('div');
     actionsDiv.className = "absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity";
 
     const editBtn = document.createElement('button');
-    editBtn.className = "p-1.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-300 rounded";
+    editBtn.className = "p-1.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-300 rounded-lg";
     editBtn.innerHTML = '<img src="../assets/img/edit.svg" class="w-4 h-4" alt="Editar">';
-    editBtn.onclick = () => openEditModal(index);
+    editBtn.onclick = () => openInlineEditModal(index);
 
     const delBtn = document.createElement('button');
-    delBtn.className = "p-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 text-red-600 dark:text-red-300 rounded";
+    delBtn.className = "p-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 text-red-600 dark:text-red-300 rounded-lg";
     delBtn.innerHTML = '<img src="../assets/img/delete.svg" class="w-4 h-4" alt="Excluir">';
     delBtn.onclick = () => {
-        if (confirm('Excluir este flashcard?')) {
+        if (confirm('Excluir este flashcard permanentemente?')) {
             deckCards.splice(index, 1);
-            renderCardsList(true); // Full re-render on delete to update indices
+            renderCardsList(true);
         }
     };
 
@@ -868,174 +1347,167 @@ function createCardElement(card, index) {
     return cardEl;
 }
 
-// Manual Add Card Handler
 addCardBtn.addEventListener('click', () => {
-    openEditModal(-1);
+    switchSidebarTab('creator');
+    creatorQuestion.focus();
 });
 
-// Inline Edit Modal Image Handling
-let pendingInlineEditImage = '';
+// --- INLINE EDIT MODAL (FOR ALL TYPES) ---
+function openInlineEditModal(index) {
+    const card = deckCards[index];
+    if (!card) return;
 
-function updateInlineEditImagePreviewUI(imgSrc) {
-    if (imgSrc && inlineEditImagePreview && inlineEditImagePreviewContainer) {
-        inlineEditImagePreview.src = imgSrc;
+    editCardIndex.value = index;
+    editCardType.value = card.type || 'open';
+    editCardDesc.value = card.description || '';
+
+    // Show/hide groups based on type
+    const t = card.type || 'open';
+    editCardAns1Group.classList.toggle('hidden', t === 'anki' || t === 'multiple_choice');
+    editCardAns2Group.classList.toggle('hidden', t !== 'open_double');
+    editCardAnkiGroup.classList.toggle('hidden', t !== 'anki');
+    editCardMcGroup.classList.toggle('hidden', t !== 'multiple_choice');
+    inlineEditAnsImageGroup.classList.toggle('hidden', t !== 'anki');
+
+    if (t === 'open') {
+        editCardAns1Label.textContent = "Resposta Principal";
+        editCardAns1.value = card.answer || '';
+    } else if (t === 'open_double') {
+        editCardAns1Label.textContent = "Resposta 1";
+        editCardAns1.value = card.answer || '';
+        editCardAns2.value = card.answer2 || '';
+    } else if (t === 'anki') {
+        editCardAnkiAnswer.value = card.answer || '';
+    } else if (t === 'multiple_choice') {
+        renderInlineEditMcOptions(card.options || ["", "", "", ""], card.answer);
+    }
+
+    pendingInlineEditQImage = card.image || '';
+    if (pendingInlineEditQImage) {
+        inlineEditImagePreview.src = pendingInlineEditQImage;
         inlineEditImagePreviewContainer.classList.remove('hidden');
-    } else if (inlineEditImagePreviewContainer) {
-        if (inlineEditImagePreview) inlineEditImagePreview.src = '';
+    } else {
         inlineEditImagePreviewContainer.classList.add('hidden');
     }
-}
 
-if (inlineEditImageFile) {
-    inlineEditImageFile.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            try {
-                pendingInlineEditImage = await compressImageFile(file);
-                updateInlineEditImagePreviewUI(pendingInlineEditImage);
-            } catch (err) {
-                console.error('Erro ao comprimir imagem:', err);
-            }
-        }
-    });
-}
-
-if (inlineEditImageUrl) {
-    inlineEditImageUrl.addEventListener('input', (e) => {
-        const url = e.target.value.trim();
-        if (url) {
-            pendingInlineEditImage = url;
-            updateInlineEditImagePreviewUI(pendingInlineEditImage);
-        }
-    });
-}
-
-if (inlineEditRemoveImageBtn) {
-    inlineEditRemoveImageBtn.addEventListener('click', () => {
-        pendingInlineEditImage = '';
-        if (inlineEditImageFile) inlineEditImageFile.value = '';
-        if (inlineEditImageUrl) inlineEditImageUrl.value = '';
-        updateInlineEditImagePreviewUI('');
-    });
-}
-
-// Edit Modal Handlers
-function openEditModal(index) {
-    if (index === -1) {
-        // New Card
-        editCardIndex.value = -1;
-        editCardDesc.value = '';
-        editCardAns1.value = '';
-        editCardAns2Group.classList.add('hidden');
-        editCardAns2.value = '';
+    pendingInlineEditAnsImage = card.answerImage || '';
+    if (pendingInlineEditAnsImage) {
+        inlineEditAnsImagePreview.src = pendingInlineEditAnsImage;
+        inlineEditAnsImagePreviewContainer.classList.remove('hidden');
     } else {
-        // Edit Existing Card
-        const card = deckCards[index];
-        editCardIndex.value = index;
-        editCardDesc.value = card.description;
-        editCardAns1.value = card.answer;
-
-        if (card.type === 'open_double') {
-            editCardAns2Group.classList.remove('hidden');
-            editCardAns2.value = card.answer2;
-        } else {
-            editCardAns2Group.classList.add('hidden');
-        }
+        inlineEditAnsImagePreviewContainer.classList.add('hidden');
     }
 
-    pendingInlineEditImage = index === -1 ? '' : (deckCards[index].image || '');
-    if (inlineEditImageFile) inlineEditImageFile.value = '';
-    if (inlineEditImageUrl) inlineEditImageUrl.value = '';
-    updateInlineEditImagePreviewUI(pendingInlineEditImage);
-
-    editModal.classList.remove('hidden');
+    inlineEditModal.classList.remove('hidden');
 }
 
-function closeEditModalFn() {
-    editModal.classList.add('hidden');
-}
-
-closeEditBtn.addEventListener('click', closeEditModalFn);
-cancelEditBtn.addEventListener('click', closeEditModalFn);
-
-saveEditBtn.addEventListener('click', () => {
-    const i = parseInt(editCardIndex.value);
-    const newCardData = {
-        description: editCardDesc.value,
-        answer: editCardAns1.value
-    };
-
-    if (i === -1) {
-        // Add new card (default to 'open' type for manual addition)
-        newCardData.type = 'open';
-        if (pendingInlineEditImage) newCardData.image = pendingInlineEditImage;
-        deckCards.push(newCardData);
-    } else {
-        // Update existing card
-        deckCards[i].description = newCardData.description;
-        deckCards[i].answer = newCardData.answer;
-        if (deckCards[i].type === 'open_double') {
-            deckCards[i].answer2 = editCardAns2.value;
-        }
-        if (pendingInlineEditImage) {
-            deckCards[i].image = pendingInlineEditImage;
-        } else {
-            delete deckCards[i].image;
-        }
-    }
-
-    renderCardsList(true); // Full re-render
-    closeEditModalFn();
-});
-
-// Instructions Modal Handlers
-openInstructionsBtn.addEventListener('click', () => {
-    instructionsModal.classList.remove('hidden');
-});
-
-const closeInstructionsModalFn = () => {
-    instructionsModal.classList.add('hidden');
-};
-
-closeInstructionsBtn.addEventListener('click', closeInstructionsModalFn);
-instructionsReadyBtn.addEventListener('click', closeInstructionsModalFn);
-
-// Close modals on overlay click
-[editModal, instructionsModal, geminiDownModal].forEach(modal => {
-    if (modal) {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.classList.add('hidden');
+function renderInlineEditMcOptions(options, correctAnswer) {
+    editCardMcList.innerHTML = '';
+    options.forEach((optText, i) => {
+        const isCorrect = optText === correctAnswer;
+        const row = document.createElement('div');
+        row.className = "flex items-center gap-2";
+        row.innerHTML = `
+            <input type="radio" name="inline-edit-mc-correct" value="${i}" ${isCorrect ? 'checked' : ''} class="w-4 h-4 text-blue-600 focus:ring-blue-500 cursor-pointer">
+            <input type="text" class="inline-edit-mc-opt-val flex-1 p-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm" value="${optText}">
+            <button type="button" class="inline-edit-remove-opt-btn p-1 text-gray-400 hover:text-red-500 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </button>
+        `;
+        const removeBtn = row.querySelector('.inline-edit-remove-opt-btn');
+        removeBtn.addEventListener('click', () => {
+            const currentVals = Array.from(document.querySelectorAll('.inline-edit-mc-opt-val')).map(inp => inp.value);
+            if (currentVals.length <= 2) {
+                alert("Mínimo de 2 alternativas.");
+                return;
             }
+            currentVals.splice(i, 1);
+            renderInlineEditMcOptions(currentVals, correctAnswer);
         });
-    }
+        editCardMcList.appendChild(row);
+    });
+
+    editCardAddMcOptBtn.classList.toggle('hidden', options.length >= 6);
+}
+
+editCardAddMcOptBtn.addEventListener('click', () => {
+    const currentVals = Array.from(document.querySelectorAll('.inline-edit-mc-opt-val')).map(inp => inp.value);
+    if (currentVals.length >= 6) return;
+    currentVals.push("");
+    const checkedRadio = document.querySelector('input[name="inline-edit-mc-correct"]:checked');
+    const correctIdx = checkedRadio ? parseInt(checkedRadio.value) : 0;
+    const curCorrect = currentVals[correctIdx] || "";
+    renderInlineEditMcOptions(currentVals, curCorrect);
 });
 
-// Gemini Down Modal Action Listeners
-if (retryGeminiBtn) {
-    retryGeminiBtn.addEventListener('click', () => {
-        closeGeminiDownModal();
-        if (lastFailedSourceType) {
-            generateFlashcards(lastFailedSourceType);
-        }
-    });
-}
+// Inline Edit Image Listeners
+inlineEditImageFile.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        pendingInlineEditQImage = await compressImageFile(file);
+        inlineEditImagePreview.src = pendingInlineEditQImage;
+        inlineEditImagePreviewContainer.classList.remove('hidden');
+    }
+});
+inlineEditRemoveImageBtn.addEventListener('click', () => {
+    pendingInlineEditQImage = '';
+    inlineEditImageFile.value = '';
+    inlineEditImagePreviewContainer.classList.add('hidden');
+});
 
-if (useTraditionalTxtBtn) {
-    useTraditionalTxtBtn.addEventListener('click', () => {
-        closeGeminiDownModal();
-        applyTraditionalTxtConversion(lastFailedLocalCards);
-    });
-}
+inlineEditAnsImageFile.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        pendingInlineEditAnsImage = await compressImageFile(file);
+        inlineEditAnsImagePreview.src = pendingInlineEditAnsImage;
+        inlineEditAnsImagePreviewContainer.classList.remove('hidden');
+    }
+});
+inlineEditRemoveAnsImageBtn.addEventListener('click', () => {
+    pendingInlineEditAnsImage = '';
+    inlineEditAnsImageFile.value = '';
+    inlineEditAnsImagePreviewContainer.classList.add('hidden');
+});
 
-if (closeGeminiDownModalBtn) {
-    closeGeminiDownModalBtn.addEventListener('click', closeGeminiDownModal);
-}
+closeInlineEditBtn.addEventListener('click', () => inlineEditModal.classList.add('hidden'));
+cancelInlineEditBtn.addEventListener('click', () => inlineEditModal.classList.add('hidden'));
 
-// Chat integration
+saveInlineEditBtn.addEventListener('click', () => {
+    const idx = parseInt(editCardIndex.value);
+    if (idx < 0 || !deckCards[idx]) return;
+
+    const card = deckCards[idx];
+    card.description = editCardDesc.value.trim();
+
+    if (pendingInlineEditQImage) card.image = pendingInlineEditQImage;
+    else delete card.image;
+
+    if (card.type === 'open') {
+        card.answer = editCardAns1.value.trim();
+    } else if (card.type === 'open_double') {
+        card.answer = editCardAns1.value.trim();
+        card.answer2 = editCardAns2.value.trim();
+    } else if (card.type === 'anki') {
+        card.answer = editCardAnkiAnswer.value.trim();
+        if (pendingInlineEditAnsImage) card.answerImage = pendingInlineEditAnsImage;
+        else delete card.answerImage;
+    } else if (card.type === 'multiple_choice') {
+        const optInputs = Array.from(document.querySelectorAll('.inline-edit-mc-opt-val'));
+        const options = optInputs.map(inp => inp.value.trim()).filter(Boolean);
+        const checkedRadio = document.querySelector('input[name="inline-edit-mc-correct"]:checked');
+        const correctIdx = checkedRadio ? parseInt(checkedRadio.value) : 0;
+        card.options = options;
+        card.answer = optInputs[correctIdx]?.value.trim() || options[0];
+    }
+
+    renderCardsList(true);
+    inlineEditModal.classList.add('hidden');
+});
+
+// --- AI CHAT INTEGRATION ---
 function addChatMessage(role, text) {
     const msg = document.createElement('div');
-    msg.className = `py-2 px-4 rounded-xl max-w-[85%] text-sm ${role === 'user' ? 'self-end bg-blue-600 text-white rounded-tr-sm' : 'self-start bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-tl-sm'}`;
+    msg.className = `py-2 px-4 rounded-xl max-w-[85%] text-sm ${role === 'user' ? 'self-end bg-purple-600 text-white rounded-tr-sm' : 'self-start bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-tl-sm'}`;
     msg.textContent = text;
     chatHistory.appendChild(msg);
     chatHistory.scrollTop = chatHistory.scrollHeight;
@@ -1045,13 +1517,14 @@ chatSendBtn.addEventListener('click', async () => {
     const text = chatInput.value.trim();
     if (!text) return;
 
-    // Se a sessão foi resetada (ex: por troca de modelo), reinicializamos
+    const apiKey = getApiKey();
+    if (!apiKey) {
+        addChatMessage('model', 'Por favor, insira sua API Key para usar o assistente.');
+        openApiKeyModalBtn.click();
+        return;
+    }
+
     if (!geminiChatSession) {
-        const apiKey = apiKeyInput.value.trim();
-        if (!apiKey) {
-            addChatMessage('model', 'Por favor, insira sua API Key para usar o assistente.');
-            return;
-        }
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
             model: currentEditorModel,
@@ -1070,15 +1543,12 @@ chatSendBtn.addEventListener('click', async () => {
     chatSpinner.classList.remove('hidden');
 
     try {
-        // Enviar o contexto atualizado dos cards para o modelo não se perder
-        const contextLines = deckCards.map((c, i) => `[${i}] ${c.description.substring(0, 70)}...`).join('\n');
-        const enrichedPrompt = `ATENÇÃO: O estado atual do baralho é este:\n${contextLines}\n\nComando do Usuário: ${text}`;
+        const contextLines = deckCards.map((c, i) => `[${i}] (${c.type}) ${c.description.substring(0, 60)}... | R: ${c.answer}`).join('\n');
+        const enrichedPrompt = `ATENÇÃO: O estado atual do baralho é:\n${contextLines}\n\nComando do Usuário: ${text}`;
 
-        // Simple message to the agent
         let result = await callWithRetry(() => geminiChatSession.sendMessage(enrichedPrompt));
         let response = result.response;
 
-        // Agent loop (handle tool calls)
         for (let i = 0; i < 5; i++) {
             const candidate = response.candidates[0];
             const calls = candidate.content.parts.filter(p => !!p.functionCall);
@@ -1088,29 +1558,21 @@ chatSendBtn.addEventListener('click', async () => {
                 const { name, args } = call.functionCall;
                 const output = toolFunctions[name] ? toolFunctions[name](args) : { error: "Função não encontrada" };
                 return {
-                    functionResponse: {
-                        name,
-                        response: output
-                    }
+                    functionResponse: { name, response: output }
                 };
             });
 
-            // Send tool outputs back
             result = await callWithRetry(() => geminiChatSession.sendMessage(functionResponses));
             sanitizeChatHistory(geminiChatSession);
             response = result.response;
         }
 
         const modelText = response.text();
-        addChatMessage('model', modelText || 'Ação realizada.');
+        addChatMessage('model', modelText || 'Ação realizada com sucesso.');
 
     } catch (e) {
         console.error(e);
-        if ((e.message.includes("429") || e.message.includes("quota")) && currentEditorModel === "gemini-flash-latest") {
-            handleEditorQuotaError();
-        } else {
-            addChatMessage('model', `Houve um erro no processador: ${e.message}`);
-        }
+        addChatMessage('model', `Erro ao processar: ${e.message}`);
     } finally {
         chatInput.disabled = false;
         chatSendBtn.disabled = false;
@@ -1122,29 +1584,7 @@ chatInput.addEventListener('keyup', (e) => {
     if (e.key === 'Enter') chatSendBtn.click();
 });
 
-function handleEditorQuotaError() {
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'py-3 px-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/40 text-xs self-start max-w-[85%]';
-    errorDiv.innerHTML = `
-        <p class="text-red-600 dark:text-red-400 mb-2 font-bold flex items-center gap-2">
-            <img src="../assets/img/cloud_alert.svg" class="w-5 h-5" alt="Alerta"> Quota Excedida: Você atingiu o limite do Gemini Flash.
-        </p>
-        <button id="switch-to-lite-editor-btn" class="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-[10px] uppercase tracking-wider transition">
-            Continuar com IA menor
-        </button>
-    `;
-    chatHistory.appendChild(errorDiv);
-    chatHistory.scrollTop = chatHistory.scrollHeight;
-
-    document.getElementById('switch-to-lite-editor-btn').addEventListener('click', (e) => {
-        localStorage.setItem('model_fallback_active', 'true');
-        currentEditorModel = "gemini-flash-lite-latest";
-        geminiChatSession = null; // Forces re-init on next message
-        e.target.parentElement.innerHTML = "IA alterada para Lite. Você já pode reenviar seu comando.";
-    });
-}
-
-// Download Deck
+// --- SAVE & PLAY DECK ---
 downloadDeckBtn.addEventListener('click', () => {
     if (deckCards.length === 0) return;
     const jsonStr = JSON.stringify(deckCards, null, 4);
@@ -1160,9 +1600,11 @@ downloadDeckBtn.addEventListener('click', () => {
     URL.revokeObjectURL(url);
 });
 
-// Play Now (Save to load & return)
 playDeckBtn.addEventListener('click', () => {
-    if (deckCards.length === 0) return;
+    if (deckCards.length === 0) {
+        alert("Adicione pelo menos um cartão antes de jogar.");
+        return;
+    }
 
     const title = deckTitleDisplay.value;
     const gameState = {
@@ -1183,20 +1625,12 @@ playDeckBtn.addEventListener('click', () => {
     window.location.href = 'game.html';
 });
 
-// Start from Scratch
-startScratchBtn.addEventListener('click', () => {
-    deckCards = [];
-    deckTitleDisplay.value = "Novo Baralho";
-    renderCardsList(true);
-    dashboardView.classList.add('hidden');
-    editorView.classList.remove('hidden');
-    editorView.classList.add('flex');
-    globalError.textContent = "";
-});
-
-// Initialization: Check if we are loading an existing deck for editing
+// --- INITIALIZATION ---
 window.addEventListener('DOMContentLoaded', () => {
     checkAndResetModelFallback();
+    updateApiKeyStatusUI();
+
+    // Check if loading an existing deck for editing
     const savedDeck = localStorage.getItem('editing_deck');
     const savedTitle = localStorage.getItem('editing_deck_title');
 
@@ -1205,29 +1639,10 @@ window.addEventListener('DOMContentLoaded', () => {
             deckCards = JSON.parse(savedDeck);
             const displayTitle = savedTitle || "Flashcards";
             deckTitleDisplay.value = displayTitle;
-            document.title = `${displayTitle} | Gerador`;
+            document.title = `${displayTitle} | Editor`;
 
-            // Switch view
-            dashboardView.classList.add('hidden');
-            editorView.classList.remove('hidden');
-            editorView.classList.add('flex');
+            openEditorView('creator');
 
-            renderCardsList(true);
-
-            // Initialize Gemini Chat session if API key is available
-            const apiKey = apiKeyInput.value.trim();
-            if (apiKey && typeof GoogleGenerativeAI !== 'undefined') {
-                const genAI = new GoogleGenerativeAI(apiKey);
-                const model = genAI.getGenerativeModel({
-                    model: currentEditorModel,
-                    systemInstruction,
-                    tools: deckTools
-                });
-                currentGenModel = model;
-                geminiChatSession = model.startChat({ history: [] });
-            }
-
-            // Clear storage after loading
             localStorage.removeItem('editing_deck');
             localStorage.removeItem('editing_deck_title');
         } catch (e) {
