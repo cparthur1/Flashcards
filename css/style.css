@@ -17,6 +17,92 @@ body {
     transition: box-shadow 0.4s ease-in-out;
 }
 
+/* Card Shake on Wrong Guess */
+@keyframes cardShake {
+    0%, 100% {
+        transform: translateX(0) rotate(0deg);
+    }
+    15% {
+        transform: translateX(-10px) rotate(-1.5deg);
+    }
+    30% {
+        transform: translateX(9px) rotate(1.2deg);
+    }
+    45% {
+        transform: translateX(-7px) rotate(-0.8deg);
+    }
+    60% {
+        transform: translateX(5px) rotate(0.5deg);
+    }
+    75% {
+        transform: translateX(-3px) rotate(-0.2deg);
+    }
+    90% {
+        transform: translateX(1px) rotate(0deg);
+    }
+}
+
+.card-shake {
+    animation: cardShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* Card Place-Behind-Deck Animation */
+@keyframes cardToBack {
+    0% {
+        transform: translateY(0) scale(1) rotate(0deg);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 25;
+        opacity: 1;
+        filter: brightness(1);
+    }
+    35% {
+        transform: translateY(-45px) scale(1.03) rotate(-1.5deg);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25);
+        z-index: 25;
+        opacity: 1;
+        filter: brightness(1.02);
+    }
+    40% {
+        z-index: 5;
+    }
+    65% {
+        transform: translateY(-5px) scale(0.94) rotate(0.5deg);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 5;
+        opacity: 0.85;
+        filter: brightness(0.9);
+    }
+    100% {
+        transform: translateY(35px) scale(0.9) rotate(1deg);
+        box-shadow: none;
+        z-index: 5;
+        opacity: 0;
+        filter: brightness(0.75);
+    }
+}
+
+.anim-card-to-back {
+    animation: cardToBack 0.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Score Pulse Effect */
+@keyframes scorePulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.35);
+        filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.8));
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.score-pulse {
+    animation: scorePulse 0.35s ease-out;
+}
+
 .hidden {
     display: none;
 }

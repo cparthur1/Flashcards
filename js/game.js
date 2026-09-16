@@ -14,6 +14,7 @@ const bookmarkCardBtn = document.getElementById('bookmark-card-btn');
 const bookmarkCardIcon = document.getElementById('bookmark-card-icon');
 
 const resetBtn = document.getElementById('reset-btn');
+const restartGameBtn = document.getElementById('restart-game-btn');
 const exportBtn = document.getElementById('export-btn');
 const gameContainer = document.getElementById('game-container');
 const goToEditorBtn = document.getElementById('go-to-editor-btn');
@@ -92,6 +93,7 @@ let currentQuestionIndexInPool = -1;
 let balls = [];
 let isFirstQuestion = true;
 let hasChatInteraction = false;
+let isAnimating = false;
 
 // --- AI STATE ---
 let isAiEnabled = false;
@@ -129,6 +131,258 @@ function showNotificationPill(message, iconName, isWarning = false) {
         pill.classList.add('-translate-y-20', 'opacity-0');
         setTimeout(() => pill.remove(), 500);
     }, 4000);
+}
+
+// --- CARD ANIMATION UTILITIES ---
+function getHeaderScoreTarget() {
+    const scoreVal = document.getElementById('score');
+    const scoreContainer = document.getElementById('score-container');
+    const scoreWrapper = document.getElementById('score-wrapper');
+
+    if (scoreVal && scoreVal.offsetParent !== null) return scoreVal;
+    if (scoreContainer && scoreContainer.offsetParent !== null) return scoreContainer;
+    return scoreWrapper || scoreContainer || scoreVal;
+}
+
+function animateCardToBack(callback) {
+    if (isAnimating) {
+        if (callback) callback();
+        return;
+    }
+    isAnimating = true;
+
+    const rect = questionCard.getBoundingClientRect();
+    const clone = questionCard.cloneNode(true);
+    clone.id = 'anim-card-back-clone';
+    clone.style.position = 'absolute';
+    clone.style.top = `${questionCard.offsetTop}px`;
+    clone.style.left = `${questionCard.offsetLeft}px`;
+    clone.style.width = `${rect.width}px`;
+    clone.style.height = `${rect.height}px`;
+    clone.style.margin = '0';
+    clone.style.pointerEvents = 'none';
+    clone.style.zIndex = '25';
+
+    gameContainer.appendChild(clone);
+
+    if (callback) callback();
+
+    questionCard.style.opacity = '0.85';
+    questionCard.style.transform = 'scale(0.96)';
+    questionCard.style.transition = 'transform 0.4s ease-out, opacity 0.4s ease-out';
+
+    clone.classList.add('anim-card-to-back');
+
+    setTimeout(() => {
+        if (clone && clone.parentElement) {
+            clone.style.zIndex = '5';
+        }
+    }, 200);
+
+    requestAnimationFrame(() => {
+        setTimeout(() => {
+            questionCard.style.opacity = '1';
+            questionCard.style.transform = 'scale(1)';
+        }, 150);
+    });
+
+    let cleaned = false;
+    const cleanup = () => {
+        if (cleaned) return;
+        cleaned = true;
+        clone.remove();
+        questionCard.style.transition = '';
+        questionCard.style.transform = '';
+        questionCard.style.opacity = '';
+        isAnimating = false;
+    };
+
+    clone.addEventListener('animationend', cleanup, { once: true });
+    setTimeout(cleanup, 700);
+}
+
+function animateCardToHeader(callback) {
+    if (isAnimating) {
+        if (callback) callback();
+        return;
+    }
+    isAnimating = true;
+
+    const cardRect = questionCard.getBoundingClientRect();
+    const targetEl = getHeaderScoreTarget();
+    const targetRect = targetEl.getBoundingClientRect();
+
+    const clone = questionCard.cloneNode(true);
+    clone.id = 'flying-card-to-header';
+    clone.style.position = 'fixed';
+    clone.style.top = `${cardRect.top}px`;
+    clone.style.left = `${cardRect.left}px`;
+    clone.style.width = `${cardRect.width}px`;
+    clone.style.height = `${cardRect.height}px`;
+    clone.style.margin = '0';
+    clone.style.pointerEvents = 'none';
+    clone.style.zIndex = '9999';
+    clone.style.transformOrigin = 'center center';
+    clone.classList.add('glow-correct');
+    document.body.appendChild(clone);
+
+    questionCard.style.opacity = '0';
+
+    const deltaX = (targetRect.left + targetRect.width / 2) - (cardRect.left + cardRect.width / 2);
+    const deltaY = (targetRect.top + targetRect.height / 2) - (cardRect.top + cardRect.height / 2);
+
+    const anim = clone.animate([
+        {
+            transform: 'translate(0px, 0px) scale(1) rotate(0deg)',
+            opacity: 1,
+            filter: 'brightness(1)'
+        },
+        {
+            transform: `translate(${deltaX * 0.35}px, ${deltaY * 0.45 - 25}px) scale(0.65) rotate(-6deg)`,
+            opacity: 0.95,
+            filter: 'brightness(1.1)',
+            offset: 0.45
+        },
+        {
+            transform: `translate(${deltaX * 0.85}px, ${deltaY * 0.9}px) scale(0.2) rotate(-10deg)`,
+            opacity: 0.7,
+            filter: 'brightness(1.2)',
+            offset: 0.85
+        },
+        {
+            transform: `translate(${deltaX}px, ${deltaY}px) scale(0.04) rotate(-12deg)`,
+            opacity: 0,
+            filter: 'brightness(1.4)',
+            offset: 1
+        }
+    ], {
+        duration: 650,
+        easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+        fill: 'forwards'
+    });
+
+    let finished = false;
+    const finishFlight = () => {
+        if (finished) return;
+        finished = true;
+        clone.remove();
+
+        const pulseTarget = document.getElementById('score') || targetEl;
+        pulseTarget.animate([
+            { transform: 'scale(1)' },
+            { transform: 'scale(1.4)', filter: 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.9))' },
+            { transform: 'scale(0.95)' },
+            { transform: 'scale(1)' }
+        ], {
+            duration: 350,
+            easing: 'ease-out'
+        });
+
+        if (callback) callback();
+        questionCard.style.opacity = '1';
+        questionCard.animate([
+            { opacity: 0, transform: 'scale(0.96)' },
+            { opacity: 1, transform: 'scale(1)' }
+        ], {
+            duration: 250,
+            easing: 'ease-out'
+        });
+        isAnimating = false;
+    };
+
+    anim.onfinish = finishFlight;
+    setTimeout(finishFlight, 800);
+}
+
+function animateCardsFromHeaderToDeck(callback) {
+    if (isAnimating) {
+        if (callback) callback();
+        return;
+    }
+    isAnimating = true;
+
+    const cardRect = questionCard.getBoundingClientRect();
+    const targetEl = getHeaderScoreTarget();
+    const targetRect = targetEl.getBoundingClientRect();
+
+    const deltaX = (targetRect.left + targetRect.width / 2) - (cardRect.left + cardRect.width / 2);
+    const deltaY = (targetRect.top + targetRect.height / 2) - (cardRect.top + cardRect.height / 2);
+
+    const pulseTarget = document.getElementById('score') || targetEl;
+    pulseTarget.animate([
+        { transform: 'scale(1)' },
+        { transform: 'scale(1.25)', filter: 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.8))' },
+        { transform: 'scale(1)' }
+    ], {
+        duration: 300,
+        easing: 'ease-out'
+    });
+
+    const cardCount = 3;
+    let finishedCount = 0;
+
+    for (let i = 0; i < cardCount; i++) {
+        setTimeout(() => {
+            const cardEl = document.createElement('div');
+            cardEl.className = 'fixed rounded-lg shadow-xl border border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 flex items-center justify-center pointer-events-none';
+            cardEl.style.width = `${cardRect.width}px`;
+            cardEl.style.height = `${cardRect.height}px`;
+            cardEl.style.top = `${cardRect.top}px`;
+            cardEl.style.left = `${cardRect.left}px`;
+            cardEl.style.zIndex = `${9990 + i}`;
+            cardEl.style.transformOrigin = 'center center';
+            cardEl.innerHTML = `
+                <div class="flex flex-col items-center justify-center gap-2 text-blue-500 dark:text-blue-400 opacity-70">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                </div>
+            `;
+            document.body.appendChild(cardEl);
+
+            const rotation = i % 2 === 0 ? 4 : -4;
+            const anim = cardEl.animate([
+                {
+                    transform: `translate(${deltaX}px, ${deltaY}px) scale(0.04) rotate(-12deg)`,
+                    opacity: 0.3,
+                    filter: 'brightness(1.3)'
+                },
+                {
+                    transform: `translate(${deltaX * 0.4}px, ${deltaY * 0.35 - 20}px) scale(0.65) rotate(${rotation}deg)`,
+                    opacity: 0.95,
+                    filter: 'brightness(1.05)',
+                    offset: 0.55
+                },
+                {
+                    transform: 'translate(0px, 0px) scale(1) rotate(0deg)',
+                    opacity: 1,
+                    filter: 'brightness(1)',
+                    offset: 1
+                }
+            ], {
+                duration: 550,
+                easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+                fill: 'forwards'
+            });
+
+            anim.onfinish = () => {
+                cardEl.remove();
+                finishedCount++;
+                if (finishedCount === cardCount) {
+                    questionCard.animate([
+                        { transform: 'scale(1)' },
+                        { transform: 'scale(1.02)' },
+                        { transform: 'scale(1)' }
+                    ], {
+                        duration: 200,
+                        easing: 'ease-out'
+                    });
+                    if (callback) callback();
+                    isAnimating = false;
+                }
+            };
+        }, i * 90);
+    }
 }
 
 // --- CANVAS ANIMATION ---
@@ -307,7 +561,7 @@ function resetUI() {
     nextQuestionBtn.classList.add('hidden');
     correctionOptions.classList.add('hidden');
     correctionOptions.classList.remove('flex');
-    questionCard.classList.remove('glow-correct', 'glow-incorrect');
+    questionCard.classList.remove('glow-correct', 'glow-incorrect', 'card-shake');
     questionText.classList.remove('text-red-500', 'text-green-500');
 
     mcOptionBtns.forEach(btn => {
@@ -320,7 +574,10 @@ function resetUI() {
 function handleOpenSubmit() {
     if (submitBtn.disabled) return;
     if (currentQuestion.isBeingCorrected) {
-        loadQuestion();
+        if (isAnimating) return;
+        animateCardToBack(() => {
+            loadQuestion();
+        });
         return;
     }
     const type = currentQuestion.type;
@@ -383,22 +640,35 @@ function showFeedback(isCorrect, element) {
                 if (normalizeString(b.textContent) === normalizeString(currentQuestion.answer)) b.classList.add('bg-green-500', 'text-white');
             });
         }
-    } else if (!isCorrect) {
+    }
+
+    if (!isCorrect) {
+        // Card shakes on wrong guess and waits for user to skip/ask/edit/delete
+        questionCard.classList.remove('card-shake');
+        void questionCard.offsetWidth; // Force reflow
+        questionCard.classList.add('card-shake');
+        setTimeout(() => questionCard.classList.remove('card-shake'), 450);
+
         currentQuestion.isBeingCorrected = true;
-        updateFeedbackText();
-        submitBtn.classList.add('hidden');
+        if (!element) {
+            updateFeedbackText();
+            submitBtn.classList.add('hidden');
+        }
         nextQuestionBtn.classList.remove('hidden');
         correctionOptions.classList.add('flex');
         correctionOptions.classList.remove('hidden');
-    }
-
-    if (isCorrect) {
+    } else {
+        // Card goes upwards toward the points counter in the header shrinking on the way to it
         score++;
-        updateScoreDisplay();
         questionsPool.splice(currentQuestionIndexInPool, 1);
         saveGameState();
-        setTimeout(loadQuestion, 2500);
-    } else if (currentQuestion.type === 'multiple_choice') setTimeout(loadQuestion, 3500);
+        setTimeout(() => {
+            animateCardToHeader(() => {
+                updateScoreDisplay();
+                loadQuestion();
+            });
+        }, 400);
+    }
 }
 
 function updateFeedbackText() {
@@ -543,7 +813,6 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
             // Sucesso! A IA corrigiu o erro.
             balls[ballIdx].color = 'rgba(250, 204, 21, 0.8)'; // Amarelo/Dourado para correção IA
             score++;
-            updateScoreDisplay();
 
             // Remove da pool se ainda for a mesma questão e salva
             const idx = questionsPool.findIndex(card => card.description === questionObj.description);
@@ -554,11 +823,17 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
 
             // Somente aplica feedback visual e carrega nova questão se o usuário ainda estiver na mesma questão
             if (questionObj === currentQuestion) {
-                questionCard.classList.remove('glow-incorrect');
+                questionCard.classList.remove('glow-incorrect', 'card-shake');
                 questionCard.classList.add('glow-correct');
-                setTimeout(loadQuestion, 2000);
+                setTimeout(() => {
+                    animateCardToHeader(() => {
+                        updateScoreDisplay();
+                        loadQuestion();
+                    });
+                }, 400);
             } else {
                 // Se o usuário já passou de fase, apenas atualizamos o contador visual
+                updateScoreDisplay();
                 questionsLeftDisplay.textContent = questionsPool.length;
             }
         } else if (evalData) {
@@ -720,6 +995,30 @@ resetBtn.addEventListener('click', () => {
         window.location.href = ROUTES.HOME; 
     } 
 });
+if (restartGameBtn) {
+    restartGameBtn.addEventListener('click', () => {
+        if (isAnimating) return;
+
+        const resetIcon = restartGameBtn.querySelector('img');
+        if (resetIcon) {
+            resetIcon.animate([
+                { transform: 'rotate(0deg)' },
+                { transform: 'rotate(-360deg)' }
+            ], { duration: 500, easing: 'ease-in-out' });
+        }
+
+        animateCardsFromHeaderToDeck(() => {
+            balls = [];
+            score = 0;
+            scoreDisplay.textContent = '0';
+            questionsPool = [...allQuestions];
+            saveGameState();
+            updateScoreDisplay();
+            loadQuestion();
+            showNotificationPill("Jogo reiniciado!", "reset.svg");
+        });
+    });
+}
 exportBtn.addEventListener('click', () => {
     let exportData;
     let filename;
@@ -765,7 +1064,12 @@ submitBtn.addEventListener('click', handleOpenSubmit);
 [answerInput, answerInput1, answerInput2].forEach(inp => {
     inp.addEventListener('keyup', (e) => { if (e.key === 'Enter') handleOpenSubmit(); });
 });
-nextQuestionBtn.addEventListener('click', loadQuestion);
+nextQuestionBtn.addEventListener('click', () => {
+    if (isAnimating) return;
+    animateCardToBack(() => {
+        loadQuestion();
+    });
+});
 
 const handleDelete = () => {
     if (!confirm("Excluir?")) return;
@@ -868,7 +1172,12 @@ saveEditBtn.addEventListener('click', () => {
         delete currentQuestion.image;
     }
 
-    saveGameState(); editModal.classList.add('hidden'); updateFeedbackText(); loadQuestion();
+    saveGameState();
+    editModal.classList.add('hidden');
+    updateFeedbackText();
+    animateCardToBack(() => {
+        loadQuestion();
+    });
 });
 [closeModalBtn, cancelEditBtn].forEach(b => b.addEventListener('click', () => editModal.classList.add('hidden')));
 
