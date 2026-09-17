@@ -568,11 +568,10 @@ function addAiChatGeneratingBubble(text) {
     removeAiChatGeneratingBubble();
     const bubble = document.createElement('div');
     bubble.id = 'ai-chat-generating-bubble';
-    bubble.className = "self-start bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800/80 p-3.5 rounded-2xl rounded-tl-sm text-xs text-purple-900 dark:text-purple-200 flex items-center gap-3 shadow-sm animate-pulse";
+    bubble.className = "self-start bg-gradient-to-b from-purple-50/90 to-purple-100/60 dark:from-purple-950/50 dark:to-purple-900/40 border border-purple-200/80 dark:border-purple-800/60 p-3.5 rounded-2xl rounded-tl-sm text-xs text-purple-900 dark:text-purple-200 flex items-center gap-3 shadow-[0_2px_8px_rgba(109,40,217,0.05),inset_0_1px_0_rgba(255,255,255,0.8)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]";
     bubble.innerHTML = `
-        <div class="relative flex-shrink-0">
-            <span class="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-full bg-purple-500 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-purple-600 dark:bg-purple-400"></span>
+        <div class="relative flex-shrink-0 w-2.5 h-2.5 flex items-center justify-center">
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-purple-600 dark:bg-purple-400 animate-pulse shadow-[0_0_6px_rgba(147,51,234,0.5)]"></span>
         </div>
         <span class="font-medium">${text}</span>
     `;
@@ -1566,8 +1565,8 @@ function showGeneratingAnimation(initialMessage = "Processando arquivos e gerand
     if (statusText) statusText.textContent = initialMessage;
     if (counterNum) counterNum.textContent = '0';
     if (badgeStatus) {
-        badgeStatus.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300";
-        badgeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-purple-600 dark:bg-purple-400 animate-ping"></span> AO VIVO';
+        badgeStatus.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gradient-to-b from-purple-50 to-purple-100 dark:from-purple-950/60 dark:to-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:shadow-none";
+        badgeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-purple-600 dark:bg-purple-400 animate-pulse"></span> AO VIVO';
     }
     if (titleText) titleText.textContent = "O Gemini está gerando seus flashcards";
     if (progressBar) progressBar.classList.remove('hidden');
@@ -1629,11 +1628,11 @@ function finishGeneratingAnimation(success = true, count = 0) {
         if (titleText) titleText.textContent = "Flashcards gerados com sucesso!";
         if (statusText) statusText.textContent = `${count} cards prontos. Você já pode estudar ou pedir edições pelo Assistente de IA.`;
         if (badgeStatus) {
-            badgeStatus.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700 dark:bg-green-900/60 dark:text-green-300";
+            badgeStatus.className = "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gradient-to-b from-green-50 to-green-100/90 dark:from-green-950/60 dark:to-green-900/40 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:shadow-none";
             badgeStatus.innerHTML = '✓ CONCLUÍDO';
         }
         if (counterBadge) {
-            counterBadge.className = "text-xs font-bold text-green-700 dark:text-green-300 bg-green-100/80 dark:bg-green-900/50 px-3 py-1 rounded-full border border-green-200 dark:border-green-800/80 shadow-xs";
+            counterBadge.className = "text-xs font-semibold text-green-700 dark:text-green-300 bg-gradient-to-b from-green-50 to-green-100/80 dark:from-green-950/50 dark:to-green-900/40 px-3 py-1 rounded-full border border-green-200 dark:border-green-800/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:shadow-none";
             counterBadge.textContent = `${count} cards`;
         }
 
@@ -1650,7 +1649,7 @@ function finishGeneratingAnimation(success = true, count = 0) {
         if (titleText) titleText.textContent = "Geração não concluída";
         if (statusText) statusText.textContent = "Não foi possível extrair cards automaticamente. Verifique os arquivos enviados ou tente novamente.";
         if (badgeStatus) {
-            badgeStatus.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-900/60 dark:text-red-300";
+            badgeStatus.className = "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gradient-to-b from-red-50 to-red-100/90 dark:from-red-950/60 dark:to-red-900/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:shadow-none";
             badgeStatus.innerHTML = '⚠ ATENÇÃO';
         }
     }
