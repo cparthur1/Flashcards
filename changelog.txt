@@ -126,3 +126,12 @@ Date: 2026-09-17
 - Seamless AI Activation & Inactive State:
   - When AI is not active or no API key is set, no API calls are made; displays a sleek skeuomorphic placeholder card with the button 'Gerar estatísticas de IA' and API key input.
   - Includes in-place configuration modal to update or clear the Gemini API Key, with offline and local caching in 'flashcards_ai_categories'.
+
+7. REFINED REVIEW FOCUS / FOCO DE REVISÃO ('pages/stats.html', 'js/stats.js', 'js/stats-tracker.js')
+- Top 20 Cards Sorted by Errors Descending:
+  - Limited the 'Foco de Revisão' tab to strictly display the top 20 cards with the highest error counts.
+  - Cards are sorted in descending order of incorrect answers (`incorrectCount`), showing positional ranking badges (#1, #2...) and error tallies.
+- 'Ignorar' (Ignore) Action:
+  - Added an 'Ignorar' text button directly below the '+ Caderno' button on every card card in the list.
+  - Clicking 'Ignorar' removes the card from the active struggling list, updates the counter badge, and persists the ignored state in 'ignoredStrugglingKeys' so it does not reappear.
+  - '+ Adicionar Todos ao Caderno' respects the top 20 non-ignored cards.

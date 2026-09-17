@@ -192,25 +192,28 @@ export function recordStatsAnswer({ card, isCorrect, rating, timeSpentSeconds, u
     // Struggling cards tracking
     if (!sess.strugglingCards) sess.strugglingCards = {};
     const cardKey = card.description || `card_${now}`;
-    if (!isCorrect || rating === 'again' || rating === 'hard') {
-        if (!sess.strugglingCards[cardKey]) {
-            sess.strugglingCards[cardKey] = {
-                description: card.description || '',
-                answer: card.answer || '',
-                answer2: card.answer2 || '',
-                type: typeKey,
-                incorrectCount: 1,
-                correctCount: 0,
-                lastRating: rating || 'incorrect',
-                lastAttempt: now
-            };
-        } else {
-            sess.strugglingCards[cardKey].incorrectCount++;
-            sess.strugglingCards[cardKey].lastRating = rating || 'incorrect';
-            sess.strugglingCards[cardKey].lastAttempt = now;
+    const isIgnored = sess.ignoredStrugglingKeys && sess.ignoredStrugglingKeys.includes(cardKey);
+    if (!isIgnored) {
+        if (!isCorrect || rating === 'again' || rating === 'hard') {
+            if (!sess.strugglingCards[cardKey]) {
+                sess.strugglingCards[cardKey] = {
+                    description: card.description || '',
+                    answer: card.answer || '',
+                    answer2: card.answer2 || '',
+                    type: typeKey,
+                    incorrectCount: 1,
+                    correctCount: 0,
+                    lastRating: rating || 'incorrect',
+                    lastAttempt: now
+                };
+            } else {
+                sess.strugglingCards[cardKey].incorrectCount++;
+                sess.strugglingCards[cardKey].lastRating = rating || 'incorrect';
+                sess.strugglingCards[cardKey].lastAttempt = now;
+            }
+        } else if (isCorrect && sess.strugglingCards[cardKey]) {
+            sess.strugglingCards[cardKey].correctCount++;
         }
-    } else if (isCorrect && sess.strugglingCards[cardKey]) {
-        sess.strugglingCards[cardKey].correctCount++;
     }
 
     // Update global all-time stats

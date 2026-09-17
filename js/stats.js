@@ -1,4 +1,4 @@
-import { getStatsStorage, saveStatsStorage, resetAllStats, injectSampleHistory } from './stats-tracker.js';
+import { getStatsStorage, saveStatsStorage, resetAllStats } from './stats-tracker.js';
 import { 
     callGeminiFlashLiteCategorization, 
     getStoredAiCategories, 
@@ -12,7 +12,6 @@ const backToGameBtn = document.getElementById('back-to-game-btn');
 const deckBadge = document.getElementById('deck-badge');
 const exportStatsBtn = document.getElementById('export-stats-btn');
 const clearStatsBtn = document.getElementById('clear-stats-btn');
-const seedDemoBtn = document.getElementById('seed-demo-btn');
 
 // Tabs
 const tabBtnCurrent = document.getElementById('tab-btn-current');
@@ -1131,10 +1130,19 @@ function renderAccuracyChart(history) {
 function renderStrugglingCards(sess) {
     strugglingList.innerHTML = '';
     const strugglingObj = sess && sess.strugglingCards ? sess.strugglingCards : {};
-    const strugglingKeys = Object.keys(strugglingObj);
+    const ignored = (sess && sess.ignoredStrugglingKeys) || [];
 
-    strugglingBadgeCount.textContent = strugglingKeys.length;
-    if (strugglingKeys.length > 0) {
+    // Filter out ignored cards
+    const validEntries = Object.entries(strugglingObj).filter(([key]) => !ignored.includes(key));
+
+    // Sort in descending order of incorrectCount (cards with most errors first)
+    validEntries.sort((a, b) => (b[1].incorrectCount || 0) - (a[1].incorrectCount || 0));
+
+    // Leave strictly the top 20 cards with most errors
+    const top20Entries = validEntries.slice(0, 20);
+
+    strugglingBadgeCount.textContent = top20Entries.length;
+    if (top20Entries.length > 0) {
         strugglingBadgeCount.classList.remove('hidden');
         addAllToNotebookBtn.classList.remove('hidden');
     } else {
@@ -1142,33 +1150,43 @@ function renderStrugglingCards(sess) {
         addAllToNotebookBtn.classList.add('hidden');
     }
 
-    if (strugglingKeys.length === 0) {
+    if (top20Entries.length === 0) {
         strugglingList.innerHTML = `
             <div class="text-center py-8 text-gray-400 dark:text-gray-500">
                 <p class="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Nenhum card com dificuldade nesta sessão! 👏</p>
-                <p class="text-xs mt-1">Quando você errar ou marcar 'Difícil/Errei', eles aparecerão aqui para revisão focada.</p>
+                <p class="text-xs mt-1">Quando você errar ou marcar 'Difícil/Errei', os 20 cards com mais erros aparecerão aqui para revisão focada.</p>
             </div>
         `;
         return;
     }
 
-    strugglingKeys.forEach(key => {
-        const item = strugglingObj[key];
+    top20Entries.forEach(([key, item], idx) => {
         const cardEl = document.createElement('div');
-        cardEl.className = 'p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-750 flex flex-col sm:flex-row sm:items-center justify-between gap-3';
+        cardEl.className = 'p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-750 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition hover:border-gray-300 dark:hover:border-gray-600 shadow-xs';
         cardEl.innerHTML = `
             <div class="space-y-1 flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-mono">
+                        #${idx + 1}
+                    </span>
+                    <span class="px-2 py-0.5 rounded bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-[10px] font-bold">
+                        ${item.incorrectCount || 1} erro${(item.incorrectCount || 1) > 1 ? 's' : ''}
+                    </span>
+                    <span class="text-[10px] text-gray-400">
+                        Última avaliação: ${item.lastRating || 'errei'}
+                    </span>
+                </div>
                 <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 leading-snug">${item.description}</p>
                 <p class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Resposta: ${item.answer || 'Consultar cartão'}</p>
-                <div class="flex items-center gap-2 text-[10px] text-gray-400">
-                    <span class="px-2 py-0.5 rounded bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 font-bold">${item.incorrectCount} erro(s)</span>
-                    <span>Última avaliação: ${item.lastRating}</span>
-                </div>
             </div>
-            <div class="flex items-center gap-2 flex-shrink-0">
-                <button class="add-single-notebook-btn px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 text-xs font-semibold transition"
+            <div class="flex flex-col items-center sm:items-end gap-1.5 flex-shrink-0 self-end sm:self-center">
+                <button class="add-single-notebook-btn w-full sm:w-auto px-3.5 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-800/40 text-xs font-semibold transition shadow-xs flex items-center justify-center gap-1"
                     data-desc="${encodeURIComponent(item.description)}" data-ans="${encodeURIComponent(item.answer || '')}" data-ans2="${encodeURIComponent(item.answer2 || '')}" data-type="${item.type || 'open'}">
                     + Caderno
+                </button>
+                <button class="ignore-single-struggling-btn text-[11px] font-medium text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition hover:underline px-1 py-0.5"
+                    data-key="${encodeURIComponent(key)}">
+                    Ignorar
                 </button>
             </div>
         `;
@@ -1184,10 +1202,34 @@ function renderStrugglingCards(sess) {
             const type = btn.dataset.type;
             addCardToNotebook({ description: desc, answer: ans, answer2: ans2, type: type });
             btn.textContent = 'Adicionado ✓';
-            btn.classList.add('bg-emerald-100', 'text-emerald-700');
+            btn.classList.add('bg-emerald-100', 'text-emerald-700', 'dark:bg-emerald-900/40', 'dark:text-emerald-300');
             btn.disabled = true;
         });
     });
+
+    // Add listener to "Ignorar" buttons
+    document.querySelectorAll('.ignore-single-struggling-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const key = decodeURIComponent(btn.dataset.key);
+            ignoreCardFromStruggling(key);
+        });
+    });
+}
+
+function ignoreCardFromStruggling(cardKey) {
+    const statsData = getStatsStorage();
+    if (statsData.currentSession && statsData.currentSession.strugglingCards) {
+        delete statsData.currentSession.strugglingCards[cardKey];
+        if (!statsData.currentSession.ignoredStrugglingKeys) {
+            statsData.currentSession.ignoredStrugglingKeys = [];
+        }
+        if (!statsData.currentSession.ignoredStrugglingKeys.includes(cardKey)) {
+            statsData.currentSession.ignoredStrugglingKeys.push(cardKey);
+        }
+        saveStatsStorage(statsData);
+        showStatsPill("Card removido do Foco de Revisão", true);
+        renderStrugglingCards(statsData.currentSession);
+    }
 }
 
 function addCardToNotebook(card) {
@@ -1213,11 +1255,16 @@ tabBtnStruggling?.addEventListener('click', () => switchTab('struggling'));
 
 addAllToNotebookBtn?.addEventListener('click', () => {
     const statsData = getStatsStorage();
-    const strugglingObj = statsData.currentSession && statsData.currentSession.strugglingCards ? statsData.currentSession.strugglingCards : {};
-    let addedCount = 0;
+    const sess = statsData.currentSession;
+    const strugglingObj = sess && sess.strugglingCards ? sess.strugglingCards : {};
+    const ignored = (sess && sess.ignoredStrugglingKeys) || [];
 
-    Object.keys(strugglingObj).forEach(key => {
-        const item = strugglingObj[key];
+    const validEntries = Object.entries(strugglingObj).filter(([key]) => !ignored.includes(key));
+    validEntries.sort((a, b) => (b[1].incorrectCount || 0) - (a[1].incorrectCount || 0));
+    const top20Entries = validEntries.slice(0, 20);
+
+    let addedCount = 0;
+    top20Entries.forEach(([key, item]) => {
         let notebookState = JSON.parse(localStorage.getItem('flashcardsNotebook')) || {
             allQuestions: [], questionsPool: [], score: 0, deckTitle: 'Caderno'
         };
@@ -1250,12 +1297,6 @@ exportStatsBtn?.addEventListener('click', () => {
     a.download = `flashcards_estatisticas_${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     showStatsPill("Relatório exportado!", true);
-});
-
-seedDemoBtn?.addEventListener('click', () => {
-    injectSampleHistory("Semio locomotor");
-    showStatsPill("Dados de demonstração gerados!", true);
-    renderAllStats();
 });
 
 // AI CONFIG MODAL LISTENERS
