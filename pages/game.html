@@ -253,7 +253,10 @@
                 <img id="question-image" src="" alt="Imagem do Flashcard"
                     class="max-h-64 sm:max-h-80 w-auto rounded-xl shadow-md border border-gray-200 dark:border-gray-600 card-img-zoomable object-contain">
             </div>
-            <p id="question-text" class="text-center text-lg font-medium text-gray-700 dark:text-gray-300"></p>
+            <p id="question-text" class="text-center text-lg font-medium text-gray-700 dark:text-gray-300">
+                <span id="question-source-tag" class="hidden text-xs uppercase tracking-wider text-blue-500 font-bold mb-1.5 block select-none"></span>
+                <span id="question-body-text"></span>
+            </p>
 
             <!-- Anki-like Answer Reveal Area (Question at top, Answer below) -->
             <div id="anki-answer-container" class="hidden w-full mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 flex flex-col items-center">
@@ -670,6 +673,29 @@
                 <img src="../assets/img/close.svg" class="w-8 h-8 invert" alt="Fechar">
             </button>
             <img id="zoomed-image" src="" alt="Imagem Ampliada" class="lightbox-content bg-white dark:bg-gray-800">
+        </div>
+    </div>
+
+    <!-- TEXT HIGHLIGHT FLOATING POPUP -->
+    <div id="text-highlight-popup" class="hidden fixed z-[80] select-none -translate-x-1/2 pointer-events-auto">
+        <div class="flex items-center gap-1.5 p-1 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.8)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] border border-gray-200/80 dark:border-gray-700/80">
+            <!-- Main Trigger Button (Only highlight.svg, no text) -->
+            <button id="hl-trigger-btn" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700/80 active:scale-95 transition-all text-gray-700 dark:text-gray-200" title="Marca-texto" aria-label="Marca-texto">
+                <img src="../assets/img/highlight.svg" class="w-4 h-4 pointer-events-none" alt="Marca-texto">
+            </button>
+
+            <!-- Pastel Color Palette (Appears when clicked on unmarked text) -->
+            <div id="hl-palette" class="hidden items-center gap-1.5 pl-0.5 pr-1">
+                <div class="h-4 w-[1px] bg-gray-200 dark:bg-gray-700"></div>
+                <!-- Yellow -->
+                <button class="hl-color-btn w-6 h-6 rounded-full bg-[#fef08a] border border-[#facc15]/70 hover:scale-110 active:scale-95 shadow-xs transition-transform cursor-pointer" data-color="yellow" title="Amarelo" aria-label="Marca-texto Amarelo"></button>
+                <!-- Green -->
+                <button class="hl-color-btn w-6 h-6 rounded-full bg-[#bbf7d0] border border-[#86efac]/70 hover:scale-110 active:scale-95 shadow-xs transition-transform cursor-pointer" data-color="green" title="Verde" aria-label="Marca-texto Verde"></button>
+                <!-- Blue -->
+                <button class="hl-color-btn w-6 h-6 rounded-full bg-[#bfdbfe] border border-[#93c5fd]/70 hover:scale-110 active:scale-95 shadow-xs transition-transform cursor-pointer" data-color="blue" title="Azul" aria-label="Marca-texto Azul"></button>
+                <!-- Purple -->
+                <button class="hl-color-btn w-6 h-6 rounded-full bg-[#e9d5ff] border border-[#d8b4fe]/70 hover:scale-110 active:scale-95 shadow-xs transition-transform cursor-pointer" data-color="purple" title="Roxo" aria-label="Marca-texto Roxo"></button>
+            </div>
         </div>
     </div>
 

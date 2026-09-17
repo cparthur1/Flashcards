@@ -549,3 +549,100 @@ textarea::-webkit-scrollbar-thumb,
         transform: scale(1) translateY(0);
     }
 }
+
+/* ==========================================================================
+   CARD TEXT HIGHLIGHTER & PASTEL COLORS
+   ========================================================================== */
+mark.card-hl {
+    padding: 0.12em 0.32em;
+    margin: 0 -0.05em;
+    border-radius: 0.28rem;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    font-weight: inherit;
+    line-height: inherit;
+    cursor: pointer;
+    transition: background-color 0.2s ease, filter 0.2s ease;
+}
+
+mark.card-hl:hover {
+    filter: brightness(0.96);
+}
+
+.dark mark.card-hl:hover {
+    filter: brightness(1.1);
+}
+
+/* Pastel Yellow */
+mark.card-hl-yellow {
+    background-color: #fef08a;
+    color: #1e293b;
+}
+.dark mark.card-hl-yellow {
+    background-color: rgba(234, 179, 8, 0.35);
+    color: #fef9c3;
+    border-bottom: 1.5px solid rgba(234, 179, 8, 0.65);
+}
+
+/* Pastel Green */
+mark.card-hl-green {
+    background-color: #bbf7d0;
+    color: #1e293b;
+}
+.dark mark.card-hl-green {
+    background-color: rgba(34, 197, 94, 0.35);
+    color: #dcfce7;
+    border-bottom: 1.5px solid rgba(34, 197, 94, 0.65);
+}
+
+/* Pastel Blue */
+mark.card-hl-blue {
+    background-color: #bfdbfe;
+    color: #1e293b;
+}
+.dark mark.card-hl-blue {
+    background-color: rgba(59, 130, 246, 0.35);
+    color: #dbeafe;
+    border-bottom: 1.5px solid rgba(59, 130, 246, 0.65);
+}
+
+/* Pastel Purple */
+mark.card-hl-purple {
+    background-color: #e9d5ff;
+    color: #1e293b;
+}
+.dark mark.card-hl-purple {
+    background-color: rgba(168, 85, 247, 0.35);
+    color: #f3e8ff;
+    border-bottom: 1.5px solid rgba(168, 85, 247, 0.65);
+}
+
+/* Floating Highlight Popup Animation */
+#text-highlight-popup:not(.hidden) {
+    animation: popupEnter 0.14s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes popupEnter {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 4px) scale(0.92);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1);
+    }
+}
+
+/* Highlight button state when selection is already marked */
+#hl-trigger-btn.is-marked {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+.dark #hl-trigger-btn.is-marked {
+    background-color: rgba(239, 68, 68, 0.25);
+    color: #f87171;
+}
+#hl-trigger-btn.is-marked img {
+    filter: invert(28%) sepia(91%) saturate(3421%) hue-rotate(345deg) brightness(96%) contrast(92%);
+}
+

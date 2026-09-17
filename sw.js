@@ -1,4 +1,4 @@
-const CACHE_NAME = 'flashcards-v2.6'; // Increment version to trigger update
+const CACHE_NAME = 'flashcards-v2.7'; // Increment version to trigger update
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -20,7 +20,8 @@ const ASSETS_TO_CACHE = [
   '/assets/img/menu.svg',
   '/assets/img/stats.svg',
   '/assets/img/config_ai.svg',
-  '/assets/img/enabled_ai.svg'
+  '/assets/img/enabled_ai.svg',
+  '/assets/img/highlight.svg'
 ];
 
 self.addEventListener('install', (event) => {

@@ -32,6 +32,11 @@ const gameContainer = document.getElementById('game-container');
 const goToEditorBtn = document.getElementById('go-to-editor-btn');
 
 const questionText = document.getElementById('question-text');
+const questionSourceTag = document.getElementById('question-source-tag');
+const questionBodyText = document.getElementById('question-body-text');
+const textHighlightPopup = document.getElementById('text-highlight-popup');
+const hlTriggerBtn = document.getElementById('hl-trigger-btn');
+const hlPalette = document.getElementById('hl-palette');
 const scoreDisplay = document.getElementById('score');
 const questionsLeftDisplay = document.getElementById('questions-left');
 const questionCard = document.getElementById('question-card');
@@ -551,10 +556,27 @@ function loadQuestion() {
     currentQuestion = questionsPool[currentQuestionIndexInPool];
     renderBookmarkIcon();
     
+    hideHighlightPopup();
+
     if (activeMode === 'notebook' && currentQuestion.sourceDeck) {
-        questionText.innerHTML = `<span class="text-xs uppercase tracking-wider text-blue-500 font-bold mb-1.5 block">${currentQuestion.sourceDeck}</span>${currentQuestion.description || ''}`;
+        if (questionSourceTag) {
+            questionSourceTag.textContent = currentQuestion.sourceDeck;
+            questionSourceTag.classList.remove('hidden');
+        }
+        if (questionBodyText) {
+            questionBodyText.innerHTML = currentQuestion.description || '';
+        } else {
+            questionText.innerHTML = `<span class="text-xs uppercase tracking-wider text-blue-500 font-bold mb-1.5 block">${currentQuestion.sourceDeck}</span>${currentQuestion.description || ''}`;
+        }
     } else {
-        questionText.textContent = currentQuestion.description || '';
+        if (questionSourceTag) {
+            questionSourceTag.classList.add('hidden');
+        }
+        if (questionBodyText) {
+            questionBodyText.innerHTML = currentQuestion.description || '';
+        } else {
+            questionText.innerHTML = currentQuestion.description || '';
+        }
     }
 
     if (currentQuestion.image && questionImage && questionImageContainer) {
@@ -661,7 +683,7 @@ function flipAnkiCard() {
     isAnkiFlipped = true;
 
     if (ankiAnswerContainer) {
-        ankiAnswerText.textContent = currentQuestion.answer || '';
+        ankiAnswerText.innerHTML = currentQuestion.answer || '';
         if (currentQuestion.answerImage && ankiAnswerImage && ankiAnswerImageContainer) {
             ankiAnswerImage.src = currentQuestion.answerImage;
             ankiAnswerImageContainer.classList.remove('hidden');
@@ -736,6 +758,7 @@ function handleAnkiRating(rating) {
 }
 
 function resetUI() {
+    hideHighlightPopup();
     [answerInput, answerInput1, answerInput2].forEach(inp => {
         inp.value = ''; inp.disabled = false;
         inp.classList.remove('animate-pulse', 'border-red-500');
@@ -1247,6 +1270,341 @@ document.addEventListener('keydown', (e) => {
     });
 });
 
+// --- TEXT HIGHLIGHTER & PASTEL COLORS LOGIC ---
+let activeHighlightRange = null;
+let activeHighlightField = null; // 'description' or 'answer'
+
+function hideHighlightPopup() {
+    if (!textHighlightPopup) return;
+    textHighlightPopup.classList.add('hidden');
+    if (hlPalette) {
+        hlPalette.classList.add('hidden');
+        hlPalette.classList.remove('flex');
+    }
+    if (hlTriggerBtn) {
+        hlTriggerBtn.classList.remove('is-marked');
+        hlTriggerBtn.title = "Marca-texto";
+    }
+}
+
+function showHighlightPopup(range, isMarked) {
+    if (!textHighlightPopup || !range) return;
+
+    const rect = range.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0) return;
+
+    if (hlPalette) {
+        hlPalette.classList.add('hidden');
+        hlPalette.classList.remove('flex');
+    }
+
+    if (hlTriggerBtn) {
+        if (isMarked) {
+            hlTriggerBtn.classList.add('is-marked');
+            hlTriggerBtn.title = "Tirar marcação";
+        } else {
+            hlTriggerBtn.classList.remove('is-marked');
+            hlTriggerBtn.title = "Marca-texto";
+        }
+    }
+
+    textHighlightPopup.classList.remove('hidden');
+
+    const popupWidth = 44;
+    const popupHeight = 44;
+
+    let left = rect.left + rect.width / 2;
+    let top = rect.top - popupHeight - 8;
+
+    if (top < 64) {
+        top = rect.bottom + 8;
+    }
+
+    const minLeft = popupWidth / 2 + 12;
+    const maxLeft = window.innerWidth - (popupWidth / 2 + 12);
+    left = Math.max(minLeft, Math.min(maxLeft, left));
+
+    textHighlightPopup.style.top = `${top}px`;
+    textHighlightPopup.style.left = `${left}px`;
+}
+
+function isRangeMarked(range, container) {
+    if (!range || !container) return false;
+
+    let node = range.commonAncestorContainer;
+    while (node && node !== container) {
+        if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'MARK' && node.classList.contains('card-hl')) {
+            return true;
+        }
+        node = node.parentNode;
+    }
+
+    const marks = container.querySelectorAll('mark.card-hl');
+    for (const mark of marks) {
+        try {
+            if (range.intersectsNode(mark)) {
+                return true;
+            }
+        } catch (e) {}
+    }
+
+    return false;
+}
+
+function applyHighlight(color) {
+    if (!activeHighlightRange || !activeHighlightField) return;
+
+    const container = activeHighlightField === 'description' 
+        ? (questionBodyText || questionText) 
+        : ankiAnswerText;
+    if (!container) return;
+
+    const range = activeHighlightRange;
+    const selectedText = range.toString().trim();
+    if (!selectedText) return;
+
+    // Unmark any existing marks inside this range to avoid nested marks
+    const existingMarks = container.querySelectorAll('mark.card-hl');
+    existingMarks.forEach(mark => {
+        try {
+            if (range.intersectsNode(mark)) {
+                mark.replaceWith(...mark.childNodes);
+            }
+        } catch (e) {}
+    });
+
+    const mark = document.createElement('mark');
+    mark.className = `card-hl card-hl-${color}`;
+
+    try {
+        const extracted = range.extractContents();
+        mark.appendChild(extracted);
+        range.insertNode(mark);
+    } catch (e) {
+        const selectedText = range.toString();
+        if (selectedText) {
+            mark.textContent = selectedText;
+            range.deleteContents();
+            range.insertNode(mark);
+        }
+    }
+
+    container.normalize();
+    persistHighlightedContent(activeHighlightField);
+    hideHighlightPopup();
+    
+    const sel = window.getSelection();
+    if (sel) sel.removeAllRanges();
+}
+
+function removeHighlight() {
+    if (!activeHighlightRange || !activeHighlightField) return;
+
+    const container = activeHighlightField === 'description' 
+        ? (questionBodyText || questionText) 
+        : ankiAnswerText;
+    if (!container) return;
+
+    const range = activeHighlightRange;
+    let removedAny = false;
+
+    // Check parent chain of common ancestor
+    let node = range.commonAncestorContainer;
+    while (node && node !== container) {
+        if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'MARK' && node.classList.contains('card-hl')) {
+            node.replaceWith(...node.childNodes);
+            removedAny = true;
+            break;
+        }
+        node = node.parentNode;
+    }
+
+    // Check intersecting marks
+    const marks = container.querySelectorAll('mark.card-hl');
+    marks.forEach(mark => {
+        try {
+            if (range.intersectsNode(mark)) {
+                mark.replaceWith(...mark.childNodes);
+                removedAny = true;
+            }
+        } catch (e) {}
+    });
+
+    if (removedAny) {
+        container.normalize();
+        persistHighlightedContent(activeHighlightField);
+    }
+
+    hideHighlightPopup();
+    const sel = window.getSelection();
+    if (sel) sel.removeAllRanges();
+}
+
+function persistHighlightedContent(targetField) {
+    if (!currentQuestion) return;
+
+    if (targetField === 'description') {
+        const descHtml = questionBodyText ? questionBodyText.innerHTML : questionText.innerHTML;
+        currentQuestion.description = descHtml;
+    } else if (targetField === 'answer' && ankiAnswerText) {
+        currentQuestion.answer = ankiAnswerText.innerHTML;
+    }
+
+    // Update reference in allQuestions
+    const cardInAll = allQuestions.find(q => q === currentQuestion || (q.description && q.description.replace(/<[^>]*>/g, '').trim() === currentQuestion.description.replace(/<[^>]*>/g, '').trim()));
+    if (cardInAll) {
+        cardInAll.description = currentQuestion.description;
+        if (currentQuestion.answer) cardInAll.answer = currentQuestion.answer;
+    }
+
+    // If active mode is notebook, sync to normal deck in storage
+    if (activeMode === 'notebook') {
+        const normalData = JSON.parse(localStorage.getItem('flashcardsSave'));
+        if (normalData) {
+            const syncArray = (arr) => {
+                if (!arr) return;
+                arr.forEach(q => {
+                    if (q.description && q.description.replace(/<[^>]*>/g, '').trim() === currentQuestion.description.replace(/<[^>]*>/g, '').trim()) {
+                        q.description = currentQuestion.description;
+                        if (currentQuestion.answer) q.answer = currentQuestion.answer;
+                    }
+                });
+            };
+            syncArray(normalData.allQuestions);
+            syncArray(normalData.questionsPool);
+            localStorage.setItem('flashcardsSave', JSON.stringify(normalData));
+        }
+    } else {
+        // If normal mode, also sync to notebook if present
+        const notebookData = JSON.parse(localStorage.getItem('flashcardsNotebook'));
+        if (notebookData) {
+            const syncArray = (arr) => {
+                if (!arr) return;
+                arr.forEach(q => {
+                    if (q.description && q.description.replace(/<[^>]*>/g, '').trim() === currentQuestion.description.replace(/<[^>]*>/g, '').trim()) {
+                        q.description = currentQuestion.description;
+                        if (currentQuestion.answer) q.answer = currentQuestion.answer;
+                    }
+                });
+            };
+            syncArray(notebookData.allQuestions);
+            syncArray(notebookData.questionsPool);
+            localStorage.setItem('flashcardsNotebook', JSON.stringify(notebookData));
+        }
+    }
+
+    saveGameState();
+}
+
+function handleTextSelection(e) {
+    setTimeout(() => {
+        // Ignore clicks inside the highlight popup itself
+        if (e && e.target && typeof e.target.closest === 'function' && e.target.closest('#text-highlight-popup')) {
+            return;
+        }
+
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
+            hideHighlightPopup();
+            return;
+        }
+
+        const text = sel.toString().trim();
+        if (!text || text.length === 0) {
+            hideHighlightPopup();
+            return;
+        }
+
+        const range = sel.getRangeAt(0);
+        const common = range.commonAncestorContainer;
+
+        const questionBody = questionBodyText || questionText;
+        const ankiAnswer = ankiAnswerText;
+
+        let field = null;
+        let container = null;
+
+        if (questionBody && questionBody.contains(common)) {
+            field = 'description';
+            container = questionBody;
+        } else if (ankiAnswer && ankiAnswer.contains(common) && !ankiAnswerContainer?.classList.contains('hidden')) {
+            field = 'answer';
+            container = ankiAnswer;
+        } else {
+            hideHighlightPopup();
+            return;
+        }
+
+        activeHighlightRange = range.cloneRange();
+        activeHighlightField = field;
+
+        const isMarked = isRangeMarked(range, container);
+        showHighlightPopup(range, isMarked);
+    }, 20);
+}
+
+if (hlTriggerBtn) {
+    hlTriggerBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        if (hlTriggerBtn.classList.contains('is-marked')) {
+            removeHighlight();
+        } else {
+            if (hlPalette) {
+                const isHidden = hlPalette.classList.contains('hidden');
+                if (isHidden) {
+                    hlPalette.classList.remove('hidden');
+                    hlPalette.classList.add('flex');
+                } else {
+                    hlPalette.classList.add('hidden');
+                    hlPalette.classList.remove('flex');
+                }
+            }
+        }
+    });
+}
+
+document.querySelectorAll('.hl-color-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const color = btn.getAttribute('data-color');
+        if (color) {
+            applyHighlight(color);
+        }
+    });
+});
+
+document.addEventListener('mouseup', handleTextSelection);
+document.addEventListener('touchend', handleTextSelection);
+
+if (textHighlightPopup) {
+    textHighlightPopup.addEventListener('mousedown', (e) => {
+        // Prevent default so text selection in card is not cleared on click
+        e.preventDefault();
+    });
+}
+
+document.addEventListener('mousedown', (e) => {
+    if (e.target && typeof e.target.closest === 'function' && !e.target.closest('#text-highlight-popup')) {
+        const sel = window.getSelection();
+        const hasSelection = sel && !sel.isCollapsed && sel.toString().trim().length > 0;
+        if (!hasSelection) {
+            hideHighlightPopup();
+        }
+    }
+});
+
+window.addEventListener('resize', hideHighlightPopup);
+window.addEventListener('scroll', hideHighlightPopup, true);
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        hideHighlightPopup();
+    }
+});
+
 if (restartGameBtn) {
     restartGameBtn.addEventListener('click', () => {
         if (isAnimating) return;
@@ -1357,8 +1715,13 @@ if (ankiBtnEasy) ankiBtnEasy.addEventListener('click', () => handleAnkiRating('e
 if (questionCard) {
     questionCard.addEventListener('click', (e) => {
         if (currentQuestion && currentQuestion.type === 'anki' && !isAnkiFlipped) {
-            // Ignore if clicked on bookmark, delete, or image zoom
-            if (e.target.closest('#bookmark-card-btn') || e.target.closest('#delete-card-btn') || e.target.closest('#question-image-container')) {
+            // Ignore if clicked on bookmark, delete, image zoom, or highlight popup
+            if (e.target.closest('#bookmark-card-btn') || e.target.closest('#delete-card-btn') || e.target.closest('#question-image-container') || e.target.closest('#text-highlight-popup')) {
+                return;
+            }
+            // Ignore if text selection is active
+            const sel = window.getSelection();
+            if (sel && sel.toString().trim().length > 0) {
                 return;
             }
             flipAnkiCard();
@@ -1684,6 +2047,7 @@ saveEditBtn.addEventListener('click', () => {
 
 // --- BOOKMARK & DROPDOWN SELECTOR LOGIC ---
 function toggleBookmark() {
+    const isMatchingDesc = (d1, d2) => d1 === d2 || (d1 && d2 && d1.replace(/<[^>]*>/g, '').trim() === d2.replace(/<[^>]*>/g, '').trim());
     const isBookmarked = isCardBookmarked(currentQuestion);
     
     // Load notebook state
@@ -1693,14 +2057,14 @@ function toggleBookmark() {
 
     if (isBookmarked) {
         // Un-bookmark: Remove from Notebook
-        notebookState.allQuestions = notebookState.allQuestions.filter(q => q.description !== currentQuestion.description);
-        notebookState.questionsPool = notebookState.questionsPool.filter(q => q.description !== currentQuestion.description);
+        notebookState.allQuestions = notebookState.allQuestions.filter(q => !isMatchingDesc(q.description, currentQuestion.description));
+        notebookState.questionsPool = notebookState.questionsPool.filter(q => !isMatchingDesc(q.description, currentQuestion.description));
         
         // Also un-bookmark in normal deck (if present)
         let normalData = JSON.parse(localStorage.getItem('flashcardsSave'));
         if (normalData) {
             const findAndUnbookmark = (arr) => arr.forEach(q => {
-                if (q.description === currentQuestion.description) q.bookmarked = false;
+                if (isMatchingDesc(q.description, currentQuestion.description)) q.bookmarked = false;
             });
             findAndUnbookmark(normalData.allQuestions);
             findAndUnbookmark(normalData.questionsPool);
@@ -1710,7 +2074,7 @@ function toggleBookmark() {
         // Also update the active session's in-memory references if we are in normal mode
         if (activeMode === 'normal') {
             currentQuestion.bookmarked = false;
-            const cardInAll = allQuestions.find(q => q.description === currentQuestion.description);
+            const cardInAll = allQuestions.find(q => isMatchingDesc(q.description, currentQuestion.description));
             if (cardInAll) cardInAll.bookmarked = false;
         }
 
@@ -1719,8 +2083,8 @@ function toggleBookmark() {
 
         // If we are currently in notebook mode, remove from in-memory and go to next question
         if (activeMode === 'notebook') {
-            allQuestions = allQuestions.filter(q => q.description !== currentQuestion.description);
-            questionsPool = questionsPool.filter(q => q.description !== currentQuestion.description);
+            allQuestions = allQuestions.filter(q => !isMatchingDesc(q.description, currentQuestion.description));
+            questionsPool = questionsPool.filter(q => !isMatchingDesc(q.description, currentQuestion.description));
             loadQuestion();
             return;
         }
@@ -1735,7 +2099,7 @@ function toggleBookmark() {
         // Also mark as bookmarked in normal deck in storage
         if (normalData) {
             const findAndBookmark = (arr) => arr.forEach(q => {
-                if (q.description === currentQuestion.description) {
+                if (isMatchingDesc(q.description, currentQuestion.description)) {
                     q.bookmarked = true;
                     q.sourceDeck = sourceDeckTitle;
                 }
@@ -1746,7 +2110,7 @@ function toggleBookmark() {
         }
 
         // Also update current session's in-memory reference
-        const cardInAll = allQuestions.find(q => q.description === currentQuestion.description);
+        const cardInAll = allQuestions.find(q => isMatchingDesc(q.description, currentQuestion.description));
         if (cardInAll) {
             cardInAll.bookmarked = true;
             cardInAll.sourceDeck = sourceDeckTitle;
@@ -1766,7 +2130,7 @@ function isCardBookmarked(question) {
     if (!question || !question.description) return false;
     let notebookState = JSON.parse(localStorage.getItem('flashcardsNotebook'));
     if (!notebookState || !notebookState.allQuestions) return false;
-    return notebookState.allQuestions.some(q => q.description === question.description);
+    return notebookState.allQuestions.some(q => q.description === question.description || (q.description && q.description.replace(/<[^>]*>/g, '').trim() === question.description.replace(/<[^>]*>/g, '').trim()));
 }
 
 function renderBookmarkIcon() {

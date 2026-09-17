@@ -77,3 +77,17 @@ Date: 2026-09-17
   - Progress bar changed from rainbow gradient to a recessed skeuomorphic groove with a smooth monochromatic gliding runner.
   - Shimmer effect refactored into a gentle, specular light sheen.
   - Replaced aggressive background shifts with ambient, calming light transitions.
+
+4. CARD TEXT HIGHLIGHTER & PASTEL PALETTE ('pages/game.html', 'js/game.js', 'css/style.css', 'assets/img/highlight.svg')
+- Text Selection Floating Trigger:
+  - Selecting any text inside flashcard questions or Anki-like answers reveals a floating, minimalistic action button containing only 'highlight.svg' (no text).
+- 4 Pastel Color Swatches:
+  - Clicking the trigger button unfolds an inline palette with 4 pastel color swatches (Yellow, Green, Blue, Purple) without text.
+  - Clicking a pastel color wraps the selected text with a styled `<mark>` tag.
+- Persistent Study Highlights:
+  - Highlights are permanently preserved in the deck's session state ('flashcardsSave') and synced to notebook ('flashcardsNotebook') in localStorage, keeping text marked across card rotations and future study sessions.
+- Unhighlighting / Remove Highlight:
+  - Selecting text that already has a highlight dynamically updates the trigger button into an unmark action (with red alert tint and distinct styling).
+  - Clicking the button removes/unwraps the mark, restoring clean text, and syncs the changes to storage.
+- PWA & Offline Support:
+  - Added 'highlight.svg' to cache in 'sw.js' and incremented cache version to 'flashcards-v2.7'.
