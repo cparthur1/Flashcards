@@ -135,3 +135,10 @@ Date: 2026-09-17
   - Added an 'Ignorar' text button directly below the '+ Caderno' button on every card card in the list.
   - Clicking 'Ignorar' removes the card from the active struggling list, updates the counter badge, and persists the ignored state in 'ignoredStrugglingKeys' so it does not reappear.
   - '+ Adicionar Todos ao Caderno' respects the top 20 non-ignored cards.
+
+8. OPEN SOURCE DISCLAIMER ('index.html')
+- Added subtle, clean open-source disclaimer in the footer of the landing screen:
+  "Esse app é OpenSource, verifique o código e contribua em https://github.com/cparthur1/Flashcards"
+  "Instagram: @rthur_pc"
+- Centered layout below the upload card, with light/dark mode responsive styling.
+
