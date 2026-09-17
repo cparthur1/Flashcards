@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { normalizeString, calculateSimilarity, shuffleArray, callWithRetry, checkAndResetModelFallback, compressImageFile, ROUTES } from './utils.js';
 import { initTransfer } from './transfer.js';
+import { initStatsSession, recordStatsAnswer, archiveCurrentSession } from './stats-tracker.js';
 
 // --- DOM ELEMENTS ---
 const deckTitle = document.getElementById('deck-title');
@@ -12,6 +13,16 @@ const deckItemNormalName = document.getElementById('deck-item-normal-name');
 const deckItemNotebook = document.getElementById('deck-item-notebook');
 const bookmarkCardBtn = document.getElementById('bookmark-card-btn');
 const bookmarkCardIcon = document.getElementById('bookmark-card-icon');
+
+const hamburgerBtn = document.getElementById('hamburger-btn');
+const hamburgerMenu = document.getElementById('hamburger-menu');
+const hamburgerBackdrop = document.getElementById('hamburger-backdrop');
+const statsBtn = document.getElementById('stats-btn');
+const receiveSessionBtn = document.getElementById('receive-session-btn');
+const menuAiIcon = document.getElementById('menu-ai-icon');
+const menuAiStatusBadge = document.getElementById('menu-ai-status-badge');
+const menuAiTitle = document.getElementById('menu-ai-title');
+const menuAiSubtitle = document.getElementById('menu-ai-subtitle');
 
 const resetBtn = document.getElementById('reset-btn');
 const restartGameBtn = document.getElementById('restart-game-btn');
@@ -126,6 +137,7 @@ let isAnimating = false;
 let currentStep = 0;
 let isAnkiFlipped = false;
 let pendingEditAnsImage = '';
+let questionStartTime = Date.now();
 
 // --- AI STATE ---
 let isAiEnabled = false;
@@ -488,12 +500,15 @@ function loadQuestion() {
         bookmarkCardBtn.classList.add('hidden');
         if (ankiControlsArea) ankiControlsArea.classList.add('hidden');
         if (ankiAnswerContainer) ankiAnswerContainer.classList.add('hidden');
+        archiveCurrentSession(true);
+        showNotificationPill("Sessão concluída! Verifique suas estatísticas.", "stats.svg");
         setTimeout(() => {
             balls = [];
             score = 0;
             scoreDisplay.textContent = '0';
             questionsPool = [...allQuestions];
             currentStep = 0;
+            initStatsSession(deckTitle.textContent, activeMode, allQuestions.length, 0);
             loadQuestion();
         }, 3000);
         return;
@@ -501,6 +516,7 @@ function loadQuestion() {
 
     currentStep++;
     resetUI();
+    questionStartTime = Date.now();
     bookmarkCardBtn.classList.remove('hidden');
     questionsLeftDisplay.textContent = questionsPool.length;
 
@@ -663,6 +679,14 @@ function handleAnkiRating(rating) {
     if (currentQuestion.type !== 'anki' || !isAnkiFlipped) return;
     if (isAnimating) return;
 
+    const elapsedSeconds = (Date.now() - questionStartTime) / 1000;
+    recordStatsAnswer({
+        card: currentQuestion,
+        isCorrect: (rating === 'good' || rating === 'easy'),
+        rating: rating,
+        timeSpentSeconds: elapsedSeconds
+    });
+
     if (rating === 'easy') {
         // "easy": removes card from deck
         createBall(true);
@@ -787,6 +811,15 @@ function showFeedback(isCorrect, element) {
     }
     lastUserAnswerForChat = userAnswer;
 
+    const elapsedSeconds = (Date.now() - questionStartTime) / 1000;
+    recordStatsAnswer({
+        card: currentQuestion,
+        isCorrect: isCorrect,
+        rating: isCorrect ? 'correct' : 'incorrect',
+        timeSpentSeconds: elapsedSeconds,
+        userAnswer: userAnswer
+    });
+
     const ballIdx = createBall(isCorrect);
     questionCard.classList.add(isCorrect ? 'glow-correct' : 'glow-incorrect');
 
@@ -872,42 +905,40 @@ function saveGameState() {
 
 function updateScoreDisplay() {
     const scoreVal = document.getElementById('score');
-    const receiveBtn = document.getElementById('receive-session-btn');
     const scoreContainer = document.getElementById('score-container');
-    
     if (scoreVal) scoreVal.textContent = score;
-
-    // Check if we are in "Desktop/Landscape" mode
-    const isLandscape = window.matchMedia("(orientation: landscape)").matches;
-    const isLargeScreen = window.innerWidth >= 1024;
-    const isPillMode = isLargeScreen || (window.innerWidth >= 768 && isLandscape);
-
-    if (isPillMode) {
-        // Desktop/Landscape: Show score, hide download (cast icon is on the left)
-        receiveBtn?.classList.add('hidden');
-        scoreContainer?.classList.remove('hidden');
-    } else {
-        // Mobile Portrait: 
-        if (score === 0) {
-            // Show only download icon to import session
-            receiveBtn?.classList.remove('hidden');
-            scoreContainer?.classList.add('hidden');
-        } else {
-            // Hide download icon, show score once progress starts
-            receiveBtn?.classList.add('hidden');
-            scoreContainer?.classList.remove('hidden');
-        }
-    }
+    if (scoreContainer) scoreContainer.classList.remove('hidden');
 }
 
 // --- AI LOGIC ---
+function updateAiUI() {
+    if (isAiEnabled) {
+        if (menuAiIcon) menuAiIcon.src = '../assets/img/enabled_ai.svg';
+        if (menuAiStatusBadge) {
+            menuAiStatusBadge.textContent = 'Ativada';
+            menuAiStatusBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300';
+        }
+        if (menuAiSubtitle) menuAiSubtitle.textContent = 'Verificação inteligente ativa';
+        if (aiIconOff) aiIconOff.classList.add('hidden');
+        if (aiIconOn) aiIconOn.classList.remove('hidden');
+    } else {
+        if (menuAiIcon) menuAiIcon.src = '../assets/img/config_ai.svg';
+        if (menuAiStatusBadge) {
+            menuAiStatusBadge.textContent = 'Desativada';
+            menuAiStatusBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400';
+        }
+        if (menuAiSubtitle) menuAiSubtitle.textContent = 'Clique para configurar';
+        if (aiIconOff) aiIconOff.classList.remove('hidden');
+        if (aiIconOn) aiIconOn.classList.add('hidden');
+    }
+}
+
 function initializeAi() {
     if (geminiApiKey) {
         genAI = new GoogleGenerativeAI(geminiApiKey);
         isAiEnabled = true;
-        aiIconOff.classList.add('hidden');
-        aiIconOn.classList.remove('hidden');
     }
+    updateAiUI();
 }
 
 async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
@@ -1165,6 +1196,57 @@ resetBtn.addEventListener('click', () => {
         window.location.href = ROUTES.HOME; 
     } 
 });
+// --- HAMBURGER MENU LOGIC ---
+function openHamburgerMenu() {
+    if (!hamburgerMenu) return;
+    hamburgerBackdrop?.classList.remove('hidden');
+    hamburgerMenu.classList.remove('hidden');
+    requestAnimationFrame(() => {
+        hamburgerMenu.classList.remove('scale-95', 'opacity-0');
+        hamburgerMenu.classList.add('scale-100', 'opacity-100');
+        hamburgerBtn?.setAttribute('aria-expanded', 'true');
+    });
+}
+
+function closeHamburgerMenu() {
+    if (!hamburgerMenu || hamburgerMenu.classList.contains('hidden')) return;
+    hamburgerMenu.classList.remove('scale-100', 'opacity-100');
+    hamburgerMenu.classList.add('scale-95', 'opacity-0');
+    hamburgerBackdrop?.classList.add('hidden');
+    hamburgerBtn?.setAttribute('aria-expanded', 'false');
+    setTimeout(() => {
+        hamburgerMenu?.classList.add('hidden');
+    }, 200);
+}
+
+function toggleHamburgerMenu() {
+    if (hamburgerMenu?.classList.contains('hidden')) {
+        openHamburgerMenu();
+    } else {
+        closeHamburgerMenu();
+    }
+}
+
+hamburgerBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleHamburgerMenu();
+});
+
+hamburgerBackdrop?.addEventListener('click', closeHamburgerMenu);
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeHamburgerMenu();
+    }
+});
+
+// Close hamburger menu when an action is selected
+[exportBtn, goToEditorBtn, restartGameBtn, resetBtn, statsBtn, receiveSessionBtn].forEach(el => {
+    el?.addEventListener('click', () => {
+        closeHamburgerMenu();
+    });
+});
+
 if (restartGameBtn) {
     restartGameBtn.addEventListener('click', () => {
         if (isAnimating) return;
@@ -1184,6 +1266,8 @@ if (restartGameBtn) {
             questionsPool = [...allQuestions];
             saveGameState();
             updateScoreDisplay();
+            archiveCurrentSession(false);
+            initStatsSession(deckTitle.textContent, activeMode, allQuestions.length, 0);
             loadQuestion();
             showNotificationPill("Jogo reiniciado!", "reset.svg");
         });
@@ -1212,15 +1296,27 @@ goToEditorBtn.addEventListener('click', () => {
     localStorage.setItem('editing_deck_title', deckTitle.textContent);
     window.location.href = ROUTES.GENERATE;
 });
-aiToggleBtn.addEventListener('click', () => { apiModal.classList.remove('hidden'); apiKeyInput.value = geminiApiKey; });
+aiToggleBtn.addEventListener('click', () => { 
+    closeHamburgerMenu();
+    apiModal.classList.remove('hidden'); 
+    apiKeyInput.value = geminiApiKey; 
+});
 saveApiKeyBtn.addEventListener('click', () => {
     geminiApiKey = apiKeyInput.value.trim();
-    sessionStorage.setItem('gemini_api_key', geminiApiKey);
-    initializeAi(); apiModal.classList.add('hidden');
+    if (geminiApiKey) {
+        sessionStorage.setItem('gemini_api_key', geminiApiKey);
+        initializeAi(); 
+        apiModal.classList.add('hidden');
+        showNotificationPill("IA Ativada com Sucesso!", "enabled_ai.svg");
+    }
 });
 disableAiBtn.addEventListener('click', () => {
-    isAiEnabled = false; geminiApiKey = ''; sessionStorage.removeItem('gemini_api_key');
-    aiIconOff.classList.remove('hidden'); aiIconOn.classList.add('hidden'); apiModal.classList.add('hidden');
+    isAiEnabled = false; 
+    geminiApiKey = ''; 
+    sessionStorage.removeItem('gemini_api_key');
+    updateAiUI();
+    apiModal.classList.add('hidden');
+    showNotificationPill("Recursos de IA desativados", "config_ai.svg");
 });
 closeApiModal.addEventListener('click', () => apiModal.classList.add('hidden'));
 openAiInstructions.addEventListener('click', () => instructionsModal.classList.remove('hidden'));
@@ -1705,6 +1801,7 @@ function closeDeckDropdown() {
 
 function switchActiveMode(newMode) {
     saveGameState();
+    archiveCurrentSession(false);
     
     activeMode = newMode;
     localStorage.setItem('flashcardsActiveMode', newMode);
@@ -1733,6 +1830,7 @@ function switchActiveMode(newMode) {
     updateScoreDisplay();
     isFirstQuestion = true;
     
+    initStatsSession(deckTitle.textContent, newMode, allQuestions.length, score);
     loadQuestion();
     
     showNotificationPill(`Estudando: ${deckTitle.textContent}`, newMode === 'notebook' ? "collection.svg" : "uploaded.svg");
@@ -1808,8 +1906,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     updateScoreDisplay();
+    initStatsSession(deckTitle.textContent, activeMode, allQuestions.length, score);
     loadQuestion(); 
     initializeAi();
+    updateAiUI();
     requestAnimationFrame(pollGamepad);
 });
 window.addEventListener('resize', resizeCanvas);

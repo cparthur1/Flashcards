@@ -1,3 +1,24 @@
+/* ==========================================================================
+   DESIGN LANGUAGE & SYSTEM GUIDELINES
+   --------------------------------------------------------------------------
+   • Aesthetic: Minimalistic, Blue & Purple themed, with tactile skeuomorphic depth.
+   • Light & Shadow Gradients:
+     - AVOID loud, multi-hue, or high-contrast rainbow gradients.
+     - Gradients must ONLY be used as subtle tonal variations of the same color
+       (or closely adjacent monochromatic values) to model light, curvature, and shadow.
+     - Simulates natural directional lighting: lighter highlight stop at the top edge,
+       subtle ambient occlusion / deeper tone towards the bottom edge.
+   • Skeuomorphic Depth & Tactile Touches:
+     - Subtle top-edge inner highlights (inset 0 1px 0 rgba(255, 255, 255, 0.15–0.8))
+       to simulate bevels on cards, buttons, and badges.
+     - Recessed inner shadows on tracks, wells, and inputs (inset 0 1px 2px rgba(0, 0, 0, 0.12)).
+     - Tactile layered drop shadows with soft, diffuse blurs for physical elevation.
+   • Animation Principles:
+     - Minimalistic, fluid, and calm.
+     - Avoid distracting high-frequency flashing, intense neon glows, or harsh pings.
+     - Use gentle ambient breathing, smooth specular sheens, and physically damped transitions.
+   ========================================================================== */
+
 /* Global Styles & Animations */
 body {
     font-family: 'Inter', sans-serif;
@@ -335,24 +356,26 @@ textarea::-webkit-scrollbar-thumb,
     transform: scale(1.05);
 }
 
-@keyframes linearGradientMove {
-    0% {
+/* Minimalistic Light & Shadow Ambient Gradients */
+@keyframes ambientLightShift {
+    0%, 100% {
         background-position: 0% 50%;
     }
-
     50% {
         background-position: 100% 50%;
-    }
-
-    100% {
-        background-position: 0% 50%;
     }
 }
 
 .generating-deck-bg {
-    background: linear-gradient(-45deg, #b8c1ff, #e6a1ff, #94b4ff, #c9a1f7, #c1f3f7) !important;
-    background-size: 400% 400% !important;
-    animation: linearGradientMove 10s ease infinite !important;
+    background: linear-gradient(135deg, #f8fafc 0%, #ede9fe 50%, #f1f5f9 100%) !important;
+    background-size: 200% 200% !important;
+    animation: ambientLightShift 12s ease-in-out infinite !important;
+}
+
+.dark .generating-deck-bg {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%) !important;
+    background-size: 200% 200% !important;
+    animation: ambientLightShift 12s ease-in-out infinite !important;
 }
 
 /* Mobile Header Overlap Fix */
@@ -360,11 +383,6 @@ textarea::-webkit-scrollbar-thumb,
     #game-container {
         margin-top: 80px;
         margin-bottom: 30px;
-    }
-    #ai-toggle-btn {
-        top: auto;
-        bottom: 20px;
-        right: 20px;
     }
 }
 
@@ -419,8 +437,12 @@ textarea::-webkit-scrollbar-thumb,
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
-/* AI Flashcard Generation Animations */
-@keyframes shimmer {
+/* ==========================================================================
+   MINIMALISTIC SKEUOMORPHIC ANIMATIONS & LIGHT/SHADOW EFFECTS
+   ========================================================================== */
+
+/* Subtle Specular Light Sheen */
+@keyframes subtleShimmer {
     0% {
         transform: translateX(-100%);
     }
@@ -430,32 +452,32 @@ textarea::-webkit-scrollbar-thumb,
 }
 
 .animate-shimmer {
-    animation: shimmer 2.5s infinite;
+    animation: subtleShimmer 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-@keyframes progressWave {
+/* Skeuomorphic Progress Bar Light Glide (monochromatic directional flow) */
+@keyframes skeuomorphicGlide {
     0% {
         transform: translateX(-100%);
-        width: 30%;
     }
     50% {
-        transform: translateX(50%);
-        width: 60%;
+        transform: translateX(35%);
     }
     100% {
-        transform: translateX(200%);
-        width: 30%;
+        transform: translateX(180%);
     }
 }
 
 .animate-pulse-progress {
-    animation: progressWave 2s ease-in-out infinite;
+    width: 45%;
+    animation: skeuomorphicGlide 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
+/* Physical Card Enter (damped inertia) */
 @keyframes cardEnter {
     from {
         opacity: 0;
-        transform: translateY(10px) scale(0.99);
+        transform: translateY(6px) scale(0.995);
     }
     to {
         opacity: 1;
@@ -464,20 +486,23 @@ textarea::-webkit-scrollbar-thumb,
 }
 
 .card-enter-anim {
-    animation: cardEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: cardEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes badgePulse {
+/* Subtle Breathing Glow (tactile light reflection) */
+@keyframes badgeBreathing {
     0%, 100% {
-        box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.4);
+        box-shadow: 0 1px 3px rgba(124, 58, 237, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        opacity: 1;
     }
     50% {
-        box-shadow: 0 0 0 6px rgba(147, 51, 234, 0);
+        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+        opacity: 0.92;
     }
 }
 
 .badge-generating-pulse {
-    animation: badgePulse 1.5s infinite;
+    animation: badgeBreathing 2.4s ease-in-out infinite;
 }
 
 .spinner.w-3 {
@@ -486,16 +511,26 @@ textarea::-webkit-scrollbar-thumb,
     border-width: 2px;
 }
 
-@keyframes geminiGlow {
+/* Minimalist Ambient Backlight */
+@keyframes geminiAmbientLight {
     0%, 100% {
-        box-shadow: 0 0 15px 2px rgba(168, 85, 247, 0.35), 0 0 30px 4px rgba(59, 130, 246, 0.2);
+        box-shadow: 0 4px 14px -2px rgba(124, 58, 237, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
     50% {
-        box-shadow: 0 0 25px 6px rgba(168, 85, 247, 0.55), 0 0 45px 10px rgba(59, 130, 246, 0.35);
+        box-shadow: 0 6px 20px -2px rgba(124, 58, 237, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.35);
     }
 }
 
 .animate-gemini-glow {
-    animation: geminiGlow 2.5s ease-in-out infinite;
+    animation: geminiAmbientLight 3s ease-in-out infinite;
+}
+
+/* Skeuomorphic Depth Utilities */
+.skeuo-bevel-highlight {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.skeuo-groove-track {
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 

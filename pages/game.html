@@ -35,72 +35,155 @@
 
     <canvas id="background-canvas" class="fixed top-0 left-0 w-full h-full" style="z-index: -1;"></canvas>
 
-    <button id="ai-toggle-btn"
-        class="fixed top-4 right-4 z-40 bg-white dark:bg-gray-800 p-3 rounded-full shadow-lg hover:scale-110 transition-transform border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300"
-        title="Ativar Recursos de IA">
-        <svg id="ai-icon-off" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd">
-            </path>
-        </svg>
-        <div id="ai-icon-on" class="hidden">
-            <svg class="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                    d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 015-2.906z">
-                </path>
-            </svg>
+    <!-- HAMBURGER MENU BACKDROP (click outside dismiss) -->
+    <div id="hamburger-backdrop" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] transition-opacity duration-300"></div>
+
+    <!-- HAMBURGER MENU DROPDOWN / DRAWER -->
+    <nav id="hamburger-menu" aria-label="Menu de Navegação e Ações"
+        class="hidden fixed z-50 transition-all duration-300 transform scale-95 opacity-0 origin-top-left
+        top-14 left-4 w-72 sm:w-80 max-h-[85vh] overflow-y-auto custom-scrollbar
+        lg:top-24 lg:left-6
+        md:landscape:top-24 md:landscape:left-6
+        bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-2 sm:p-3">
+        
+        <!-- SECTION 1: IA (ENABLE/DISABLE/CONFIG) -->
+        <div class="px-1 py-1">
+            <div class="flex items-center justify-between px-2 py-1 mb-1">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Inteligência Artificial</span>
+                <span id="menu-ai-status-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">Desativada</span>
+            </div>
+            
+            <button id="ai-toggle-btn"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/70 transition text-left group"
+                title="Ativar ou Desativar Recursos de IA">
+                <img id="menu-ai-icon" src="../assets/img/config_ai.svg" class="w-6 h-6 flex-shrink-0 transition-transform group-hover:scale-110" alt="IA">
+                <div class="flex-1 min-w-0">
+                    <p id="menu-ai-title" class="text-sm font-semibold text-gray-800 dark:text-gray-200">Recursos de IA</p>
+                    <p id="menu-ai-subtitle" class="text-xs text-gray-500 dark:text-gray-400 truncate">Clique para configurar</p>
+                </div>
+            </button>
         </div>
-    </button>
+
+        <div class="h-[1px] bg-gray-200/80 dark:bg-gray-700/80 my-1"></div>
+
+        <!-- SECTION 2: BARALHO (SAVE & EDIT DECK) -->
+        <div class="px-1 py-1 space-y-0.5">
+            <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 px-2 py-1">Baralho</span>
+            
+            <!-- Save Deck -->
+            <button id="export-btn"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/70 transition text-left group"
+                title="Baixar JSON Atualizado">
+                <img src="../assets/img/save.svg" class="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" alt="Salvar">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">Salvar Baralho</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Exportar cópia em .json</p>
+                </div>
+            </button>
+
+            <!-- Edit Deck -->
+            <button id="go-to-editor-btn"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/70 transition text-left group"
+                title="Editar com Assistente de IA">
+                <img src="../assets/img/edit.svg" class="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" alt="Editar">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">Editar Baralho</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Abrir editor e gerador IA</p>
+                </div>
+            </button>
+        </div>
+
+        <div class="h-[1px] bg-gray-200/80 dark:bg-gray-700/80 my-1"></div>
+
+        <!-- SECTION 3: ESTUDO, REINICIAR & SINCRONIZAÇÃO -->
+        <div class="px-1 py-1 space-y-0.5">
+            <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 px-2 py-1">Estudo & Sessão</span>
+
+            <!-- Stats Page Link -->
+            <a href="stats.html" id="stats-btn"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 transition text-left group"
+                title="Ver Estatísticas da Sessão e Anteriores">
+                <img src="../assets/img/stats.svg" class="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" alt="Estatísticas">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-blue-600 dark:text-blue-400">Estatísticas</p>
+                    <p class="text-xs text-blue-500/80 dark:text-blue-400/70">Progresso, retenção & histórico</p>
+                </div>
+                <span class="text-[10px] font-bold bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">Ver</span>
+            </a>
+
+            <!-- Restart Game -->
+            <button id="restart-game-btn"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/70 transition text-left group"
+                title="Reiniciar Jogo">
+                <img src="../assets/img/reset.svg" class="w-5 h-5 flex-shrink-0 transition-all duration-300 group-hover:rotate-[-180deg]" alt="Reiniciar">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">Reiniciar Jogo</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Recomeçar cartas do início</p>
+                </div>
+            </button>
+
+            <!-- Cast State (Transmitir) -->
+            <button id="transfer-session-btn"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/70 transition text-left group"
+                title="Continuar no Celular (Cast)">
+                <img src="../assets/img/cast.svg" class="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" alt="Transmitir">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">Transmitir Sessão</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Continuar no celular via QR Code</p>
+                </div>
+            </button>
+
+            <!-- Receive State (Receber) -->
+            <button id="receive-session-btn"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/70 transition text-left group"
+                title="Receber Sessão (QR Code)">
+                <img src="../assets/img/download.svg" class="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" alt="Receber">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">Receber Sessão</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Escanear QR Code com a câmera</p>
+                </div>
+            </button>
+        </div>
+
+        <div class="h-[1px] bg-gray-200/80 dark:bg-gray-700/80 my-1"></div>
+
+        <!-- SECTION 4: SAIR (EXIT) -->
+        <div class="px-1 py-1">
+            <button id="reset-btn"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition text-left group"
+                title="Voltar ao início">
+                <img id="exit-icon" src="../assets/img/exit.svg" class="w-5 h-5 flex-shrink-0 transition-transform group-hover:translate-x-[-2px]" alt="Sair">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold">Sair do Jogo</p>
+                    <p class="text-xs text-red-500/80 dark:text-red-400/70">Encerrar e voltar ao início</p>
+                </div>
+            </button>
+        </div>
+    </nav>
 
     <!-- 
-        HEADER ARCHITECTURE NOTE:
-        The header has two states:
-        1. Mobile (< 768px): Full-width bar at the top, simplified UI.
-        2. Desktop (>= 768px): Pill-shaped floating bar, centered or offset, with full controls.
+        HEADER ARCHITECTURE:
+        Clean header with Hamburger menu, deck selector, and score counter.
     -->
     <header id="global-header"
         class="fixed z-50 transition-all duration-300 
         top-0 left-0 w-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex items-center justify-between
         lg:top-6 lg:left-6 lg:w-auto lg:rounded-full lg:px-6 lg:py-3 lg:shadow-2xl lg:border lg:border-gray-200 dark:lg:border-gray-700
         md:landscape:top-6 md:landscape:left-6 md:landscape:w-auto md:landscape:rounded-full md:landscape:px-6 md:landscape:py-3 md:landscape:shadow-2xl md:landscape:border dark:md:landscape:border-gray-700">
-        <div class="flex items-center gap-3 min-w-0 flex-1 mr-2">
-            <div class="flex items-center gap-1 flex-shrink-0">
-                <span id="reset-btn"
-                    class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors flex items-center justify-center"
-                    title="Voltar ao início">
-                    <img id="exit-icon" src="../assets/img/exit.svg" class="w-6 h-6 transition-all duration-300"
-                        alt="Sair">
-                </span>
+        <div class="flex items-center gap-2 min-w-0 flex-1 mr-2">
+            <!-- HAMBURGER MENU BUTTON -->
+            <button id="hamburger-btn"
+                class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors flex items-center justify-center flex-shrink-0"
+                title="Abrir Menu Principal" aria-label="Menu Principal" aria-expanded="false">
+                <img src="../assets/img/menu.svg" class="w-6 h-6" alt="Menu">
+            </button>
 
-                <!-- CAST BUTTON (Desktop & Landscape Tablet) -->
-                <button id="transfer-session-btn"
-                    class="hidden lg:flex md:landscape:flex cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors items-center justify-center"
-                    title="Continuar no Celular">
-                    <img src="../assets/img/cast.svg" class="w-6 h-6" alt="Cast">
-                </button>
-
-                <button id="restart-game-btn"
-                    class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors flex items-center justify-center group"
-                    title="Reiniciar Jogo">
-                    <img src="../assets/img/reset.svg" class="w-6 h-6 transition-all duration-300 group-hover:rotate-[-180deg]" alt="Reiniciar">
-                </button>
-
-                <span id="export-btn"
-                    class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors flex items-center justify-center"
-                    title="Baixar JSON Atualizado">
-                    <img src="../assets/img/save.svg" class="w-6 h-6" alt="Salvar">
-                </span>
-                <button id="go-to-editor-btn"
-                    class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors flex items-center justify-center"
-                    title="Editar com Assistente de IA">
-                    <img src="../assets/img/edit.svg" class="w-6 h-6" alt="Editar">
-                </button>
-            </div>
-            <div class="h-6 w-[1px] bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block flex-shrink-0"></div>
+            <div class="h-6 w-[1px] bg-gray-200 dark:bg-gray-700 mx-1 flex-shrink-0"></div>
             
             <!-- Dynamic Deck / Notebook Dropdown Selector -->
             <div class="relative flex items-center gap-1.5 cursor-pointer select-none py-1 px-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/60 transition" id="deck-select-trigger">
                 <h1 id="deck-title"
-                    class="font-bold text-gray-800 dark:text-white truncate text-base sm:text-lg min-w-0 max-w-[120px] sm:max-w-[200px]">
+                    class="font-bold text-gray-800 dark:text-white truncate text-base sm:text-lg min-w-0 max-w-[130px] sm:max-w-[210px]">
                     Flashcards</h1>
                 <img src="../assets/img/dropdown.svg" class="w-4 h-4 transition-transform duration-300 dark:invert" id="deck-select-arrow" alt="Chevron">
                 
@@ -131,19 +214,12 @@
             <div class="h-8 w-[1px] bg-gray-100 dark:bg-gray-700 mx-1 block"></div>
 
             <div id="score-wrapper" class="flex items-center min-w-[50px] justify-center">
-                <!-- SCORE CONTAINER -->
-                <div id="score-container" class="hidden lg:block md:landscape:block">
+                <!-- SCORE CONTAINER (Always visible) -->
+                <div id="score-container" class="block">
                     <p class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">
                         Score</p>
                     <p id="score" class="text-sm font-bold text-gray-900 dark:text-white text-center">0</p>
                 </div>
-
-                <!-- MOBILE RECEIVE BUTTON -->
-                <button id="receive-session-btn"
-                    class="flex lg:hidden md:landscape:hidden cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors items-center justify-center"
-                    title="Sincronizar do PC">
-                    <img src="../assets/img/download.svg" class="w-6 h-6" alt="Download">
-                </button>
             </div>
         </div>
     </header>

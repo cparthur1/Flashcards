@@ -1,13 +1,16 @@
-const CACHE_NAME = 'flashcards-v2.4'; // Increment version to trigger update
+const CACHE_NAME = 'flashcards-v2.5'; // Increment version to trigger update
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/pages/game.html',
   '/pages/generate.html',
+  '/pages/stats.html',
   '/css/style.css',
   '/js/index.js',
   '/js/game.js',
   '/js/generate.js',
+  '/js/stats.js',
+  '/js/stats-tracker.js',
   '/js/utils.js',
   '/js/config.js',
   '/js/pdf-worker.js',

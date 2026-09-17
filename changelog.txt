@@ -37,3 +37,31 @@ FILES MODIFIED:
 - js/game.js (Score display logic, UI toggle integration, cleanup)
 - assets/img/cast.svg (New icon)
 - assets/img/download.svg (Updated usage)
+
+--------------------------------------------------------------------------------
+
+CHANGELOG: HAMBURGER MENU & RICH STATISTICS PAGE
+Date: 2026-09-17
+
+1. HEADER DECLUTTER & HAMBURGER MENU
+- Replaced bloated header buttons (Exit, Cast, Restart, Save, Edit) and floating AI button with a single, sleek Hamburger Menu button ('menu.svg').
+- Cleanly divided the menu into 4 organized sections:
+  1. Inteligência Artificial: Enable/disable/configure Gemini AI with dynamic SVGs ('enabled_ai.svg' and 'config_ai.svg') and status badge.
+  2. Baralho: Save Deck ('save.svg') and Edit Deck with AI ('edit.svg').
+  3. Estudo & Sessão: Statistics ('stats.svg'), Restart Game ('reset.svg'), Cast Session ('cast.svg'), and Receive Session via QR ('download.svg').
+  4. Sair: Exit to home screen ('exit.svg').
+- Header now always cleanly displays: Hamburger Menu, Deck Selector Dropdown, Cards Remaining, and Score counter.
+
+2. COMPREHENSIVE STATISTICS PAGE ('pages/stats.html' & 'js/stats.js')
+- Real-time Study Tracker ('js/stats-tracker.js'):
+  - Tracks question accuracy, time spent per card, streaks, and Anki ratings.
+  - Automatically preserves and archives sessions into a 50-session history log.
+- Visual Panels & Metrics:
+  - Hero KPIs: Deck Progress (% and cards remaining), Accuracy (%), Total Duration & Average Pace (s/card), Current & Best Streak.
+  - Anki Memory Quality Distribution: Visual 4-color segmented progress bar and breakdown for Errei (Again), Difícil (Hard), Médio (Good), and Fácil (Easy).
+  - Format Breakdown: Compares performance across Multiple Choice, Open Text, Open Double, and Anki cards.
+  - Chronological Answer Flow: Visual timeline strip showing real-time streak and history of answers in the session.
+  - Historical Evolution Chart: Responsive pure SVG/CSS bar chart comparing accuracy across previous study sessions.
+  - Review Focus / Struggling Cards: Identifies problematic cards with one-click "+ Caderno" addition.
+  - Data Export & Reset: Complete JSON export and stats wipe capabilities.
+
