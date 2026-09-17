@@ -996,12 +996,12 @@ submitModal21Btn.addEventListener('click', async () => {
 PROIBIDO incluir texto explicativo fora do array JSON.
 Retorne EXCLUSIVAMENTE um array JSON ([]) contendo os objetos de flashcards.
 Formatos permitidos:
-1. open: {"type": "open", "description": "Pergunta ou conceito", "answer": "Resposta técnica clara"}
+1. open: {"type": "open", "description": "Pergunta ou descrição de conceito/medicamento/teste/mecanismo...", "answer": "Resposta objetiva, nome do conceito/medicamento/teste/mecanismo. Deve conter o mínimo de palavras possível, idealmente 1 só"}
 2. open_double: {"type": "open_double", "description": "Pergunta comparativa/dupla", "answer": "Primeira resposta", "answer2": "Segunda resposta", "placeholder1": "Rótulo 1", "placeholder2": "Rótulo 2"}
 3. multiple_choice: {"type": "multiple_choice", "description": "Enunciado da questão", "answer": "Alternativa correta", "options": ["Alt 1", "Alt 2", "Alternativa correta", "Alt 4"]}
 4. anki: {"type": "anki", "description": "Conceito a ser lembrado", "answer": "Explicação completa e detalhada para repetição espaçada"}
 
-Gere entre 30 e 50 flashcards completos e aprofundados cobrindo todo o material enviado.`;
+Gere aproximadamente 100 flashcards completos e aprofundados cobrindo todo o material enviado.`;
 
         let promptToSend = basePrompt;
         const customText = modal21Prompt.value.trim();
