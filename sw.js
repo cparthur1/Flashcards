@@ -1,4 +1,4 @@
-const CACHE_NAME = 'flashcards-v2.5'; // Increment version to trigger update
+const CACHE_NAME = 'flashcards-v2.6'; // Increment version to trigger update
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -16,7 +16,11 @@ const ASSETS_TO_CACHE = [
   '/js/pdf-worker.js',
   '/manifest.json',
   '/favicon.png',
-  '/assets/img/favicon.png'
+  '/assets/img/favicon.png',
+  '/assets/img/menu.svg',
+  '/assets/img/stats.svg',
+  '/assets/img/config_ai.svg',
+  '/assets/img/enabled_ai.svg'
 ];
 
 self.addEventListener('install', (event) => {

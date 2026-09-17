@@ -534,3 +534,18 @@ textarea::-webkit-scrollbar-thumb,
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
+/* Hamburger Menu Physical Animation */
+#hamburger-menu:not(.hidden) {
+    animation: menuFadeIn 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes menuFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}

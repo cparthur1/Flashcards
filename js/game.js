@@ -19,6 +19,7 @@ const hamburgerMenu = document.getElementById('hamburger-menu');
 const hamburgerBackdrop = document.getElementById('hamburger-backdrop');
 const statsBtn = document.getElementById('stats-btn');
 const receiveSessionBtn = document.getElementById('receive-session-btn');
+const transferSessionBtn = document.getElementById('transfer-session-btn');
 const menuAiIcon = document.getElementById('menu-ai-icon');
 const menuAiStatusBadge = document.getElementById('menu-ai-status-badge');
 const menuAiTitle = document.getElementById('menu-ai-title');
@@ -1201,36 +1202,35 @@ function openHamburgerMenu() {
     if (!hamburgerMenu) return;
     hamburgerBackdrop?.classList.remove('hidden');
     hamburgerMenu.classList.remove('hidden');
-    requestAnimationFrame(() => {
-        hamburgerMenu.classList.remove('scale-95', 'opacity-0');
-        hamburgerMenu.classList.add('scale-100', 'opacity-100');
-        hamburgerBtn?.setAttribute('aria-expanded', 'true');
-    });
+    hamburgerBtn?.setAttribute('aria-expanded', 'true');
 }
 
 function closeHamburgerMenu() {
-    if (!hamburgerMenu || hamburgerMenu.classList.contains('hidden')) return;
-    hamburgerMenu.classList.remove('scale-100', 'opacity-100');
-    hamburgerMenu.classList.add('scale-95', 'opacity-0');
+    if (!hamburgerMenu) return;
+    hamburgerMenu.classList.add('hidden');
     hamburgerBackdrop?.classList.add('hidden');
     hamburgerBtn?.setAttribute('aria-expanded', 'false');
-    setTimeout(() => {
-        hamburgerMenu?.classList.add('hidden');
-    }, 200);
 }
 
-function toggleHamburgerMenu() {
-    if (hamburgerMenu?.classList.contains('hidden')) {
+function toggleHamburgerMenu(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    if (!hamburgerMenu) return;
+    if (hamburgerMenu.classList.contains('hidden')) {
         openHamburgerMenu();
     } else {
         closeHamburgerMenu();
     }
 }
 
-hamburgerBtn?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    toggleHamburgerMenu();
-});
+// Expose functions globally for bulletproof execution
+window.openHamburgerMenu = openHamburgerMenu;
+window.closeHamburgerMenu = closeHamburgerMenu;
+window.toggleHamburgerMenu = toggleHamburgerMenu;
+
+hamburgerBtn?.addEventListener('click', toggleHamburgerMenu);
 
 hamburgerBackdrop?.addEventListener('click', closeHamburgerMenu);
 
@@ -1240,8 +1240,8 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Close hamburger menu when an action is selected
-[exportBtn, goToEditorBtn, restartGameBtn, resetBtn, statsBtn, receiveSessionBtn].forEach(el => {
+// Close hamburger menu when any action is selected
+[exportBtn, goToEditorBtn, restartGameBtn, resetBtn, statsBtn, receiveSessionBtn, transferSessionBtn, aiToggleBtn].forEach(el => {
     el?.addEventListener('click', () => {
         closeHamburgerMenu();
     });
@@ -1867,7 +1867,7 @@ deckItemNotebook.addEventListener('click', (e) => {
     switchActiveMode('notebook');
 });
 
-document.addEventListener('DOMContentLoaded', () => {
+function initGame() {
     checkAndResetModelFallback();
     resizeCanvas(); animate();
     
@@ -1911,6 +1911,14 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeAi();
     updateAiUI();
     requestAnimationFrame(pollGamepad);
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGame);
+} else {
+    initGame();
+}
+
 window.addEventListener('resize', resizeCanvas);
 window.addMsg = addMsg;
+

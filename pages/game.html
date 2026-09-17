@@ -36,11 +36,11 @@
     <canvas id="background-canvas" class="fixed top-0 left-0 w-full h-full" style="z-index: -1;"></canvas>
 
     <!-- HAMBURGER MENU BACKDROP (click outside dismiss) -->
-    <div id="hamburger-backdrop" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] transition-opacity duration-300"></div>
+    <div id="hamburger-backdrop" class="hidden fixed inset-0 z-[60] bg-black/40 backdrop-blur-[2px] transition-opacity duration-200"></div>
 
     <!-- HAMBURGER MENU DROPDOWN / DRAWER -->
     <nav id="hamburger-menu" aria-label="Menu de Navegação e Ações"
-        class="hidden fixed z-50 transition-all duration-300 transform scale-95 opacity-0 origin-top-left
+        class="hidden fixed z-[70]
         top-14 left-4 w-72 sm:w-80 max-h-[85vh] overflow-y-auto custom-scrollbar
         lg:top-24 lg:left-6
         md:landscape:top-24 md:landscape:left-6
@@ -173,9 +173,9 @@
         <div class="flex items-center gap-2 min-w-0 flex-1 mr-2">
             <!-- HAMBURGER MENU BUTTON -->
             <button id="hamburger-btn"
-                class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors flex items-center justify-center flex-shrink-0"
+                class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors flex items-center justify-center flex-shrink-0 relative z-[65]"
                 title="Abrir Menu Principal" aria-label="Menu Principal" aria-expanded="false">
-                <img src="../assets/img/menu.svg" class="w-6 h-6" alt="Menu">
+                <img src="../assets/img/menu.svg" class="w-6 h-6 pointer-events-none" alt="Menu">
             </button>
 
             <div class="h-6 w-[1px] bg-gray-200 dark:bg-gray-700 mx-1 flex-shrink-0"></div>
