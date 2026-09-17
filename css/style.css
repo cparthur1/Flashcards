@@ -479,3 +479,23 @@ textarea::-webkit-scrollbar-thumb,
 .badge-generating-pulse {
     animation: badgePulse 1.5s infinite;
 }
+
+.spinner.w-3 {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-width: 2px;
+}
+
+@keyframes geminiGlow {
+    0%, 100% {
+        box-shadow: 0 0 15px 2px rgba(168, 85, 247, 0.35), 0 0 30px 4px rgba(59, 130, 246, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 25px 6px rgba(168, 85, 247, 0.55), 0 0 45px 10px rgba(59, 130, 246, 0.35);
+    }
+}
+
+.animate-gemini-glow {
+    animation: geminiGlow 2.5s ease-in-out infinite;
+}
+

@@ -374,6 +374,232 @@ function renderFileIcons(files, container, defaultSvg) {
     });
 }
 
+// Normalizes and validates card properties across all supported modes and aliases
+function normalizeCard(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+
+    let type = raw.type ? String(raw.type).toLowerCase().replace(/[-\s]/g, '_') : '';
+    if (type === 'multiple_choice' || type === 'multipla_escolha' || type === 'mc') {
+        type = 'multiple_choice';
+    } else if (type === 'open_double' || type === 'duplo' || type === 'double') {
+        type = 'open_double';
+    } else if (type === 'anki' || type === 'anki_like') {
+        type = 'anki';
+    } else if (type === 'open' || type === 'open_ended' || type === 'traditional' || type === 'aberto') {
+        type = 'open';
+    } else {
+        if (Array.isArray(raw.options) && raw.options.length >= 2) type = 'multiple_choice';
+        else if (raw.answer2) type = 'open_double';
+        else type = 'open';
+    }
+
+    const description = (raw.description || raw.question || raw.pergunta || raw.frente || '').trim();
+    if (!description) return null;
+
+    let answer = (raw.answer || raw.resposta || raw.verso || '').trim();
+    let answer2 = (raw.answer2 || raw.resposta2 || '').trim();
+    let options = Array.isArray(raw.options) ? raw.options.map(o => String(o).trim()).filter(Boolean) : (Array.isArray(raw.alternativas) ? raw.alternativas.map(o => String(o).trim()).filter(Boolean) : []);
+
+    if (type === 'multiple_choice') {
+        if (options.length < 2) return null;
+        if (!answer) answer = options[0];
+        else if (!options.includes(answer)) options.unshift(answer);
+    } else if (type === 'open_double') {
+        if (!answer && !answer2) return null;
+    } else {
+        if (!answer && !raw.image && !raw.answerImage) return null;
+    }
+
+    const card = {
+        type,
+        description,
+        answer
+    };
+    if (type === 'open_double') {
+        card.answer2 = answer2;
+        card.placeholder1 = raw.placeholder1 || "Resposta 1";
+        card.placeholder2 = raw.placeholder2 || "Resposta 2";
+    }
+    if (type === 'multiple_choice') {
+        card.options = options;
+    }
+    if (raw.explanation) card.explanation = raw.explanation;
+    if (raw.image) card.image = raw.image;
+    if (raw.answerImage) card.answerImage = raw.answerImage;
+    if (Array.isArray(raw.tags)) card.tags = raw.tags;
+
+    return card;
+}
+
+// Scans text for complete balanced JSON objects, respecting string quoting and escapes
+function extractBalancedJsonObjects(text) {
+    const results = [];
+    if (!text) return results;
+
+    let scanText = text;
+    const wrapperMatch = text.match(/["'](?:cards|flashcards|questoes|perguntas|deck|items)["']\s*:\s*\[/i);
+    if (wrapperMatch) {
+        const arrStart = wrapperMatch.index + wrapperMatch[0].length;
+        scanText = text.substring(arrStart);
+    }
+
+    let depth = 0;
+    let inString = false;
+    let escape = false;
+    let start = -1;
+
+    for (let i = 0; i < scanText.length; i++) {
+        const c = scanText[i];
+        if (escape) {
+            escape = false;
+            continue;
+        }
+        if (c === '\\' && inString) {
+            escape = true;
+            continue;
+        }
+        if (c === '"') {
+            inString = !inString;
+            continue;
+        }
+        if (!inString) {
+            if (c === '{') {
+                if (depth === 0) {
+                    start = i;
+                }
+                depth++;
+            } else if (c === '}') {
+                depth--;
+                if (depth === 0 && start !== -1) {
+                    const block = scanText.substring(start, i + 1);
+                    try {
+                        const parsed = JSON.parse(block);
+                        if (parsed && typeof parsed === 'object') {
+                            const arr = parsed.cards || parsed.flashcards || parsed.questoes || parsed.perguntas;
+                            if (Array.isArray(arr)) {
+                                for (const item of arr) {
+                                    const n = normalizeCard(item);
+                                    if (n) results.push(n);
+                                }
+                            } else {
+                                const n = normalizeCard(parsed);
+                                if (n) results.push(n);
+                            }
+                        }
+                    } catch (_) {}
+                    start = -1;
+                } else if (depth < 0) {
+                    depth = 0;
+                    start = -1;
+                }
+            }
+        }
+    }
+    return results;
+}
+
+// Safe multi-stage JSON parser with truncation repair that never throws unhandled syntax errors
+function parseJsonCardsSafely(fullText) {
+    if (!fullText || !fullText.trim()) return [];
+
+    let clean = fullText.trim();
+    // Strip markdown code fences
+    clean = clean.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+
+    // Strategy 1: Direct JSON parse
+    try {
+        const direct = JSON.parse(clean);
+        if (Array.isArray(direct)) {
+            const cards = direct.map(normalizeCard).filter(Boolean);
+            if (cards.length > 0) return cards;
+        }
+        if (direct && typeof direct === 'object') {
+            const arr = direct.cards || direct.flashcards || direct.questoes || direct.perguntas || direct.items;
+            if (Array.isArray(arr)) {
+                const cards = arr.map(normalizeCard).filter(Boolean);
+                if (cards.length > 0) return cards;
+            }
+            const single = normalizeCard(direct);
+            if (single) return [single];
+        }
+    } catch (_) {}
+
+    // Strategy 2: Array substring parse
+    const firstBracket = clean.indexOf('[');
+    if (firstBracket !== -1) {
+        const sub = clean.substring(firstBracket);
+        const lastBracket = sub.lastIndexOf(']');
+        if (lastBracket !== -1) {
+            try {
+                const arr = JSON.parse(sub.substring(0, lastBracket + 1));
+                if (Array.isArray(arr)) {
+                    const cards = arr.map(normalizeCard).filter(Boolean);
+                    if (cards.length > 0) return cards;
+                }
+            } catch (_) {}
+        }
+        // Strategy 3: Truncation recovery - find last complete '}' and close with ']'
+        const lastBrace = sub.lastIndexOf('}');
+        if (lastBrace !== -1) {
+            try {
+                const repaired = sub.substring(0, lastBrace + 1) + ']';
+                const arr = JSON.parse(repaired);
+                if (Array.isArray(arr)) {
+                    const cards = arr.map(normalizeCard).filter(Boolean);
+                    if (cards.length > 0) return cards;
+                }
+            } catch (_) {}
+        }
+    }
+
+    // Strategy 4: Balanced objects extraction
+    const extracted = extractBalancedJsonObjects(clean);
+    if (extracted.length > 0) return extracted;
+
+    return [];
+}
+
+function updateGeneratingStatus(message) {
+    const statusText = document.getElementById('generation-status-text');
+    if (statusText) statusText.textContent = message;
+}
+
+function addAiChatGeneratingBubble(text) {
+    removeAiChatGeneratingBubble();
+    const bubble = document.createElement('div');
+    bubble.id = 'ai-chat-generating-bubble';
+    bubble.className = "self-start bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800/80 p-3.5 rounded-2xl rounded-tl-sm text-xs text-purple-900 dark:text-purple-200 flex items-center gap-3 shadow-sm animate-pulse";
+    bubble.innerHTML = `
+        <div class="relative flex-shrink-0">
+            <span class="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-full bg-purple-500 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-purple-600 dark:bg-purple-400"></span>
+        </div>
+        <span class="font-medium">${text}</span>
+    `;
+    chatHistory.appendChild(bubble);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+function removeAiChatGeneratingBubble() {
+    const bubble = document.getElementById('ai-chat-generating-bubble');
+    if (bubble) bubble.remove();
+}
+
+function showChatTypingIndicator() {
+    hideChatTypingIndicator();
+    const indicator = document.createElement('div');
+    indicator.id = 'chat-typing-indicator';
+    indicator.className = 'typing-indicator my-1';
+    indicator.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+    chatHistory.appendChild(indicator);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+function hideChatTypingIndicator() {
+    const indicator = document.getElementById('chat-typing-indicator');
+    if (indicator) indicator.remove();
+}
+
 async function fileToGenerativePart(file) {
     const base64EncodedDataPromise = new Promise((resolve) => {
         const reader = new FileReader();
@@ -751,31 +977,43 @@ submitModal21Btn.addEventListener('click', async () => {
         return;
     }
 
+    // Immediately close modal and transition to editor view with live animations
+    modal21.classList.add('hidden');
+    openEditorView('ai');
+
+    deckCards = [];
+    deckTitleDisplay.value = files[0].name.replace(/\.[^/.]+$/, "");
+
+    showGeneratingAnimation("Processando materiais enviados...");
+    addAiChatGeneratingBubble("O Gemini está analisando seus materiais para gerar os flashcards com nível universitário. Acompanhe a formulação ao vivo!");
+
     submitModal21Btn.disabled = true;
     modal21Spinner.classList.remove('hidden');
     modal21LoadingMsg.classList.remove('hidden');
 
     try {
-        const basePrompt = `Com base nos arquivos enviados, o objetivo é processar todo o conteúdo e gerar flashcards técnicos para revisão, incluindo conceitos, definições, moléculas, etapas e estruturas. Gere um arquivo JSON baseado em todo o conteúdo reunido. Nível de detalhe universitário.
-PROIBIDO incluir títulos ou texto fora do JSON.
-O JSON deve ser uma lista ([]) de objetos de questão.
+        const basePrompt = `Com base nos arquivos enviados, processe todo o conteúdo e gere flashcards técnicos para estudo aprofundado (conceitos, definições, fórmulas, mecanismos, etapas e estruturas). Nível de detalhe universitário.
+PROIBIDO incluir texto explicativo fora do array JSON.
+Retorne EXCLUSIVAMENTE um array JSON ([]) contendo os objetos de flashcards.
 Formatos permitidos:
-1. open: {"type": "open", "description": "Pergunta?", "answer": "Resposta curta"}
-2. open_double: {"type": "open_double", "description": "Pergunta?", "answer": "Resp1", "answer2": "Resp2", "placeholder1": "L1", "placeholder2":"L2"}
-3. multiple_choice: {"type": "multiple_choice", "description": "Pergunta?", "answer": "Certa", "options": ["A", "B", "Certa", "D"]}
-4. anki: {"type": "anki", "description": "Conceito?", "answer": "Descrição detalhada"}
+1. open: {"type": "open", "description": "Pergunta ou conceito", "answer": "Resposta técnica clara"}
+2. open_double: {"type": "open_double", "description": "Pergunta comparativa/dupla", "answer": "Primeira resposta", "answer2": "Segunda resposta", "placeholder1": "Rótulo 1", "placeholder2": "Rótulo 2"}
+3. multiple_choice: {"type": "multiple_choice", "description": "Enunciado da questão", "answer": "Alternativa correta", "options": ["Alt 1", "Alt 2", "Alternativa correta", "Alt 4"]}
+4. anki: {"type": "anki", "description": "Conceito a ser lembrado", "answer": "Explicação completa e detalhada para repetição espaçada"}
 
-Gere aproximadamente 60 a 100 flashcards cobrindo todo o material.`;
+Gere entre 30 e 50 flashcards completos e aprofundados cobrindo todo o material enviado.`;
 
         let promptToSend = basePrompt;
         const customText = modal21Prompt.value.trim();
         if (customText) {
-            promptToSend += `\n\nDemandas adicionais:\n${customText}`;
+            promptToSend += `\n\nDemandas adicionais do usuário:\n${customText}`;
         }
 
         const parts = [promptToSend];
 
-        for (let file of files) {
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            updateGeneratingStatus(`Processando arquivo ${i + 1} de ${files.length}: ${file.name}...`);
             const ext = getFileExtension(file.name);
             if (ext === 'pptx') {
                 const pptxText = await extractTextFromPPTX(file);
@@ -796,7 +1034,10 @@ Gere aproximadamente 60 a 100 flashcards cobrindo todo o material.`;
             } else if (file.type === 'application/pdf' && file.size > 5 * 1024 * 1024) {
                 try {
                     const compressed = await compressPDFWithWorker(file);
-                    file = new File([compressed], file.name, { type: 'application/pdf' });
+                    const compFile = new File([compressed], file.name, { type: 'application/pdf' });
+                    const part = await fileToGenerativePart(compFile);
+                    parts.push(part);
+                    continue;
                 } catch (e) {
                     console.warn("Falha ao comprimir PDF:", e);
                 }
@@ -805,27 +1046,21 @@ Gere aproximadamente 60 a 100 flashcards cobrindo todo o material.`;
             parts.push(part);
         }
 
-        modal21.classList.add('hidden');
-        openEditorView('ai');
-
-        deckCards = [];
-        deckTitleDisplay.value = files[0].name.replace(/\.[^/.]+$/, "");
-
-        // Show live generation animation and skeleton placeholders
-        showGeneratingAnimation("Gemini está analisando o material e gerando os cartões...");
+        updateGeneratingStatus("Conectando ao Gemini e gerando os cartões...");
 
         const genAI = new GoogleGenerativeAI(apiKey);
         const genModel = genAI.getGenerativeModel({
             model: currentEditorModel || "gemini-flash-latest",
             generationConfig: {
                 temperature: 0.7,
-                responseMimeType: "application/json"
+                responseMimeType: "application/json",
+                maxOutputTokens: 8192
             }
         });
 
         const result = await callWithRetry(() => genModel.generateContentStream(parts));
         let fullText = "";
-        let processedIndex = 0;
+        const seenSignatures = new Set();
 
         for await (const chunk of result.stream) {
             let chunkText = "";
@@ -841,105 +1076,50 @@ Gere aproximadamente 60 a 100 flashcards cobrindo todo o material.`;
             if (!chunkText && chunk.candidates?.[0]?.content?.parts) {
                 for (const part of chunk.candidates[0].content.parts) {
                     if (part.text && !part.thought) chunkText += part.text;
-                    else if (part.functionCall) {
-                        if (part.functionCall.name === 'adicionar_card' && part.functionCall.args) {
-                            deckCards.push(part.functionCall.args);
-                            updateGeneratingProgress(deckCards.length);
-                            renderCardsList();
-                        } else if (part.functionCall.name === 'adicionar_varios_cards' && part.functionCall.args?.cards) {
-                            deckCards.push(...part.functionCall.args.cards);
-                            updateGeneratingProgress(deckCards.length);
-                            renderCardsList();
-                        }
-                    }
                 }
             }
 
             fullText += chunkText;
-            if (processedIndex === 0) {
-                const startIdx = fullText.search(/[\{\[]/);
-                if (startIdx !== -1) processedIndex = startIdx;
-                else continue;
-            }
 
-            let possibleObjects = fullText.substring(processedIndex);
-            const regex = /\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g;
-            let match;
-
-            while ((match = regex.exec(possibleObjects)) !== null) {
-                const objStr = match[0];
-                try {
-                    const card = JSON.parse(objStr);
-                    if (card.type && card.description && (card.answer || card.options)) {
+            // Extract balanced JSON objects in real-time as stream arrives
+            const streamObjects = extractBalancedJsonObjects(fullText);
+            for (const rawObj of streamObjects) {
+                const card = normalizeCard(rawObj);
+                if (card) {
+                    const sig = `${card.type}::${card.description}::${card.answer}`;
+                    if (!seenSignatures.has(sig)) {
+                        seenSignatures.add(sig);
                         deckCards.push(card);
                         updateGeneratingProgress(deckCards.length);
                         renderCardsList();
                     }
-                    processedIndex += match.index + objStr.length;
-                    possibleObjects = fullText.substring(processedIndex);
-                    regex.lastIndex = 0;
-                } catch (e) {
-                    // Incomplete JSON chunk, continue
                 }
             }
         }
 
+        // Stream completed. If no cards were extracted or some were missed, run safe fallback parser
         if (deckCards.length === 0 && fullText.trim()) {
-            try {
-                let textResult = fullText.trim();
-                textResult = textResult.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
-                const arrayMatch = textResult.match(/\[\s*\{[\s\S]*\}\s*\]/);
-                if (arrayMatch) {
-                    textResult = arrayMatch[0];
-                } else {
-                    const firstBracket = textResult.indexOf('[');
-                    if (firstBracket !== -1) {
-                        textResult = textResult.substring(firstBracket);
-                    }
+            const fallbackCards = parseJsonCardsSafely(fullText);
+            for (const card of fallbackCards) {
+                const sig = `${card.type}::${card.description}::${card.answer}`;
+                if (!seenSignatures.has(sig)) {
+                    seenSignatures.add(sig);
+                    deckCards.push(card);
                 }
-                let parsed = null;
-                try {
-                    parsed = JSON.parse(textResult);
-                } catch (pe) {
-                    if (textResult.startsWith('[')) {
-                        const lastBrace = textResult.lastIndexOf('}');
-                        if (lastBrace !== -1) {
-                            try {
-                                parsed = JSON.parse(textResult.substring(0, lastBrace + 1) + ']');
-                            } catch (pe2) {}
-                        }
-                    }
-                    if (!parsed) {
-                        const allObjects = textResult.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g);
-                        if (allObjects) {
-                            const extracted = [];
-                            for (const str of allObjects) {
-                                try {
-                                    const c = JSON.parse(str);
-                                    if (c.type && c.description) extracted.push(c);
-                                } catch (pe3) {}
-                            }
-                            if (extracted.length > 0) parsed = extracted;
-                        }
-                    }
-                }
-
-                if (Array.isArray(parsed) && parsed.length > 0) {
-                    deckCards = parsed;
-                    renderCardsList(true);
-                } else if (parsed && typeof parsed === 'object') {
-                    deckCards = [parsed];
-                    renderCardsList(true);
-                }
-            } catch (e) {
-                console.error("Erro ao fazer parse final do JSON:", e);
+            }
+            if (deckCards.length > 0) {
+                renderCardsList(true);
             }
         }
 
         if (deckCards.length > 0) {
             finishGeneratingAnimation(true, deckCards.length);
+            removeAiChatGeneratingBubble();
+            addChatMessage('model', `✓ Baralho gerado com sucesso! Criei ${deckCards.length} flashcards técnicos com base no material enviado. Quer que eu ajuste algo, adicione mais perguntas ou altere alguma alternativa?`);
         } else {
             finishGeneratingAnimation(false, 0);
+            removeAiChatGeneratingBubble();
+            addChatMessage('model', 'Não foi possível extrair flashcards a partir dos materiais fornecidos. Tente enviar outros arquivos ou descrever o conteúdo.');
             renderCardsList(true);
         }
 
@@ -955,6 +1135,8 @@ Gere aproximadamente 60 a 100 flashcards cobrindo todo o material.`;
     } catch (err) {
         console.error("Erro na geração 2.1:", err);
         finishGeneratingAnimation(false, 0);
+        removeAiChatGeneratingBubble();
+        addChatMessage('model', `Erro durante a geração: ${err.message}`);
         showGeminiDownModal(err.message, 'files');
     } finally {
         submitModal21Btn.disabled = false;
@@ -1040,6 +1222,7 @@ JSON:
 ${JSON.stringify(localCards, null, 2)}`;
 
         showGeneratingAnimation("Aprimorando flashcards e preenchendo detalhes com IA...");
+        addAiChatGeneratingBubble("O Gemini está aprimorando seus flashcards e preenchendo as opções e rótulos...");
         const chat = model.startChat({ history: [] });
         deckCards = []; // Will be populated via function call
         renderCardsList(true);
@@ -1066,11 +1249,15 @@ ${JSON.stringify(localCards, null, 2)}`;
         }
 
         finishGeneratingAnimation(true, deckCards.length);
+        removeAiChatGeneratingBubble();
+        addChatMessage('model', `✓ Flashcards aprimorados com sucesso! ${deckCards.length} cartões foram enriquecidos com alternativas e detalhes.`);
         geminiChatSession = model.startChat({ history: [] });
 
     } catch (err) {
         console.error("Erro na aprimoração 2.2:", err);
         finishGeneratingAnimation(false, 0);
+        removeAiChatGeneratingBubble();
+        addChatMessage('model', `Erro ao aprimorar os cartões: ${err.message}`);
         showGeminiDownModal(err.message, 'txt', localCards);
     } finally {
         submitModal22Btn.disabled = false;
@@ -1821,6 +2008,7 @@ chatSendBtn.addEventListener('click', async () => {
     chatInput.disabled = true;
     chatSendBtn.disabled = true;
     chatSpinner.classList.remove('hidden');
+    showChatTypingIndicator();
 
     try {
         const contextLines = deckCards.map((c, i) => `[${i}] (${c.type}) ${c.description.substring(0, 60)}... | R: ${c.answer}`).join('\n');
@@ -1848,12 +2036,15 @@ chatSendBtn.addEventListener('click', async () => {
         }
 
         const modelText = response.text();
+        hideChatTypingIndicator();
         addChatMessage('model', modelText || 'Ação realizada com sucesso.');
 
     } catch (e) {
         console.error(e);
+        hideChatTypingIndicator();
         addChatMessage('model', `Erro ao processar: ${e.message}`);
     } finally {
+        hideChatTypingIndicator();
         chatInput.disabled = false;
         chatSendBtn.disabled = false;
         chatSpinner.classList.add('hidden');
