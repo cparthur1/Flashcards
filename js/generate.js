@@ -380,8 +380,22 @@ async function fileToGenerativePart(file) {
         reader.onloadend = () => resolve(reader.result.split(',')[1]);
         reader.readAsDataURL(file);
     });
+    const ext = getFileExtension(file.name);
+    let mime = file.type;
+    if (!mime || mime === 'application/octet-stream') {
+        const mimeMap = {
+            'pdf': 'application/pdf',
+            'png': 'image/png',
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'webp': 'image/webp',
+            'gif': 'image/gif',
+            'txt': 'text/plain'
+        };
+        mime = mimeMap[ext] || mime || 'application/octet-stream';
+    }
     return {
-        inlineData: { data: await base64EncodedDataPromise, mimeType: file.type || 'application/octet-stream' },
+        inlineData: { data: await base64EncodedDataPromise, mimeType: mime },
     };
 }
 
@@ -742,22 +756,6 @@ submitModal21Btn.addEventListener('click', async () => {
     modal21LoadingMsg.classList.remove('hidden');
 
     try {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const generationConfig = {
-            temperature: 1.0,
-            responseMimeType: "application/json",
-            thinkingConfig: { thinkingLevel: "high" }
-        };
-
-        const model = genAI.getGenerativeModel({
-            model: "gemini-flash-latest",
-            generationConfig,
-            tools: deckTools,
-            systemInstruction
-        });
-
-        currentGenModel = model;
-
         const basePrompt = `Com base nos arquivos enviados, o objetivo é processar todo o conteúdo e gerar flashcards técnicos para revisão, incluindo conceitos, definições, moléculas, etapas e estruturas. Gere um arquivo JSON baseado em todo o conteúdo reunido. Nível de detalhe universitário.
 PROIBIDO incluir títulos ou texto fora do JSON.
 O JSON deve ser uma lista ([]) de objetos de questão.
@@ -785,6 +783,16 @@ Gere aproximadamente 60 a 100 flashcards cobrindo todo o material.`;
                     parts.push(pptxText);
                     continue;
                 }
+            } else if (ext === 'docx' || ext === 'doc' || ext === 'txt') {
+                try {
+                    const text = await extractTextFromFile(file);
+                    if (text) {
+                        parts.push(text);
+                        continue;
+                    }
+                } catch (e) {
+                    console.warn("Falha ao extrair texto de " + file.name + ":", e);
+                }
             } else if (file.type === 'application/pdf' && file.size > 5 * 1024 * 1024) {
                 try {
                     const compressed = await compressPDFWithWorker(file);
@@ -801,15 +809,53 @@ Gere aproximadamente 60 a 100 flashcards cobrindo todo o material.`;
         openEditorView('ai');
 
         deckCards = [];
-        renderCardsList(true);
         deckTitleDisplay.value = files[0].name.replace(/\.[^/.]+$/, "");
 
-        const result = await callWithRetry(() => model.generateContentStream(parts));
+        // Show live generation animation and skeleton placeholders
+        showGeneratingAnimation("Gemini está analisando o material e gerando os cartões...");
+
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const genModel = genAI.getGenerativeModel({
+            model: currentEditorModel || "gemini-flash-latest",
+            generationConfig: {
+                temperature: 0.7,
+                responseMimeType: "application/json"
+            }
+        });
+
+        const result = await callWithRetry(() => genModel.generateContentStream(parts));
         let fullText = "";
         let processedIndex = 0;
 
         for await (const chunk of result.stream) {
-            fullText += chunk.text();
+            let chunkText = "";
+            try {
+                chunkText = chunk.text();
+            } catch (e) {
+                if (chunk.candidates?.[0]?.content?.parts) {
+                    for (const part of chunk.candidates[0].content.parts) {
+                        if (part.text && !part.thought) chunkText += part.text;
+                    }
+                }
+            }
+            if (!chunkText && chunk.candidates?.[0]?.content?.parts) {
+                for (const part of chunk.candidates[0].content.parts) {
+                    if (part.text && !part.thought) chunkText += part.text;
+                    else if (part.functionCall) {
+                        if (part.functionCall.name === 'adicionar_card' && part.functionCall.args) {
+                            deckCards.push(part.functionCall.args);
+                            updateGeneratingProgress(deckCards.length);
+                            renderCardsList();
+                        } else if (part.functionCall.name === 'adicionar_varios_cards' && part.functionCall.args?.cards) {
+                            deckCards.push(...part.functionCall.args.cards);
+                            updateGeneratingProgress(deckCards.length);
+                            renderCardsList();
+                        }
+                    }
+                }
+            }
+
+            fullText += chunkText;
             if (processedIndex === 0) {
                 const startIdx = fullText.search(/[\{\[]/);
                 if (startIdx !== -1) processedIndex = startIdx;
@@ -817,15 +863,16 @@ Gere aproximadamente 60 a 100 flashcards cobrindo todo o material.`;
             }
 
             let possibleObjects = fullText.substring(processedIndex);
-            const regex = /\{[^{}]*\}/g;
+            const regex = /\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g;
             let match;
 
             while ((match = regex.exec(possibleObjects)) !== null) {
                 const objStr = match[0];
                 try {
                     const card = JSON.parse(objStr);
-                    if (card.type && card.description && card.answer) {
+                    if (card.type && card.description && (card.answer || card.options)) {
                         deckCards.push(card);
+                        updateGeneratingProgress(deckCards.length);
                         renderCardsList();
                     }
                     processedIndex += match.index + objStr.length;
@@ -837,23 +884,77 @@ Gere aproximadamente 60 a 100 flashcards cobrindo todo o material.`;
             }
         }
 
-        if (deckCards.length === 0) {
+        if (deckCards.length === 0 && fullText.trim()) {
             try {
-                const arrayMatch = fullText.match(/\[\s*\{[\s\S]*\}\s*\]/);
-                const textResult = arrayMatch ? arrayMatch[0] : fullText.substring(fullText.search(/[\{\[]/));
-                const cleaned = textResult.replace(/^```json\n/g, '').replace(/^```\n/g, '').replace(/```$/g, '').trim();
-                deckCards = JSON.parse(cleaned);
-                renderCardsList(true);
+                let textResult = fullText.trim();
+                textResult = textResult.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+                const arrayMatch = textResult.match(/\[\s*\{[\s\S]*\}\s*\]/);
+                if (arrayMatch) {
+                    textResult = arrayMatch[0];
+                } else {
+                    const firstBracket = textResult.indexOf('[');
+                    if (firstBracket !== -1) {
+                        textResult = textResult.substring(firstBracket);
+                    }
+                }
+                let parsed = null;
+                try {
+                    parsed = JSON.parse(textResult);
+                } catch (pe) {
+                    if (textResult.startsWith('[')) {
+                        const lastBrace = textResult.lastIndexOf('}');
+                        if (lastBrace !== -1) {
+                            try {
+                                parsed = JSON.parse(textResult.substring(0, lastBrace + 1) + ']');
+                            } catch (pe2) {}
+                        }
+                    }
+                    if (!parsed) {
+                        const allObjects = textResult.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g);
+                        if (allObjects) {
+                            const extracted = [];
+                            for (const str of allObjects) {
+                                try {
+                                    const c = JSON.parse(str);
+                                    if (c.type && c.description) extracted.push(c);
+                                } catch (pe3) {}
+                            }
+                            if (extracted.length > 0) parsed = extracted;
+                        }
+                    }
+                }
+
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    deckCards = parsed;
+                    renderCardsList(true);
+                } else if (parsed && typeof parsed === 'object') {
+                    deckCards = [parsed];
+                    renderCardsList(true);
+                }
             } catch (e) {
                 console.error("Erro ao fazer parse final do JSON:", e);
             }
         }
 
-        // Initialize chat session for agentic edits
-        geminiChatSession = model.startChat({ history: [] });
+        if (deckCards.length > 0) {
+            finishGeneratingAnimation(true, deckCards.length);
+        } else {
+            finishGeneratingAnimation(false, 0);
+            renderCardsList(true);
+        }
+
+        // Initialize chat session for subsequent agentic edits in the sidebar
+        const chatModel = genAI.getGenerativeModel({
+            model: currentEditorModel || "gemini-flash-latest",
+            systemInstruction,
+            tools: deckTools
+        });
+        currentGenModel = chatModel;
+        geminiChatSession = chatModel.startChat({ history: [] });
 
     } catch (err) {
         console.error("Erro na geração 2.1:", err);
+        finishGeneratingAnimation(false, 0);
         showGeminiDownModal(err.message, 'files');
     } finally {
         submitModal21Btn.disabled = false;
@@ -938,6 +1039,7 @@ Ao terminar, chame 'adicionar_varios_cards' para enviar o baralho finalizado.
 JSON:
 ${JSON.stringify(localCards, null, 2)}`;
 
+        showGeneratingAnimation("Aprimorando flashcards e preenchendo detalhes com IA...");
         const chat = model.startChat({ history: [] });
         deckCards = []; // Will be populated via function call
         renderCardsList(true);
@@ -963,10 +1065,12 @@ ${JSON.stringify(localCards, null, 2)}`;
             response = result.response;
         }
 
+        finishGeneratingAnimation(true, deckCards.length);
         geminiChatSession = model.startChat({ history: [] });
 
     } catch (err) {
         console.error("Erro na aprimoração 2.2:", err);
+        finishGeneratingAnimation(false, 0);
         showGeminiDownModal(err.message, 'txt', localCards);
     } finally {
         submitModal22Btn.disabled = false;
@@ -1249,15 +1353,190 @@ creatorSubmitCardBtn.addEventListener('click', () => {
 // Initialize default creator MCQ options
 renderCreatorMcOptions(["", "", "", ""], 0);
 
+// --- AI FLASHCARD GENERATION ANIMATION & PROGRESS ---
+let isGeneratingCards = false;
+let generationStatusPhrases = [
+    "Processando conteúdo e identificando tópicos principais...",
+    "Estruturando conceitos fundamentais e definições...",
+    "Formulando perguntas abertas e respostas técnicas...",
+    "Criando alternativas plausíveis e distratores...",
+    "Organizando cartões e refinando o baralho..."
+];
+let generationStatusInterval = null;
+
+function showGeneratingAnimation(initialMessage = "Processando arquivos e gerando flashcards...") {
+    isGeneratingCards = true;
+    const bannerContainer = document.getElementById('generation-banner-container');
+    const statusText = document.getElementById('generation-status-text');
+    const counterNum = document.getElementById('generation-counter-num');
+    const badgeStatus = document.getElementById('generation-badge-status');
+    const titleText = document.getElementById('generation-title-text');
+    const progressBar = document.getElementById('generation-progress-bar-container');
+
+    if (bannerContainer) {
+        bannerContainer.classList.remove('hidden', 'opacity-0', 'scale-95');
+    }
+    if (statusText) statusText.textContent = initialMessage;
+    if (counterNum) counterNum.textContent = '0';
+    if (badgeStatus) {
+        badgeStatus.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300";
+        badgeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-purple-600 dark:bg-purple-400 animate-ping"></span> AO VIVO';
+    }
+    if (titleText) titleText.textContent = "O Gemini está gerando seus flashcards";
+    if (progressBar) progressBar.classList.remove('hidden');
+
+    deckSizeBadge.classList.add('badge-generating-pulse');
+
+    // Cycle status phrases periodically while waiting for cards
+    let phraseIdx = 0;
+    if (generationStatusInterval) clearInterval(generationStatusInterval);
+    generationStatusInterval = setInterval(() => {
+        if (!isGeneratingCards) {
+            clearInterval(generationStatusInterval);
+            return;
+        }
+        if (deckCards.length === 0 && statusText) {
+            phraseIdx = (phraseIdx + 1) % generationStatusPhrases.length;
+            statusText.textContent = generationStatusPhrases[phraseIdx];
+        }
+    }, 3200);
+
+    renderCardsList(true);
+}
+
+function updateGeneratingProgress(count) {
+    const counterNum = document.getElementById('generation-counter-num');
+    const statusText = document.getElementById('generation-status-text');
+    if (counterNum) counterNum.textContent = count;
+    if (statusText) {
+        if (count < 10) {
+            statusText.textContent = `Identificando conceitos-chave... (${count} cards formulados)`;
+        } else if (count < 25) {
+            statusText.textContent = `Aprofundando em definições técnicas... (${count} cards formulados)`;
+        } else if (count < 50) {
+            statusText.textContent = `Construindo perguntas e alternativas... (${count} cards formulados)`;
+        } else {
+            statusText.textContent = `Finalizando os últimos cards do material... (${count} cards formulados)`;
+        }
+    }
+}
+
+function finishGeneratingAnimation(success = true, count = 0) {
+    isGeneratingCards = false;
+    if (generationStatusInterval) {
+        clearInterval(generationStatusInterval);
+        generationStatusInterval = null;
+    }
+    deckSizeBadge.classList.remove('badge-generating-pulse');
+
+    const bannerContainer = document.getElementById('generation-banner-container');
+    const titleText = document.getElementById('generation-title-text');
+    const statusText = document.getElementById('generation-status-text');
+    const badgeStatus = document.getElementById('generation-badge-status');
+    const counterBadge = document.getElementById('generation-counter-badge');
+    const progressBar = document.getElementById('generation-progress-bar-container');
+
+    if (progressBar) progressBar.classList.add('hidden');
+
+    if (success && count > 0) {
+        if (titleText) titleText.textContent = "Flashcards gerados com sucesso!";
+        if (statusText) statusText.textContent = `${count} cards prontos. Você já pode estudar ou pedir edições pelo Assistente de IA.`;
+        if (badgeStatus) {
+            badgeStatus.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700 dark:bg-green-900/60 dark:text-green-300";
+            badgeStatus.innerHTML = '✓ CONCLUÍDO';
+        }
+        if (counterBadge) {
+            counterBadge.className = "text-xs font-bold text-green-700 dark:text-green-300 bg-green-100/80 dark:bg-green-900/50 px-3 py-1 rounded-full border border-green-200 dark:border-green-800/80 shadow-xs";
+            counterBadge.textContent = `${count} cards`;
+        }
+
+        setTimeout(() => {
+            if (bannerContainer && !isGeneratingCards) {
+                bannerContainer.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => {
+                    bannerContainer.classList.add('hidden');
+                    bannerContainer.classList.remove('opacity-0', 'scale-95');
+                }, 400);
+            }
+        }, 4000);
+    } else {
+        if (titleText) titleText.textContent = "Geração não concluída";
+        if (statusText) statusText.textContent = "Não foi possível extrair cards automaticamente. Verifique os arquivos enviados ou tente novamente.";
+        if (badgeStatus) {
+            badgeStatus.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-900/60 dark:text-red-300";
+            badgeStatus.innerHTML = '⚠ ATENÇÃO';
+        }
+    }
+}
+
 // --- RENDER CARDS LIST IN EDITOR VIEW ---
 function renderCardsList(fullReRender = false) {
     deckSizeBadge.textContent = deckCards.length;
+
+    if (deckCards.length === 0) {
+        if (isGeneratingCards) {
+            cardsList.innerHTML = `
+                <div id="cards-skeleton-loader" class="flex flex-col gap-3">
+                    <div class="bg-white dark:bg-gray-750 border border-gray-200/80 dark:border-gray-700/80 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col gap-3 animate-pulse">
+                        <div class="flex justify-between items-center">
+                            <div class="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                            <div class="h-4 w-16 bg-purple-100 dark:bg-purple-900/40 rounded"></div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded-md w-5/6"></div>
+                            <div class="h-4 bg-gray-100 dark:bg-gray-800 rounded-md w-3/5"></div>
+                        </div>
+                        <div class="h-4 bg-green-100 dark:bg-green-950/40 rounded-md w-2/5 mt-1"></div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-750 border border-gray-200/80 dark:border-gray-700/80 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col gap-3 animate-pulse opacity-75">
+                        <div class="flex justify-between items-center">
+                            <div class="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                            <div class="h-4 w-24 bg-blue-100 dark:bg-blue-900/40 rounded"></div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded-md w-11/12"></div>
+                            <div class="h-4 bg-gray-100 dark:bg-gray-800 rounded-md w-2/3"></div>
+                        </div>
+                        <div class="h-4 bg-green-100 dark:bg-green-950/40 rounded-md w-1/3 mt-1"></div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-750 border border-gray-200/80 dark:border-gray-700/80 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col gap-3 animate-pulse opacity-50">
+                        <div class="flex justify-between items-center">
+                            <div class="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                            <div class="h-4 w-20 bg-indigo-100 dark:bg-indigo-900/40 rounded"></div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded-md w-4/5"></div>
+                            <div class="h-4 bg-gray-100 dark:bg-gray-800 rounded-md w-1/2"></div>
+                        </div>
+                        <div class="h-4 bg-green-100 dark:bg-green-950/40 rounded-md w-1/4 mt-1"></div>
+                    </div>
+                </div>
+            `;
+            return;
+        } else {
+            cardsList.innerHTML = `
+                <div class="text-center py-12 text-gray-400 dark:text-gray-500">
+                    <svg class="w-12 h-12 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    <p class="font-medium text-sm">Nenhum cartão no baralho ainda.</p>
+                    <p class="text-xs mt-1">Crie um novo cartão ao lado ou peça ao Assistente de IA.</p>
+                </div>
+            `;
+            return;
+        }
+    }
+
+    // Clean up skeleton or empty state if present
+    const skeleton = document.getElementById('cards-skeleton-loader');
+    if (skeleton) skeleton.remove();
+    if (cardsList.querySelector('.text-center')) {
+        cardsList.innerHTML = '';
+    }
 
     if (fullReRender) {
         cardsList.innerHTML = '';
     }
 
-    const currentCount = cardsList.children.length;
+    const currentCount = cardsList.querySelectorAll('.flashcard-item').length;
     for (let i = currentCount; i < deckCards.length; i++) {
         const cardEl = createCardElement(deckCards[i], i);
         cardsList.appendChild(cardEl);
@@ -1266,7 +1545,8 @@ function renderCardsList(fullReRender = false) {
 
 function createCardElement(card, index) {
     const cardEl = document.createElement('div');
-    cardEl.className = "bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative group shadow-sm flex flex-col gap-2 transition";
+    cardEl.className = "bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative group shadow-sm flex flex-col gap-2 transition flashcard-item card-enter-anim";
+    cardEl.dataset.index = index;
 
     const typeBadge = document.createElement('span');
     typeBadge.className = "absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded";

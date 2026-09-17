@@ -80,6 +80,9 @@
     };
 
     console.warn = (...args) => {
+        if (typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
+            return;
+        }
         originalWarn.apply(console, args);
         addLog(args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : a).join(' '), 'warn');
     };
