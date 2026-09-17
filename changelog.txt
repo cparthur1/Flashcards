@@ -65,3 +65,15 @@ Date: 2026-09-17
   - Review Focus / Struggling Cards: Identifies problematic cards with one-click "+ Caderno" addition.
   - Data Export & Reset: Complete JSON export and stats wipe capabilities.
 
+3. MINIMALISTIC SKEUOMORPHIC DESIGN & ANIMATIONS ('pages/generate.html', 'js/generate.js', 'css/style.css')
+- Design Language & System Guidelines:
+  - Established and documented guidelines permanently at the top of 'css/style.css' for future designers.
+  - Theme: Minimalistic, Blue & Purple themed, with tactile skeuomorphic depth.
+  - Light & Shadow Gradients: Replaced multi-hue/rainbow gradients with monochromatic vertical tonal variations modeling natural directional light (highlight on top, shadow on bottom).
+  - Tactile Details: Skeuomorphic top inner highlights (inset 0 1px 0) on badges, buttons, and cards; recessed groove tracks (inset 0 1px 2px) on progress bars.
+- Animation Refactoring on 'pages/generate.html':
+  - Generation banner replaced loud 3-color horizontal gradients with clean vertical light-to-shadow card styling.
+  - Replaced loud 'animate-ping' effects with calm, breathing pulse animations on live indicators and AI chat bubbles.
+  - Progress bar changed from rainbow gradient to a recessed skeuomorphic groove with a smooth monochromatic gliding runner.
+  - Shimmer effect refactored into a gentle, specular light sheen.
+  - Replaced aggressive background shifts with ambient, calming light transitions.
