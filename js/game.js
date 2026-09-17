@@ -34,6 +34,18 @@ const goToEditorBtn = document.getElementById('go-to-editor-btn');
 const questionText = document.getElementById('question-text');
 const questionSourceTag = document.getElementById('question-source-tag');
 const questionBodyText = document.getElementById('question-body-text');
+const questionFeedbackText = document.getElementById('question-feedback-text');
+
+function ensureQuestionStructure() {
+    if (!questionText) return;
+    if (!document.getElementById('question-body-text')) {
+        questionText.innerHTML = `
+            <span id="question-source-tag" class="hidden text-xs uppercase tracking-wider text-blue-500 font-bold mb-1.5 block select-none"></span>
+            <span id="question-body-text"></span>
+            <span id="question-feedback-text" class="hidden mt-2 block"></span>
+        `;
+    }
+}
 const textHighlightPopup = document.getElementById('text-highlight-popup');
 const hlTriggerBtn = document.getElementById('hl-trigger-btn');
 const hlPalette = document.getElementById('hl-palette');
@@ -542,7 +554,10 @@ function loadQuestion() {
             .filter(item => item.card.dueStep === undefined || item.card.dueStep <= currentStep);
 
         if (availableCards.length > 0) {
-            const randItem = availableCards[Math.floor(Math.random() * availableCards.length)];
+            // Avoid immediately repeating the same card if other cards are available
+            const otherCards = availableCards.filter(item => item.idx !== currentQuestionIndexInPool);
+            const poolToPick = (otherCards.length > 0) ? otherCards : availableCards;
+            const randItem = poolToPick[Math.floor(Math.random() * poolToPick.length)];
             currentQuestionIndexInPool = randItem.idx;
         } else {
             // 3. Fallback: all remaining cards are future Anki cards, pick the closest one
@@ -558,22 +573,32 @@ function loadQuestion() {
     
     hideHighlightPopup();
 
+    ensureQuestionStructure();
+    const sourceTagElem = document.getElementById('question-source-tag');
+    const bodyElem = document.getElementById('question-body-text');
+    const feedbackElem = document.getElementById('question-feedback-text');
+
+    if (feedbackElem) {
+        feedbackElem.innerHTML = '';
+        feedbackElem.classList.add('hidden');
+    }
+
     if (activeMode === 'notebook' && currentQuestion.sourceDeck) {
-        if (questionSourceTag) {
-            questionSourceTag.textContent = currentQuestion.sourceDeck;
-            questionSourceTag.classList.remove('hidden');
+        if (sourceTagElem) {
+            sourceTagElem.textContent = currentQuestion.sourceDeck;
+            sourceTagElem.classList.remove('hidden');
         }
-        if (questionBodyText) {
-            questionBodyText.innerHTML = currentQuestion.description || '';
+        if (bodyElem) {
+            bodyElem.innerHTML = currentQuestion.description || '';
         } else {
             questionText.innerHTML = `<span class="text-xs uppercase tracking-wider text-blue-500 font-bold mb-1.5 block">${currentQuestion.sourceDeck}</span>${currentQuestion.description || ''}`;
         }
     } else {
-        if (questionSourceTag) {
-            questionSourceTag.classList.add('hidden');
+        if (sourceTagElem) {
+            sourceTagElem.classList.add('hidden');
         }
-        if (questionBodyText) {
-            questionBodyText.innerHTML = currentQuestion.description || '';
+        if (bodyElem) {
+            bodyElem.innerHTML = currentQuestion.description || '';
         } else {
             questionText.innerHTML = currentQuestion.description || '';
         }
@@ -765,7 +790,9 @@ function resetUI() {
     });
     answerInput.placeholder = 'Digite sua resposta aqui...';
 
-    delete currentQuestion.isBeingCorrected;
+    if (currentQuestion) {
+        delete currentQuestion.isBeingCorrected;
+    }
     isAnkiFlipped = false;
     if (ankiAnswerContainer) ankiAnswerContainer.classList.add('hidden');
     if (ankiControlsArea) ankiControlsArea.classList.add('hidden');
@@ -777,6 +804,12 @@ function resetUI() {
     correctionOptions.classList.remove('flex');
     questionCard.classList.remove('glow-correct', 'glow-incorrect', 'card-shake');
     questionText.classList.remove('text-red-500', 'text-green-500');
+
+    const feedbackElem = document.getElementById('question-feedback-text');
+    if (feedbackElem) {
+        feedbackElem.innerHTML = '';
+        feedbackElem.classList.add('hidden');
+    }
 
     const dynamicMcBtns = mcAnswerArea.querySelectorAll('.mc-option-btn');
     dynamicMcBtns.forEach(btn => {
@@ -897,22 +930,46 @@ function showFeedback(isCorrect, element) {
 }
 
 function updateFeedbackText() {
-    if (currentQuestion.isBeingCorrected) {
+    ensureQuestionStructure();
+    const bodyElem = document.getElementById('question-body-text');
+    const feedbackElem = document.getElementById('question-feedback-text');
+
+    if (currentQuestion && currentQuestion.isBeingCorrected) {
+        if (bodyElem) {
+            bodyElem.innerHTML = currentQuestion.description || '';
+        }
+        let feedbackHtml = '';
         if (currentQuestion.type === 'open_double') {
             const label1 = currentQuestion.placeholder1 || 'Resposta 1';
             const label2 = currentQuestion.placeholder2 || 'Resposta 2';
-            questionText.innerHTML = `
-                ${currentQuestion.description}<br>
-                <span class="text-green-500 font-semibold mt-2 block">${label1}: ${currentQuestion.answer.replace('/', ' ou ')}</span>
-                <span class="text-green-500 font-semibold mt-2 block">${label2}: ${currentQuestion.answer2.replace('/', ' ou ')}</span>
+            const a1 = (currentQuestion.answer || '').replace('/', ' ou ');
+            const a2 = (currentQuestion.answer2 || '').replace('/', ' ou ');
+            feedbackHtml = `
+                <span class="text-green-500 font-semibold mt-2 block">${label1}: ${a1}</span>
+                <span class="text-green-500 font-semibold mt-2 block">${label2}: ${a2}</span>
             `;
         } else if (currentQuestion.type === 'anki') {
-            questionText.innerHTML = `${currentQuestion.description}<br><span class="text-indigo-500 font-semibold mt-2 block">Resposta: ${currentQuestion.answer || ''}</span>`;
+            feedbackHtml = `<span class="text-indigo-500 font-semibold mt-2 block">Resposta: ${currentQuestion.answer || ''}</span>`;
         } else {
             const a1 = (currentQuestion.answer || '').replace('/', ' ou ');
-            questionText.innerHTML = `${currentQuestion.description}<br><span class="text-green-500 font-semibold mt-2 block">Resposta: ${a1}</span>`;
+            feedbackHtml = `<span class="text-green-500 font-semibold mt-2 block">Resposta: ${a1}</span>`;
         }
-    } else questionText.textContent = currentQuestion.description;
+
+        if (feedbackElem) {
+            feedbackElem.innerHTML = feedbackHtml;
+            feedbackElem.classList.remove('hidden');
+        } else {
+            questionText.innerHTML = `${currentQuestion.description || ''}<br>${feedbackHtml}`;
+        }
+    } else {
+        if (bodyElem && currentQuestion) {
+            bodyElem.innerHTML = currentQuestion.description || '';
+        }
+        if (feedbackElem) {
+            feedbackElem.innerHTML = '';
+            feedbackElem.classList.add('hidden');
+        }
+    }
 }
 
 function saveGameState() {
@@ -1355,7 +1412,7 @@ function applyHighlight(color) {
     if (!activeHighlightRange || !activeHighlightField) return;
 
     const container = activeHighlightField === 'description' 
-        ? (questionBodyText || questionText) 
+        ? (document.getElementById('question-body-text') || questionText) 
         : ankiAnswerText;
     if (!container) return;
 
@@ -1401,7 +1458,7 @@ function removeHighlight() {
     if (!activeHighlightRange || !activeHighlightField) return;
 
     const container = activeHighlightField === 'description' 
-        ? (questionBodyText || questionText) 
+        ? (document.getElementById('question-body-text') || questionText) 
         : ankiAnswerText;
     if (!container) return;
 
@@ -1444,7 +1501,8 @@ function persistHighlightedContent(targetField) {
     if (!currentQuestion) return;
 
     if (targetField === 'description') {
-        const descHtml = questionBodyText ? questionBodyText.innerHTML : questionText.innerHTML;
+        const bodyElem = document.getElementById('question-body-text');
+        const descHtml = bodyElem ? bodyElem.innerHTML : questionText.innerHTML;
         currentQuestion.description = descHtml;
     } else if (targetField === 'answer' && ankiAnswerText) {
         currentQuestion.answer = ankiAnswerText.innerHTML;
@@ -1518,7 +1576,7 @@ function handleTextSelection(e) {
         const range = sel.getRangeAt(0);
         const common = range.commonAncestorContainer;
 
-        const questionBody = questionBodyText || questionText;
+        const questionBody = document.getElementById('question-body-text') || questionText;
         const ankiAnswer = ankiAnswerText;
 
         let field = null;
