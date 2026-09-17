@@ -91,3 +91,38 @@ Date: 2026-09-17
   - Clicking the button removes/unwraps the mark, restoring clean text, and syncs the changes to storage.
 - PWA & Offline Support:
   - Added 'highlight.svg' to cache in 'sw.js' and incremented cache version to 'flashcards-v2.7'.
+
+5. REFINED SESSION TIMELINE & EXPANDED STATS METRICS ('pages/stats.html', 'js/stats.js')
+- Linha do Tempo da Sessão (Reversed & Capped at 10):
+  - Configured timeline flow to display strictly the last 10 answers answered in the session.
+  - Ordered with the most recent card on the far left with a pulsing active ring and tooltip indicators.
+  - Header dynamically updates with counter label ('← Mais recentes (X de Y respondidos)').
+- Previsão de Conclusão & Ritmo Cognitivo:
+  - Calculates estimated remaining study time based on current session pace and cards left in the pool.
+  - Tracks fastest card answer time (⚡ recall imediato) and slowest card answer time (⏳ reflexão aprofundada).
+- Índice de Domínio do Baralho (Mastery Score):
+  - Computes an aggregate mastery score (0-100 pts) based on deck progress (40%), session accuracy (45%), and streak bonus (15%).
+  - Dynamically awards tiered badges: Mestre do Baralho (🏆 85+), Domínio Avançado (🥇 65+), Em Construção (🥈 40+), and Iniciando (🥉 <40).
+- Destaques de Estudo (Marca-texto Analytics):
+  - Tracks the number of cards in the deck containing highlighted keywords and total highlights applied.
+  - Displays a breakdown by pastel color: Amarelo, Verde, Azul e Roxo.
+- Comparativo de Rendimento Sessão a Sessão:
+  - Pedagogical diagnostic compares current session accuracy with the previous session (+X% vs sessão anterior) to detect growth or fatigue.
+- Recorde de Sequência Histórica:
+  - Displayed in the All-Time KPIs grid on the History tab ('Recorde de Sequência: 🔥 X').
+
+6. GEMINI FLASH-LITE AI CATEGORIZATION FOR DECKS & TOPICS ('pages/stats.html', 'js/stats.js', 'js/stats-ai.js')
+- Semantic Categorization via Function Calling:
+  - Uses Gemini Flash-Lite with structured tool calling ('salvar_categorizacao_estudos') to classify decks and cards simultaneously in a single API roundtrip.
+  - Prompt instructed to produce the minimum number of categories possible, grouping similar concepts into broad, unified subjects and topics.
+  - Passes previously existing categories ('flashcards_ai_categories') to maintain grouping consistency and avoid fragmentation across sessions.
+- Desempenho por Assuntos no Baralho Atual:
+  - Maps each card in the current deck to a specific topic (e.g., Valvopatias, Eletrocardiograma, etc.).
+  - Displays card count, response accuracy %, progress bars, and tiered retention badges (🏆 Melhor Assunto, 🎯 Alta Retenção, 📈 Bom Progresso, ⚠️ Atenção/Revisar).
+- Desempenho por Matérias Globais:
+  - Groups all studied decks into overarching disciplines/subjects (e.g., Medicina, Semiologia, etc.).
+  - Displays linked deck names, historical accuracy %, cards reviewed, total sessions, and ranking badges (🏆 Melhor Matéria, ⚠️ Foco Recomendado).
+  - Also mirrored in the Historical Sessions tab ('tab-content-history') for all-time subject review.
+- Seamless AI Activation & Inactive State:
+  - When AI is not active or no API key is set, no API calls are made; displays a sleek skeuomorphic placeholder card with the button 'Gerar estatísticas de IA' and API key input.
+  - Includes in-place configuration modal to update or clear the Gemini API Key, with offline and local caching in 'flashcards_ai_categories'.

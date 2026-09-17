@@ -13,6 +13,13 @@
     <link rel="apple-touch-icon" href="../assets/img/favicon.png">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script type="importmap">
+        {
+            "imports": {
+                "@google/generative-ai": "https://esm.run/@google/generative-ai"
+            }
+        }
+    </script>
     <link rel="stylesheet" href="../css/style.css">
     <script src="../js/console.js"></script>
     <style>
@@ -175,6 +182,94 @@
                 </div>
             </div>
 
+            <!-- COGNITIVE PACE, DECK MASTERY & HIGHLIGHTS ROW -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+                
+                <!-- Sub-Card 1: Ritmo Cognitivo & Previsão -->
+                <div class="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Previsão & Ritmo</span>
+                            <span id="pace-estimate-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                                Calculando...
+                            </span>
+                        </div>
+                        <div class="mt-1">
+                            <span id="pace-estimate-time" class="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white">--</span>
+                            <p id="pace-estimate-sub" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">para concluir os cards restantes</p>
+                        </div>
+                    </div>
+                    <div class="pt-3 mt-3 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                        <div title="Card respondido mais rápido nesta sessão">
+                            ⚡ Mais rápido: <span id="pace-fastest-card" class="font-bold text-emerald-600 dark:text-emerald-400">--</span>
+                        </div>
+                        <div title="Card mais reflexivo nesta sessão">
+                            ⏳ Mais lento: <span id="pace-slowest-card" class="font-bold text-amber-500">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub-Card 2: Nível de Maestria do Baralho -->
+                <div class="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Domínio do Baralho</span>
+                            <span id="mastery-level-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300">
+                                Iniciando
+                            </span>
+                        </div>
+                        <div class="flex items-baseline gap-2 mt-1">
+                            <span id="mastery-score" class="text-xl sm:text-2xl font-extrabold text-purple-600 dark:text-purple-400">0 pts</span>
+                            <span class="text-xs text-gray-400">de 100</span>
+                        </div>
+                        <div class="w-full bg-gray-100 dark:bg-gray-700 h-2 rounded-full mt-2.5 overflow-hidden">
+                            <div id="mastery-progress-bar" class="bg-gradient-to-r from-blue-500 to-purple-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <p id="mastery-description" class="text-xs text-gray-400 dark:text-gray-500 mt-2.5 pt-2 border-t border-gray-100 dark:border-gray-700/60 truncate">
+                        Avançando na memorização ativa
+                    </p>
+                </div>
+
+                <!-- Sub-Card 3: Destaques de Estudo (Marca-texto) -->
+                <div class="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Grifos & Destaques</span>
+                            <span id="highlights-total-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+                                0 cards
+                            </span>
+                        </div>
+                        <div class="mt-1">
+                            <span id="highlights-summary-text" class="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white">0</span>
+                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 ml-1">trechos marcados</span>
+                        </div>
+                    </div>
+                    <div id="highlights-swatches-container" class="pt-3 mt-3 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-1.5" title="Amarelo Pastel">
+                            <span class="w-3 h-3 rounded-full bg-[#fef08a] border border-yellow-400 inline-block shadow-xs"></span>
+                            <span id="hl-count-yellow" class="font-bold text-gray-700 dark:text-gray-300">0</span>
+                        </div>
+                        <div class="flex items-center gap-1.5" title="Verde Pastel">
+                            <span class="w-3 h-3 rounded-full bg-[#bbf7d0] border border-green-400 inline-block shadow-xs"></span>
+                            <span id="hl-count-green" class="font-bold text-gray-700 dark:text-gray-300">0</span>
+                        </div>
+                        <div class="flex items-center gap-1.5" title="Azul Pastel">
+                            <span class="w-3 h-3 rounded-full bg-[#bfdbfe] border border-blue-400 inline-block shadow-xs"></span>
+                            <span id="hl-count-blue" class="font-bold text-gray-700 dark:text-gray-300">0</span>
+                        </div>
+                        <div class="flex items-center gap-1.5" title="Roxo Pastel">
+                            <span class="w-3 h-3 rounded-full bg-[#e9d5ff] border border-purple-400 inline-block shadow-xs"></span>
+                            <span id="hl-count-purple" class="font-bold text-gray-700 dark:text-gray-300">0</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SEÇÃO DE INTELIGÊNCIA ARTIFICIAL (GEMINI FLASH-LITE) -->
+            <section id="ai-stats-section" class="w-full transition-all duration-300"></section>
+
             <!-- VISUAL PANELS: ANKI DISTRIBUTION & BY TYPE -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 
@@ -241,9 +336,11 @@
                 <div class="flex items-center justify-between mb-3">
                     <div>
                         <h2 class="font-bold text-base text-gray-900 dark:text-white">Linha do Tempo da Sessão</h2>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Sequência cronológica de acertos e erros nesta rodada</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Últimos 10 cards respondidos nesta rodada</p>
                     </div>
-                    <span class="text-xs text-gray-400">Mais recentes à direita &rarr;</span>
+                    <span id="timeline-counter-badge" class="text-xs text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1">
+                        <span>&larr; Mais recentes (últimos 10)</span>
+                    </span>
                 </div>
 
                 <div id="timeline-strip" class="flex gap-2 overflow-x-auto py-2 px-1 custom-scrollbar min-h-[50px] items-center">
@@ -270,7 +367,7 @@
         <div id="tab-content-history" class="space-y-6 hidden">
 
             <!-- ALL-TIME AGGREGATE SUMMARY -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
                 <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
                     <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Total de Sessões</span>
                     <span id="alltime-sessions" class="text-2xl font-extrabold text-gray-900 dark:text-white">0</span>
@@ -287,7 +384,14 @@
                     <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Precisão Histórica</span>
                     <span id="alltime-accuracy" class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">0%</span>
                 </div>
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center col-span-2 sm:col-span-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Recorde de Sequência</span>
+                    <span id="alltime-best-streak" class="text-2xl font-extrabold text-amber-500">🔥 0</span>
+                </div>
             </div>
+
+            <!-- DESEMPENHO POR MATÉRIA (HISTÓRICO IA) -->
+            <section id="ai-history-subjects-section" class="w-full transition-all duration-300"></section>
 
             <!-- ACCURACY OVER TIME CHART -->
             <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
@@ -358,6 +462,49 @@
 
     <!-- NOTIFICATION PILL CONTAINER -->
     <div id="stats-notification-container"></div>
+
+    <!-- AI CONFIG MODAL -->
+    <div id="ai-config-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-gray-200 dark:border-gray-700 animate-in fade-in zoom-in-95 duration-200">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="text-base">✨</span>
+                    <h3 class="font-bold text-base text-gray-900 dark:text-white">Configurar Gemini API Key</h3>
+                </div>
+                <button id="close-ai-modal-btn" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-xs text-gray-600 dark:text-gray-300">
+                    A chave de API do Gemini Flash-Lite é usada localmente no seu navegador para agrupar baralhos em matérias e cartões em tópicos com semântica avançada.
+                </p>
+                <div>
+                    <label class="block text-xs font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Sua Chave de API</label>
+                    <input type="password" id="modal-api-key-input"
+                        class="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 transition text-gray-900 dark:text-white"
+                        placeholder="AIzaSy...">
+                    <p class="text-[11px] text-gray-400 mt-1.5">Sua chave é armazenada com segurança na sessão do navegador.</p>
+                </div>
+                <div class="bg-purple-50 dark:bg-purple-950/30 p-3 rounded-xl border border-purple-100 dark:border-purple-900/50 flex items-center justify-between text-xs text-purple-700 dark:text-purple-300">
+                    <span>Não tem uma chave ainda?</span>
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="font-bold underline hover:text-purple-800 dark:hover:text-purple-200">
+                        Obter no Google AI Studio &rarr;
+                    </a>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 dark:bg-gray-750 border-t border-gray-200 dark:border-gray-700 flex gap-2.5 justify-end">
+                <button id="modal-disable-ai-btn" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                    Desativar IA
+                </button>
+                <button id="modal-save-api-key-btn" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 transition shadow-sm">
+                    Salvar & Analisar
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script src="../js/stats.js" type="module"></script>
 </body>
