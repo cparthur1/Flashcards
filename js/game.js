@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { normalizeString, calculateSimilarity, shuffleArray, callWithRetry, checkAndResetModelFallback, compressImageFile, ROUTES } from './utils.js';
+import { normalizeString, calculateSimilarity, shuffleArray, callWithRetry, checkAndResetModelFallback, ROUTES } from './utils.js';
 import { initTransfer } from './transfer.js';
 import { initStatsSession, recordStatsAnswer, archiveCurrentSession } from './stats-tracker.js';
 
@@ -68,7 +68,6 @@ const editAnswer2Input = document.getElementById('edit-answer-2-input');
 const editImagePreviewContainer = document.getElementById('edit-image-preview-container');
 const editImagePreview = document.getElementById('edit-image-preview');
 const editRemoveImageBtn = document.getElementById('edit-remove-image-btn');
-const editImageFileInput = document.getElementById('edit-image-file-input');
 const editImageUrlInput = document.getElementById('edit-image-url-input');
 const closeModalBtn = document.getElementById('close-modal-btn');
 const cancelEditBtn = document.getElementById('cancel-edit-btn');
@@ -113,7 +112,7 @@ const editAnsImageGroup = document.getElementById('edit-ans-image-group');
 const editAnsImagePreviewContainer = document.getElementById('edit-ans-image-preview-container');
 const editAnsImagePreview = document.getElementById('edit-ans-image-preview');
 const editRemoveAnsImageBtn = document.getElementById('edit-remove-ans-image-btn');
-const editAnsImageFileInput = document.getElementById('edit-ans-image-file-input');
+const editAnsImageUrlInput = document.getElementById('edit-ans-image-url-input');
 
 const submitBtn = document.getElementById('submit-btn');
 const nextQuestionBtn = document.getElementById('next-question-btn');
@@ -973,14 +972,18 @@ function updateFeedbackText() {
 }
 
 function saveGameState() {
-    if (activeMode === 'notebook') {
-        localStorage.setItem('flashcardsNotebook', JSON.stringify({
-            questionsPool, allQuestions, score, deckTitle: "Caderno"
-        }));
-    } else {
-        localStorage.setItem('flashcardsSave', JSON.stringify({
-            questionsPool, allQuestions, score, deckTitle: deckTitle.textContent
-        }));
+    try {
+        if (activeMode === 'notebook') {
+            localStorage.setItem('flashcardsNotebook', JSON.stringify({
+                questionsPool, allQuestions, score, deckTitle: "Caderno"
+            }));
+        } else {
+            localStorage.setItem('flashcardsSave', JSON.stringify({
+                questionsPool, allQuestions, score, deckTitle: deckTitle.textContent
+            }));
+        }
+    } catch (e) {
+        console.error("Erro ao salvar estado do jogo no localStorage:", e);
     }
 }
 
@@ -1931,57 +1934,34 @@ function updateEditAnsImagePreviewUI(imgSrc) {
     }
 }
 
-if (editImageFileInput) {
-    editImageFileInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            try {
-                pendingEditImage = await compressImageFile(file);
-                updateEditImagePreviewUI(pendingEditImage);
-            } catch (err) {
-                console.error('Erro ao comprimir imagem:', err);
-            }
-        }
-    });
-}
-
 if (editImageUrlInput) {
     editImageUrlInput.addEventListener('input', (e) => {
         const url = e.target.value.trim();
-        if (url) {
-            pendingEditImage = url;
-            updateEditImagePreviewUI(pendingEditImage);
-        }
+        pendingEditImage = url;
+        updateEditImagePreviewUI(pendingEditImage);
     });
 }
 
 if (editRemoveImageBtn) {
     editRemoveImageBtn.addEventListener('click', () => {
         pendingEditImage = '';
-        if (editImageFileInput) editImageFileInput.value = '';
         if (editImageUrlInput) editImageUrlInput.value = '';
         updateEditImagePreviewUI('');
     });
 }
 
-if (editAnsImageFileInput) {
-    editAnsImageFileInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            try {
-                pendingEditAnsImage = await compressImageFile(file);
-                updateEditAnsImagePreviewUI(pendingEditAnsImage);
-            } catch (err) {
-                console.error('Erro ao comprimir imagem de resposta:', err);
-            }
-        }
+if (editAnsImageUrlInput) {
+    editAnsImageUrlInput.addEventListener('input', (e) => {
+        const url = e.target.value.trim();
+        pendingEditAnsImage = url;
+        updateEditAnsImagePreviewUI(pendingEditAnsImage);
     });
 }
 
 if (editRemoveAnsImageBtn) {
     editRemoveAnsImageBtn.addEventListener('click', () => {
         pendingEditAnsImage = '';
-        if (editAnsImageFileInput) editAnsImageFileInput.value = '';
+        if (editAnsImageUrlInput) editAnsImageUrlInput.value = '';
         updateEditAnsImagePreviewUI('');
     });
 }
@@ -2055,12 +2035,11 @@ editBtn.addEventListener('click', () => {
     }
 
     pendingEditImage = currentQuestion.image || '';
-    if (editImageFileInput) editImageFileInput.value = '';
-    if (editImageUrlInput) editImageUrlInput.value = '';
+    if (editImageUrlInput) editImageUrlInput.value = pendingEditImage;
     updateEditImagePreviewUI(pendingEditImage);
 
     pendingEditAnsImage = currentQuestion.answerImage || '';
-    if (editAnsImageFileInput) editAnsImageFileInput.value = '';
+    if (editAnsImageUrlInput) editAnsImageUrlInput.value = pendingEditAnsImage;
     updateEditAnsImagePreviewUI(pendingEditAnsImage);
 
     editModal.classList.remove('hidden');

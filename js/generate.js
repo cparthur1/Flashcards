@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { callWithRetry, checkAndResetModelFallback, sanitizeChatHistory, compressImageFile } from './utils.js';
+import { callWithRetry, checkAndResetModelFallback, sanitizeChatHistory } from './utils.js';
 
 function compressPDFWithWorker(file) {
     return new Promise((resolve, reject) => {
@@ -95,7 +95,7 @@ const creatorCardType = document.getElementById('creator-card-type');
 const creatorTypeHint = document.getElementById('creator-type-hint');
 const creatorQuestionLabel = document.getElementById('creator-question-label');
 const creatorQuestion = document.getElementById('creator-question');
-const creatorQImgFile = document.getElementById('creator-q-img-file');
+const creatorQImgUrl = document.getElementById('creator-q-img-url');
 const creatorQImgPreviewContainer = document.getElementById('creator-q-img-preview-container');
 const creatorQImgPreview = document.getElementById('creator-q-img-preview');
 const creatorRemoveQImg = document.getElementById('creator-remove-q-img');
@@ -109,7 +109,7 @@ const creatorAnsDouble2 = document.getElementById('creator-ans-double-2');
 
 const creatorGroupAnki = document.getElementById('creator-group-anki');
 const creatorAnsAnki = document.getElementById('creator-ans-anki');
-const creatorAnsImgFile = document.getElementById('creator-ans-img-file');
+const creatorAnsImgUrl = document.getElementById('creator-ans-img-url');
 const creatorAnsImgPreviewContainer = document.getElementById('creator-ans-img-preview-container');
 const creatorAnsImgPreview = document.getElementById('creator-ans-img-preview');
 const creatorRemoveAnsImg = document.getElementById('creator-remove-ans-img');
@@ -157,13 +157,13 @@ const editCardAddMcOptBtn = document.getElementById('edit-card-add-mc-opt-btn');
 const inlineEditImagePreviewContainer = document.getElementById('inline-edit-image-preview-container');
 const inlineEditImagePreview = document.getElementById('inline-edit-image-preview');
 const inlineEditRemoveImageBtn = document.getElementById('inline-edit-remove-image-btn');
-const inlineEditImageFile = document.getElementById('inline-edit-image-file');
+const inlineEditImageUrl = document.getElementById('inline-edit-image-url');
 
 const inlineEditAnsImageGroup = document.getElementById('inline-edit-ans-image-group');
 const inlineEditAnsImagePreviewContainer = document.getElementById('inline-edit-ans-image-preview-container');
 const inlineEditAnsImagePreview = document.getElementById('inline-edit-ans-image-preview');
 const inlineEditRemoveAnsImageBtn = document.getElementById('inline-edit-remove-ans-image-btn');
-const inlineEditAnsImageFile = document.getElementById('inline-edit-ans-image-file');
+const inlineEditAnsImageUrl = document.getElementById('inline-edit-ans-image-url');
 
 // --- STATE ---
 let deckCards = [];
@@ -1415,34 +1415,44 @@ creatorAddMcOptBtn.addEventListener('click', () => {
 });
 
 // Creator Image Handling
-creatorQImgFile.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        pendingCreatorQImage = await compressImageFile(file);
-        creatorQImgPreview.src = pendingCreatorQImage;
+creatorQImgUrl.addEventListener('input', (e) => {
+    const url = e.target.value.trim();
+    pendingCreatorQImage = url;
+    if (url) {
+        creatorQImgPreview.src = url;
         creatorQImgPreviewContainer.classList.remove('hidden');
         creatorRemoveQImg.classList.remove('hidden');
+    } else {
+        creatorQImgPreview.src = '';
+        creatorQImgPreviewContainer.classList.add('hidden');
+        creatorRemoveQImg.classList.add('hidden');
     }
 });
 creatorRemoveQImg.addEventListener('click', () => {
     pendingCreatorQImage = '';
-    creatorQImgFile.value = '';
+    creatorQImgUrl.value = '';
+    creatorQImgPreview.src = '';
     creatorQImgPreviewContainer.classList.add('hidden');
     creatorRemoveQImg.classList.add('hidden');
 });
 
-creatorAnsImgFile.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        pendingCreatorAnsImage = await compressImageFile(file);
-        creatorAnsImgPreview.src = pendingCreatorAnsImage;
+creatorAnsImgUrl.addEventListener('input', (e) => {
+    const url = e.target.value.trim();
+    pendingCreatorAnsImage = url;
+    if (url) {
+        creatorAnsImgPreview.src = url;
         creatorAnsImgPreviewContainer.classList.remove('hidden');
         creatorRemoveAnsImg.classList.remove('hidden');
+    } else {
+        creatorAnsImgPreview.src = '';
+        creatorAnsImgPreviewContainer.classList.add('hidden');
+        creatorRemoveAnsImg.classList.add('hidden');
     }
 });
 creatorRemoveAnsImg.addEventListener('click', () => {
     pendingCreatorAnsImage = '';
-    creatorAnsImgFile.value = '';
+    creatorAnsImgUrl.value = '';
+    creatorAnsImgPreview.src = '';
     creatorAnsImgPreviewContainer.classList.add('hidden');
     creatorRemoveAnsImg.classList.add('hidden');
 });
@@ -1849,6 +1859,7 @@ function openInlineEditModal(index) {
     }
 
     pendingInlineEditQImage = card.image || '';
+    inlineEditImageUrl.value = pendingInlineEditQImage;
     if (pendingInlineEditQImage) {
         inlineEditImagePreview.src = pendingInlineEditQImage;
         inlineEditImagePreviewContainer.classList.remove('hidden');
@@ -1857,6 +1868,7 @@ function openInlineEditModal(index) {
     }
 
     pendingInlineEditAnsImage = card.answerImage || '';
+    inlineEditAnsImageUrl.value = pendingInlineEditAnsImage;
     if (pendingInlineEditAnsImage) {
         inlineEditAnsImagePreview.src = pendingInlineEditAnsImage;
         inlineEditAnsImagePreviewContainer.classList.remove('hidden');
@@ -1907,31 +1919,39 @@ editCardAddMcOptBtn.addEventListener('click', () => {
 });
 
 // Inline Edit Image Listeners
-inlineEditImageFile.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        pendingInlineEditQImage = await compressImageFile(file);
-        inlineEditImagePreview.src = pendingInlineEditQImage;
+inlineEditImageUrl.addEventListener('input', (e) => {
+    const url = e.target.value.trim();
+    pendingInlineEditQImage = url;
+    if (url) {
+        inlineEditImagePreview.src = url;
         inlineEditImagePreviewContainer.classList.remove('hidden');
+    } else {
+        inlineEditImagePreview.src = '';
+        inlineEditImagePreviewContainer.classList.add('hidden');
     }
 });
 inlineEditRemoveImageBtn.addEventListener('click', () => {
     pendingInlineEditQImage = '';
-    inlineEditImageFile.value = '';
+    inlineEditImageUrl.value = '';
+    inlineEditImagePreview.src = '';
     inlineEditImagePreviewContainer.classList.add('hidden');
 });
 
-inlineEditAnsImageFile.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        pendingInlineEditAnsImage = await compressImageFile(file);
-        inlineEditAnsImagePreview.src = pendingInlineEditAnsImage;
+inlineEditAnsImageUrl.addEventListener('input', (e) => {
+    const url = e.target.value.trim();
+    pendingInlineEditAnsImage = url;
+    if (url) {
+        inlineEditAnsImagePreview.src = url;
         inlineEditAnsImagePreviewContainer.classList.remove('hidden');
+    } else {
+        inlineEditAnsImagePreview.src = '';
+        inlineEditAnsImagePreviewContainer.classList.add('hidden');
     }
 });
 inlineEditRemoveAnsImageBtn.addEventListener('click', () => {
     pendingInlineEditAnsImage = '';
-    inlineEditAnsImageFile.value = '';
+    inlineEditAnsImageUrl.value = '';
+    inlineEditAnsImagePreview.src = '';
     inlineEditAnsImagePreviewContainer.classList.add('hidden');
 });
 
@@ -2084,15 +2104,22 @@ playDeckBtn.addEventListener('click', () => {
         deckTitle: title
     };
 
-    if (title === "Caderno") {
-        localStorage.setItem('flashcardsNotebook', JSON.stringify(gameState));
-        localStorage.setItem('flashcardsActiveMode', 'notebook');
-    } else {
-        localStorage.setItem('flashcardsSave', JSON.stringify(gameState));
-        localStorage.setItem('flashcardsActiveMode', 'normal');
+    try {
+        if (title === "Caderno") {
+            localStorage.setItem('flashcardsNotebook', JSON.stringify(gameState));
+            localStorage.setItem('flashcardsActiveMode', 'notebook');
+        } else {
+            localStorage.setItem('flashcardsSave', JSON.stringify(gameState));
+            localStorage.setItem('flashcardsActiveMode', 'normal');
+        }
+        window.location.href = 'game.html';
+    } catch (err) {
+        if (err.name === 'QuotaExceededError') {
+            alert("Erro de espaço: o baralho é grande demais para salvar no navegador (provavelmente contém imagens locais antigas). Por favor, use links de imagem da web.");
+        } else {
+            alert("Erro ao iniciar jogo: " + err.message);
+        }
     }
-
-    window.location.href = 'game.html';
 });
 
 // --- INITIALIZATION ---

@@ -465,14 +465,14 @@
                 <!-- Field: Question Image (Optional) -->
                 <div>
                     <div class="flex items-center justify-between mb-1">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Imagem da Pergunta (Opcional)</label>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Link da Imagem da Pergunta (Opcional)</label>
                         <button type="button" id="creator-remove-q-img" class="text-[11px] text-red-500 hidden hover:underline">Remover</button>
                     </div>
                     <div id="creator-q-img-preview-container" class="hidden mb-2 max-h-32 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-1">
                         <img id="creator-q-img-preview" src="" class="max-h-28 w-auto object-contain rounded" alt="Preview">
                     </div>
-                    <div class="flex gap-2">
-                        <input type="file" id="creator-q-img-file" accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                    <div>
+                        <input type="url" id="creator-q-img-url" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Cole o link da imagem (https://...)">
                     </div>
                 </div>
 
@@ -504,13 +504,13 @@
                     </div>
                     <div>
                         <div class="flex items-center justify-between mb-1">
-                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Imagem da Resposta (Opcional)</label>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Link da Imagem da Resposta (Opcional)</label>
                             <button type="button" id="creator-remove-ans-img" class="text-[11px] text-red-500 hidden hover:underline">Remover</button>
                         </div>
                         <div id="creator-ans-img-preview-container" class="hidden mb-2 max-h-32 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-1">
                             <img id="creator-ans-img-preview" src="" class="max-h-28 w-auto object-contain rounded" alt="Preview">
                         </div>
-                        <input type="file" id="creator-ans-img-file" accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                        <input type="url" id="creator-ans-img-url" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Cole o link da imagem (https://...)">
                     </div>
                 </div>
 
@@ -691,7 +691,7 @@
 
                 <!-- Card Image -->
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Imagem da Pergunta (Opcional)</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Link da Imagem da Pergunta (Opcional)</label>
                     <div class="space-y-2">
                         <div id="inline-edit-image-preview-container" class="hidden relative group w-full max-h-40 overflow-hidden rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-2">
                             <img id="inline-edit-image-preview" src="" alt="Preview" class="max-h-36 w-auto object-contain rounded">
@@ -699,13 +699,13 @@
                                 <img src="../assets/img/close.svg" class="w-4 h-4 invert" alt="Remover">
                             </button>
                         </div>
-                        <input type="file" id="inline-edit-image-file" accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                        <input type="url" id="inline-edit-image-url" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Cole o link da imagem (https://...)">
                     </div>
                 </div>
 
                 <!-- Anki Answer Image (if applicable) -->
                 <div id="inline-edit-ans-image-group" class="hidden">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Imagem da Resposta (Anki Opcional)</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Link da Imagem da Resposta (Anki Opcional)</label>
                     <div class="space-y-2">
                         <div id="inline-edit-ans-image-preview-container" class="hidden relative group w-full max-h-40 overflow-hidden rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-2">
                             <img id="inline-edit-ans-image-preview" src="" alt="Preview" class="max-h-36 w-auto object-contain rounded">
@@ -713,7 +713,7 @@
                                 <img src="../assets/img/close.svg" class="w-4 h-4 invert" alt="Remover">
                             </button>
                         </div>
-                        <input type="file" id="inline-edit-ans-image-file" accept="image/*" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                        <input type="url" id="inline-edit-ans-image-url" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Cole o link da imagem (https://...)">
                     </div>
                 </div>
             </div>

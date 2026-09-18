@@ -1,7 +1,7 @@
 // Handles landing page functionality: redirects and file uploads.
 import { ROUTES } from './utils.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+function init() {
     // Redirect to game if active deck session exists
     if (localStorage.getItem('flashcardsSave')) {
         window.location.href = ROUTES.GAME;
@@ -32,17 +32,25 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentFile = null;
 
     // --- FILE UPLOAD ---
-    if (fileInput) {
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files.length > 0) {
-                currentFile = fileInput.files[0];
+    function handleFileSelection() {
+        if (fileInput && fileInput.files && fileInput.files.length > 0) {
+            currentFile = fileInput.files[0];
+            if (startBtn) {
                 startBtn.disabled = false;
-                uploadError.textContent = '';
                 startBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
                 startBtn.classList.add('bg-green-600', 'hover:bg-green-700');
                 startBtn.innerHTML = `<img src="assets/img/folder.svg" class="w-6 h-6" alt="Pasta"> Abrir ${currentFile.name}`;
             }
-        });
+            if (uploadError) uploadError.textContent = '';
+        }
+    }
+
+    if (fileInput) {
+        fileInput.addEventListener('change', handleFileSelection);
+        fileInput.addEventListener('input', handleFileSelection);
+        if (fileInput.files && fileInput.files.length > 0) {
+            handleFileSelection();
+        }
     }
 
     if (startBtn) {
@@ -81,9 +89,17 @@ document.addEventListener('DOMContentLoaded', () => {
                             score: 0,
                             deckTitle: deckTitle
                         };
-                        localStorage.setItem('flashcardsNotebook', JSON.stringify(notebookState));
-                        localStorage.setItem('flashcardsActiveMode', 'notebook');
-                        window.location.href = ROUTES.GAME;
+                        try {
+                            localStorage.setItem('flashcardsNotebook', JSON.stringify(notebookState));
+                            localStorage.setItem('flashcardsActiveMode', 'notebook');
+                            window.location.href = ROUTES.GAME;
+                        } catch (err) {
+                            if (err.name === 'QuotaExceededError') {
+                                uploadError.innerHTML = `<img src="assets/img/error.svg" class="w-5 h-5 inline-block mr-1" alt="Erro"> O backup do Caderno é grande demais para salvar no navegador.`;
+                            } else {
+                                uploadError.innerHTML = `<img src="assets/img/error.svg" class="w-5 h-5 inline-block mr-1" alt="Erro"> Erro ao salvar Caderno: ${err.message}`;
+                            }
+                        }
                     } else {
                         localStorage.setItem('flashcardsActiveMode', 'normal');
                         saveAndRedirect(questions, deckTitle);
@@ -103,7 +119,21 @@ document.addEventListener('DOMContentLoaded', () => {
             score: 0,
             deckTitle: title
         };
-        localStorage.setItem('flashcardsSave', JSON.stringify(gameState));
-        window.location.href = ROUTES.GAME;
+        try {
+            localStorage.setItem('flashcardsSave', JSON.stringify(gameState));
+            window.location.href = ROUTES.GAME;
+        } catch (err) {
+            if (err.name === 'QuotaExceededError') {
+                uploadError.innerHTML = `<img src="assets/img/error.svg" class="w-5 h-5 inline-block mr-1" alt="Erro"> Este baralho é grande demais para salvar no navegador (provavelmente contém imagens locais antigas). Converta as imagens para links da web.`;
+            } else {
+                uploadError.innerHTML = `<img src="assets/img/error.svg" class="w-5 h-5 inline-block mr-1" alt="Erro"> Erro ao salvar baralho: ${err.message}`;
+            }
+        }
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
