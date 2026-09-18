@@ -1,0 +1,830 @@
+[
+    {
+        "type": "anki",
+        "description": "camada mais superficial da pele, constituída de epitélio pavimentoso estratificado queratinizado. Possui 5 camadas",
+        "answer": "Epiderme"
+    },
+    {
+        "type": "anki",
+        "description": "mais interna, próxima ao tecido conjuntivo (derme), composta por uma única camada de células cúbicas, basofilas e de grandes núcleos",
+        "answer": "Camada basal"
+    },
+    {
+        "type": "anki",
+        "description": "células unidas por desmossomos. Possuitonofilamentos (forma precursora e viva da citoqueratina ou queratina epitelial) e feixes de filamentos de queratina, essa composição permite que a epiderme seja resistente a atritos",
+        "answer": "Camada espinhosa / Malpighi"
+    },
+    {
+        "type": "anki",
+        "description": "composta por células achatadas, com citoplasma rico em grânulos de querato-hialina + grânulos lamelares (organelas secretoras responsáveis pela liberação de lipídios), os quais formam uma barreira na epiderme promovendo impermeabilização",
+        "answer": "Camada granulosa"
+    },
+    {
+        "type": "anki",
+        "description": "constituída de queratinócitos pavimentosos com núcleo citoqueratinizado e está presente nas regiões em que a pele é mais espessa como, por exemplo, plantas e palmas, e nos lábios",
+        "answer": "Camada lúcida"
+    },
+    {
+        "type": "anki",
+        "description": "formada por células achatadas e anucleadas, ricas emqueratina citoplasmática, e sofre um processo contínuo de descamação. Ao atingirem essa região, os queratinócitos perdem seus núcleos e se achatam, liberando substâncias que ativam a profilagrina, cujos aa passa a atuar como um fator de hidratação natural da pele.",
+        "answer": "Camada córnea"
+    },
+    {
+        "type": "anki",
+        "description": "Na camada basal, responsáveis pela síntese de grânulosricos em melanina. Todas as raças têm a mesma quantidade de melanócitos. Portanto, o que varia é a morfologia, tamanho e distribuição dos melanossomos",
+        "answer": "Melanócitos"
+    },
+    {
+        "type": "anki",
+        "description": "Na camada espinhosa, originárias da medulaóssea, possuem citoplasma claro contendo os grânulos de Birbeck, osquais são responsáveis pela endocitose e processamento de antígenos.",
+        "answer": "Células de Langerhans"
+    },
+    {
+        "type": "anki",
+        "description": "Na camada basal, encontram-se grânulos osmiófilos, contendo neurotransmissores liberados mediante pressão sobre a pele, atribuindo a esta célula a característica de receptor mecânico (percepção sensorial)",
+        "answer": "Células de Merkel"
+    },
+    {
+        "type": "anki",
+        "description": "camada de sustentação, nutrição e conexão entre a epiderme e hipoderme. formada por tecido conjuntivo, o qual é conta com fibras de colágeno e elastina, vasos sanguíneos e fibroblastos, papilas dérmicas - projeções da derme que se relacionam com a epiderme - constituída por 2 camadas, reticular e papilar",
+        "answer": "Derme"
+    },
+    {
+        "type": "anki",
+        "description": "camada mais profunda da pele, formada por lóbulos de adipócitos, também conhecida, como panículo adiposo ou tecido subcutâneo. confere à pele proteção mecânica, termogênese, armazenamento de energia e função endócrina (conversão periférica de hormônios sexuais). Estão presentes nesta camada, vasos sanguíneos, linfáticos e nervos.",
+        "answer": "Hipoderme"
+    },
+    {
+        "type": "anki",
+        "description": "pele muito branca ou albino, loiro ou ruivo, olha os claros efrequentemente com sardas -> queima facilmente e nunca bronzeia (duração dehoras a poucos dias)",
+        "answer": "Fototipo I"
+    },
+    {
+        "type": "anki",
+        "description": "pele, olhos, cabelo claros -> queima facilmente e bronzeia muitopouco (duração de 10-14 dias)",
+        "answer": "Fototipo II"
+    },
+    {
+        "type": "anki",
+        "description": "pele clara e olhos e cabelos de cores variáveis, mais escurecidos ->queima pouco e bronzeia gradualmente (duração entre 10-14 dias)",
+        "answer": "Fototipo III"
+    },
+    {
+        "type": "anki",
+        "description": "pele moderadamente pigmentada a muito pigmentada (oriental) ->raramente se queima e bronzeia com facilidade (duração de +14 dias)",
+        "answer": "Fototipo IV"
+    },
+    {
+        "type": "anki",
+        "description": "pele muito pigmentada ou do Sudeste Asiático -> nao se queimaapenas se bronzeia (duração longa)",
+        "answer": "Fototipo V"
+    },
+    {
+        "type": "anki",
+        "description": "pele retinta -> nao se queima, apenas se bronzeia",
+        "answer": "Fototipo VI"
+    },
+    {
+        "type": "anki",
+        "description": "comprimento de onde que não é constante ao longo do dia, tendo seu pico entre as 10h e 16h, responsável pela produção de vitamina D e queimaduras. Além de estar relacionada ao câncer de pele, pois é de penetrância mais superficial e atinge parcialmente a derme e os queratinócitos",
+        "answer": "UVB (280-315nm)"
+    },
+    {
+        "type": "anki",
+        "description": "comprimento de onda mais longo; presente durante todo odia é responsável pelo fotoenvelhecimento, pigmentação e dano oxidativo, também participa da carcinogênese",
+        "answer": "UVA (315-400nm)"
+    },
+    {
+        "type": "anki",
+        "description": "pápulas ásperas, eritematosas e descamativas em face e mãos; biópsia na suspeita de CEC. Tratamento, crioterapia/eletrocauterização nas isoladas; 5-FU/TFD no campo de cancerização. Etiologia/fisiopatologia, UV crônica induz queratinócitos aberrantes.",
+        "answer": "Ceratose Actínica",
+        "image": "https://julianafonte.com.br/wp-content/uploads/2019/11/dermatologia-clinica-ceratose-750x500.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "pápulas e placas verrucosas, pigmentadas em genitais (risco de CEC invasivo). Tratamento, conduta clínica; eletrocauterização ou laser de CO2 na suspeita de neoplasia. Etiologia, infecção por múltiplos tipos de HPV oncogênicos e não oncogênicos.",
+        "answer": "Papulose Bowenóide",
+        "image": "https://ars.els-cdn.com/content/image/1-s2.0-S0025712517301669-gr15.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Placa eritematosa única, bem delimitada, descamativa e de crescimento lento, em áreas fotoexpostas ou não em idosos. CEC in situ caracterizado por atipia epitelial confinada à membrana basal, sem invasão dérmica.",
+        "answer": "Doença de Bowen",
+        "image": "https://dovera.com.br/wp-content/uploads/2023/02/doenca-de-bowen-na-perna-1024x576.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "É uma placa aveludada vermelha-brilhante no penis, a qual é um CEC in situ da glande/prepúcio",
+        "answer": "Eritroplasia de Queyrat",
+        "image": "https://static.elsevier.es/multimedia/11383593/0000004700000008/v1_202111220507/S1138359321001428/v1_202111220507/es/main.assets/thumbnail/gr3.jpeg?xkr=J8YzROqjgZMxld2lpZx3VzupvSfaAmCFIc/M7dporhBIpsYNx0cM97w7af5q7Wnk"
+    },
+    {
+        "type": "anki",
+        "description": "Placa avermelhada, crostosa, eczematosa, com bordas irregulares, ulceração e retração unilateral no mamilo/aréola (dermatite refratária). Fisiopatologia, invasão epidérmica epidermotrópica por contiguidade a partir de carcinoma ductal mamário subjacente.",
+        "answer": "Doença de Paget Mamária",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/3/30/Paget_Disese_of_the_Nipple.jpg?utm_source=pt.wikipedia.org&utm_campaign=index&utm_content=original"
+    },
+    {
+        "type": "anki",
+        "description": "71% dos carcinomas malignos de pele, com baixo risco de metástase. Fator mais importante da patogênese é a radiação UV, em especial a RUVB que induz a mutação dos genes supressores de tumor. Diagnóstico clinico + dermatoscopia + biópsia e um tratamento direcionado a excisão cirúrgica, cirurgia micrográfica de Mohs",
+        "answer": "Carcinoma Basocelular (CBC)",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRIzWuG5-vwhqZRzDn0l-Yc9-Q7V5HNdMxlc-HQ62vDutR08hoQhH994XH0&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Pápula ou nódulo translúcido “perolado”, superfície lisa com telangectasias arboriformes, bem demarca e de consistência firme",
+        "answer": "CBC Nodular",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRW8dRi6al5XqWRWC3EFdHuddRKMvyLBrLN5_3lsRJ_orFAux4qBxNDCYQ&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Úlcera crônica central de bordas peroladas, elevadas e com telangiectasias; diagnóstico por dermatoscopia e biópsia excisional/incisional. Excisão cirúrgica padrão ou micrográfica de Mohs. Mutação gênica induzida por radiação UVB com invasão e necrose tecidual.",
+        "answer": "CBC Ulcerado",
+        "image": "https://cancerdepele.drbonesjr.com.br/wp-content/uploads/2022/10/Carcinoma-basocelular-esclerodermiforme-1024x576.webp"
+    },
+    {
+        "type": "anki",
+        "description": "é o mais agressivo por formar uma placa atrófica. Pequena placa maculosa de morféia ou uma cicatriz superficial de bordas mal definidas",
+        "answer": "CBC Esclerosante",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUEnEHA8Al21vNsf65xamlnI7qpmx3gbe0nwHMFe3fR-KllxM-FhIVpUmW&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "surge como placas finas, coloração rosa ouvermelha com grau significativo de descamação que sangra com escoriação mínima",
+        "answer": "CBC Multicentrico Superficial",
+        "image": "https://dovera.com.br/wp-content/uploads/2023/02/Como-reconhcer-um-carcinoma-basocelular-superficial-1024x576.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Múltiplos CBC precoces em áreas fotoexpostas desde a infância, ceratocistos odontogênicos, calcificação da foice cerebral e alterações ósseas. Excisões cirúrgicas seriadas. Síndrome genética autossômica dominante exacerbada pela radiação ultravioleta crônica.",
+        "answer": "Síndrome do Nevo Basocelular (Gorlin-Goltz)",
+        "image": "https://www.mymedfarma.com/files/images/gallery/CASPD_basal_cell_nevus_syndrome_1374225122014.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Placa ou nódulo queratinizado, por vezes ulcerado, em lábio inferior e dorso das mãos. Cirurgia, curetagem com eletrocoagulação ou radioterapia. Proliferação atípica de queratinócitos da camada espinhosa induzida por UV crônica, imunossupressão e cicatrizes crônicas.",
+        "answer": "Carcinoma Espinocelular",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlEEouF1sw87pEL8GbtXu8fhnJBB6P4u0TsOdu7y5NXRDlRb0E2t7MM0wb&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Variante bem diferenciado de CEC de caráter invasivo local, com baixo potencial metastático, que está relacionado ao HPV. massa exofítica vegetante/verrucosa em aspecto de couve-flor nos sítios genital",
+        "answer": "Carcinoma Verrucoso",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkbZ1guWOlp8pUaqN7cuYM6zis1Felw9UvmYadVz1mznl8HZZuuVbg7aor&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Pápula, nódulo ou tumor de crescimento rápido, assintomático, em idosos imunossuprimidos sob fotoexposição (acrônimo AEIOU). Excisão cirúrgica precoce. Neoplasia neuroendócrina rara originada nas células de Merkel mecanorreceptoras.",
+        "answer": "Carcinoma de Células de Merkel",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQCITK9wSNxe-LLyvtdRhGgPZwJl6ARwNRM22qH6kXNcIdcukEOhYGo4PwR&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Sistema de lentes de aumento até a junção dermoepidérmica; diferencia lesões melanocíticas (rede pigmentar típica) de não melanocíticas, classificando-as em benignas, suspeitas ou malignas para guiar a conduta diagnóstica e a indicação de biópsia.",
+        "answer": "Dermatoscopia"
+    },
+    {
+        "type": "anki",
+        "description": "mede a exata espessura do tumor em mm. A medição vai desde a camada granulosa da epiderme até a célula neoplásica mais profunda da derme",
+        "answer": "Índice de Breslow"
+    },
+    {
+        "type": "anki",
+        "description": "No índice de Breslow, o que indica um tumor com espessura <1mm",
+        "answer": "tumores finos com excelente prognóstico"
+    },
+    {
+        "type": "anki",
+        "description": "No índice de Breslow, qual grau de risco de metastase indica um tumor com espessura 1 - 2mm",
+        "answer": "intermediário"
+    },
+    {
+        "type": "anki",
+        "description": "No índice de Breslow, qual grau de risco de metastase indica um tumor com espessura 2 - 4 mm",
+        "answer": "elevado"
+    },
+    {
+        "type": "anki",
+        "description": "No índice de Breslow, qual grau de risco de metastase indica um tumor com espessura >4mm",
+        "answer": "muito elevado"
+    },
+    {
+        "type": "anki",
+        "description": "avalia quais chamadas da pele foram atingidas pelo tumor, sendo usado principalmente em melanomas muito finos",
+        "answer": "Nível de Clark"
+    },
+    {
+        "type": "anki",
+        "description": "Qual nível de Clark está um tumor confinado à epiderme (in situ, não invasivo)",
+        "answer": "1"
+    },
+    {
+        "type": "anki",
+        "description": "Qual nível de Clark está um tumor que invade a derme papilar",
+        "answer": "2"
+    },
+    {
+        "type": "anki",
+        "description": "Qual nível de Clark está um tumor que atinge o limite entre a derme papilar e a reticular",
+        "answer": "3"
+    },
+    {
+        "type": "anki",
+        "description": "Qual nível de Clark está um tumor que invade a derme reticular profunda",
+        "answer": "4"
+    },
+    {
+        "type": "anki",
+        "description": "Qual nível de Clark está um tumor que atinge a hipoderme",
+        "answer": "5"
+    },
+    {
+        "type": "anki",
+        "description": "melanoma primário com quais espessura (Breslow) e características pesquisa-se linfonodos sentinelas?",
+        "answer": ">1mm sem ulceração; <1mm com ulceração"
+    },
+    {
+        "type": "anki",
+        "description": "No sistema TNM de estadiamento T (avalia o tamanho do Tumor); N (identifica cadeias linfonodais afetadas); M  indica se há metástase). Em qual estágio está tumor pequeno e localizado",
+        "answer": "1"
+    },
+    {
+        "type": "anki",
+        "description": "No sistema TNM de estadiamento T (avalia o tamanho do Tumor); N (identifica cadeias linfonodais afetadas); M  indica se há metástase). Em qual estágio está tumor maior ou invasão de tecidos adjacentes",
+        "answer": "2"
+    },
+    {
+        "type": "anki",
+        "description": "No sistema TNM de estadiamento T (avalia o tamanho do Tumor); N (identifica cadeias linfonodais afetadas); M  indica se há metástase). Em qual estágio está o câncer se espalhou para os linfonodos regionais",
+        "answer": "3"
+    },
+    {
+        "type": "anki",
+        "description": "No sistema TNM de estadiamento. Em qual estágio está o câncer q apresenta metástase. Recomenda-se ressonância magnética cerebral, TC de tórax e de abdômen e PET",
+        "answer": "4"
+    },
+    {
+        "type": "anki",
+        "description": "Lesão pigmentada, discretamente elevada, coloração heterogênea e crescimento assimétrico com invasão radial prévia à vertical. Biópsia excisional e ressecção cirúrgica com margem. Origem melanocítica sobre nevo prévio em adultos claros; imuno-resposta gera regressão e fibrose.",
+        "answer": "Melanoma Extensivo Superficial",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQanlMKrROxoyqavS12qhNPFcn8D8WeaUunRiN_FOERRfDMawf-1J_25gg&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Pápula ou nódulo firme, pigmentado ou amelanótico, pruriginoso, sangrante ou ulcerado em meia-idade; regra EFG e biópsia excisional. Excisão cirúrgica precoce com margens ampliadas. Neoplasia melanocítica com invasão vertical precoce, agressiva e de rápida progressão.",
+        "answer": "Melanoma Nodular",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSsmCjzDlU76tahcxbgWrhtMomqT9YjnVYLDcc78BsRwa9fPbRHZNV1kuw&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Lesão pigmentada palmo-plantar ou ungueal com sinal de Hutchinson (hiperpigmentação periungueal), comum em negros e asiáticos >60 anos; biópsia excisional. Excisão cirúrgica ampla. Melanoma lentiginoso acral decorrente de estresse mecânico e genética, sem relação com RUV.",
+        "answer": "Melanoma acrolentiginoso",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSA9UZPeYGz9Z6Z8tRaGacloEOPu69Sop8N7MyV9GV8KGt-aGyI--HHxAs&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Mácula acastanhada irregular em face/pescoço de idosos claros (in situ); nódulos, endurecimento e sangramento indicam invasão dérmica (LMM); biópsia excisional. Excisão cirúrgica ampla. Proliferação atípica intraepidérmica de melanócitos por exposição UV crônica.",
+        "answer": "Lentigo Maligno",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhqoIy5dE47RLZhbtLAQ4vCZLPpqtIhG7muZCKuqGQ0ut9L6D1i_uhA_U&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Fase do eczema com epiderme normal ou espessada com edema entre os queratinocitos(espongiose) e formação de vesículas intraepidermicas -> infiltrado inflamatório perivascular",
+        "answer": "Agudo",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQoJXvI-TmFxHDqeaJ5OMmRuTsf0AtdVAcH3Z0WqqPrAfw43YPpOcUTa2pf&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Fase do eczema com exsudação seca e formação de crostas que podem ser seroticas, hematicas ou purulentas, diminui-se a inflamação e surge a descamação",
+        "answer": "Subaguda",
+        "image": "https://i0.wp.com/sanarmed.com/wp-content/uploads/2020/09/dermatite-de-estase-1.jpg?resize=640%2C480&ssl=1"
+    },
+    {
+        "type": "anki",
+        "description": "eczemas de longa duração submetidos a coçadura, desenvolve-se liquenificacao e formação de fissuras -> queratinocito aumenta o turn over dele gerando um acumulo de queratina (proteção)",
+        "answer": "Crônico",
+        "image": "https://www.pierrefabreeczemafoundation.org/sites/default/files/styles/image_description_small/public/2020-08/W-Ad-oozing%26%20crusts%203_0.jpg?itok=C-0kQ3GH"
+    },
+    {
+        "type": "anki",
+        "description": "Eritema, ardor e vesículas agudas ou xerose, fissuras e liquenificação crônicas em mãos por exposição ocupacional. Afastamento do agente, hidratação e corticoide tópico. Dano direto à barreira lipídica e liberação de citocinas inatas por irritante químico/físico sem sensibilização.",
+        "answer": "Dermatite de Contato Irritativa",
+        "image": "https://sanarmed.com/wp-content/uploads/2023/02/dermatite-de-contato.png"
+    },
+    {
+        "type": "anki",
+        "description": "Eczema após 48h de reexposição antigênica; diagnóstico por patch test (leituras em 48/72h) correlacionado à história clínica. Afastamento do alérgeno e imunomodulação tópica. Hipersensibilidade tardia tipo IV mediada por linfócitos T pré-sensibilizados que liberam citocinas.",
+        "answer": "Dermatite de Contato Alérgica",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVHOJ2N4WiByV17QDv-PXuNeSx34T1HuT_56faRf6sb8P9vWyJN482lDIX&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Eczema pruriginoso, descamativo e xerótico em face (lactentes) e flexuras (crianças/adultos), com risco de infecção por S. aureus. Hidratação de barreira, corticoide tópico e bloqueio de IL-4/IL-13/IL-31. Defeito de filagrina deflagra resposta Th2 e marcha atópica mediada por IgE.",
+        "answer": "Dermatite Atópica",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTH9px6y76oJX_zXGSE0WtOAwbMF8-xsKUobwiUuYWBp5nhvSA9ngvxl20&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Placas eritematoescamosas recorrentes em pele com artrite (30%) e comorbidades metabólicas sob avaliação clínica. Terapia anti-inflamatória e imunobiológicos no eixo Th17. Hiperproliferação de queratinócitos mediada por IL-23, IL-17 e TNF-alfa em indivíduos geneticamente predispostos.",
+        "answer": "Psoríase",
+        "image": "https://dermacenterav.com.br/wp-content/uploads/2026/08/9b057cab53956a101098724ee7d9055c66265089977844ed2914c3dc63378a0e-731x1024.webp"
+    },
+    {
+        "type": "anki",
+        "description": "Placas eritematoescamosas simétricas em extensoras, couro cabeludo e sacro; pits ungueais, onicólise e mancha de óleo; risco de eritrodermia. Imunomoduladores e tópicos. Inflamação crônica com desregulação proliferativa epidérmica em surtos de exacerbação e acalmia.",
+        "answer": "Psoríase Vulgar",
+        "image": "https://www.saudebemestar.pt/media/88469/psoriase.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Pápulas eritematodescamativas de 0,5–1 cm, súbitas em tronco e raiz de membros em crianças/jovens; pode evoluir para placas ou regredir em 3 meses. Antibioticoterapia e suporte tópico. Reação imune desencadeada por infecção estreptocócica prévia (56–85% dos casos).",
+        "answer": "Psoríase Gutata",
+        "image": "https://image.tuasaude.com/media/article/ab/ld/psoriase-gutata_36658.jpg?width=686&height=487"
+    },
+    {
+        "type": "anki",
+        "description": "Eritema vivo com ardência, pústulas puntiformes estéreis amareladas, febre alta e leucocitose com acometimento sistêmico grave. Suporte hospitalar e controle inflamatório sistêmico. Desencadeada por desmame de corticoide oral, hipocalcemia, infecções ou irritantes.",
+        "answer": "Psoríase Pustulosa Generalizada",
+        "image": "https://static.elsevier.es/multimedia/26662752/0000010000000003/v4_202507070615/S2666275225000645/v4_202507070615/pt/main.assets/gr1.jpeg"
+    },
+    {
+        "type": "anki",
+        "description": "Pústulas estéreis numerosas e recidivantes restritas a palmas e plantas, sem sintomas sistêmicos. Tratamento tópico ou imunomodulador sistêmico para controle de recidivas. Inflamação neutrofílica crônica e estéril localizada nas regiões palmoplantares.",
+        "answer": "Psoríase Pustulosa Localizada",
+        "image": "https://static1.minhavida.com.br/diseases/bd/62/d2/6f/leventalbasgettyimagesnbspnbsp-article_m-1.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Placas hiperceratóticas e simétricas em adultos que poupam o cavo plantar; lesões ungueais precoces e diagnóstico diferencial com tinha. Queratolíticos, tópicos e imunomoduladores. Fisiopatologia associada a microtraumas mecânicos locais com hiperproliferação epidérmica.",
+        "answer": "Psoríase Palmo Plantar",
+        "image": "https://preview.redd.it/help-with-palmoplantar-psoriasis-v0-h65gx9xlvnve1.jpeg?auto=webp&s=a4639d9c4eb481e822d22ea8b38d66d3544d6f48"
+    },
+    {
+        "type": "anki",
+        "description": "Na curetagem metódica de Brocq da psoríase, quais dois sinais podemos ver, respectivamente, estratificação em camadas e pequenos pontos de sangue quando a escama é removida",
+        "answer": "vela; orvalho"
+    },
+    {
+        "type": "anki",
+        "description": "Avaliação clínica quantitativa da psoríase por eritema, infiltração/espessamento e descamação das placas cutâneas, ponderados pela extensão corporal acometida. Escala fundamental para estratificação de gravidade e definição ou monitoramento de resposta terapêutica.",
+        "answer": "Escala PASI"
+    },
+    {
+        "type": "anki",
+        "description": "Questionário autoaplicável (0 a 30 pontos) para mensurar o impacto das dermatoses na qualidade de vida; escores acima de 10 indicam comprometimento grave. Instrumento clínico decisório para indicação, ajuste e monitoramento da eficácia de terapias sistêmicas.",
+        "answer": "DLQI"
+    },
+    {
+        "type": "anki",
+        "description": "Xerose em escamas aos 3–12 meses, associada a atopia; forma adquirida alerta para neoplasias, HIV, desnutrição ou hipotireoidismo. Emolientes/hidratantes tópicos ou acitretina em casos graves. Defeito no estrato córneo por mutação autossômica dominante no gene da filagrina.",
+        "answer": "Ictiose",
+        "image": "https://sanarmed.com/wp-content/uploads/2024/03/media-275.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Máculas acrômicas/hipocrômicas em face, mãos e pelos (Koebner+); solicitar TSH, anti-TPO, biópsia e micológico. Terapias tópicas, sistêmicas, laser e antioxidantes (fenilalanina). Perda progressiva e imune de melanócitos epidérmicos por estresse, poligênica e autoimunidade.",
+        "answer": "Vitiligo",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQbFElgzoxdnsiJR6Tglrw3YgKkAN62S-q7sEUumDh_l6Tzzronm7w59Gk&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Recessão bitemporal simétrica e rarefação no cabelo pós-puberdade; avaliação clínica da miniaturização folicular. Bloqueio da 5-alfa-redutase e estímulo capilar. Conversão de testosterona em DHT por herança poligênica, encurtando a anágena e afinando fios terminais.",
+        "answer": "Alopécia Androgenética masculina",
+        "image": "https://lh4.googleusercontent.com/ceKGpPEZ7aUgfxQ8yOKszmHCYB2a_ImUvivseyJODo9FG1xio18J-LZ97nCIFcgIc08bXYqpxz8ewFiiPqpOuw5CM23QMZL9M4fujOB-JL2CQDVPc0y868CZC1cF9_pR2yNfmEpfTj8CRs5F_dzVaGthYJ0Ykrzr0cGzgQrSehMO65DQWQXC5rzubUv39w"
+    },
+    {
+        "type": "anki",
+        "description": "Afinamento capilar difuso com preservação da linha frontal anterior na 3ª–4ª década ou pós-menopausa; pesquisar acne, hirsutismo e distúrbios menstruais. Terapia antiandrogênica e estímulo folicular. Desbalanço andrógeno/estrógeno provocando miniaturização progressiva.",
+        "answer": "Alopécia Androgenética feminina",
+        "image": "https://www.rbcp.org.br/imagens/21-04-02-quad01a.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Placa alopécica lisa e abrupta de cor habitual ou eritematosa aguda, podendo evoluir para forma universal; avaliação clínica. Corticóides tópicos e orais. Interrupção folicular mediada por resposta autoimune associada a atopia e trauma psíquico entre os 20 e 50 anos.",
+        "answer": "Alopécia areata",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOtHz3tic5m2zinG-ZWQ3yMVCL6uz_mC9U-ywv04VfT9W4uDra5wdX878&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Bolhas flácidas que se rompem gerando erosões dolorosas em mucosa oral e pele; Nikolsky positivo; biópsia com imunofluorescência. Corticoterapia (1 mg/kg) e imunossupressores/plasmaférese. Autoanticorpos anti-desmogleína 3 causam acantólise intraepidérmica profunda.",
+        "answer": "Pênfigo Vulgar",
+        "image": "https://img.drogasil.com.br/uploads/2022/11/shutterstock_1507373201-min-scaled.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Máculas policrômicas com descamação furfurácea (sinal de Zileri); micológico direto com leveduras em cacho e pseudohifas ou lâmpada de Wood. Antifúngicos tópicos ou sistêmicos. Proliferação da Malassezia sp. lipodependente por quebra do equilíbrio hóspede-microbiota.",
+        "answer": "Pitiríase Versicolor",
+        "image": "https://static.wixstatic.com/media/496690_3899baed8a6a4ff08a08519a942a8be0~mv2.jpg/v1/fill/w_800,h_533,al_c,q_85,enc_avif,quality_auto/496690_3899baed8a6a4ff08a08519a942a8be0~mv2.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Lâmina ungueal branco-amarelada, hiperceratose e onicólise; diagnóstico por raspado micológico da área descolada. Antifúngicos tópicos/sistêmicos. Colonização subungueal por Malassezia sp., favorecida por trauma, imunossupressão, diabetes e dermatite de contato prévia.",
+        "answer": "Onicomicose por Malassezia",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQE4oUrLCsB-RjztlhB_XFkrfxc2V1IBnMiAErwnKwXjO8hraNZeLD0b21T&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Mácula acastanhada/enegrecida centrífuga palmar (dif. melanoma); micológico direto com hifas demáceas ramificadas e cultura. Queratolíticos e antifúngicos tópicos. Infecção fúngica crônica da camada córnea por Hortaea werneckii, associada a hiperidrose e sexo feminino.",
+        "answer": "Tinha negra",
+        "image": "https://cdn.prod.website-files.com/66d0e7a96b98d86958f6379c/66d0e7a96b98d86958f6572d_tinea-1.jpeg"
+    },
+    {
+        "type": "anki",
+        "description": "placas tonsurantes únicas (microspórica) ou múltiplas (tricofítica), com quebra dos fios e risco de Kerion celsi cicatricial inflamatório. Causada por dermatófitos (Microsporum canis, T. tonsurans) que invadem e fragilizam a haste capilar.",
+        "answer": "Tinha do couro cabeludo",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmm5ZoA_zJfp1g_ZtfeSM4iwxQ47yFjZzNmQqiZTjt5pNQygVFb1KJT9U&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Placa anular circinada de crescimento centrífugo com bordas eritematosas ativas na região crural; diagnóstico clínico e micológico. Antifúngicos tópicos ou sistêmicos. Dermatofitose superficial da camada córnea, com o fungo colonizando ativamente a periferia da lesão.",
+        "answer": "Tinha Inguinocrural",
+        "image": "https://lh3.googleusercontent.com/dktgAT8X9kARomcYRO_CC3R57O6sFXfb3kyZzTm3TXHwQ-GBmsMs4T9iyJSK8IhFc-W9FUmXXsrs7xdxUjUITqMm6WkFx7ss28m6SMh7F4Z2oh1yhlUi9j8rVz-0sWPrC12ZrzuGYueuZlTldda66bEWJoGmQhv7tG7Ob2Lpj9IN4B4iIgUZwy0oHBAA_g"
+    },
+    {
+        "type": "anki",
+        "description": "Nódulos moles claros em pelos genitais ou barba; micológico com hifas e artroconídios. Corte dos pelos e antifúngicos tópicos. Infecção fúngica superficial crônica da cutícula do pelo por leveduras do gênero Trichosporon.",
+        "answer": "Piedra Branca",
+        "image": "https://www.mdsaude.com/wp-content/uploads/piedra-branca-3.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Nódulos firmes e negros aderidos à haste capilar; exame micológico direto. Corte dos cabelos e antifúngico tópico. Infecção fúngica crônica e assintomática da cutícula do pelo causada pelo fungo demáceo Piedraia hortae.",
+        "answer": "Piedra Preta",
+        "image": "https://med.estrategia.com/portal/wp-content/uploads/2025/04/iScreen-Shoter-Pre-Visualizacao-250430171813.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Placas anulares centrífugas com borda ativa eritematosa e cura central em pele glabra; micológico com hifas hialinas. Antifúngicos tópicos ou sistêmicos. Dermatofitose superficial restrita ao estrato córneo.",
+        "answer": "Tinha do Corpo",
+        "image": "https://lh6.googleusercontent.com/_2mT-_G1BsdQ07mdIxpbEgtadhVn-_qaf6E5A3We16FKbhk1mr8_AMn4oagJQ55G0y9fNG3DEVkmGRDcd3OC-ToSlUXyDuUqXTszs_R1_dnd4gLg9yxYAqYJPhceFSklMwg2myLlVtByS7d6IYwrzDk"
+    },
+    {
+        "type": "anki",
+        "description": "Descamação interdigital, vesículas ou hiperceratose em mocassim envolvendo o cavo plantar; micológico com hifas septadas. Antifúngicos tópicos ou orais. Dermatofitose da camada córnea, comumente por Trichophyton rubrum.",
+        "answer": "Tinha do Pé (pé de atleta)",
+        "image": "https://escolakids.uol.com.br/upload/image/pe-de-atleta.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Hiperceratose subungueal distal/lateral ou leuconíquia superficial; micológico com hifas hialinas septadas. Antifúngicos sistêmicos e esmaltes tópicos. Invasão e lise da queratina ungueal por fungos dermatófitos.",
+        "answer": "Tinha da Unha",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1wglwZVl3NsDxHA5-XAOzXsXb6quKUFW_t5j_Kq2AW-pewEDc4b-eBAlE&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Escamas em anéis e desenhos concêntricos bizarros pelo corpo; micológico direto. Antifúngicos orais prolongados e tópicos. Dermatofitose crônica da camada córnea por Trichophyton concentricum sob influência genética.",
+        "answer": "Tinha Imbricada",
+        "image": "https://portal.wemeds.com.br/wp-content/uploads/2024/04/tinea-imbricata-696x442.png"
+    },
+    {
+        "type": "anki",
+        "description": "Erupção vesicular em mãos ou pápulas no tronco sem fungo local; micológico negativo na lesão secundária. Tratamento do foco fúngico primário. Reação imunológica de hipersensibilidade alérgica à distância a dermatófitos.",
+        "answer": "Dermatofítide",
+        "image": "https://dermnetnz.org/assets/Uploads/fungal/ide3.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Placas eritematosas úmidas em grandes dobras com pápulas/pústulas satélites; micológico direto. Antifúngicos tópicos e manter seco. Proliferação oportunista de Candida albicans por quebra de barreira e umidade.",
+        "answer": "Candidíase Intertriginosa",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzEYY0YGfZMBePSMKWA3oNwUiLbF76E63IHuJGAEJI_KSdMCDkd0MkBUk&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Eritema confluente vivo com pústulas satélites em pregas inguinais do lactente; micológico direto. Nistatina tópica e barreira seca. Infecção oportunista por Candida albicans favorecida por oclusão e urina.",
+        "answer": "Candidíase das Fraldas",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzryLxfBKZVvhJl23z_KJDOeLwQizn7gUAAozbPi2a54JVOZPvCF5hVpbm&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Edema e eritema periungueal doloroso com perda da cutícula e distrofia da lâmina; micológico direto. Antifúngicos tópicos/orais e proteção seca. Infecção tecidual mista por Candida albicans e bactérias sob umidade.",
+        "answer": "Paroníquia Candidíásica",
+        "image": "https://static.wixstatic.com/media/585193_79048c450380475392b44a1674474cd3~mv2.jpg/v1/crop/x_0,y_1368,w_4608,h_3409/fill/w_280,h_210,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/E5659660-5323-413C-A7F1-787FD0BA5C2D.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Estomatite moriforme pontilhada e úlceras oronasais; leveduras em roda de leme ou Mickey Mouse no exame direto e cultura. Antifúngico sistêmico por até 12 meses. Inalação primária pulmonar de Paracoccidioides brasiliensis.",
+        "answer": "Paracoccidioidomicose",
+        "image": "https://patologiabucal.com.br/wp-content/uploads/Paraco-5a.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Cancro de inoculação com nódulos gomosos em trajeto linfático linear; comum por arranhadura de felinos (Perigo do Gabi)",
+        "answer": "Esporotricose",
+        "image": "https://saomateus.es.gov.br/uploads/editor/30f5d05c1d3c99dcc26cb80bdc051cfa582b99c1.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Pápulas e úlceras polimorfas no imunodeprimido; biópsia com fungos em macrófagos e cultura. Antifúngicos sistêmicos prolongados. Disseminação hematogênica pós-inalação de esporos de Histoplasma capsulatum em fezes de morcego.",
+        "answer": "Histoplasmose Cutânea",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6PZ0TgRE9EqIBWhhA2n8Nb8eXSci5q41xh6WXNUi4dlI9ctBt2he2JXc&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Pápulas umbilicadas molusco-símiles na face em imunodeprimidos; biópsia tecidual capsulada e cultura. Antifúngicos sistêmicos em altas doses. Reativação hematogênica latente pulmonar por Cryptococcus neoformans.",
+        "answer": "Criptococose Cutânea",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRE8QhppEJhchetSxfwBtZvgfmx9UIj2rhL4VJ1NuKGpIPkPx7LujXN_HE&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Placa única liquenificada com sulcos acentuados e prurido paroxístico crônico; diagnóstico clínico. Corticosteroides tópicos potentes e oclusão. Hiperplasia epidérmica reativa secundária ao ato mecânico repetido de coçar.",
+        "answer": "Líquen Simples Crônico",
+        "image": "https://caioformiga.com/liquen-simples-clinica.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Nódulos endurecidos e escoriados em superfícies extensoras com prurido lancinante; diagnóstico clínico. Corticoides intralesionais ou oclusivos. Hiperplasia dérmica inflamatória e neural reativa à coçadura contínua grave.",
+        "answer": "Prurigo Nodular",
+        "image": "https://drgabrieldermatologista.com.br/wp-content/uploads/2025/07/prurigo-nodular.png"
+    },
+    {
+        "type": "anki",
+        "description": "Vesículas claras profundas tipo grãos de tapioca em palmas e faces laterais dos dedos; clínico. Corticoides tópicos potentes. Padrão eczematoso agudo com espongiose intraepidérmica recorrente estimulado por sudorese.",
+        "answer": "Dermatite Disidrótica",
+        "image": "https://hubconteudo.dasa.com.br/wp-content/uploads/2024/07/disidrose.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Placas eritematosas arredondadas em moeda, descamativas e crostosas em membros; clínico. Hidratação e corticosteroides tópicos. Inflamação decorrente do agravamento da xerose no inverno e quebra da barreira epidérmica.",
+        "answer": "Eczema Numular",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSrgQQdYFVD0R39sg1saZBYctHh1IUtVMAIDxsUXgfAy8yE23-1GST7rPu&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Eritema com descamação untuosa amarelada em couro cabeludo, face e tronco; diagnóstico clínico. Xampus e antifúngicos tópicos. Inflamação crônica associada a produtos da degradação lipídica pela levedura Malassezia.",
+        "answer": "Dermatite Seborreica",
+        "image": "https://bemestarhospitalar.com.br/wp-content/uploads/2023/09/Dermatite-seborreica.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Pele seca e rachada com aspecto de porcelana craquelada e prurido em pernas de idosos; clínico. Hidratação profunda e evitar banho quente. Perda de lipídios do estrato córneo e desidratação sob baixa umidade.",
+        "answer": "Dermatite Asteatótica",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2D7OPp8XzX0P3s7chtZSk_Pi3Cfhv0ZU_5S1qRBgQhs3PFykqmy2XAXEa&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Eritema linear, vesículas e pigmentação pós-inflamatória em áreas de contato cítrico; clínico. Corticoides tópicos e fotoproteção. Reação fototóxica não imune pela ativação UV de furocumarinas vegetais com dano tecidual.",
+        "answer": "Fitofotodermatose",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfnjuXzuDxUpWc7X2hJUApUR3xNMNvOt7Hc4vq5CIfCc1whHHoFItG2Xs&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Erosões com crostas melicéricas amarelo-ouro em face de crianças; diagnóstico clínico. Remoção antisséptica e antibiótico tópico/oral. Infecção bacteriana superficial por Staphylococcus aureus ou Streptococcus pyogenes.",
+        "answer": "Impetigo Crostoso",
+        "image": "https://image.tuasaude.com/media/article/9w/a5/impetigo-infeccao-rara-da-pele_16188.jpg?width=686&height=487"
+    },
+    {
+        "type": "anki",
+        "description": "Bolhas flácidas de conteúdo claro a túrbido que colapsam formando colaretes descamativos; clínico. Antibioticoterapia oral. Clivagem granular intraepidérmica por toxinas esfoliativas estafilocócicas que clivam desmogleína 1.",
+        "answer": "Impetigo Bolhoso",
+        "image": "https://www.mundoboaforma.com.br/wp-content/uploads/2022/09/impetigo-3.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Úlcera cutânea profunda com crosta espessa aderente que cura com cicatriz; diagnóstico clínico. Penicilinas orais ou mupirocina tópica. Infecção bacteriana ulcerativa estafilocócica/estreptocócica invadindo até a derme.",
+        "answer": "Ectima",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwqgiMUf9QDw4MJ5eP5SjYx1SlJQMb1BmgWDJzycIqmxZuFlxowvRCQaCr&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Nódulo inflamatório necrótico doloroso ou agrupamento fistuloso com múltiplos pontos de supuração; clínico. Drenagem e antibiótico sistêmico. Infecção folicular profunda e necrose perifolicular por Staphylococcus aureus.",
+        "answer": "Furúnculo/Antraz",
+        "image": "https://img.drogaraia.com.br/uploads/2022/07/furunculo.jpeg"
+    },
+    {
+        "type": "anki",
+        "description": "Pústulas pequenas superficiais centradas por haste pilosa com halo inflamatório; diagnóstico clínico. Antissépticos e antibióticos tópicos. Inflamação bacteriana do folículo estimulada por barbear, atrito ou oclusão.",
+        "answer": "Foliculite",
+        "image": "https://dermavisus.com.br/wp-content/uploads/2017/11/41561456419614-748x380.webp"
+    },
+    {
+        "type": "anki",
+        "description": "Nódulos dolorosos, fístulas supurativas crônicas e cicatrizes em axilas/virilhas; clínico. Sulfametoxazol-trimetoprima e cirurgia. Oclusão folicular em glândulas apócrinas associada a atrito e inflamação secundária.",
+        "answer": "Hidradenite Supurativa",
+        "image": "https://clinderm.med.br/wp-content/uploads/2020/02/WhatsApp-Image-2024-02-16-at-17.28.59.jpeg"
+    },
+    {
+        "type": "anki",
+        "description": "Placa eritematosa brilhante com bordas nítidas elevadas, calor e febre com calafrios; diagnóstico clínico. Penicilinas ou cefalosporinas. Infecção bacteriana aguda da derme superficial com bloqueio linfático por Streptococcus pyogenes.",
+        "answer": "Erisipela",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqE_AoHMpvS7qJmPVaLQQmFNneuW8G5vxtlAgkgO194lpaqRsb3BGz5_iG&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Área eritematosa profunda, edemaciada, quente e com limites imprecisos acompanhada de febre; clínico. Antibióticos sistêmicos orais ou venosos. Infecção bacteriana invasiva da derme profunda e hipoderme, comum por S. aureus.",
+        "answer": "Celulite Infecciosa",
+        "image": "https://es1.com.br/wp-content/uploads/2020/01/celulite-infecciosa-medica-gabrielense-fala-sobre-causas-sintomas-e-tratamentos_5e17974168a5d.jpeg"
+    },
+    {
+        "type": "anki",
+        "description": "Placas castanho-rosadas bem demarcadas em dobras intertriginosas; fluorescência vermelho-coral na luz de Wood. Eritromicina tópica ou ácido salicílico. Colonização superficial da camada córnea por Corynebacterium minutissimum.",
+        "answer": "Eritrasma",
+        "image": "https://cdn.prod.website-files.com/66d0e7a96b98d86958f6379c/66d0e7a96b98d86958f65755_Imagem1-1-300x169.png"
+    },
+    {
+        "type": "anki",
+        "description": "Máculas acastanhadas simétricas bem demarcadas em áreas fotoexpostas faciais em mulheres; clínico. Fotoproteção estrita e clareadores tópicos. Hiperfunção de melanócitos epidérmicos induzida por radiação UV e estímulo hormonal.",
+        "answer": "Melasma",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/2/27/Melasmablemish.jpg?utm_source=pt.wikipedia.org&utm_campaign=index&utm_content=original"
+    },
+    {
+        "type": "anki",
+        "description": "Erosões eritematocrostosas descamativas sem lesão de mucosa (fogo selvagem); biópsia com imunofluorescência. Corticoides orais e imunossupressores. Acantólise subcórnea superficial mediada por autoanticorpos anti-desmogleína 1.",
+        "answer": "Pênfigo Foliáceo",
+        "image": "https://www.brterapeutas.com.br/foto/penfigo.webp"
+    },
+    {
+        "type": "anki",
+        "description": "Pápula hiperqueratósica rugosa com pontos negros por capilares dérmicos trombosados; clínico. Crioterapia com nitrogênio ou curetagem. Proliferação epitelial benigna acantótica induzida pela infecção pelo HPV tipo 2.",
+        "answer": "Verruga Vulgar",
+        "image": "https://clinicadermone.com.br/wp-content/uploads/2014/02/verruga.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Pápulas poligonais achatadas discretamente queratósicas em face e dorso de mãos; clínico. Tretinoína tópica ou eletrocoagulação branda. Proliferação intraepidérmica benigna mediada pela infecção por HPV tipos 3 e 10.",
+        "answer": "Verruga Plana",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTYXoAq6k6IPJig-VvphV_1DvyThXX9QzgftDLSNAkwz7HeMloUhiZ1Qw&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Lesão hiperqueratósica dolorosa com anel periférico e centro deprimido com pontos pretos; clínico. Ácido nítrico, salicílico ou nitrogênio. Infecção epidérmica pelo HPV 1 gerando crescimento endofítico por pressão local.",
+        "answer": "Verruga Plantar",
+        "image": "https://image.tuasaude.com/media/article/rt/pg/verruga-plantar_74870.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Pápulas vegetantes em couve-flor em mucosas anogenitais; diagnóstico clínico. Imiquimode tópico, ATA ou ablação cirúrgica. Infecção epitelial de transmissão sexual causada por subtipos benignos de HPV (6 e 11).",
+        "answer": "Condiloma Acuminado",
+        "image": "https://drakeillafreitas.com.br/wp-content/uploads/2017/02/HPV.pptx-17.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Vesículas agrupadas em cacho de uva sobre base eritematosa que rompem formando crostas; Tzanck ou clínico. Aciclovir precoce. Reativação mucocutânea periódica por vírus neurotrópico latente em gânglios sensitivos (HSV 1 e 2).",
+        "answer": "Herpes Simples",
+        "image": "https://api.padrao.com.br/uploads/padrao_tipos_de_herpes_capa_9996ae4104.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Exantema polimorfo simultâneo com máculas, vesículas umbilicadas e crostas associado a febre; clínico. Aciclovir e suporte sintomático. Primoinfecção sistêmica respiratória altamente contagiosa pelo vírus Varicela-Zóster.",
+        "answer": "Varicela",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/e/eb/Varicela_Aranzales.jpg?utm_source=pt.wikipedia.org&utm_campaign=index&utm_content=original"
+    },
+    {
+        "type": "anki",
+        "description": "Vesículas agrupadas unilaterais seguindo o trajeto de um dermátomo com dor neurítica; clínico. Aciclovir oral em até 72 horas. Reativação do vírus Varicela-Zóster latente no gânglio dorsal por queda da imunidade.",
+        "answer": "Herpes-Zóster",
+        "image": "https://ep-cms-td-conteudodoc-prd-cdfqcebge4fub7hv.a01.azurefd.net/cms-wordpress/wp-content/uploads/2024/10/herpes-zoster.jpeg"
+    },
+    {
+        "type": "anki",
+        "description": "Paralisia facial periférica, otalgia e vesículas no pavilhão auditivo com perda de audição; clínico. Aciclovir em dose dobrada e corticoterapia precoce. Acometimento do gânglio geniculado dos pares VII e VIII por zóster.",
+        "answer": "Síndrome de Ramsay-Hunt (Justin Bieber)",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Ramsey_Hunt_Syndrome.png?utm_source=pt.wikipedia.org&utm_campaign=index&utm_content=original"
+    },
+    {
+        "type": "anki",
+        "description": "Placa-mãe ovalada pioneira seguida de lesões com colarete descamativo interno nas clivagens (árvore de natal); clínico e VDRL. Anti-histamínicos. Erupção inflamatória autolimitada associada à reativação do Herpes-vírus 7.",
+        "answer": "Pitiríase Rósea",
+        "image": "https://www.clinicadermaclin.com.br/wp-content/uploads/2018/06/PitirIase-ROsea.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Pápulas semiesféricas translúcidas com umbilicação central expelindo material caseoso; clínico. Curetagem sob anestésico tópico. Infecção epidérmica benigna autolimitada por Poxvírus com corpúsculos de inclusão.",
+        "answer": "Molusco Contagioso",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSybY-N0Mq-GBSBOiEeZgld_WzXAQkC2enGFGOlg-tc8YdptG6ITc3pRS4&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Vesículas ovóides em palmas, plantas e nádegas com erosões orais dolorosas; clínico. Analgésicos e suporte. Infecção enteroviral autolimitada transmitida por vias fecal-oral e aérea por Coxsackievírus A16.",
+        "answer": "Doença Mãos, Pés e Boca",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcReqwj20EkcsdaxKmPpwAgkHf7T0NJSRJeLPIZdWR6IsBBK49YyKIQqvmM&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Pápulas eritematosas monomórficas acrais em face, membros e nádegas, poupando tronco; clínico. Suporte e anti-histamínicos. Reação inflamatória pós-viral associada aos vírus da Hepatite B e Epstein-Barr.",
+        "answer": "Síndrome de Gianotti-Crosti",
+        "image": "https://med.estrategia.com/portal/wp-content/uploads/2025/04/iScreen-Shoter-Pre-Visualizacao-250428084158.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Febre alta isolada por 3 dias que cede com o surgimento súbito de exantema róseo e sinal de Nagayama; clínico. Antitérmicos. Infecção viral na primeira infância pelo herpes-vírus humano 6 (HHV-6) com viremia.",
+        "answer": "Exantema Súbito",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRx5bVreXpoUxA-1UNeRPx3gC-9JQjqjM3igzVzqtTHRBj4nh16-OSC0PsU&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Eritema malar vivo (face esbofeteada) seguido por exantema rendilhado reticular no tronco; diagnóstico clínico. Sintomáticos. Reação imunomediada induzida por Parvovírus B19 com tropismo por progenitores eritroides.",
+        "answer": "Eritema Infeccioso",
+        "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/ba/Fifth_disease.jpg/1280px-Fifth_disease.jpg?utm_source=pt.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
+    },
+    {
+        "type": "anki",
+        "description": "Exantema morbiliforme craniocaudal com febre, tosse, coriza e manchas de Koplik na mucosa jugal; clínico e sorologia. Suporte e vitamina A. Virose altamente contagiosa por via aérea provocada por vírus do gênero Paramixovírus.",
+        "answer": "Sarampo",
+        "image": "https://hilab.com.br/wp-content/uploads/2021/03/Catapora-Hilab.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Exantema maculopapular róseo com adenomegalia retroauricular/suboccipital e manchas de Forchheimer; sorologia. Suporte clínico. Infecção por Togavírus com alto potencial teratogênico no primeiro trimestre gestacional.",
+        "answer": "Rubéola",
+        "image": "https://static1.minhavida.com.br/diseases/f9/54/0e/c1/close-de-costas-de-uma-crianca-com-lesoes-da-rubeola-amp_hero-1.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Febre, faringoamigdalite exsudativa, adenomegalia cervical e exantema após aminopenicilinas; atipia e sorologia. Suporte. Resposta imune proliferativa de células T induzida pela infecção de células B pelo EBV.",
+        "answer": "Mononucleose Infecciosa",
+        "image": "https://www.mdsaude.com/wp-content/uploads/rash-mono.jpg"
+    },
+    {
+        "type": "anki",
+        "description": "Urticas eritematoedematosas pruriginosas e evanescentes que somem em menos de 24 horas; diagnóstico clínico. Anti-histamínicos H1. Edema na derme superficial por vasodilatação após liberação de histamina por mastócitos.",
+        "answer": "Urticária",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLzaskzonrzAo-XfO4Ng7S4dN6k1KW_yUkZIEFNJ5lI1dMZvNL-X89OWEF&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Nódulo dérmico móvel cupuliforme com poro central que elimina massa ceratótica fétida; clínico. Excisão cirúrgica de toda a cápsula. Invaginação e encistamento do infundíbulo folicular com acúmulo de queratina dérmica.",
+        "answer": "Cisto Epidérmico",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuzzBPHliPpfmiqPMPE1BcP3lrutY-W-tdKog9RduTs_DugTAlXn2L0C8&s=10"
+    },
+    {
+        "type": "anki",
+        "description": "Úlcera destrutiva dolorosa com bordas violáceas solapadas e fundo purulento, exibindo patergia; biópsia de exclusão. Corticoterapia sistêmica. Dermatose neutrofílica inflamatória associada a doença inflamatória intestinal.",
+        "answer": "Pioderma Gangrenoso",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/1/12/Crohnie_Pyoderma_gangrenosum.jpg?utm_source=pt.wikipedia.org&utm_campaign=index&utm_content=original"
+    },
+    {
+        "type": "anki",
+        "description": "Tratamento utilizado para tratar dermatite atópica, dermatite de contato, líquen simples crônico, eczema numular, dermatite disidrótica, prurigo nodular, psoríase vulgar leve e alopecia areata.",
+        "answer": "Corticosteroides tópicos"
+    },
+    {
+        "type": "anki",
+        "description": "Tratamento utilizado para tratar pênfigo vulgar, pênfigo foliáceo, pioderma gangrenoso, alopecia areata extensa e formas graves de psoríase.",
+        "answer": "Corticosteroides e imunossupressores sistêmicos"
+    },
+    {
+        "type": "anki",
+        "description": "Tratamento utilizado para tratar pitiríase versicolor, dermatite seborreica, tinha do corpo, tinha crural, tinha do pé, tinha negra, piedra branca, piedra preta e candidíase intertriginosa.",
+        "answer": "Antifúngicos tópicos"
+    },
+    {
+        "type": "anki",
+        "description": "Tratamento utilizado para tratar tinha do couro cabeludo, tinha da unha, tinha imbricada, esporotricose, paracoccidioidomicose, histoplasmose cutânea e criptococose cutânea.",
+        "answer": "Antifúngicos sistêmicos"
+    },
+    {
+        "type": "anki",
+        "description": "Tratamento utilizado para tratar herpes simples mucocutâneo, infecção por vírus varicela-zóster (varicela), herpes-zóster e síndrome de Ramsay-Hunt.",
+        "answer": "Antivirais orais (aciclovir e valaciclovir)"
+    },
+    {
+        "type": "anki",
+        "description": "Tratamento utilizado para tratar erisipela, celulite infecciosa, furúnculo, antraz, ectima profundo, hidradenite supurativa em fase inflamatória e psoríase gutata.",
+        "answer": "Antibióticos sistêmicos"
+    },
+    {
+        "type": "anki",
+        "description": "Tratamento utilizado para tratar impetigo crostoso localizado, foliculite bacteriana superficial, eritrasma intertriginoso e formas superficiais de ectima.",
+        "answer": "Antibióticos tópicos"
+    },
+    {
+        "type": "anki",
+        "description": "Tratamento utilizado para tratar verrugas virais (vulgar, plana, plantar), ceratose actínica, papulose bowenóide, molusco contagioso e CBC superficial.",
+        "answer": "Crioterapia e eletrocoagulação com curetagem"
+    },
+    {
+        "type": "anki",
+        "description": "Tratamento utilizado para tratar condiloma acuminado anogenital, ceratose actínica (campo de cancerização), doença de Bowen, eritroplasia de Queyrat e carcinoma basocelular superficial.",
+        "answer": "Imiquimode tópico"
+    },
+    {
+        "type": "anki",
+        "description": "Tratamento utilizado para tratar carcinoma basocelular, carcinoma espinocelular, carcinoma verrucoso, carcinoma de células de Merkel, melanoma cutâneo e cisto epidérmico.",
+        "answer": "Excisão cirúrgica com margem"
+    },
+    {
+        "type": "anki",
+        "description": "Tratamento utilizado para tratar ictiose vulgar, dermatite asteatótica, manutenção da dermatite atópica e eczema numular xerótico.",
+        "answer": "Emolientes e hidratação cutânea"
+    },
+    {
+        "type": "anki",
+        "description": "Tratamento utilizado para tratar urticária aguda e crônica, alívio do prurido na dermatite atópica, pitiríase rósea, síndrome de Gianotti-Crosti e varicela.",
+        "answer": "Anti-histamínicos sistêmicos"
+    },
+    {
+        "type": "anki",
+        "description": "Tratamento utilizado para tratar exantema súbito, eritema infeccioso, doença mãos, pés e boca, rubéola, mononucleose infecciosa e sarampo.",
+        "answer": "Suporte clínico e sintomáticos"
+    },
+    {
+        "type": "anki",
+        "description": "Tratamento utilizado para tratar psoríase vulgar em placas, vitiligo, dermatite atópica moderada a grave, eczema numular refratário e pitiríase rósea.",
+        "answer": "Fototerapia"
+    },
+    {
+        "type": "anki",
+        "description": "Tratamento utilizado para tratar psoríase palmoplantar hiperceratósica, tinha negra palmar, ictiose vulgar e verrugas virais plantares.",
+        "answer": "Queratolíticos tópicos"
+    }
+]
