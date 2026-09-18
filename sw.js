@@ -1,4 +1,4 @@
-const CACHE_NAME = 'flashcards-v2.8'; // Increment version to trigger update
+const CACHE_NAME = 'flashcards-v2.9'; // Increment version to trigger update
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

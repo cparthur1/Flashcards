@@ -705,65 +705,80 @@ function convertDocumentToCards(text, mode = 'anki') {
     const cards = [];
 
     for (let line of lines) {
-        if (mode === 'anki') {
-            // In Anki-like: line is Pergunta/Frente : Resposta/Verso
-            const colonIndex = line.indexOf(':');
+        if (line.startsWith('(open_double)')) {
+            const content = line.replace('(open_double)', '').trim();
+            const colonIndex = content.indexOf(':');
             if (colonIndex !== -1) {
-                const question = line.substring(0, colonIndex).trim();
-                const answer = line.substring(colonIndex + 1).trim();
-                if (question && answer) {
+                const answersPart = content.substring(0, colonIndex).trim();
+                const description = content.substring(colonIndex + 1).trim();
+                const [ans1, ans2] = answersPart.split(';');
+                cards.push({
+                    type: "open_double",
+                    description: description,
+                    answer: ans1 ? ans1.trim() : "",
+                    answer2: ans2 ? ans2.trim() : "",
+                    placeholder1: "Resposta 1",
+                    placeholder2: "Resposta 2"
+                });
+            }
+        } else if (line.startsWith('(multiple_choice)')) {
+            const content = line.replace('(multiple_choice)', '').trim();
+            const colonIndex = content.indexOf(':');
+            if (colonIndex !== -1) {
+                const answer = content.substring(0, colonIndex).trim();
+                const description = content.substring(colonIndex + 1).trim();
+                cards.push({
+                    type: "multiple_choice",
+                    description: description,
+                    answer: answer,
+                    options: ["Opção 1", "Opção 2", answer, "Opção 4"]
+                });
+            }
+        } else if (line.startsWith('(anki)')) {
+            const content = line.replace('(anki)', '').trim();
+            const colonIndex = content.indexOf(':');
+            if (colonIndex !== -1) {
+                const front = content.substring(0, colonIndex).trim();
+                const back = content.substring(colonIndex + 1).trim();
+                if (front && back) {
                     cards.push({
                         type: 'anki',
-                        description: question,
-                        answer: answer
+                        description: front,
+                        answer: back
                     });
                 }
             }
+        } else if (mode === 'anki') {
+            // In Anki-like: line is Frente (description) : Verso (answer)
+            const colonIndex = line.indexOf(':');
+            if (colonIndex !== -1) {
+                const front = line.substring(0, colonIndex).trim();
+                const back = line.substring(colonIndex + 1).trim();
+                if (front && back) {
+                    cards.push({
+                        type: 'anki',
+                        description: front,
+                        answer: back
+                    });
+                }
+            } else if (cards.length > 0) {
+                cards[cards.length - 1].answer += ' ' + line;
+            }
         } else {
-            // Traditional mode: use old format & tags without AI
-            if (line.startsWith('(open_double)')) {
-                const content = line.replace('(open_double)', '').trim();
-                const colonIndex = content.indexOf(':');
-                if (colonIndex !== -1) {
-                    const answersPart = content.substring(0, colonIndex).trim();
-                    const description = content.substring(colonIndex + 1).trim();
-                    const [ans1, ans2] = answersPart.split(';');
+            // Traditional mode (open): before ':' is Answer, after ':' is Question (description)
+            const colonIndex = line.indexOf(':');
+            if (colonIndex !== -1) {
+                const answer = line.substring(0, colonIndex).trim();
+                const description = line.substring(colonIndex + 1).trim();
+                if (answer && description) {
                     cards.push({
-                        type: "open_double",
+                        type: "open",
                         description: description,
-                        answer: ans1 ? ans1.trim() : "",
-                        answer2: ans2 ? ans2.trim() : "",
-                        placeholder1: "Resposta 1",
-                        placeholder2: "Resposta 2"
+                        answer: answer
                     });
                 }
-            } else if (line.startsWith('(multiple_choice)')) {
-                const content = line.replace('(multiple_choice)', '').trim();
-                const colonIndex = content.indexOf(':');
-                if (colonIndex !== -1) {
-                    const answer = content.substring(0, colonIndex).trim();
-                    const description = content.substring(colonIndex + 1).trim();
-                    cards.push({
-                        type: "multiple_choice",
-                        description: description,
-                        answer: answer,
-                        options: ["Opção 1", "Opção 2", answer, "Opção 4"]
-                    });
-                }
-            } else {
-                // Front : Back (or Answer : Question)
-                const colonIndex = line.indexOf(':');
-                if (colonIndex !== -1) {
-                    const question = line.substring(0, colonIndex).trim();
-                    const answer = line.substring(colonIndex + 1).trim();
-                    if (question && answer) {
-                        cards.push({
-                            type: "open",
-                            description: question,
-                            answer: answer
-                        });
-                    }
-                }
+            } else if (cards.length > 0) {
+                cards[cards.length - 1].description += ' ' + line;
             }
         }
     }
@@ -807,6 +822,18 @@ function parseTxtToJSONWithPlaceholders(text) {
                     options: ["[GEMINI]", "[GEMINI]", answer, "[GEMINI]"]
                 };
             }
+        } else if (line.startsWith('(anki)')) {
+            const content = line.replace('(anki)', '').trim();
+            const colonIndex = content.indexOf(':');
+            if (colonIndex !== -1) {
+                const front = content.substring(0, colonIndex).trim();
+                const back = content.substring(colonIndex + 1).trim();
+                card = {
+                    type: "anki",
+                    description: front,
+                    answer: back
+                };
+            }
         } else {
             const colonIndex = line.indexOf(':');
             if (colonIndex !== -1) {
@@ -817,6 +844,8 @@ function parseTxtToJSONWithPlaceholders(text) {
                     description: description,
                     answer: answer
                 };
+            } else if (cards.length > 0) {
+                cards[cards.length - 1].description += ' ' + line;
             }
         }
 
