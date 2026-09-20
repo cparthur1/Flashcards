@@ -228,10 +228,13 @@
 
             <div class="p-6 overflow-y-auto space-y-6">
                 <!-- Explanation -->
-                <div class="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 p-4 rounded-2xl text-sm leading-relaxed text-blue-900 dark:text-blue-200">
+                <div class="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 p-4 rounded-2xl text-sm leading-relaxed text-blue-900 dark:text-blue-200 space-y-2">
                     <p class="font-semibold mb-1">Como funciona a formatação:</p>
                     <p>
                         Cada linha do documento vai ser um card. No modo <strong>Tradicional</strong>, o que vem antes do <strong>":"</strong> é a resposta e o que vem depois é a pergunta. No modo <strong>Anki-like</strong>, o que vem antes do <strong>":"</strong> é a frente e o que vem depois é o verso. Se quiser digitar a resposta, selecione tradicional, se não, anki-like.
+                    </p>
+                    <p class="text-xs opacity-90 border-t border-blue-200/60 dark:border-blue-800/60 pt-2">
+                        💡 <strong>Notas e Divisores:</strong> Linhas iniciadas com <code>#</code> viram divisores de seção no editor (não aparecem durante o jogo).
                     </p>
                 </div>
 
@@ -363,6 +366,7 @@
                     <p class="text-xs">• Linha padrão: <code>RESPOSTA: Pergunta</code></p>
                     <p class="text-xs">• Resposta dupla: inicie com <code>(open_double) Resposta1;Resposta2: Pergunta</code> (o Gemini criará os rótulos adequados).</p>
                     <p class="text-xs">• Múltipla escolha: inicie com <code>(multiple_choice) RespostaCorreta: Pergunta</code> (o Gemini criará distratores plausíveis).</p>
+                    <p class="text-xs">• Notas e divisores: inicie com <code># Título da Seção</code> (organizam o baralho no editor e são ignorados no jogo).</p>
                 </div>
 
                 <!-- API Key Field -->
@@ -450,6 +454,7 @@
                         <option value="open_double">Tradicional duplo (Resposta Dupla)</option>
                         <option value="anki">Anki-like [Novo]</option>
                         <option value="multiple_choice">Múltipla Escolha (2 a 6 opções)</option>
+                        <option value="divisor">Divisor / Nota (#)</option>
                     </select>
                     <p id="creator-type-hint" class="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">
                         Pergunta é uma descrição e você digita o nome do conceito.

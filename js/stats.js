@@ -213,7 +213,8 @@ function renderAllStats() {
 }
 
 function renderCurrentSession(sess, gameState, history) {
-    const totalCards = gameState.allQuestions ? gameState.allQuestions.length : (sess ? sess.totalCardsInDeck : 0);
+    const playableAll = gameState.allQuestions ? gameState.allQuestions.filter(q => q.type !== 'divisor' && q.type !== 'divider' && q.type !== 'note') : null;
+    const totalCards = playableAll ? playableAll.length : (sess ? sess.totalCardsInDeck : 0);
     const poolRemaining = gameState.questionsPool ? gameState.questionsPool.length : 0;
     const completedCards = Math.max(0, totalCards - poolRemaining);
 
@@ -949,7 +950,7 @@ async function triggerAiCategorization(gameState, statsData) {
         const currentDeckTitle = gameState.deckTitle || (localStorage.getItem('flashcardsActiveMode') === 'notebook' ? 'Caderno' : 'Flashcards');
         const historyDeckTitles = (statsData.history || []).map(s => s.deckTitle).filter(Boolean);
         const deckTitles = Array.from(new Set([currentDeckTitle, ...historyDeckTitles]));
-        const cards = gameState.allQuestions || [];
+        const cards = (gameState.allQuestions || []).filter(q => q.type !== 'divisor' && q.type !== 'divider' && q.type !== 'note');
         const existingCategories = getStoredAiCategories() || { knownSubjects: [], knownTopicsByDeck: {} };
 
         await callGeminiFlashLiteCategorization({

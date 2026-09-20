@@ -83,8 +83,9 @@ function init() {
                     }
                     
                     if (isNotebook) {
+                        const playable = questions.filter(q => q && q.type !== 'divisor' && q.type !== 'divider' && q.type !== 'note');
                         const notebookState = {
-                            questionsPool: [...questions],
+                            questionsPool: [...playable],
                             allQuestions: [...questions],
                             score: 0,
                             deckTitle: deckTitle
@@ -113,8 +114,9 @@ function init() {
     }
 
     function saveAndRedirect(questions, title) {
+        const playable = questions.filter(q => q && q.type !== 'divisor' && q.type !== 'divider' && q.type !== 'note');
         const gameState = {
-            questionsPool: [...questions],
+            questionsPool: [...playable],
             allQuestions: [...questions],
             score: 0,
             deckTitle: title

@@ -509,8 +509,14 @@ function animate() {
 }
 
 
+// --- HELPER: FILTER PLAYABLE CARDS (EXCLUDE DEVISORS / NOTES) ---
+function isPlayableCard(card) {
+    return card && card.type !== 'divisor' && card.type !== 'divider' && card.type !== 'note';
+}
+
 // --- CORE GAME LOGIC ---
 function loadQuestion() {
+    questionsPool = questionsPool.filter(isPlayableCard);
     if (questionsPool.length === 0) {
         questionText.textContent = "Parabéns! Você concluiu todas as questões. Reiniciando...";
         deleteCardBtn.classList.add('hidden');
@@ -523,9 +529,9 @@ function loadQuestion() {
             balls = [];
             score = 0;
             scoreDisplay.textContent = '0';
-            questionsPool = [...allQuestions];
+            questionsPool = allQuestions.filter(isPlayableCard);
             currentStep = 0;
-            initStatsSession(deckTitle.textContent, activeMode, allQuestions.length, 0);
+            initStatsSession(deckTitle.textContent, activeMode, allQuestions.filter(isPlayableCard).length, 0);
             loadQuestion();
         }, 3000);
         return;
@@ -1682,11 +1688,11 @@ if (restartGameBtn) {
             balls = [];
             score = 0;
             scoreDisplay.textContent = '0';
-            questionsPool = [...allQuestions];
+            questionsPool = allQuestions.filter(isPlayableCard);
             saveGameState();
             updateScoreDisplay();
             archiveCurrentSession(false);
-            initStatsSession(deckTitle.textContent, activeMode, allQuestions.length, 0);
+            initStatsSession(deckTitle.textContent, activeMode, allQuestions.filter(isPlayableCard).length, 0);
             loadQuestion();
             showNotificationPill("Jogo reiniciado!", "reset.svg");
         });
@@ -2221,7 +2227,7 @@ function switchActiveMode(newMode) {
     }
     
     allQuestions = data.allQuestions || [];
-    questionsPool = data.questionsPool || [];
+    questionsPool = (data.questionsPool || []).filter(isPlayableCard);
     score = data.score || 0;
     deckTitle.textContent = data.deckTitle || (newMode === 'notebook' ? "Caderno" : "Flashcards");
     document.title = data.deckTitle ? `${data.deckTitle} | Flashcards` : "Estudando Flashcards";
@@ -2231,7 +2237,7 @@ function switchActiveMode(newMode) {
     updateScoreDisplay();
     isFirstQuestion = true;
     
-    initStatsSession(deckTitle.textContent, newMode, allQuestions.length, score);
+    initStatsSession(deckTitle.textContent, newMode, allQuestions.filter(isPlayableCard).length, score);
     loadQuestion();
     
     showNotificationPill(`Estudando: ${deckTitle.textContent}`, newMode === 'notebook' ? "collection.svg" : "uploaded.svg");
@@ -2295,7 +2301,7 @@ function initGame() {
     }
 
     allQuestions = data.allQuestions || [];
-    questionsPool = data.questionsPool || [];
+    questionsPool = (data.questionsPool || []).filter(isPlayableCard);
     score = data.score || 0;
     deckTitle.textContent = data.deckTitle || (activeMode === 'notebook' ? "Caderno" : "Flashcards");
     document.title = data.deckTitle ? `${data.deckTitle} | Flashcards` : "Estudando Flashcards";
@@ -2307,7 +2313,7 @@ function initGame() {
     }
 
     updateScoreDisplay();
-    initStatsSession(deckTitle.textContent, activeMode, allQuestions.length, score);
+    initStatsSession(deckTitle.textContent, activeMode, allQuestions.filter(isPlayableCard).length, score);
     loadQuestion(); 
     initializeAi();
     updateAiUI();

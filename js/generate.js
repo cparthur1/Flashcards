@@ -194,15 +194,15 @@ const deckTools = [
                 parameters: {
                     type: "OBJECT",
                     properties: {
-                        type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki"], description: "Tipo do card" },
-                        description: { type: "STRING", description: "Pergunta ou conceito" },
-                        answer: { type: "STRING", description: "Resposta principal ou explicação detalhada" },
+                        type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki", "divisor"], description: "Tipo do card" },
+                        description: { type: "STRING", description: "Pergunta, conceito ou texto do divisor" },
+                        answer: { type: "STRING", description: "Resposta principal ou explicação detalhada (opcional para divisor)" },
                         answer2: { type: "STRING", description: "Resposta secundária (apenas para open_double)" },
                         options: { type: "ARRAY", items: { type: "STRING" }, description: "Opções (apenas para multiple_choice)" },
                         image: { type: "STRING", description: "URL ou Base64 da imagem da pergunta (opcional)" },
                         answerImage: { type: "STRING", description: "URL ou Base64 da imagem da resposta (opcional)" }
                     },
-                    required: ["type", "description", "answer"]
+                    required: ["type", "description"]
                 }
             },
             {
@@ -212,7 +212,7 @@ const deckTools = [
                     type: "OBJECT",
                     properties: {
                         index: { type: "NUMBER", description: "O índice (começando em 0) do card a ser editado." },
-                        type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki"] },
+                        type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki", "divisor"] },
                         description: { type: "STRING" },
                         answer: { type: "STRING" },
                         answer2: { type: "STRING" },
@@ -260,7 +260,7 @@ const deckTools = [
                             items: {
                                 type: "OBJECT",
                                 properties: {
-                                    type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki"] },
+                                    type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki", "divisor"] },
                                     description: { type: "STRING" },
                                     answer: { type: "STRING" },
                                     answer2: { type: "STRING" },
@@ -268,7 +268,7 @@ const deckTools = [
                                     image: { type: "STRING" },
                                     answerImage: { type: "STRING" }
                                 },
-                                required: ["type", "description", "answer"]
+                                required: ["type", "description"]
                             }
                         }
                     },
@@ -379,6 +379,16 @@ function normalizeCard(raw) {
     if (!raw || typeof raw !== 'object') return null;
 
     let type = raw.type ? String(raw.type).toLowerCase().replace(/[-\s]/g, '_') : '';
+    if (type === 'divisor' || type === 'divider' || type === 'note' || type === 'secao' || type === 'section') {
+        const text = (raw.text || raw.description || raw.title || '').trim();
+        if (!text) return null;
+        return {
+            type: 'divisor',
+            text: text,
+            description: text,
+            answer: ''
+        };
+    }
     if (type === 'multiple_choice' || type === 'multipla_escolha' || type === 'mc') {
         type = 'multiple_choice';
     } else if (type === 'open_double' || type === 'duplo' || type === 'double') {
@@ -705,6 +715,19 @@ function convertDocumentToCards(text, mode = 'anki') {
     const cards = [];
 
     for (let line of lines) {
+        if (line.startsWith('#')) {
+            const noteText = line.replace(/^#+\s*/, '').trim();
+            if (noteText) {
+                cards.push({
+                    type: "divisor",
+                    text: noteText,
+                    description: noteText,
+                    answer: ""
+                });
+            }
+            continue;
+        }
+
         if (line.startsWith('(open_double)')) {
             const content = line.replace('(open_double)', '').trim();
             const colonIndex = content.indexOf(':');
@@ -761,7 +784,7 @@ function convertDocumentToCards(text, mode = 'anki') {
                         answer: back
                     });
                 }
-            } else if (cards.length > 0) {
+            } else if (cards.length > 0 && cards[cards.length - 1].type !== 'divisor') {
                 cards[cards.length - 1].answer += ' ' + line;
             }
         } else {
@@ -777,7 +800,7 @@ function convertDocumentToCards(text, mode = 'anki') {
                         answer: answer
                     });
                 }
-            } else if (cards.length > 0) {
+            } else if (cards.length > 0 && cards[cards.length - 1].type !== 'divisor') {
                 cards[cards.length - 1].description += ' ' + line;
             }
         }
@@ -792,6 +815,19 @@ function parseTxtToJSONWithPlaceholders(text) {
     for (let line of lines) {
         line = line.trim();
         let card = null;
+
+        if (line.startsWith('#')) {
+            const noteText = line.replace(/^#+\s*/, '').trim();
+            if (noteText) {
+                cards.push({
+                    type: "divisor",
+                    text: noteText,
+                    description: noteText,
+                    answer: ""
+                });
+            }
+            continue;
+        }
 
         if (line.startsWith('(open_double)')) {
             const content = line.replace('(open_double)', '').trim();
@@ -844,7 +880,7 @@ function parseTxtToJSONWithPlaceholders(text) {
                     description: description,
                     answer: answer
                 };
-            } else if (cards.length > 0) {
+            } else if (cards.length > 0 && cards[cards.length - 1].type !== 'divisor') {
                 cards[cards.length - 1].description += ' ' + line;
             }
         }
@@ -926,7 +962,8 @@ submitModal12Btn.addEventListener('click', async () => {
         const text = await extractTextFromFile(file);
         const cards = convertDocumentToCards(text, selectedMode);
 
-        if (cards.length === 0) {
+        const playableCards = cards.filter(c => c.type !== 'divisor' && c.type !== 'divider' && c.type !== 'note');
+        if (playableCards.length === 0) {
             modal12Error.textContent = 'Nenhum flashcard válido encontrado no arquivo. Certifique-se de usar ":" para separar pergunta e resposta.';
             return;
         }
@@ -1028,6 +1065,8 @@ Formatos permitidos:
 2. open_double: {"type": "open_double", "description": "Pergunta comparativa/dupla", "answer": "Primeira resposta", "answer2": "Segunda resposta", "placeholder1": "Rótulo 1", "placeholder2": "Rótulo 2"}
 3. multiple_choice: {"type": "multiple_choice", "description": "Enunciado da questão", "answer": "Alternativa correta", "options": ["Alt 1", "Alt 2", "Alternativa correta", "Alt 4"]}
 4. anki: {"type": "anki", "description": "Conceito a ser lembrado", "answer": "Explicação completa e detalhada para repetição espaçada"}
+
+Linhas ou anotações iniciadas por '#' nos arquivos de texto/documentos são comentários/notas e devem ser ignoradas, nunca convertidas em perguntas.
 
 Gere aproximadamente 100 flashcards completos e aprofundados cobrindo todo o material enviado.`;
 
@@ -1244,6 +1283,7 @@ submitModal22Btn.addEventListener('click', async () => {
         const fillPrompt = `Aqui está uma lista de flashcards que precisam que você preencha os campos '[GEMINI]'.
 Para 'open_double', preencha 'placeholder1' e 'placeholder2' com rótulos descritivos curtos para as respostas.
 Para 'multiple_choice', complete o array 'options' com alternativas incorretas porém plausíveis (distratores), mantendo a resposta correta informada.
+Mantenha quaisquer itens com type 'divisor' intactos e em suas respectivas posições entre os cartões.
 Ao terminar, chame 'adicionar_varios_cards' para enviar o baralho finalizado.
 
 JSON:
@@ -1371,7 +1411,8 @@ const typeHints = {
     open: "Pergunta é uma descrição e você digita o nome do conceito.",
     open_double: "Uma pergunta, você digita duas respostas.",
     anki: "Pergunta é um conceito (curto), ou imagem, e resposta é uma descrição longa, ou imagem. Sem digitação.",
-    multiple_choice: "Pergunta é um conceito, você escolhe entre alternativas (2 a 6 opções)."
+    multiple_choice: "Pergunta é um conceito, você escolhe entre alternativas (2 a 6 opções).",
+    divisor: "Adiciona um divisor na lista para organizar tópicos no editor. Não aparece no jogo."
 };
 
 creatorCardType.addEventListener('change', () => {
@@ -1384,10 +1425,20 @@ creatorCardType.addEventListener('change', () => {
     creatorGroupAnki.classList.toggle('hidden', t !== 'anki');
     creatorGroupMc.classList.toggle('hidden', t !== 'multiple_choice');
 
-    if (t === 'anki') {
+    const qImgContainer = creatorQImgUrl?.parentElement?.parentElement;
+    if (qImgContainer) {
+        qImgContainer.classList.toggle('hidden', t === 'divisor');
+    }
+
+    if (t === 'divisor') {
+        creatorQuestionLabel.textContent = "Texto do Divisor / Nota (#)";
+        creatorQuestion.placeholder = "Ex: Seção 1 - Fisiologia Renal";
+    } else if (t === 'anki') {
         creatorQuestionLabel.textContent = "Pergunta / Conceito (Curto)";
+        creatorQuestion.placeholder = "Escreva a pergunta ou conceito...";
     } else {
         creatorQuestionLabel.textContent = "Pergunta / Descrição";
+        creatorQuestion.placeholder = "Escreva a pergunta ou conceito...";
     }
 
     if (t === 'multiple_choice' && creatorMcOptionsList.children.length === 0) {
@@ -1491,6 +1542,23 @@ creatorSubmitCardBtn.addEventListener('click', () => {
     creatorFeedback.classList.add('hidden');
     const type = creatorCardType.value;
     const desc = creatorQuestion.value.trim();
+
+    if (type === 'divisor') {
+        if (!desc) {
+            alert("Por favor, digite o texto do divisor/nota.");
+            creatorQuestion.focus();
+            return;
+        }
+        deckCards.push({
+            type: 'divisor',
+            text: desc,
+            description: desc,
+            answer: ''
+        });
+        renderCardsList(true);
+        creatorQuestion.value = '';
+        return;
+    }
 
     if (!desc && !pendingCreatorQImage) {
         alert("Por favor, informe a pergunta ou selecione uma imagem.");
@@ -1696,7 +1764,8 @@ function finishGeneratingAnimation(success = true, count = 0) {
 
 // --- RENDER CARDS LIST IN EDITOR VIEW ---
 function renderCardsList(fullReRender = false) {
-    deckSizeBadge.textContent = deckCards.length;
+    const playableCount = deckCards.filter(c => c.type !== 'divisor' && c.type !== 'divider' && c.type !== 'note').length;
+    deckSizeBadge.textContent = playableCount;
 
     if (deckCards.length === 0) {
         if (isGeneratingCards) {
@@ -1761,11 +1830,81 @@ function renderCardsList(fullReRender = false) {
         cardsList.innerHTML = '';
     }
 
-    const currentCount = cardsList.querySelectorAll('.flashcard-item').length;
+    const currentCount = cardsList.children.length;
     for (let i = currentCount; i < deckCards.length; i++) {
-        const cardEl = createCardElement(deckCards[i], i);
-        cardsList.appendChild(cardEl);
+        const item = deckCards[i];
+        if (item.type === 'divisor' || item.type === 'divider' || item.type === 'note') {
+            const divisorEl = createDivisorElement(item, i);
+            cardsList.appendChild(divisorEl);
+        } else {
+            const cardEl = createCardElement(item, i);
+            cardsList.appendChild(cardEl);
+        }
     }
+}
+
+function createDivisorElement(divisor, index) {
+    const divisorEl = document.createElement('div');
+    divisorEl.className = "py-2 px-1 flex items-center gap-3 relative group transition select-none deck-divisor-item card-enter-anim";
+    divisorEl.dataset.index = index;
+
+    const leftLine = document.createElement('div');
+    leftLine.className = "h-px bg-gray-300 dark:bg-gray-700 flex-grow";
+
+    const textSpan = document.createElement('div');
+    textSpan.className = "flex items-center gap-1.5 px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm max-w-[85%]";
+
+    const hashTag = document.createElement('span');
+    hashTag.className = "text-blue-500 dark:text-blue-400 font-mono font-bold text-xs select-none";
+    hashTag.textContent = "#";
+
+    const labelSpan = document.createElement('span');
+    labelSpan.className = "truncate";
+    labelSpan.textContent = divisor.text || divisor.description || 'Nota / Divisor';
+    labelSpan.title = divisor.text || divisor.description || '';
+
+    textSpan.appendChild(hashTag);
+    textSpan.appendChild(labelSpan);
+
+    const rightLine = document.createElement('div');
+    rightLine.className = "h-px bg-gray-300 dark:bg-gray-700 flex-grow";
+
+    // Action buttons on hover (edit & delete)
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = "flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-1 flex-shrink-0";
+
+    const editBtn = document.createElement('button');
+    editBtn.className = "p-1.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/60 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-300 rounded-lg transition";
+    editBtn.title = "Editar nota do divisor";
+    editBtn.innerHTML = '<img src="../assets/img/edit.svg" class="w-3.5 h-3.5" alt="Editar">';
+    editBtn.onclick = () => {
+        const currentText = divisor.text || divisor.description || '';
+        const newText = prompt('Editar texto do divisor / nota:', currentText);
+        if (newText !== null && newText.trim() !== '') {
+            divisor.text = newText.trim();
+            divisor.description = newText.trim();
+            renderCardsList(true);
+        }
+    };
+
+    const delBtn = document.createElement('button');
+    delBtn.className = "p-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900/60 dark:hover:bg-red-800 text-red-600 dark:text-red-300 rounded-lg transition";
+    delBtn.title = "Excluir divisor";
+    delBtn.innerHTML = '<img src="../assets/img/delete.svg" class="w-3.5 h-3.5" alt="Excluir">';
+    delBtn.onclick = () => {
+        deckCards.splice(index, 1);
+        renderCardsList(true);
+    };
+
+    actionsDiv.appendChild(editBtn);
+    actionsDiv.appendChild(delBtn);
+
+    divisorEl.appendChild(leftLine);
+    divisorEl.appendChild(textSpan);
+    divisorEl.appendChild(rightLine);
+    divisorEl.appendChild(actionsDiv);
+
+    return divisorEl;
 }
 
 function createCardElement(card, index) {
@@ -2059,7 +2198,12 @@ chatSendBtn.addEventListener('click', async () => {
     showChatTypingIndicator();
 
     try {
-        const contextLines = deckCards.map((c, i) => `[${i}] (${c.type}) ${c.description.substring(0, 60)}... | R: ${c.answer}`).join('\n');
+        const contextLines = deckCards.map((c, i) => {
+            if (c.type === 'divisor' || c.type === 'divider' || c.type === 'note') {
+                return `[${i}] (divisor) # ${c.text || c.description || ''}`;
+            }
+            return `[${i}] (${c.type}) ${(c.description || '').substring(0, 60)}... | R: ${c.answer || ''}`;
+        }).join('\n');
         const enrichedPrompt = `ATENÇÃO: O estado atual do baralho é:\n${contextLines}\n\nComando do Usuário: ${text}`;
 
         let result = await callWithRetry(() => geminiChatSession.sendMessage(enrichedPrompt));
@@ -2120,14 +2264,15 @@ downloadDeckBtn.addEventListener('click', () => {
 });
 
 playDeckBtn.addEventListener('click', () => {
-    if (deckCards.length === 0) {
+    const playableCards = deckCards.filter(c => c.type !== 'divisor' && c.type !== 'divider' && c.type !== 'note');
+    if (playableCards.length === 0) {
         alert("Adicione pelo menos um cartão antes de jogar.");
         return;
     }
 
     const title = deckTitleDisplay.value;
     const gameState = {
-        questionsPool: [...deckCards],
+        questionsPool: [...playableCards],
         allQuestions: [...deckCards],
         score: 0,
         deckTitle: title
