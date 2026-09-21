@@ -142,3 +142,46 @@ Date: 2026-09-17
   "Instagram: @rthur_pc"
 - Centered layout below the upload card, with light/dark mode responsive styling.
 
+--------------------------------------------------------------------------------
+
+CHANGELOG: SEMANA DE PROVAS, MULTI-PARAGRAPH ANKI CARDS & MOBILE RESPONSIVE FOCUS
+Date: 2026-09-21
+
+1. MULTI-DECK "SEMANA DE PROVAS" ('index.html', 'js/index.js', 'pages/game.html', 'js/game.js')
+- Landing Screen Upload & Modal:
+  - Added dedicated 'Semana de Provas' button with purple-indigo skeuomorphic gradient.
+  - Interactive multi-deck modal ('#exam-modal') supporting batch drag-and-drop or file selection of multiple .json decks.
+  - Deck management before game starts: shows loaded deck list with individual card tallies and remove buttons.
+  - Quick-continue banner for in-progress exam sessions.
+  - Native multi-file upload support directly from the main file input.
+- In-Game Mixing & Management in Dropdown Menu:
+  - Merges and randomizes (Fisher-Yates) cards from all loaded decks into an integrated study pool.
+  - Source deck tags on cards dynamically indicate which subject/deck each card belongs to (e.g., 'ENDOCRINOP1', 'SEMIO NEURO').
+  - Enhanced Header Dropdown Menu ('#deck-select-dropdown'):
+    - Displays active 'Semana de Provas' mode with cards/deck summary counter.
+    - 'Baralhos na Mistura' section: lists all included decks with individual on/off checkboxes to toggle decks in/out of the active session on the fly.
+    - One-click deck removal with confirmation.
+    - '+ Adicionar Baralho' button directly in the dropdown to upload and merge new decks into the session without restarting.
+    - Seamless switching between 'Semana de Provas', individual decks, and 'Caderno'.
+
+2. MULTI-PARAGRAPH ANKI CARDS ANSWER SUPPORT ('pages/game.html', 'js/game.js', 'css/style.css', 'pages/generate.html', 'js/generate.js')
+- Transformed '#anki-answer-text' into a multi-paragraph container with 'whitespace-pre-line' and paragraph margin rules.
+- Added smart paragraph formatting helper that splits multi-line text into styled paragraphs while maintaining full compatibility with persistent study highlights ('<mark class="card-hl">').
+- Expanded editor textareas ('#edit-anki-answer-input', '#creator-ans-anki', '#edit-card-anki-answer') to rows="5" with vertical resizing ('resize-y').
+- Enhanced card preview in 'pages/generate.html' to render multi-line and multi-paragraph Anki answers without collapsing whitespace.
+
+3. MOBILE RESPONSIVE UI & KEYBOARD FOCUS ('pages/game.html', 'css/style.css', 'index.html')
+- Chrome Autofill Suggestion Removal:
+  - Removed dummy username input and credential form heuristics ('autocomplete="current-password"') in API key modal that triggered Chrome's password manager, credit card, and address autofill bar on Android.
+  - Added 'autocomplete="off"', 'autocorrect="off"', 'autocapitalize="off"', 'data-form-type="other"', 'data-lpignore="true"', and neutral name attributes to all game answer inputs.
+- Compact Responsive Margins:
+  - Reduced container and card padding on mobile screens ('p-4 sm:p-8', 'p-4 sm:p-6 mb-3 sm:mb-6') saving vertical space.
+  - Decreased fixed mobile header top margin from 80px to 56px, eliminating dead space.
+  - Scaled question images responsively ('max-h-36 xs:max-h-48 sm:max-h-80') to guarantee that cards fit comfortably when the virtual keyboard is active.
+- Smart Focus & Viewport Anchoring:
+  - Added 'scroll-margin-top: 60px' to the card container and answer inputs so native browser scrolling never hides cards under the fixed header.
+  - Implemented 'interactive-widget=resizes-content' in viewport meta tags.
+  - Dynamic focus listener and visualViewport resize handler smoothly repositions the container right below the header whenever the keyboard opens.
+  - Added '.keyboard-open' body state for hyper-compact vertical spacing during active input typing.
+
+

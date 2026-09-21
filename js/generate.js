@@ -1942,7 +1942,7 @@ function createCardElement(card, index) {
         }).join(' | ');
         ansStr = `<span class="text-xs text-gray-500">Opções: ${optsList}</span>`;
     } else if (card.type === 'anki') {
-        ansStr = `<strong>Resposta:</strong> <span class="text-indigo-600 dark:text-indigo-400">${card.answer || ''}</span>`;
+        ansStr = `<strong>Resposta:</strong> <div class="text-indigo-600 dark:text-indigo-400 whitespace-pre-line mt-0.5">${card.answer || ''}</div>`;
     }
 
     const textCont = document.createElement('div');

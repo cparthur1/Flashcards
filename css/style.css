@@ -378,11 +378,44 @@ textarea::-webkit-scrollbar-thumb,
     animation: ambientLightShift 12s ease-in-out infinite !important;
 }
 
-/* Mobile Header Overlap Fix */
+/* Mobile Header Overlap & Focus Handling */
+#game-container, #question-card, #answer-input, #answer-input-1, #answer-input-2 {
+    scroll-margin-top: 60px;
+}
+
 @media (max-width: 767px) {
     #game-container {
-        margin-top: 80px;
-        margin-bottom: 30px;
+        margin-top: 56px;
+        margin-bottom: 16px;
+    }
+
+    /* When keyboard is active on mobile, compact elements to keep card in focus */
+    body.keyboard-open #game-container,
+    @media (max-height: 580px) {
+        #game-container {
+            margin-top: 52px;
+            margin-bottom: 8px;
+            padding: 0.85rem;
+        }
+
+        #question-card {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            min-height: 70px;
+        }
+
+        #question-image {
+            max-height: 7.5rem;
+        }
+
+        #question-text {
+            font-size: 0.925rem;
+            line-height: 1.35;
+        }
+
+        #open-answer-area, #open-double-answer-area, #action-buttons-area {
+            margin-top: 0.5rem;
+        }
     }
 }
 
@@ -645,4 +678,19 @@ mark.card-hl-purple {
 #hl-trigger-btn.is-marked img {
     filter: invert(28%) sepia(91%) saturate(3421%) hue-rotate(345deg) brightness(96%) contrast(92%);
 }
+
+/* Multi-paragraph Anki Cards Answer Styling */
+#anki-answer-text {
+    white-space: pre-line;
+    word-break: break-word;
+}
+
+#anki-answer-text p {
+    margin-bottom: 0.75rem;
+}
+
+#anki-answer-text p:last-child {
+    margin-bottom: 0;
+}
+
 

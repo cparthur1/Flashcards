@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
     <title>Flashcards</title>
     <script src="js/config.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -46,7 +46,7 @@
         <!-- Área de Upload de Arquivo -->
         <div
             class="mb-6 p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-500 transition-colors">
-            <input type="file" id="file-input" accept=".json"
+            <input type="file" id="file-input" accept=".json" multiple
                 class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
         </div>
 
@@ -57,7 +57,17 @@
                 <img src="assets/img/folder.svg" class="w-6 h-6" alt="Pasta"> Abrir Arquivo
             </button>
 
-            <div class="relative flex py-2 items-center">
+            <!-- Botão Semana de Provas (Multi-baralhos) -->
+            <button id="open-exam-btn"
+                class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl text-lg transition-all transform hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2 relative group">
+                <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+                <span>Semana de Provas</span>
+                <span id="exam-saved-badge" class="hidden text-[11px] bg-white/20 text-white px-2 py-0.5 rounded-full font-normal">Sessão Salva</span>
+            </button>
+
+            <div class="relative flex py-1 items-center">
                 <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
                 <span class="flex-shrink-0 mx-4 text-gray-400 text-xs">OU</span>
                 <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
@@ -76,6 +86,81 @@
             </button>
         </div>
         <p id="upload-error" class="text-red-500 mt-4 text-sm"></p>
+    </div>
+
+    <!-- MODAL SEMANA DE PROVAS (MULTI-BARALHOS) -->
+    <div id="exam-modal" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex justify-between items-center">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center text-purple-600 dark:text-purple-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    </div>
+                    <div class="text-left">
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white leading-tight">Semana de Provas</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Misture múltiplos baralhos para estudar</p>
+                    </div>
+                </div>
+                <button id="close-exam-modal-btn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 rounded-lg">
+                    <img src="assets/img/close.svg" class="w-6 h-6 opacity-70 hover:opacity-100 transition-opacity" alt="Fechar">
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
+                <!-- Banner de Sessão Salva (se existir) -->
+                <div id="exam-saved-session-box" class="hidden p-4 bg-purple-50 dark:bg-purple-900/30 rounded-xl border border-purple-200 dark:border-purple-800 text-left">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wide">Sessão em Andamento</span>
+                        <span id="exam-saved-cards-count" class="text-xs px-2 py-0.5 rounded-full bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 font-semibold">0 cards restantes</span>
+                    </div>
+                    <p class="text-xs text-purple-600 dark:text-purple-300 mb-3" id="exam-saved-decks-text">Você já tem uma mistura salva.</p>
+                    <button id="exam-continue-btn" class="w-full py-2.5 px-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg text-sm transition shadow flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Continuar Sessão Salva
+                    </button>
+                </div>
+
+                <!-- Área de upload / seleção de múltiplos baralhos -->
+                <div>
+                    <label class="block text-left text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Carregar Baralhos (.json)</label>
+                    <div id="exam-drop-zone" class="border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-purple-500 rounded-xl p-5 text-center cursor-pointer transition-colors bg-gray-50/50 dark:bg-gray-900/50">
+                        <input type="file" id="exam-file-input" accept=".json" multiple class="hidden">
+                        <div class="flex flex-col items-center gap-2">
+                            <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center text-purple-600 dark:text-purple-300">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-gray-700 dark:text-gray-200">Clique para selecionar arquivos .json</p>
+                                <p class="text-xs text-gray-400">Você pode selecionar múltiplos baralhos de uma vez</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de baralhos carregados -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Baralhos Selecionados (<span id="exam-decks-count">0</span>)</span>
+                        <span id="exam-total-cards" class="text-xs text-gray-400">0 cards no total</span>
+                    </div>
+                    <div id="exam-deck-list" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
+                        <p id="exam-empty-msg" class="text-xs text-gray-400 dark:text-gray-500 text-center py-4 italic">Nenhum baralho adicionado ainda.</p>
+                    </div>
+                </div>
+
+                <p id="exam-error" class="text-red-500 text-xs hidden text-left"></p>
+            </div>
+
+            <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 flex justify-end gap-3">
+                <button id="cancel-exam-modal-btn" class="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-xl transition">
+                    Cancelar
+                </button>
+                <button id="start-exam-btn" disabled class="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition shadow flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Iniciar Mistura
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Rodapé OpenSource -->

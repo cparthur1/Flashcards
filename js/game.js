@@ -11,6 +11,13 @@ const deckSelectArrow = document.getElementById('deck-select-arrow');
 const deckItemNormal = document.getElementById('deck-item-normal');
 const deckItemNormalName = document.getElementById('deck-item-normal-name');
 const deckItemNotebook = document.getElementById('deck-item-notebook');
+const deckItemExam = document.getElementById('deck-item-exam');
+const deckItemExamSub = document.getElementById('deck-item-exam-sub');
+const dropdownExamDecksSection = document.getElementById('dropdown-exam-decks-section');
+const dropdownExamDecksCount = document.getElementById('dropdown-exam-decks-count');
+const dropdownExamDecksList = document.getElementById('dropdown-exam-decks-list');
+const dropdownAddDeckBtn = document.getElementById('dropdown-add-deck-btn');
+const dropdownAddDeckInput = document.getElementById('dropdown-add-deck-input');
 const bookmarkCardBtn = document.getElementById('bookmark-card-btn');
 const bookmarkCardIcon = document.getElementById('bookmark-card-icon');
 
@@ -588,7 +595,7 @@ function loadQuestion() {
         feedbackElem.classList.add('hidden');
     }
 
-    if (activeMode === 'notebook' && currentQuestion.sourceDeck) {
+    if ((activeMode === 'notebook' || activeMode === 'exam') && currentQuestion.sourceDeck) {
         if (sourceTagElem) {
             sourceTagElem.textContent = currentQuestion.sourceDeck;
             sourceTagElem.classList.remove('hidden');
@@ -708,12 +715,24 @@ function renderDynamicMcOptions(rawOptions) {
     });
 }
 
+function formatMultiParagraphText(text) {
+    if (!text) return '';
+    if (/<(p|br|div|mark)[\s>]/i.test(text)) {
+        return text;
+    }
+    const paragraphs = text.split(/\r?\n\r?\n/);
+    if (paragraphs.length > 1) {
+        return paragraphs.map(p => `<p class="mb-2 last:mb-0">${p.trim()}</p>`).join('');
+    }
+    return text;
+}
+
 function flipAnkiCard() {
     if (currentQuestion.type !== 'anki' || isAnkiFlipped) return;
     isAnkiFlipped = true;
 
     if (ankiAnswerContainer) {
-        ankiAnswerText.innerHTML = currentQuestion.answer || '';
+        ankiAnswerText.innerHTML = formatMultiParagraphText(currentQuestion.answer || '');
         if (currentQuestion.answerImage && ankiAnswerImage && ankiAnswerImageContainer) {
             ankiAnswerImage.src = currentQuestion.answerImage;
             ankiAnswerImageContainer.classList.remove('hidden');
@@ -982,6 +1001,18 @@ function saveGameState() {
         if (activeMode === 'notebook') {
             localStorage.setItem('flashcardsNotebook', JSON.stringify({
                 questionsPool, allQuestions, score, deckTitle: "Caderno"
+            }));
+        } else if (activeMode === 'exam') {
+            let examData = {};
+            try {
+                examData = JSON.parse(localStorage.getItem('flashcardsExam')) || {};
+            } catch (err) {}
+            localStorage.setItem('flashcardsExam', JSON.stringify({
+                ...examData,
+                questionsPool,
+                allQuestions,
+                score,
+                deckTitle: "Semana de Provas"
             }));
         } else {
             localStorage.setItem('flashcardsSave', JSON.stringify({
@@ -1688,7 +1719,15 @@ if (restartGameBtn) {
             balls = [];
             score = 0;
             scoreDisplay.textContent = '0';
-            questionsPool = allQuestions.filter(isPlayableCard);
+            if (activeMode === 'exam') {
+                let examData = {};
+                try { examData = JSON.parse(localStorage.getItem('flashcardsExam')) || {}; } catch (e) {}
+                const enabledDeckIds = new Set((examData.decks || []).filter(d => d.enabled !== false).map(d => d.id));
+                const playable = allQuestions.filter(q => isPlayableCard(q) && (!q.deckId || enabledDeckIds.has(q.deckId)));
+                questionsPool = shuffleArray(playable);
+            } else {
+                questionsPool = allQuestions.filter(isPlayableCard);
+            }
             saveGameState();
             updateScoreDisplay();
             archiveCurrentSession(false);
@@ -1708,6 +1747,16 @@ exportBtn.addEventListener('click', () => {
             cards: allQuestions
         };
         filename = `caderno_backup.json`;
+    } else if (activeMode === 'exam') {
+        let examData = {};
+        try { examData = JSON.parse(localStorage.getItem('flashcardsExam')) || {}; } catch (e) {}
+        exportData = {
+            __flashcards_watermark__: "exam_week_backup_v1",
+            deckTitle: "Semana de Provas",
+            decks: examData.decks || [],
+            cards: allQuestions
+        };
+        filename = `semana_de_provas_backup.json`;
     } else {
         exportData = allQuestions;
         filename = `${deckTitle.textContent}.json`;
@@ -2136,8 +2185,10 @@ function toggleBookmark() {
         currentQuestion.bookmarked = true;
         
         const normalData = JSON.parse(localStorage.getItem('flashcardsSave'));
-        const sourceDeckTitle = normalData ? normalData.deckTitle : "Flashcards";
-        currentQuestion.sourceDeck = sourceDeckTitle;
+        const sourceDeckTitle = (activeMode === 'exam' && currentQuestion.sourceDeck) 
+            ? currentQuestion.sourceDeck 
+            : (normalData ? normalData.deckTitle : "Flashcards");
+        currentQuestion.sourceDeck = currentQuestion.sourceDeck || sourceDeckTitle;
         
         // Also mark as bookmarked in normal deck in storage
         if (normalData) {
@@ -2190,15 +2241,221 @@ function openDeckDropdown() {
     
     const normalData = JSON.parse(localStorage.getItem('flashcardsSave'));
     const normalTitle = normalData ? normalData.deckTitle : "Flashcards";
-    deckItemNormalName.textContent = normalTitle;
-    
-    if (activeMode === 'notebook') {
-        deckItemNotebook.classList.add('bg-blue-50', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
-        deckItemNormal.classList.remove('bg-blue-50', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
-    } else {
-        deckItemNormal.classList.add('bg-blue-50', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
-        deckItemNotebook.classList.remove('bg-blue-50', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
+    if (deckItemNormalName) deckItemNormalName.textContent = normalTitle;
+
+    let examData = null;
+    try {
+        examData = JSON.parse(localStorage.getItem('flashcardsExam'));
+    } catch (e) {}
+    const hasExam = !!(examData && examData.allQuestions && examData.allQuestions.length > 0);
+
+    if (deckItemExam) {
+        if (hasExam || activeMode === 'exam') {
+            deckItemExam.classList.remove('hidden');
+            const totalCards = (examData && examData.questionsPool) ? examData.questionsPool.length : 0;
+            const numDecks = (examData && examData.decks) ? examData.decks.length : 0;
+            if (deckItemExamSub) {
+                deckItemExamSub.textContent = `${numDecks} baralhos • ${totalCards} cards`;
+            }
+        } else {
+            deckItemExam.classList.add('hidden');
+        }
     }
+    
+    // Clear highlights
+    [deckItemNormal, deckItemNotebook, deckItemExam].forEach(el => {
+        el?.classList.remove('bg-blue-50', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400', 'bg-purple-50', 'dark:bg-purple-900/30', 'text-purple-600', 'dark:text-purple-400');
+    });
+
+    if (activeMode === 'notebook') {
+        deckItemNotebook?.classList.add('bg-blue-50', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
+        dropdownExamDecksSection?.classList.add('hidden');
+    } else if (activeMode === 'exam') {
+        deckItemExam?.classList.add('bg-purple-50', 'dark:bg-purple-900/30', 'text-purple-600', 'dark:text-purple-400');
+        renderExamDecksInDropdown(examData);
+    } else {
+        deckItemNormal?.classList.add('bg-blue-50', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
+        dropdownExamDecksSection?.classList.add('hidden');
+    }
+}
+
+function renderExamDecksInDropdown(examData) {
+    if (!dropdownExamDecksSection || !dropdownExamDecksList) return;
+    dropdownExamDecksSection.classList.remove('hidden');
+    dropdownExamDecksList.innerHTML = '';
+
+    const decks = (examData && examData.decks) ? examData.decks : [];
+    if (dropdownExamDecksCount) {
+        dropdownExamDecksCount.textContent = `${decks.length} baralho${decks.length !== 1 ? 's' : ''}`;
+    }
+
+    if (decks.length === 0) {
+        dropdownExamDecksList.innerHTML = '<p class="text-xs text-gray-400 text-center py-2 italic">Nenhum baralho na mistura.</p>';
+        return;
+    }
+
+    decks.forEach((deck) => {
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between p-2 rounded-xl bg-gray-50/80 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition text-xs';
+        
+        const isEnabled = deck.enabled !== false;
+        const cardCount = allQuestions.filter(q => q.deckId === deck.id || q.sourceDeck === deck.name).length;
+
+        item.innerHTML = `
+            <label class="flex items-center gap-2 min-w-0 flex-1 cursor-pointer select-none">
+                <input type="checkbox" class="exam-deck-toggle rounded text-purple-600 focus:ring-purple-500 dark:bg-gray-900 dark:border-gray-600" ${isEnabled ? 'checked' : ''} data-deck-id="${deck.id}">
+                <span class="font-medium text-gray-800 dark:text-gray-200 truncate ${isEnabled ? '' : 'line-through opacity-50'}" title="${deck.name}">${deck.name}</span>
+            </label>
+            <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-semibold">${cardCount}</span>
+                <button type="button" class="exam-deck-del-btn p-1 text-gray-400 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition" title="Remover da mistura">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+            </div>
+        `;
+
+        const toggle = item.querySelector('.exam-deck-toggle');
+        toggle.addEventListener('change', (e) => {
+            e.stopPropagation();
+            toggleDeckInExamMix(deck.id, toggle.checked);
+        });
+
+        const delBtn = item.querySelector('.exam-deck-del-btn');
+        delBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm(`Remover o baralho "${deck.name}" da Semana de Provas?`)) {
+                removeDeckFromExamMix(deck.id);
+            }
+        });
+
+        dropdownExamDecksList.appendChild(item);
+    });
+}
+
+function toggleDeckInExamMix(deckId, enabled) {
+    if (activeMode !== 'exam') return;
+    let examData = {};
+    try { examData = JSON.parse(localStorage.getItem('flashcardsExam')) || {}; } catch(e){}
+    const decks = examData.decks || [];
+    const targetDeck = decks.find(d => d.id === deckId);
+    if (!targetDeck) return;
+    targetDeck.enabled = enabled;
+    examData.decks = decks;
+
+    if (enabled) {
+        const cardsToAdd = allQuestions.filter(q => (q.deckId === deckId || q.sourceDeck === targetDeck.name) && isPlayableCard(q));
+        const existingDescriptions = new Set(questionsPool.map(q => q.description));
+        const newCards = cardsToAdd.filter(c => !existingDescriptions.has(c.description));
+        questionsPool = shuffleArray([...questionsPool, ...newCards]);
+    } else {
+        questionsPool = questionsPool.filter(q => q.deckId !== deckId && q.sourceDeck !== targetDeck.name);
+    }
+
+    saveGameState();
+    updateScoreDisplay();
+
+    if (!enabled && currentQuestion && (currentQuestion.deckId === deckId || currentQuestion.sourceDeck === targetDeck.name)) {
+        loadQuestion();
+    }
+
+    renderExamDecksInDropdown(examData);
+    showNotificationPill(`${targetDeck.name}: ${enabled ? 'Ativado' : 'Desativado'}`, "dropdown.svg");
+}
+
+function removeDeckFromExamMix(deckId) {
+    if (activeMode !== 'exam') return;
+    let examData = {};
+    try { examData = JSON.parse(localStorage.getItem('flashcardsExam')) || {}; } catch(e){}
+    const removedDeck = (examData.decks || []).find(d => d.id === deckId);
+    const removedName = removedDeck ? removedDeck.name : '';
+    const decks = (examData.decks || []).filter(d => d.id !== deckId);
+
+    examData.decks = decks;
+
+    allQuestions = allQuestions.filter(q => q.deckId !== deckId && q.sourceDeck !== removedName);
+    questionsPool = questionsPool.filter(q => q.deckId !== deckId && q.sourceDeck !== removedName);
+
+    examData.allQuestions = allQuestions;
+    examData.questionsPool = questionsPool;
+    localStorage.setItem('flashcardsExam', JSON.stringify(examData));
+
+    updateScoreDisplay();
+
+    if (currentQuestion && (currentQuestion.deckId === deckId || currentQuestion.sourceDeck === removedName)) {
+        loadQuestion();
+    }
+
+    renderExamDecksInDropdown(examData);
+    showNotificationPill(`Baralho removido da mistura`, "delete.svg");
+}
+
+// Add Deck to Mix from Dropdown
+if (dropdownAddDeckBtn && dropdownAddDeckInput) {
+    dropdownAddDeckBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdownAddDeckInput.click();
+    });
+
+    dropdownAddDeckInput.addEventListener('change', async () => {
+        if (!dropdownAddDeckInput.files || dropdownAddDeckInput.files.length === 0) return;
+        const files = Array.from(dropdownAddDeckInput.files);
+        dropdownAddDeckInput.value = '';
+
+        let addedCardsCount = 0;
+        let examData = {};
+        try { examData = JSON.parse(localStorage.getItem('flashcardsExam')) || {}; } catch(e){}
+        const decks = examData.decks || [];
+
+        for (const file of files) {
+            if (!file.name.toLowerCase().endsWith('.json')) continue;
+            try {
+                const text = await file.text();
+                const parsed = JSON.parse(text);
+                let cards = [];
+                let name = file.name.replace(/\.json$/i, '');
+
+                if (parsed && parsed.__flashcards_watermark__ === "notebook_backup_v1") {
+                    cards = parsed.cards || [];
+                    name = parsed.deckTitle || "Caderno";
+                } else if (Array.isArray(parsed)) {
+                    cards = parsed;
+                }
+
+                if (cards.length > 0) {
+                    const newDeckId = 'deck_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+                    decks.push({
+                        id: newDeckId,
+                        name: name,
+                        enabled: true,
+                        cardCount: cards.length
+                    });
+
+                    const taggedCards = cards.map(c => ({
+                        ...c,
+                        deckId: newDeckId,
+                        sourceDeck: name
+                    }));
+
+                    allQuestions.push(...taggedCards);
+                    const playable = taggedCards.filter(isPlayableCard);
+                    questionsPool.push(...playable);
+                    addedCardsCount += playable.length;
+                }
+            } catch (err) {
+                console.error("Erro ao adicionar baralho:", err);
+            }
+        }
+
+        questionsPool = shuffleArray(questionsPool);
+        examData.decks = decks;
+        examData.allQuestions = allQuestions;
+        examData.questionsPool = questionsPool;
+        localStorage.setItem('flashcardsExam', JSON.stringify(examData));
+
+        updateScoreDisplay();
+        renderExamDecksInDropdown(examData);
+        showNotificationPill(`+${addedCardsCount} cards adicionados à mistura!`, "new.svg");
+    });
 }
 
 function closeDeckDropdown() {
@@ -2213,7 +2470,9 @@ function switchActiveMode(newMode) {
     activeMode = newMode;
     localStorage.setItem('flashcardsActiveMode', newMode);
     
-    const storageKey = newMode === 'notebook' ? 'flashcardsNotebook' : 'flashcardsSave';
+    const storageKey = newMode === 'notebook' 
+        ? 'flashcardsNotebook' 
+        : (newMode === 'exam' ? 'flashcardsExam' : 'flashcardsSave');
     let data = JSON.parse(localStorage.getItem(storageKey));
     
     if (newMode === 'notebook' && (!data || !data.allQuestions)) {
@@ -2229,7 +2488,7 @@ function switchActiveMode(newMode) {
     allQuestions = data.allQuestions || [];
     questionsPool = (data.questionsPool || []).filter(isPlayableCard);
     score = data.score || 0;
-    deckTitle.textContent = data.deckTitle || (newMode === 'notebook' ? "Caderno" : "Flashcards");
+    deckTitle.textContent = data.deckTitle || (newMode === 'notebook' ? "Caderno" : (newMode === 'exam' ? "Semana de Provas" : "Flashcards"));
     document.title = data.deckTitle ? `${data.deckTitle} | Flashcards` : "Estudando Flashcards";
     
     balls = [];
@@ -2240,7 +2499,8 @@ function switchActiveMode(newMode) {
     initStatsSession(deckTitle.textContent, newMode, allQuestions.filter(isPlayableCard).length, score);
     loadQuestion();
     
-    showNotificationPill(`Estudando: ${deckTitle.textContent}`, newMode === 'notebook' ? "collection.svg" : "uploaded.svg");
+    const pillIcon = newMode === 'notebook' ? "collection.svg" : (newMode === 'exam' ? "magic.svg" : "uploaded.svg");
+    showNotificationPill(`Estudando: ${deckTitle.textContent}`, pillIcon);
 }
 
 // Bind Bookmark & Dropdown Listeners
@@ -2274,6 +2534,56 @@ deckItemNotebook.addEventListener('click', (e) => {
     switchActiveMode('notebook');
 });
 
+if (deckItemExam) {
+    deckItemExam.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeDeckDropdown();
+        if (activeMode === 'exam') return;
+        switchActiveMode('exam');
+    });
+}
+
+function keepCardInFocus() {
+    if (window.innerWidth <= 768) {
+        const header = document.getElementById('global-header');
+        const headerHeight = header ? header.offsetHeight : 54;
+        const container = document.getElementById('game-container');
+        if (container) {
+            const rect = container.getBoundingClientRect();
+            if (rect.top < headerHeight + 4) {
+                window.scrollTo({
+                    top: Math.max(0, window.scrollY + rect.top - headerHeight - 6),
+                    behavior: 'smooth'
+                });
+            }
+        }
+    }
+}
+
+function initMobileFocusHelpers() {
+    const inputs = [answerInput, answerInput1, answerInput2].filter(Boolean);
+    
+    inputs.forEach(input => {
+        input.addEventListener('focus', () => {
+            document.body.classList.add('keyboard-open');
+            setTimeout(keepCardInFocus, 100);
+            setTimeout(keepCardInFocus, 300);
+        });
+
+        input.addEventListener('blur', () => {
+            document.body.classList.remove('keyboard-open');
+        });
+    });
+
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', () => {
+            if (document.activeElement && inputs.includes(document.activeElement)) {
+                setTimeout(keepCardInFocus, 50);
+            }
+        });
+    }
+}
+
 function initGame() {
     checkAndResetModelFallback();
     resizeCanvas(); animate();
@@ -2284,26 +2594,34 @@ function initGame() {
 
     const saveState = localStorage.getItem('flashcardsSave');
     const notebookState = localStorage.getItem('flashcardsNotebook');
+    const examState = localStorage.getItem('flashcardsExam');
 
-    if (!saveState && !notebookState) {
+    if (!saveState && !notebookState && !examState) {
         window.location.href = ROUTES.HOME;
         return;
     }
 
-    const storageKey = activeMode === 'notebook' ? 'flashcardsNotebook' : 'flashcardsSave';
+    const storageKey = activeMode === 'notebook' 
+        ? 'flashcardsNotebook' 
+        : (activeMode === 'exam' ? 'flashcardsExam' : 'flashcardsSave');
     let data = JSON.parse(localStorage.getItem(storageKey));
 
     if (!data) {
-        activeMode = activeMode === 'notebook' ? 'normal' : 'notebook';
+        if (examState) activeMode = 'exam';
+        else if (saveState) activeMode = 'normal';
+        else activeMode = 'notebook';
+
         localStorage.setItem('flashcardsActiveMode', activeMode);
-        const fallbackKey = activeMode === 'notebook' ? 'flashcardsNotebook' : 'flashcardsSave';
+        const fallbackKey = activeMode === 'notebook' 
+            ? 'flashcardsNotebook' 
+            : (activeMode === 'exam' ? 'flashcardsExam' : 'flashcardsSave');
         data = JSON.parse(localStorage.getItem(fallbackKey));
     }
 
     allQuestions = data.allQuestions || [];
     questionsPool = (data.questionsPool || []).filter(isPlayableCard);
     score = data.score || 0;
-    deckTitle.textContent = data.deckTitle || (activeMode === 'notebook' ? "Caderno" : "Flashcards");
+    deckTitle.textContent = data.deckTitle || (activeMode === 'notebook' ? "Caderno" : (activeMode === 'exam' ? "Semana de Provas" : "Flashcards"));
     document.title = data.deckTitle ? `${data.deckTitle} | Flashcards` : "Estudando Flashcards";
     scoreDisplay.textContent = score; 
     
@@ -2318,6 +2636,7 @@ function initGame() {
     initializeAi();
     updateAiUI();
     requestAnimationFrame(pollGamepad);
+    initMobileFocusHelpers();
 }
 
 if (document.readyState === 'loading') {

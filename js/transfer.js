@@ -73,9 +73,16 @@ function closeTransferModal() {
 /**
  * SENDER: Creates a Bitset (1s and 0s) of the deck state
  */
+function getActiveStorageKey() {
+    const mode = localStorage.getItem('flashcardsActiveMode');
+    if (mode === 'notebook') return 'flashcardsNotebook';
+    if (mode === 'exam') return 'flashcardsExam';
+    return 'flashcardsSave';
+}
+
 function startSender() {
     transferStatus.textContent = "Otimizando QR...";
-    const rawData = localStorage.getItem('flashcardsSave');
+    const rawData = localStorage.getItem(getActiveStorageKey());
     if (!rawData) return;
 
     try {
@@ -174,7 +181,8 @@ function applyProgress(stateString) {
         if (!decompressed) throw new Error("Dados inválidos.");
 
         const progress = JSON.parse(decompressed);
-        const localDataRaw = localStorage.getItem('flashcardsSave');
+        const storageKey = getActiveStorageKey();
+        const localDataRaw = localStorage.getItem(storageKey);
         
         if (!localDataRaw) throw new Error("Abra o deck no celular primeiro!");
 
@@ -193,7 +201,7 @@ function applyProgress(stateString) {
         }
         localData.questionsPool = newPool;
 
-        localStorage.setItem('flashcardsSave', JSON.stringify(localData));
+        localStorage.setItem(storageKey, JSON.stringify(localData));
         
         logSync("Sincronizado! Reiniciando...");
         setTimeout(() => {
