@@ -85,6 +85,7 @@ const zoomedImage = document.getElementById('zoomed-image');
 const closeImageZoomBtn = document.getElementById('close-image-zoom-btn');
 
 const openAnswerArea = document.getElementById('open-answer-area');
+const flashcardAnswerForm = document.getElementById('flashcard-answer-form');
 const answerInput = document.getElementById('answer-input');
 const openDoubleAnswerArea = document.getElementById('open-double-answer-area');
 const answerInput1 = document.getElementById('answer-input-1');
@@ -128,6 +129,7 @@ const aiToggleBtn = document.getElementById('ai-toggle-btn');
 const aiIconOff = document.getElementById('ai-icon-off');
 const aiIconOn = document.getElementById('ai-icon-on');
 const apiModal = document.getElementById('api-modal');
+const apiKeyForm = document.getElementById('api-key-form');
 const closeApiModal = document.getElementById('close-api-modal');
 const apiKeyInput = document.getElementById('api-key-input');
 const saveApiKeyBtn = document.getElementById('save-api-key-btn');
@@ -806,7 +808,10 @@ function handleAnkiRating(rating) {
     }
 }
 
+let isOpenSubmitting = false;
+
 function resetUI() {
+    isOpenSubmitting = false;
     hideHighlightPopup();
     [answerInput, answerInput1, answerInput2].forEach(inp => {
         inp.value = ''; inp.disabled = false;
@@ -844,7 +849,7 @@ function resetUI() {
 }
 
 function handleOpenSubmit() {
-    if (submitBtn.disabled) return;
+    if (isOpenSubmitting || submitBtn.disabled) return;
     if (currentQuestion.isBeingCorrected) {
         if (isAnimating) return;
         animateCardToBack(() => {
@@ -859,6 +864,8 @@ function handleOpenSubmit() {
 
     if (type === 'open_double' && (!ans1_d || !ans2_d)) return;
     if (type !== 'open_double' && !ans1) return;
+
+    isOpenSubmitting = true;
 
     const correct1 = currentQuestion.answer.split('/');
     const correct2 = (currentQuestion.answer2 || "").split('/');
@@ -932,6 +939,7 @@ function showFeedback(isCorrect, element) {
         setTimeout(() => questionCard.classList.remove('card-shake'), 450);
 
         currentQuestion.isBeingCorrected = true;
+        isOpenSubmitting = false;
         if (!element) {
             updateFeedbackText();
             submitBtn.classList.add('hidden');
@@ -1774,8 +1782,11 @@ aiToggleBtn.addEventListener('click', () => {
     closeHamburgerMenu();
     apiModal.classList.remove('hidden'); 
     apiKeyInput.value = geminiApiKey; 
+    setTimeout(() => apiKeyInput.focus(), 50);
 });
-saveApiKeyBtn.addEventListener('click', () => {
+
+const handleSaveApiKey = (e) => {
+    if (e) e.preventDefault();
     geminiApiKey = apiKeyInput.value.trim();
     if (geminiApiKey) {
         sessionStorage.setItem('gemini_api_key', geminiApiKey);
@@ -1783,8 +1794,15 @@ saveApiKeyBtn.addEventListener('click', () => {
         apiModal.classList.add('hidden');
         showNotificationPill("IA Ativada com Sucesso!", "enabled_ai.svg");
     }
-});
-disableAiBtn.addEventListener('click', () => {
+};
+
+saveApiKeyBtn.addEventListener('click', handleSaveApiKey);
+if (apiKeyForm) {
+    apiKeyForm.addEventListener('submit', handleSaveApiKey);
+}
+
+disableAiBtn.addEventListener('click', (e) => {
+    if (e) e.preventDefault();
     isAiEnabled = false; 
     geminiApiKey = ''; 
     sessionStorage.removeItem('gemini_api_key');
@@ -1801,6 +1819,13 @@ closeChatBtn.addEventListener('click', () => aiChatContainer.classList.remove('o
 sendChatBtn.addEventListener('click', sendChatMessage);
 chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
 submitBtn.addEventListener('click', handleOpenSubmit);
+
+if (flashcardAnswerForm) {
+    flashcardAnswerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        handleOpenSubmit();
+    });
+}
 [answerInput, answerInput1, answerInput2].forEach(inp => {
     inp.addEventListener('keyup', (e) => { if (e.key === 'Enter') handleOpenSubmit(); });
 });

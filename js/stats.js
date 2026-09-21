@@ -97,6 +97,7 @@ const aiHistorySubjectsSection = document.getElementById('ai-history-subjects-se
 const aiConfigModal = document.getElementById('ai-config-modal');
 const closeAiModalBtn = document.getElementById('close-ai-modal-btn');
 const modalApiKeyInput = document.getElementById('modal-api-key-input');
+const statsApiKeyForm = document.getElementById('stats-api-key-form');
 const modalSaveApiKeyBtn = document.getElementById('modal-save-api-key-btn');
 const modalDisableAiBtn = document.getElementById('modal-disable-ai-btn');
 
@@ -120,6 +121,7 @@ function openAiModal() {
     if (!aiConfigModal) return;
     if (modalApiKeyInput) modalApiKeyInput.value = getGeminiApiKey();
     aiConfigModal.classList.remove('hidden');
+    setTimeout(() => modalApiKeyInput?.focus(), 50);
 }
 
 function closeAiModal() {
@@ -1304,6 +1306,10 @@ exportStatsBtn?.addEventListener('click', () => {
 closeAiModalBtn?.addEventListener('click', closeAiModal);
 aiConfigModal?.addEventListener('click', (e) => {
     if (e.target === aiConfigModal) closeAiModal();
+});
+statsApiKeyForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    modalSaveApiKeyBtn?.click();
 });
 
 modalSaveApiKeyBtn?.addEventListener('click', () => {

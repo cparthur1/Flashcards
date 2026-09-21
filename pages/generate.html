@@ -302,7 +302,7 @@
                         <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Sua Gemini API Key</label>
                         <button class="open-instructions-link text-xs text-blue-500 hover:underline">Como obter chave grátis?</button>
                     </div>
-                    <input type="password" id="modal-2-1-api-key" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 text-sm" placeholder="Cole sua Gemini API Key...">
+                    <input type="password" id="modal-2-1-api-key" name="password" autocomplete="current-password" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 text-sm" placeholder="Cole sua Gemini API Key...">
                     <p class="text-[11px] text-gray-500 mt-1">Sua chave é salva apenas localmente no navegador.</p>
                 </div>
 
@@ -375,7 +375,7 @@
                         <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Sua Gemini API Key</label>
                         <button class="open-instructions-link text-xs text-blue-500 hover:underline">Como obter chave grátis?</button>
                     </div>
-                    <input type="password" id="modal-2-2-api-key" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 text-sm" placeholder="Cole sua Gemini API Key...">
+                    <input type="password" id="modal-2-2-api-key" name="password" autocomplete="current-password" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 text-sm" placeholder="Cole sua Gemini API Key...">
                     <p class="text-[11px] text-gray-500 mt-1">Sua chave é salva apenas localmente no navegador.</p>
                 </div>
 
@@ -415,15 +415,18 @@
         <div class="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col p-6">
             <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-2">Configurar Chave da API Gemini</h3>
             <p class="text-xs text-gray-600 dark:text-gray-300 mb-4">Insira sua chave para habilitar a geração e o assistente inteligente.</p>
-            <input type="password" id="quick-api-input" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm mb-2" placeholder="AIzaSy...">
-            <div class="flex justify-between items-center mb-6">
-                <button class="open-instructions-link text-xs text-blue-500 hover:underline">Como criar chave grátis?</button>
-                <button id="clear-quick-api-btn" class="text-xs text-red-500 hover:underline">Remover chave salva</button>
-            </div>
-            <div class="flex justify-end gap-3">
-                <button id="close-quick-api-btn" class="px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition">Cancelar</button>
-                <button id="save-quick-api-btn" class="px-6 py-2 text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition">Salvar Chave</button>
-            </div>
+            <form id="quick-api-form" autocomplete="on" onsubmit="return false;" class="m-0 p-0">
+                <input type="text" id="quick-api-username" name="username" autocomplete="username" class="sr-only" tabindex="-1" aria-hidden="true">
+                <input type="password" id="quick-api-input" name="password" autocomplete="current-password" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm mb-2" placeholder="AIzaSy...">
+                <div class="flex justify-between items-center mb-6">
+                    <button type="button" class="open-instructions-link text-xs text-blue-500 hover:underline">Como criar chave grátis?</button>
+                    <button type="button" id="clear-quick-api-btn" class="text-xs text-red-500 hover:underline">Remover chave salva</button>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button type="button" id="close-quick-api-btn" class="px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition">Cancelar</button>
+                    <button type="submit" id="save-quick-api-btn" class="px-6 py-2 text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition">Salvar Chave</button>
+                </div>
+            </form>
         </div>
     </div>
 

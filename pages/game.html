@@ -300,29 +300,33 @@
             </div>
         </div>
 
-        <div id="open-answer-area" class="relative z-10 hidden mt-3 sm:mt-6">
-            <div class="relative">
-                <input type="text" id="answer-input"
-                    class="w-full px-4 py-2.5 sm:py-3 text-base sm:text-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                    placeholder="Digite sua resposta aqui..." autocomplete="off" autocorrect="off" autocapitalize="off"
-                    spellcheck="false" name="study_card_answer" data-form-type="other" data-lpignore="true" data-1p-ignore="true">
+        <!-- Flashcard Answer Form: isolated from password manager -->
+        <form id="flashcard-answer-form" autocomplete="off" onsubmit="return false;" class="m-0 p-0">
+            <div id="open-answer-area" class="relative z-10 hidden mt-3 sm:mt-6">
+                <div class="relative">
+                    <input type="text" id="answer-input"
+                        class="w-full px-4 py-2.5 sm:py-3 text-base sm:text-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                        placeholder="Digite sua resposta aqui..." autocomplete="off" autocorrect="off" autocapitalize="off"
+                        spellcheck="false" name="study_card_answer" data-form-type="other" data-lpignore="true" data-1p-ignore="true" data-bwignore="true">
+                </div>
             </div>
-        </div>
 
-        <div id="open-double-answer-area" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 relative z-10 hidden mt-3 sm:mt-6">
-            <div class="relative">
-                <input type="text" id="answer-input-1"
-                    class="w-full px-4 py-2.5 sm:py-3 text-base sm:text-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                    placeholder="Resposta 1..." autocomplete="off" autocorrect="off" autocapitalize="off"
-                    spellcheck="false" name="study_card_answer_1" data-form-type="other" data-lpignore="true" data-1p-ignore="true">
+            <div id="open-double-answer-area" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 relative z-10 hidden mt-3 sm:mt-6">
+                <div class="relative">
+                    <input type="text" id="answer-input-1"
+                        class="w-full px-4 py-2.5 sm:py-3 text-base sm:text-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                        placeholder="Resposta 1..." autocomplete="off" autocorrect="off" autocapitalize="off"
+                        spellcheck="false" name="study_card_answer_1" data-form-type="other" data-lpignore="true" data-1p-ignore="true" data-bwignore="true">
+                </div>
+                <div class="relative">
+                    <input type="text" id="answer-input-2"
+                        class="w-full px-4 py-2.5 sm:py-3 text-base sm:text-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                        placeholder="Resposta 2..." autocomplete="off" autocorrect="off" autocapitalize="off"
+                        spellcheck="false" name="study_card_answer_2" data-form-type="other" data-lpignore="true" data-1p-ignore="true" data-bwignore="true">
+                </div>
             </div>
-            <div class="relative">
-                <input type="text" id="answer-input-2"
-                    class="w-full px-4 py-2.5 sm:py-3 text-base sm:text-lg bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                    placeholder="Resposta 2..." autocomplete="off" autocorrect="off" autocapitalize="off"
-                    spellcheck="false" name="study_card_answer_2" data-form-type="other" data-lpignore="true" data-1p-ignore="true">
-            </div>
-        </div>
+            <button type="submit" class="hidden" tabindex="-1" aria-hidden="true"></button>
+        </form>
 
         <!-- Dynamic Multiple Choice Area (2 to 6 options) -->
         <div id="mc-answer-area" class="relative z-10 hidden">
@@ -493,37 +497,42 @@
             <div
                 class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
                 <h3 class="font-bold text-xl">Recursos de IA</h3>
-                <button id="close-api-modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
+                <button id="close-api-modal" type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
                     <img src="../assets/img/close.svg" class="w-8 h-8 opacity-70 hover:opacity-100 transition-opacity"
                         alt="Fechar">
                 </button>
             </div>
-            <div class="p-6 space-y-4">
-                <p class="text-sm">Ative a verificação inteligente para identificar acertos em caso de erros de
-                    digitação.</p>
-                <div>
-                    <label class="block text-sm font-semibold mb-2">Sua Gemini API Key</label>
-                    <div class="relative">
-                        <input type="password" id="api-key-input"
-                            class="w-full pl-4 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                            placeholder="Cole sua chave aqui..." name="gemini_key_val" autocomplete="off" data-lpignore="true">
+            <form id="api-key-form" autocomplete="on" onsubmit="return false;" class="flex flex-col m-0 p-0">
+                <div class="p-6 space-y-4">
+                    <p class="text-sm">Ative a verificação inteligente para identificar acertos em caso de erros de
+                        digitação.</p>
+                    <div>
+                        <label for="api-key-input" class="block text-sm font-semibold mb-2">Sua Gemini API Key</label>
+                        <!-- Hidden username field to give Chrome a self-contained credential pair within this form -->
+                        <input type="text" id="api-key-username" name="username" autocomplete="username"
+                            class="sr-only" tabindex="-1" aria-hidden="true">
+                        <div class="relative">
+                            <input type="password" id="api-key-input"
+                                class="w-full pl-4 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                                placeholder="Cole sua chave aqui..." name="password" autocomplete="current-password">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Sua chave é salva localmente e usada apenas para conferir suas
+                            respostas.</p>
                     </div>
-                    <p class="text-xs text-gray-500 mt-2">Sua chave é salva localmente e usada apenas para conferir suas
-                        respostas.</p>
+                    <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg border border-blue-100 dark:border-blue-800">
+                        <p class="text-xs text-blue-700 dark:text-blue-300">Não tem uma chave? <button
+                                type="button" id="open-ai-instructions" class="font-bold underline">Clique aqui para ver o
+                                tutorial</button></p>
+                    </div>
                 </div>
-                <div class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg border border-blue-100 dark:border-blue-800">
-                    <p class="text-xs text-blue-700 dark:text-blue-300">Não tem uma chave? <button
-                            id="open-ai-instructions" class="font-bold underline">Clique aqui para ver o
-                            tutorial</button></p>
+                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 flex gap-3">
+                    <button type="button" id="disable-ai-btn"
+                        class="flex-1 py-3 text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">Desativar</button>
+                    <button type="submit" id="save-api-key-btn"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition shadow-lg">Ativar
+                        IA</button>
                 </div>
-            </div>
-            <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 flex gap-3">
-                <button id="disable-ai-btn"
-                    class="flex-1 py-3 text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition">Desativar</button>
-                <button id="save-api-key-btn"
-                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition shadow-lg">Ativar
-                    IA</button>
-            </div>
+            </form>
         </div>
     </div>
 

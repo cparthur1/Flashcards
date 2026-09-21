@@ -31,6 +31,7 @@ const cardMode22 = document.getElementById('card-mode-2-2');
 // Quick API Key Modal & Button
 const openApiKeyModalBtn = document.getElementById('open-api-key-modal-btn');
 const quickApiModal = document.getElementById('quick-api-modal');
+const quickApiForm = document.getElementById('quick-api-form');
 const quickApiInput = document.getElementById('quick-api-input');
 const saveQuickApiBtn = document.getElementById('save-quick-api-btn');
 const closeQuickApiBtn = document.getElementById('close-quick-api-btn');
@@ -1338,8 +1339,17 @@ ${JSON.stringify(localCards, null, 2)}`;
 openApiKeyModalBtn.addEventListener('click', () => {
     quickApiInput.value = getApiKey();
     quickApiModal.classList.remove('hidden');
+    setTimeout(() => quickApiInput.focus(), 50);
 });
 closeQuickApiBtn.addEventListener('click', () => quickApiModal.classList.add('hidden'));
+
+if (quickApiForm) {
+    quickApiForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        saveQuickApiBtn.click();
+    });
+}
+
 saveQuickApiBtn.addEventListener('click', () => {
     setApiKey(quickApiInput.value.trim());
     quickApiModal.classList.add('hidden');

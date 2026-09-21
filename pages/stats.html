@@ -474,32 +474,35 @@
                     </svg>
                 </button>
             </div>
-            <div class="p-6 space-y-4">
-                <p class="text-xs text-gray-600 dark:text-gray-300">
-                    A chave de API do Gemini Flash-Lite é usada localmente no seu navegador para agrupar baralhos em matérias e cartões em tópicos com semântica avançada.
-                </p>
-                <div>
-                    <label class="block text-xs font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Sua Chave de API</label>
-                    <input type="password" id="modal-api-key-input"
-                        class="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 transition text-gray-900 dark:text-white"
-                        placeholder="AIzaSy...">
-                    <p class="text-[11px] text-gray-400 mt-1.5">Sua chave é armazenada com segurança na sessão do navegador.</p>
+            <form id="stats-api-key-form" autocomplete="on" onsubmit="return false;" class="m-0 p-0 flex flex-col">
+                <div class="p-6 space-y-4">
+                    <p class="text-xs text-gray-600 dark:text-gray-300">
+                        A chave de API do Gemini Flash-Lite é usada localmente no seu navegador para agrupar baralhos em matérias e cartões em tópicos com semântica avançada.
+                    </p>
+                    <div>
+                        <label for="modal-api-key-input" class="block text-xs font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Sua Chave de API</label>
+                        <input type="text" id="stats-api-key-username" name="username" autocomplete="username" class="sr-only" tabindex="-1" aria-hidden="true">
+                        <input type="password" id="modal-api-key-input" name="password" autocomplete="current-password"
+                            class="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 transition text-gray-900 dark:text-white"
+                            placeholder="AIzaSy...">
+                        <p class="text-[11px] text-gray-400 mt-1.5">Sua chave é armazenada com segurança na sessão do navegador.</p>
+                    </div>
+                    <div class="bg-purple-50 dark:bg-purple-950/30 p-3 rounded-xl border border-purple-100 dark:border-purple-900/50 flex items-center justify-between text-xs text-purple-700 dark:text-purple-300">
+                        <span>Não tem uma chave ainda?</span>
+                        <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="font-bold underline hover:text-purple-800 dark:hover:text-purple-200">
+                            Obter no Google AI Studio &rarr;
+                        </a>
+                    </div>
                 </div>
-                <div class="bg-purple-50 dark:bg-purple-950/30 p-3 rounded-xl border border-purple-100 dark:border-purple-900/50 flex items-center justify-between text-xs text-purple-700 dark:text-purple-300">
-                    <span>Não tem uma chave ainda?</span>
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="font-bold underline hover:text-purple-800 dark:hover:text-purple-200">
-                        Obter no Google AI Studio &rarr;
-                    </a>
+                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-750 border-t border-gray-200 dark:border-gray-700 flex gap-2.5 justify-end">
+                    <button type="button" id="modal-disable-ai-btn" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                        Desativar IA
+                    </button>
+                    <button type="submit" id="modal-save-api-key-btn" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 transition shadow-sm">
+                        Salvar & Analisar
+                    </button>
                 </div>
-            </div>
-            <div class="px-6 py-4 bg-gray-50 dark:bg-gray-750 border-t border-gray-200 dark:border-gray-700 flex gap-2.5 justify-end">
-                <button id="modal-disable-ai-btn" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
-                    Desativar IA
-                </button>
-                <button id="modal-save-api-key-btn" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 transition shadow-sm">
-                    Salvar & Analisar
-                </button>
-            </div>
+            </form>
         </div>
     </div>
 
