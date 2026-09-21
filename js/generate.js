@@ -283,7 +283,8 @@ const deckTools = [
 // Local implementations for Gemini to call
 const toolFunctions = {
     adicionar_card: (args) => {
-        deckCards.push(args);
+        const card = normalizeCard(args) || args;
+        deckCards.push(card);
         renderCardsList(true);
         return { success: true, message: "Card adicionado com sucesso." };
     },
@@ -319,9 +320,10 @@ const toolFunctions = {
         return { success: true, message: `${count} cards foram removidos com sucesso.` };
     },
     adicionar_varios_cards: (args) => {
-        deckCards.push(...args.cards);
+        const cardsToAdd = (args.cards || []).map(c => normalizeCard(c) || c);
+        deckCards.push(...cardsToAdd);
         renderCardsList(true);
-        return { success: true, message: `${args.cards.length} cards adicionados ao deck.` };
+        return { success: true, message: `${cardsToAdd.length} cards adicionados ao deck.` };
     }
 };
 
@@ -729,8 +731,12 @@ function convertDocumentToCards(text, mode = 'anki') {
             continue;
         }
 
-        if (line.startsWith('(open_double)')) {
-            const content = line.replace('(open_double)', '').trim();
+        const openDoubleMatch = line.match(/^[\(\[]\s*(?:open[_-]?double|duplo)\s*[\)\]]:?\s*(.*)$/i);
+        const mcMatch = line.match(/^[\(\[]\s*(?:multiple[_-]?choice|multipla[_-]?escolha|mc)\s*[\)\]]:?\s*(.*)$/i);
+        const ankiMatch = line.match(/^[\(\[]\s*(?:anki[_-]?like|anki)\s*[\)\]]:?\s*(.*)$/i);
+
+        if (openDoubleMatch) {
+            const content = openDoubleMatch[1].trim();
             const colonIndex = content.indexOf(':');
             if (colonIndex !== -1) {
                 const answersPart = content.substring(0, colonIndex).trim();
@@ -745,8 +751,8 @@ function convertDocumentToCards(text, mode = 'anki') {
                     placeholder2: "Resposta 2"
                 });
             }
-        } else if (line.startsWith('(multiple_choice)')) {
-            const content = line.replace('(multiple_choice)', '').trim();
+        } else if (mcMatch) {
+            const content = mcMatch[1].trim();
             const colonIndex = content.indexOf(':');
             if (colonIndex !== -1) {
                 const answer = content.substring(0, colonIndex).trim();
@@ -758,8 +764,8 @@ function convertDocumentToCards(text, mode = 'anki') {
                     options: ["Opção 1", "Opção 2", answer, "Opção 4"]
                 });
             }
-        } else if (line.startsWith('(anki)')) {
-            const content = line.replace('(anki)', '').trim();
+        } else if (ankiMatch) {
+            const content = ankiMatch[1].trim();
             const colonIndex = content.indexOf(':');
             if (colonIndex !== -1) {
                 const front = content.substring(0, colonIndex).trim();
@@ -786,7 +792,12 @@ function convertDocumentToCards(text, mode = 'anki') {
                     });
                 }
             } else if (cards.length > 0 && cards[cards.length - 1].type !== 'divisor') {
-                cards[cards.length - 1].answer += ' ' + line;
+                const lastCard = cards[cards.length - 1];
+                if (lastCard.type === 'anki') {
+                    lastCard.answer += ' ' + line;
+                } else {
+                    lastCard.description += ' ' + line;
+                }
             }
         } else {
             // Traditional mode (open): before ':' is Answer, after ':' is Question (description)
@@ -802,7 +813,12 @@ function convertDocumentToCards(text, mode = 'anki') {
                     });
                 }
             } else if (cards.length > 0 && cards[cards.length - 1].type !== 'divisor') {
-                cards[cards.length - 1].description += ' ' + line;
+                const lastCard = cards[cards.length - 1];
+                if (lastCard.type === 'anki') {
+                    lastCard.answer += ' ' + line;
+                } else {
+                    lastCard.description += ' ' + line;
+                }
             }
         }
     }
@@ -830,8 +846,12 @@ function parseTxtToJSONWithPlaceholders(text) {
             continue;
         }
 
-        if (line.startsWith('(open_double)')) {
-            const content = line.replace('(open_double)', '').trim();
+        const openDoubleMatch = line.match(/^[\(\[]\s*(?:open[_-]?double|duplo)\s*[\)\]]:?\s*(.*)$/i);
+        const mcMatch = line.match(/^[\(\[]\s*(?:multiple[_-]?choice|multipla[_-]?escolha|mc)\s*[\)\]]:?\s*(.*)$/i);
+        const ankiMatch = line.match(/^[\(\[]\s*(?:anki[_-]?like|anki)\s*[\)\]]:?\s*(.*)$/i);
+
+        if (openDoubleMatch) {
+            const content = openDoubleMatch[1].trim();
             const colonIndex = content.indexOf(':');
             if (colonIndex !== -1) {
                 const answersPart = content.substring(0, colonIndex).trim();
@@ -846,8 +866,8 @@ function parseTxtToJSONWithPlaceholders(text) {
                     placeholder2: "[GEMINI]"
                 };
             }
-        } else if (line.startsWith('(multiple_choice)')) {
-            const content = line.replace('(multiple_choice)', '').trim();
+        } else if (mcMatch) {
+            const content = mcMatch[1].trim();
             const colonIndex = content.indexOf(':');
             if (colonIndex !== -1) {
                 const answer = content.substring(0, colonIndex).trim();
@@ -859,30 +879,39 @@ function parseTxtToJSONWithPlaceholders(text) {
                     options: ["[GEMINI]", "[GEMINI]", answer, "[GEMINI]"]
                 };
             }
-        } else if (line.startsWith('(anki)')) {
-            const content = line.replace('(anki)', '').trim();
+        } else if (ankiMatch) {
+            const content = ankiMatch[1].trim();
             const colonIndex = content.indexOf(':');
             if (colonIndex !== -1) {
                 const front = content.substring(0, colonIndex).trim();
                 const back = content.substring(colonIndex + 1).trim();
-                card = {
-                    type: "anki",
-                    description: front,
-                    answer: back
-                };
+                if (front && back) {
+                    card = {
+                        type: "anki",
+                        description: front,
+                        answer: back
+                    };
+                }
             }
         } else {
             const colonIndex = line.indexOf(':');
             if (colonIndex !== -1) {
                 const answer = line.substring(0, colonIndex).trim();
                 const description = line.substring(colonIndex + 1).trim();
-                card = {
-                    type: "open",
-                    description: description,
-                    answer: answer
-                };
+                if (answer && description) {
+                    card = {
+                        type: "open",
+                        description: description,
+                        answer: answer
+                    };
+                }
             } else if (cards.length > 0 && cards[cards.length - 1].type !== 'divisor') {
-                cards[cards.length - 1].description += ' ' + line;
+                const lastCard = cards[cards.length - 1];
+                if (lastCard.type === 'anki') {
+                    lastCard.answer += ' ' + line;
+                } else {
+                    lastCard.description += ' ' + line;
+                }
             }
         }
 
@@ -1250,9 +1279,16 @@ submitModal22Btn.addEventListener('click', async () => {
     modal22LoadingMsg.classList.remove('hidden');
 
     const file = modal22File.files[0];
+    let localCards = [];
     try {
         const textContent = await extractTextFromFile(file);
-        const localCards = parseTxtToJSONWithPlaceholders(textContent);
+        localCards = parseTxtToJSONWithPlaceholders(textContent);
+
+        const playableCards = localCards.filter(c => c.type !== 'divisor' && c.type !== 'divider' && c.type !== 'note');
+        if (playableCards.length === 0) {
+            modal22Error.textContent = 'Nenhum flashcard válido encontrado no documento. Verifique se as linhas contêm ":" para separar os campos.';
+            return;
+        }
 
         modal22.classList.add('hidden');
         openEditorView('ai');
@@ -1268,6 +1304,7 @@ submitModal22Btn.addEventListener('click', async () => {
             const model = genAI.getGenerativeModel({ model: currentEditorModel, systemInstruction, tools: deckTools });
             currentGenModel = model;
             geminiChatSession = model.startChat({ history: [] });
+            addChatMessage('model', `✓ Documento importado com sucesso! ${deckCards.length} cartões foram carregados no baralho. Como posso ajudar a revisar ou enriquecer seus cards?`);
             return;
         }
 
@@ -1276,7 +1313,7 @@ submitModal22Btn.addEventListener('click', async () => {
             model: "gemini-flash-latest",
             generationConfig: { temperature: 0.7, responseMimeType: "text/plain" },
             tools: deckTools,
-            systemInstruction: systemInstruction + "\nPreencha os placeholders '[GEMINI]' no JSON de flashcards e retorne-os usando a ferramenta 'adicionar_varios_cards'."
+            systemInstruction: systemInstruction + "\nPreencha os placeholders '[GEMINI]' no JSON de flashcards e retorne-os usando a ferramenta 'adicionar_varios_cards'. Preserve cards com type 'anki' (frente e verso), 'open' e 'divisor' exatamente como foram fornecidos."
         });
 
         currentGenModel = model;
@@ -1284,7 +1321,9 @@ submitModal22Btn.addEventListener('click', async () => {
         const fillPrompt = `Aqui está uma lista de flashcards que precisam que você preencha os campos '[GEMINI]'.
 Para 'open_double', preencha 'placeholder1' e 'placeholder2' com rótulos descritivos curtos para as respostas.
 Para 'multiple_choice', complete o array 'options' com alternativas incorretas porém plausíveis (distratores), mantendo a resposta correta informada.
-Mantenha quaisquer itens com type 'divisor' intactos e em suas respectivas posições entre os cartões.
+Para 'anki', mantenha o type 'anki' intacto, preservando exatamente 'description' (frente/pergunta) e 'answer' (verso/resposta detalhada).
+Para 'open', mantenha o type 'open' intacto com 'description' e 'answer'.
+Mantenha quaisquer itens com type 'divisor', 'anki' e 'open' intactos e em suas respectivas posições entre os cartões.
 Ao terminar, chame 'adicionar_varios_cards' para enviar o baralho finalizado.
 
 JSON:
@@ -1940,7 +1979,8 @@ function createCardElement(card, index) {
     }
     cardEl.appendChild(typeBadge);
 
-    const descStr = `<strong>P:</strong> <span class="text-gray-800 dark:text-gray-200">${card.description || '(Sem texto)'}</span>`;
+    const descLabel = card.type === 'anki' ? 'Frente:' : 'P:';
+    const descStr = `<strong>${descLabel}</strong> <span class="text-gray-800 dark:text-gray-200">${card.description || '(Sem texto)'}</span>`;
     let ansStr = `<strong>R:</strong> <span class="text-green-600 dark:text-green-400">${card.answer || ''}</span>`;
 
     if (card.type === 'open_double') {
@@ -1952,7 +1992,7 @@ function createCardElement(card, index) {
         }).join(' | ');
         ansStr = `<span class="text-xs text-gray-500">Opções: ${optsList}</span>`;
     } else if (card.type === 'anki') {
-        ansStr = `<strong>Resposta:</strong> <div class="text-indigo-600 dark:text-indigo-400 whitespace-pre-line mt-0.5">${card.answer || ''}</div>`;
+        ansStr = `<strong>Verso:</strong> <div class="text-indigo-600 dark:text-indigo-400 whitespace-pre-line mt-0.5">${card.answer || ''}</div>`;
     }
 
     const textCont = document.createElement('div');

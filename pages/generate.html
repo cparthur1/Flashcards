@@ -234,6 +234,9 @@
                         Cada linha do documento vai ser um card. No modo <strong>Tradicional</strong>, o que vem antes do <strong>":"</strong> é a resposta e o que vem depois é a pergunta. No modo <strong>Anki-like</strong>, o que vem antes do <strong>":"</strong> é a frente e o que vem depois é o verso. Se quiser digitar a resposta, selecione tradicional, se não, anki-like.
                     </p>
                     <p class="text-xs opacity-90 border-t border-blue-200/60 dark:border-blue-800/60 pt-2">
+                        💡 <strong>Tags especiais:</strong> Use <code>(anki_like) Frente: Verso</code>, <code>(open_double) Resp1;Resp2: Pergunta</code> ou <code>(multiple_choice) Resposta: Pergunta</code> para definir formatos específicos por linha.
+                    </p>
+                    <p class="text-xs opacity-90">
                         💡 <strong>Notas e Divisores:</strong> Linhas iniciadas com <code>#</code> viram divisores de seção no editor (não aparecem durante o jogo).
                     </p>
                 </div>
@@ -364,6 +367,7 @@
                 <div class="bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-900/60 p-4 rounded-2xl text-sm leading-relaxed text-purple-900 dark:text-purple-200 space-y-2">
                     <p class="font-semibold">Como estruturar para aprimoramento:</p>
                     <p class="text-xs">• Linha padrão: <code>RESPOSTA: Pergunta</code></p>
+                    <p class="text-xs">• Anki-like: inicie com <code>(anki_like) Frente: Verso</code> (a parte antes de ":" é a frente/pergunta e depois é o verso/resposta).</p>
                     <p class="text-xs">• Resposta dupla: inicie com <code>(open_double) Resposta1;Resposta2: Pergunta</code> (o Gemini criará os rótulos adequados).</p>
                     <p class="text-xs">• Múltipla escolha: inicie com <code>(multiple_choice) RespostaCorreta: Pergunta</code> (o Gemini criará distratores plausíveis).</p>
                     <p class="text-xs">• Notas e divisores: inicie com <code># Título da Seção</code> (organizam o baralho no editor e são ignorados no jogo).</p>
