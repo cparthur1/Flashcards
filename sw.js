@@ -1,5 +1,10 @@
-const CACHE_NAME = 'flashcards-v3.2'; // Increment version to trigger update
-const ASSETS_TO_CACHE = [
+const CACHE_NAME = 'flashcards-v3.3'; // Increment version to trigger update
+
+const BASE_PATH = self.registration && self.registration.scope 
+  ? new URL(self.registration.scope).pathname.replace(/\/$/, '') 
+  : '';
+
+const RAW_ASSETS = [
   '/',
   '/index.html',
   '/pages/game.html',
@@ -24,9 +29,13 @@ const ASSETS_TO_CACHE = [
   '/assets/img/highlight.svg'
 ];
 
+const ASSETS_TO_CACHE = RAW_ASSETS.map(p => p === '/' ? (BASE_PATH || '/') : `${BASE_PATH}${p}`);
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE).catch(err => {
+      console.warn('SW cache.addAll warning:', err);
+    }))
   );
   self.skipWaiting();
 });
@@ -54,9 +63,9 @@ const ALLOWED_CDN_HOSTS = new Set([
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Strategy: Network-only for development to bypass stale cache
+  // Strategy: Network-first with no-cache for origin assets to always deliver fresh code
   if (ASSETS_TO_CACHE.includes(url.pathname) || url.origin === self.location.origin) {
-    event.respondWith(fetch(event.request));
+    event.respondWith(fetch(event.request, { cache: 'no-cache' }));
     return;
   }
 

@@ -14,7 +14,8 @@ Fixed an issue where submitting an incorrect answer on Desktop Chrome would inst
 - Removed the auto-skip trigger from [`handleOpenSubmit`](file:///home/chief_arthur/Apps/Flashcards/js/game.js#L851) and guarded it to return immediately when `currentQuestion.isBeingCorrected` is true.
 - Disabled inputs and `submitBtn` upon incorrect answer until the next card is loaded via the "Pular" button.
 - Cleaned up duplicate `keyup` listeners on inputs when `<form id="flashcard-answer-form">` is present.
-- Bumped Service Worker cache version in [`sw.js`](file:///home/chief_arthur/Apps/Flashcards/sw.js#L1) to `flashcards-v3.2` to ensure client update.
+- Bumped Service Worker cache version in [`sw.js`](file:///home/chief_arthur/Apps/Flashcards/sw.js#L1) to `flashcards-v3.3` with dynamic repository base path for GitHub Pages and `{ cache: 'no-cache' }` fetch policy.
+- Added query parameter cache buster (`?v=3.3`) to [`pages/game.html`](file:///home/chief_arthur/Apps/Flashcards/pages/game.html#L737) to force immediate browser script updates and invalidate cached bundles.
 
 --------------------------------------------------------------------------------
 
