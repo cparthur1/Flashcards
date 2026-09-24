@@ -1,3 +1,23 @@
+CHANGELOG: DESKTOP AUTO-SKIP ON WRONG ANSWER FIX
+Date: 2026-09-24
+
+OVERVIEW:
+Fixed an issue where submitting an incorrect answer on Desktop Chrome would instantly auto-skip the card without waiting for the user to review the feedback and click "Pular".
+
+1. ROOT CAUSE
+- On Desktop Chrome, pressing Enter triggered both a form 'submit' event (on keydown) and an input 'keyup' event (on key release).
+- The initial submit marked the card as incorrect (`isBeingCorrected = true`) and reset submission locks.
+- The immediate subsequent 'keyup' event on the same keystroke invoked `handleOpenSubmit()`, which contained an `isBeingCorrected` branch that called `animateCardToBack(() => loadQuestion())`, auto-skipping the card within milliseconds.
+- On Android Chrome, virtual keyboard interactions did not emit this duplicate 'keyup' with `e.key === 'Enter'`, which is why mobile behavior was preserved.
+
+2. FIX IMPLEMENTATION
+- Removed the auto-skip trigger from [`handleOpenSubmit`](file:///home/chief_arthur/Apps/Flashcards/js/game.js#L851) and guarded it to return immediately when `currentQuestion.isBeingCorrected` is true.
+- Disabled inputs and `submitBtn` upon incorrect answer until the next card is loaded via the "Pular" button.
+- Cleaned up duplicate `keyup` listeners on inputs when `<form id="flashcard-answer-form">` is present.
+- Bumped Service Worker cache version in [`sw.js`](file:///home/chief_arthur/Apps/Flashcards/sw.js#L1) to `flashcards-v3.2` to ensure client update.
+
+--------------------------------------------------------------------------------
+
 CHANGELOG: P2P SESSION SYNC MIGRATION
 Branch: webRTC_session-transfer
 Date: 2026-04-29

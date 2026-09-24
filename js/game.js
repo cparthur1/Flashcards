@@ -849,14 +849,7 @@ function resetUI() {
 }
 
 function handleOpenSubmit() {
-    if (isOpenSubmitting || submitBtn.disabled) return;
-    if (currentQuestion.isBeingCorrected) {
-        if (isAnimating) return;
-        animateCardToBack(() => {
-            loadQuestion();
-        });
-        return;
-    }
+    if (isOpenSubmitting || submitBtn.disabled || currentQuestion?.isBeingCorrected) return;
     const type = currentQuestion.type;
     const ans1 = normalizeString(answerInput.value);
     const ans1_d = normalizeString(answerInput1.value);
@@ -943,6 +936,10 @@ function showFeedback(isCorrect, element) {
         if (!element) {
             updateFeedbackText();
             submitBtn.classList.add('hidden');
+            submitBtn.disabled = true;
+            [answerInput, answerInput1, answerInput2].forEach(inp => {
+                if (inp) inp.disabled = true;
+            });
         }
         nextQuestionBtn.classList.remove('hidden');
         correctionOptions.classList.add('flex');
@@ -1825,10 +1822,20 @@ if (flashcardAnswerForm) {
         e.preventDefault();
         handleOpenSubmit();
     });
+} else {
+    [answerInput, answerInput1, answerInput2].forEach(inp => {
+        inp?.addEventListener('keyup', (e) => { if (e.key === 'Enter') handleOpenSubmit(); });
+    });
 }
-[answerInput, answerInput1, answerInput2].forEach(inp => {
-    inp.addEventListener('keyup', (e) => { if (e.key === 'Enter') handleOpenSubmit(); });
-});
+
+if (answerInput1 && answerInput2) {
+    answerInput1.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && answerInput1.value.trim() && !answerInput2.value.trim()) {
+            e.preventDefault();
+            answerInput2.focus();
+        }
+    });
+}
 nextQuestionBtn.addEventListener('click', () => {
     if (isAnimating) return;
     animateCardToBack(() => {
