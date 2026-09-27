@@ -1150,9 +1150,8 @@ Gere aproximadamente 100 flashcards completos e aprofundados cobrindo todo o mat
         const genModel = genAI.getGenerativeModel({
             model: currentEditorModel || "gemini-flash-latest",
             generationConfig: {
-                temperature: 0.7,
-                responseMimeType: "application/json",
-                maxOutputTokens: 8192
+                "thinking_level": "high",
+                responseMimeType: "application/json"
             }
         });
 
