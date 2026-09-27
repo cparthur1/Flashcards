@@ -1087,8 +1087,9 @@ submitModal21Btn.addEventListener('click', async () => {
     modal21LoadingMsg.classList.remove('hidden');
 
     try {
-        const basePrompt = `Com base nos arquivos enviados, processe todo o conteúdo e gere flashcards técnicos para estudo aprofundado (conceitos, definições, fórmulas, mecanismos, etapas e estruturas). Nível de detalhe universitário.
-PROIBIDO incluir texto explicativo fora do array JSON.
+        const basePrompt = `Com base nos arquivos enviados, o objetivo é processar todo o conteúdo e gerar uma lista extensa de termos técnicos para revisão, incluindo nomes de moléculas, estruturas, etapas de processos e quaisquer conceitos com nomes específicos. Em seguida, usar das informações que classificou na primeira etapa para gerar um arquivo .json baseado em todo o conteúdo que juntou na primeira etapa. O nível de detalhe deve ser apropriado para um estudante de medicina. A sua resposta vai ser apenas o JSON com os flashcards, a primeira etapa serve apenas para você planejar os flashcards. Busque sempre fazer a pergunta como uma descrição e a(s) resposta(s) com o menor numero de palavras possíveis, preferencialmente o nome de um termo, conceito, molécula... Ao final revise se os flashcards criados realmente abordam por extenso tudo que foi enviado. Devem ser gerados aproximadamente 100 flashcards.
+        Use uma linguagem telegráfica e objetiva. Sem conectivos.
+        PROIBIDO incluir texto explicativo fora do array JSON.
 Retorne EXCLUSIVAMENTE um array JSON ([]) contendo os objetos de flashcards.
 Formatos permitidos:
 1. open: {"type": "open", "description": "Pergunta ou descrição de conceito/medicamento/teste/mecanismo...", "answer": "Resposta objetiva, nome do conceito/medicamento/teste/mecanismo. Deve conter o mínimo de palavras possível, idealmente 1 só"}
@@ -1098,7 +1099,7 @@ Formatos permitidos:
 
 Linhas ou anotações iniciadas por '#' nos arquivos de texto/documentos são comentários/notas e devem ser ignoradas, nunca convertidas em perguntas.
 
-Gere aproximadamente 100 flashcards completos e aprofundados cobrindo todo o material enviado.`;
+Gere aproximadamente 100 flashcards completos e aprofundados cobrindo todo o material enviado, se o usuário solicitar, ultrapasse esse limite.`;
 
         let promptToSend = basePrompt;
         const customText = modal21Prompt.value.trim();
