@@ -586,6 +586,16 @@ textarea::-webkit-scrollbar-thumb,
 /* ==========================================================================
    CARD TEXT HIGHLIGHTER & PASTEL COLORS
    ========================================================================== */
+/* Touchscreen & selection optimizations for card highlighter */
+#question-card, #question-text, #anki-answer-container {
+    -webkit-touch-callout: none;
+}
+
+#question-body-text, #anki-answer-text {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
 mark.card-hl {
     padding: 0.12em 0.32em;
     margin: 0 -0.05em;
@@ -595,7 +605,14 @@ mark.card-hl {
     font-weight: inherit;
     line-height: inherit;
     cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
     transition: background-color 0.2s ease, filter 0.2s ease;
+}
+
+#text-highlight-popup button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 mark.card-hl:hover {

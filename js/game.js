@@ -1375,8 +1375,11 @@ document.addEventListener('keydown', (e) => {
 // --- TEXT HIGHLIGHTER & PASTEL COLORS LOGIC ---
 let activeHighlightRange = null;
 let activeHighlightField = null; // 'description' or 'answer'
+let isInteractingWithPopup = false;
+let selectionDebounceTimer = null;
 
 function hideHighlightPopup() {
+    isInteractingWithPopup = false;
     if (!textHighlightPopup) return;
     textHighlightPopup.classList.add('hidden');
     if (hlPalette) {
@@ -1412,19 +1415,31 @@ function showHighlightPopup(range, isMarked) {
 
     textHighlightPopup.classList.remove('hidden');
 
-    const popupWidth = 44;
     const popupHeight = 44;
+    // Account for potential open palette width (~190px) so popup never cuts off on mobile edges
+    const estimatedPopupWidth = 190;
 
     let left = rect.left + rect.width / 2;
-    let top = rect.top - popupHeight - 8;
+    let top = rect.top - popupHeight - 10;
 
-    if (top < 64) {
-        top = rect.bottom + 8;
+    // Header offset: ensure it stays below fixed header (~64px) on mobile
+    if (top < 70) {
+        top = rect.bottom + 10;
     }
 
-    const minLeft = popupWidth / 2 + 12;
-    const maxLeft = window.innerWidth - (popupWidth / 2 + 12);
-    left = Math.max(minLeft, Math.min(maxLeft, left));
+    // Keep within horizontal screen bounds accounting for full palette width
+    const minLeft = estimatedPopupWidth / 2 + 10;
+    const maxLeft = window.innerWidth - (estimatedPopupWidth / 2 + 10);
+    if (maxLeft >= minLeft) {
+        left = Math.max(minLeft, Math.min(maxLeft, left));
+    } else {
+        left = window.innerWidth / 2;
+    }
+
+    // Ensure it doesn't overflow bottom of viewport
+    if (top + popupHeight > window.innerHeight - 12) {
+        top = Math.max(70, rect.top - popupHeight - 10);
+    }
 
     textHighlightPopup.style.top = `${top}px`;
     textHighlightPopup.style.left = `${left}px`;
@@ -1454,6 +1469,7 @@ function isRangeMarked(range, container) {
 }
 
 function applyHighlight(color) {
+    isInteractingWithPopup = false;
     if (!activeHighlightRange || !activeHighlightField) return;
 
     const container = activeHighlightField === 'description' 
@@ -1500,6 +1516,7 @@ function applyHighlight(color) {
 }
 
 function removeHighlight() {
+    isInteractingWithPopup = false;
     if (!activeHighlightRange || !activeHighlightField) return;
 
     const container = activeHighlightField === 'description' 
@@ -1600,50 +1617,56 @@ function persistHighlightedContent(targetField) {
 }
 
 function handleTextSelection(e) {
-    setTimeout(() => {
-        // Ignore clicks inside the highlight popup itself
-        if (e && e.target && typeof e.target.closest === 'function' && e.target.closest('#text-highlight-popup')) {
-            return;
-        }
+    if (isInteractingWithPopup) return;
 
-        const sel = window.getSelection();
-        if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
+    // Ignore clicks inside the highlight popup itself
+    if (e && e.target && typeof e.target.closest === 'function' && e.target.closest('#text-highlight-popup')) {
+        return;
+    }
+
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
+        if (!isInteractingWithPopup) {
             hideHighlightPopup();
-            return;
         }
+        return;
+    }
 
-        const text = sel.toString().trim();
-        if (!text || text.length === 0) {
+    const text = sel.toString().trim();
+    if (!text || text.length === 0) {
+        if (!isInteractingWithPopup) {
             hideHighlightPopup();
-            return;
         }
+        return;
+    }
 
-        const range = sel.getRangeAt(0);
-        const common = range.commonAncestorContainer;
+    const range = sel.getRangeAt(0);
+    const common = range.commonAncestorContainer;
 
-        const questionBody = document.getElementById('question-body-text') || questionText;
-        const ankiAnswer = ankiAnswerText;
+    const questionBody = document.getElementById('question-body-text') || questionText;
+    const ankiAnswer = ankiAnswerText;
 
-        let field = null;
-        let container = null;
+    let field = null;
+    let container = null;
 
-        if (questionBody && questionBody.contains(common)) {
-            field = 'description';
-            container = questionBody;
-        } else if (ankiAnswer && ankiAnswer.contains(common) && !ankiAnswerContainer?.classList.contains('hidden')) {
-            field = 'answer';
-            container = ankiAnswer;
-        } else {
+    if (questionBody && questionBody.contains(common)) {
+        field = 'description';
+        container = questionBody;
+    } else if (ankiAnswer && ankiAnswer.contains(common) && !ankiAnswerContainer?.classList.contains('hidden')) {
+        field = 'answer';
+        container = ankiAnswer;
+    } else {
+        if (!isInteractingWithPopup) {
             hideHighlightPopup();
-            return;
         }
+        return;
+    }
 
-        activeHighlightRange = range.cloneRange();
-        activeHighlightField = field;
+    activeHighlightRange = range.cloneRange();
+    activeHighlightField = field;
 
-        const isMarked = isRangeMarked(range, container);
-        showHighlightPopup(range, isMarked);
-    }, 20);
+    const isMarked = isRangeMarked(range, container);
+    showHighlightPopup(range, isMarked);
 }
 
 if (hlTriggerBtn) {
@@ -1679,23 +1702,80 @@ document.querySelectorAll('.hl-color-btn').forEach(btn => {
     });
 });
 
+function onSelectionChange() {
+    if (isInteractingWithPopup) return;
+    clearTimeout(selectionDebounceTimer);
+    selectionDebounceTimer = setTimeout(() => {
+        handleTextSelection();
+    }, 120);
+}
+
+document.addEventListener('selectionchange', onSelectionChange);
 document.addEventListener('mouseup', handleTextSelection);
-document.addEventListener('touchend', handleTextSelection);
+document.addEventListener('touchend', (e) => {
+    if (e.target && typeof e.target.closest === 'function' && e.target.closest('#text-highlight-popup')) {
+        return;
+    }
+    setTimeout(() => {
+        handleTextSelection(e);
+    }, 60);
+});
 
 if (textHighlightPopup) {
+    const handlePopupTouch = () => {
+        isInteractingWithPopup = true;
+    };
+    textHighlightPopup.addEventListener('pointerdown', handlePopupTouch);
+    textHighlightPopup.addEventListener('touchstart', handlePopupTouch, { passive: true });
     textHighlightPopup.addEventListener('mousedown', (e) => {
+        isInteractingWithPopup = true;
         // Prevent default so text selection in card is not cleared on click
         e.preventDefault();
     });
 }
 
-document.addEventListener('mousedown', (e) => {
+// Click listener to handle tapping existing highlighted marks directly & dismiss popup on click outside
+document.addEventListener('click', (e) => {
+    const mark = e.target.closest('mark.card-hl');
+    if (mark) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const questionBody = document.getElementById('question-body-text') || questionText;
+        const ankiAnswer = ankiAnswerText;
+        const field = (ankiAnswer && ankiAnswer.contains(mark)) ? 'answer' : 'description';
+
+        const range = document.createRange();
+        range.selectNode(mark);
+        activeHighlightRange = range.cloneRange();
+        activeHighlightField = field;
+
+        isInteractingWithPopup = true;
+        showHighlightPopup(range, true);
+        return;
+    }
+
     if (e.target && typeof e.target.closest === 'function' && !e.target.closest('#text-highlight-popup')) {
         const sel = window.getSelection();
         const hasSelection = sel && !sel.isCollapsed && sel.toString().trim().length > 0;
         if (!hasSelection) {
             hideHighlightPopup();
         }
+    }
+});
+
+// Dismiss popup when tapping outside on touchscreens
+document.addEventListener('pointerdown', (e) => {
+    if (!textHighlightPopup || textHighlightPopup.classList.contains('hidden')) return;
+    if (e.target && typeof e.target.closest === 'function') {
+        if (e.target.closest('#text-highlight-popup') || e.target.closest('mark.card-hl')) {
+            return;
+        }
+    }
+    isInteractingWithPopup = false;
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !sel.toString().trim()) {
+        hideHighlightPopup();
     }
 });
 
@@ -1863,13 +1943,22 @@ if (ankiBtnEasy) ankiBtnEasy.addEventListener('click', () => handleAnkiRating('e
 if (questionCard) {
     questionCard.addEventListener('click', (e) => {
         if (currentQuestion && currentQuestion.type === 'anki' && !isAnkiFlipped) {
-            // Ignore if clicked on bookmark, delete, image zoom, or highlight popup
-            if (e.target.closest('#bookmark-card-btn') || e.target.closest('#delete-card-btn') || e.target.closest('#question-image-container') || e.target.closest('#text-highlight-popup')) {
+            // Ignore if clicked on bookmark, delete, image zoom, highlight popup, or marked text
+            if (e.target.closest('#bookmark-card-btn') || e.target.closest('#delete-card-btn') || e.target.closest('#question-image-container') || e.target.closest('#text-highlight-popup') || e.target.closest('mark.card-hl')) {
+                return;
+            }
+            // If highlight popup is open, clicking the card dismisses the popup instead of flipping
+            if (textHighlightPopup && !textHighlightPopup.classList.contains('hidden')) {
+                hideHighlightPopup();
                 return;
             }
             // Ignore if text selection is active
             const sel = window.getSelection();
             if (sel && sel.toString().trim().length > 0) {
+                return;
+            }
+            // On touch devices, ignore direct taps on question text so users can select text / double-tap without accidental flips
+            if (e.target.closest('#question-text') && ('ontouchstart' in window || navigator.maxTouchPoints > 0)) {
                 return;
             }
             flipAnkiCard();

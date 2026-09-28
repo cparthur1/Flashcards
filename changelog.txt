@@ -205,4 +205,30 @@ Date: 2026-09-21
   - Dynamic focus listener and visualViewport resize handler smoothly repositions the container right below the header whenever the keyboard opens.
   - Added '.keyboard-open' body state for hyper-compact vertical spacing during active input typing.
 
+--------------------------------------------------------------------------------
+
+CHANGELOG: TOUCHSCREEN HIGHLIGHTER SUPPORT & MOBILE ERGONOMICS
+Date: 2026-09-28
+
+1. TOUCHSCREEN TEXT SELECTION & `selectionchange`
+- Integrated a debounced `selectionchange` listener on `document` (120ms) so highlighting triggers reliably when users drag touch selection handles on mobile browsers (iOS Safari, Android Chrome).
+- Added `isInteractingWithPopup` state management to prevent touch interactions with popup buttons from clearing the active highlight range or dismissing the popup prematurely.
+- Added pointerdown and touchstart handlers on `#text-highlight-popup` so mobile taps do not blur or drop the active DOM selection.
+
+2. ONE-TAP UNHIGHLIGHTING & MARK INTERACTION
+- Tapping or clicking directly on any existing highlight (`<mark class="card-hl">`) now smoothly opens the highlighter popup positioned right above the mark in "Tirar marcação" state.
+- Single tap on the trigger button unwraps the highlight, restores clean text, and syncs across local storage sessions.
+
+3. ACCIDENTAL CARD FLIP PREVENTION
+- Tapping or selecting text within question bodies on touchscreen devices no longer accidentally triggers Anki card flip.
+- Tapping existing highlighted marks (`mark.card-hl`) or dismissing an active highlight popup no longer triggers card flip.
+
+4. RESPONSIVE SCREEN CLAMPING & TOUCH TARGETS
+- Clamped horizontal popup positioning using the expanded palette width (190px), preventing color swatches from overflowing off the screen edge on narrow mobile viewports (360px-390px).
+- Positioned popup with top-edge protection (`top < 70`) so it never hides behind the fixed mobile header.
+- Enlarged mobile color button touch targets to `w-7 h-7 sm:w-6 sm:h-6` with `touch-action: manipulation;`.
+- Suppressed iOS callout menu (`-webkit-touch-callout: none`) over card text areas so the native copy bubble does not obstruct the highlighter popup.
+- Incremented cache version to 'flashcards-v3.4'.
+
+
 
