@@ -206,4 +206,97 @@ export function compressImageFile(imageInput, maxDimension = 800, quality = 0.85
     });
 }
 
+/**
+ * Parses Markdown and renders LaTeX math formulas (KaTeX).
+ * Supports inline ($...$, \(...\)) and block ($$...$$, \[...\]) math.
+ * Preserves HTML tags (including highlighter <mark> elements) and code blocks.
+ */
+export function renderMathAndMarkdown(text) {
+    if (!text) return '';
+
+    if (typeof marked !== 'undefined' && typeof marked.setOptions === 'function') {
+        marked.setOptions({ gfm: true, breaks: true });
+    }
+
+    const mathBlocks = [];
+
+    // 1. Temporarily extract block math (\[...\] and $$...$$)
+    let placeholderText = text.replace(/\\\[([\s\S]*?)\\\]/g, (match, math) => {
+        const placeholder = `%%BLOCK_MATH_${mathBlocks.length}%%`;
+        mathBlocks.push({ type: 'BLOCK', text: math });
+        return placeholder;
+    });
+    placeholderText = placeholderText.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
+        const placeholder = `%%BLOCK_MATH_${mathBlocks.length}%%`;
+        mathBlocks.push({ type: 'BLOCK', text: math });
+        return placeholder;
+    });
+
+    // 2. Temporarily extract inline math (\(...\) and $...$)
+    placeholderText = placeholderText.replace(/\\\(([\s\S]*?)\\\)/g, (match, math) => {
+        const placeholder = `%%INLINE_MATH_${mathBlocks.length}%%`;
+        mathBlocks.push({ type: 'INLINE', text: math });
+        return placeholder;
+    });
+    placeholderText = placeholderText.replace(/\$(?!\s)((?:\\\$|[^\$])+?)(?<!\s)\$/g, (match, math) => {
+        const placeholder = `%%INLINE_MATH_${mathBlocks.length}%%`;
+        mathBlocks.push({ type: 'INLINE', text: math });
+        return placeholder;
+    });
+
+    // 3. Parse Markdown
+    let html = typeof marked !== 'undefined' ? marked.parse(placeholderText) : placeholderText;
+
+    // 4. Extract code blocks from HTML to prevent rendering math inside them
+    const codeBlocks = [];
+    html = html.replace(/<pre><code[\s\S]*?<\/code><\/pre>/gi, (match) => {
+        const placeholder = `%%CODE_BLOCK_${codeBlocks.length}%%`;
+        codeBlocks.push(match);
+        return placeholder;
+    });
+    html = html.replace(/<code[\s\S]*?<\/code>/gi, (match) => {
+        const placeholder = `%%CODE_BLOCK_${codeBlocks.length}%%`;
+        codeBlocks.push(match);
+        return placeholder;
+    });
+
+    // 5. Restore math blocks and render them with KaTeX
+    if (typeof katex !== 'undefined') {
+        html = html.replace(/%%(BLOCK|INLINE)_MATH_(\d+)%%/g, (match, type, index) => {
+            const mathItem = mathBlocks[parseInt(index, 10)];
+            if (!mathItem) return match;
+            try {
+                return katex.renderToString(mathItem.text, {
+                    displayMode: type === 'BLOCK',
+                    throwOnError: false
+                });
+            } catch (err) {
+                console.error("KaTeX error:", err);
+                return match;
+            }
+        });
+    } else {
+        html = html.replace(/%%(BLOCK|INLINE)_MATH_(\d+)%%/g, (match, type, index) => {
+            const mathItem = mathBlocks[parseInt(index, 10)];
+            if (!mathItem) return match;
+            return type === 'BLOCK' ? `$$${mathItem.text}$$` : `$${mathItem.text}$`;
+        });
+    }
+
+    // 6. Restore code blocks
+    html = html.replace(/%%CODE_BLOCK_(\d+)%%/g, (match, index) => {
+        return codeBlocks[parseInt(index, 10)] || '';
+    });
+
+    // 7. Restore any remaining math placeholders
+    html = html.replace(/%%(BLOCK|INLINE)_MATH_(\d+)%%/g, (match, type, index) => {
+        const mathItem = mathBlocks[parseInt(index, 10)];
+        if (!mathItem) return match;
+        return type === 'BLOCK' ? `$$${mathItem.text}$$` : `$${mathItem.text}$`;
+    });
+
+    return html;
+}
+
+
 

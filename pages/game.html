@@ -293,7 +293,7 @@
             <!-- Anki-like Answer Reveal Area (Question at top, Answer below) -->
             <div id="anki-answer-container" class="hidden w-full mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 flex flex-col items-center">
                 <span class="text-xs uppercase tracking-wider font-extrabold text-blue-600 dark:text-blue-400 mb-1">Resposta</span>
-                <div id="anki-answer-text" class="w-full text-center text-base sm:text-lg font-medium text-gray-800 dark:text-gray-100 leading-relaxed whitespace-pre-line space-y-3"></div>
+                <div id="anki-answer-text" class="w-full text-center text-base sm:text-lg font-medium text-gray-800 dark:text-gray-100 leading-relaxed"></div>
                 <div id="anki-answer-image-container" class="hidden mt-3 w-full flex justify-center">
                     <img id="anki-answer-image" src="" alt="Imagem da Resposta" class="max-h-48 sm:max-h-72 w-auto rounded-xl shadow-md border border-gray-200 dark:border-gray-600 card-img-zoomable object-contain">
                 </div>
@@ -439,7 +439,7 @@
                 <div id="edit-anki-answer-group" class="hidden">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Resposta Detalhada</label>
                     <textarea id="edit-anki-answer-input" rows="5"
-                        class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white resize-y text-sm" placeholder="Explicação detalhada... Suporta múltiplos parágrafos com Enter"></textarea>
+                        class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white resize-y text-sm" placeholder="Explicação detalhada... Suporta Markdown, listas e fórmulas LaTeX ($x^2$)"></textarea>
                 </div>
                 <div id="edit-mc-options-group" class="hidden space-y-2">
                     <div class="flex items-center justify-between">
@@ -734,7 +734,7 @@
         </div>
     </div>
 
-    <script src="../js/game.js?v=3.4" type="module" defer></script>
+    <script src="../js/game.js?v=3.5" type="module" defer></script>
 </body>
 
 </html>

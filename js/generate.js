@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { callWithRetry, checkAndResetModelFallback, sanitizeChatHistory } from './utils.js';
+import { callWithRetry, checkAndResetModelFallback, sanitizeChatHistory, renderMathAndMarkdown } from './utils.js';
 
 function compressPDFWithWorker(file) {
     return new Promise((resolve, reject) => {
@@ -183,7 +183,64 @@ let lastFailedLocalCards = null;
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const FILES_DEFAULT_SVG = '<svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>';
 
-const systemInstruction = "Sua função é gerenciar um baralho de flashcards para um estudante universitário. Você pode adicionar, editar ou remover cards usando as ferramentas fornecidas. Tipos suportados: 'open' (conceito aberto), 'open_double' (dupla resposta), 'multiple_choice' (múltipla escolha com 2 a 6 opções), e 'anki' (conceito/pergunta e explicação detalhada para repetição espaçada). Mantenha o tom profissional, analítico e pragmático.";
+const systemInstruction = "Sua função é gerenciar um baralho de flashcards para um estudante universitário. Você pode adicionar, editar ou remover cards usando as ferramentas fornecidas. Tipos suportados: 'open' (conceito aberto), 'open_double' (dupla resposta), 'multiple_choice' (múltipla escolha com 2 a 6 opções), e 'anki' (conceito/pergunta e explicação detalhada para repetição espaçada). Nos cartões 'anki', tanto a frente ('description') quanto o verso ('answer') contam com suporte total a formatação Markdown rico (tabelas, listas com marcadores ou números, negrito, blocos de código) e fórmulas matemáticas em LaTeX/KaTeX ($fórmula$ inline e $$fórmula$$ em bloco). Use essa rica formatação matemática e markdown sempre que oportuno para explicar conceitos complexos, passos de processos, fórmulas ou tabelas comparativas. Mantenha o tom profissional, analítico e pragmático.";
+
+const generationSystemInstruction = `Você é um especialista em educação e elaboração de flashcards acadêmicos de alto rendimento.
+Sua missão é sintetizar materiais de estudo (artigos, livros, apresentações, apostilas ou anotações) em flashcards de nível universitário/pós-graduação com máxima precisão conceitual, adaptando-se com rigor e profundidade ao domínio temático abordado (ciências da saúde, biológicas, exatas, engenharia, direito, humanas ou tecnologia).
+
+DIRETRIZES DE FORMATO E QUALIDADE:
+1. Retorne EXCLUSIVAMENTE um array JSON ([]) contendo os objetos de flashcards.
+2. PROIBIDO incluir texto explicativo, introduções ou notas fora do array JSON.
+3. Linhas ou anotações iniciadas por "#" nos arquivos de texto/documentos são notas ou títulos e devem ser ignoradas como perguntas diretas.
+
+DISTRIBUIÇÃO E REGRAS POR TIPO DE CARTÃO:
+- "open":
+  • Pergunta ("description"): Formulação clara, direta e objetiva de um conceito, termo, estrutura, lei, patologia ou princípio.
+  • Resposta ("answer"): Curta, telegráfica e precisa (idealmente de 1 a 3 palavras), sem frases explicativas ou conectivos desnecessários.
+- "open_double":
+  • Pergunta ("description"): Questionamento comparativo ou que envolva dois conceitos interligados (ex: causa e efeito, agonista e antagonista, dois parâmetros ou limites).
+  • Respostas ("answer" e "answer2"): Duas respostas diretas e telegráficas.
+  • Rótulos ("placeholder1" e "placeholder2"): Rótulos descritivos e concisos para cada campo de resposta.
+- "multiple_choice":
+  • Enunciado ("description"): Questão bem contextualizada, cenário aplicado, problema técnico ou pergunta conceitual.
+  • Resposta ("answer"): A alternativa correta exata.
+  • Opções ("options"): Array com 4 alternativas plausíveis (1 correta e 3 distratores inteligentes). A resposta correta DEVE estar contida obrigatoriamente neste array.
+- "anki":
+  • Frente ("description"): Conceito, processo, questionamento técnico ou dedução a ser compreendida e memorizada. Suporta Markdown e fórmulas LaTeX ($...$).
+  • Verso ("answer"): Explicação aprofundada, completa e estruturada para repetição espaçada. Suporta e deve utilizar Markdown rico (tópicos com marcadores, negrito para termos-chave, tabelas comparativas) e fórmulas matemáticas/científicas em LaTeX/KaTeX ($fórmula$ inline ou $$fórmula$$ em bloco) quando pertinentes.
+
+EXEMPLOS DE ESTRUTURA (FEW-SHOT):
+[
+  {
+    "type": "open",
+    "description": "Enzima mitocondrial que catalisa a descarboxilação oxidativa do piruvato em acetil-CoA.",
+    "answer": "Complexo Piruvato Desidrogenase"
+  },
+  {
+    "type": "open_double",
+    "description": "Quais são, respectivamente, o principal neurotransmissor inibitório no encéfalo e o principal na medula espinhal?",
+    "answer": "GABA",
+    "answer2": "Glicina",
+    "placeholder1": "Encéfalo",
+    "placeholder2": "Medula espinhal"
+  },
+  {
+    "type": "multiple_choice",
+    "description": "Qual das seguintes alterações fisiológicas promove o desvio da curva de dissociação da oxi-hemoglobina para a direita (efeito Bohr)?",
+    "answer": "Aumento da concentração de $H^+$ (acidose)",
+    "options": [
+      "Aumento da concentração de $H^+$ (acidose)",
+      "Redução da temperatura corpórea",
+      "Queda nos níveis intraeritrocitários de 2,3-DPG",
+      "Alcalose respiratória aguda"
+    ]
+  },
+  {
+    "type": "anki",
+    "description": "Qual é a base biofísica do potencial de equilíbrio de um íon e sua respectiva formulação matemática?",
+    "answer": "O potencial de equilíbrio é a diferença de potencial elétrico transmembrana que contrabalança com exatidão a tendência termodinâmica de difusão de um íon gerada por seu gradiente de concentração.\\n\\n### Equação de Nernst:\\n$$E_{ion} = \\\\frac{RT}{zF} \\\\ln\\\\left(\\\\frac{[ion]_{ext}}{[ion]_{int}}\\\\right)$$\\n\\n**Pontos essenciais:**\\n- Para o íon $K^+$ em temperatura corporal ($37^\\\\circ\\\\text{C}$): $E_K \\\\approx -90\\\\text{ mV}$.\\n- Determina a voltagem em que o fluxo iônico líquido resultante é zero."
+  }
+]`;
 
 // Gemini Tools Definitions for Agentic Editing
 const deckTools = [
@@ -196,8 +253,8 @@ const deckTools = [
                     type: "OBJECT",
                     properties: {
                         type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki", "divisor"], description: "Tipo do card" },
-                        description: { type: "STRING", description: "Pergunta, conceito ou texto do divisor" },
-                        answer: { type: "STRING", description: "Resposta principal ou explicação detalhada (opcional para divisor)" },
+                        description: { type: "STRING", description: "Pergunta, conceito ou texto do divisor. Para cards 'anki', suporta Markdown e fórmulas LaTeX ($...$ ou $$...$$)." },
+                        answer: { type: "STRING", description: "Resposta principal ou explicação detalhada (opcional para divisor). Para cards 'anki', suporta Markdown completo (listas, tabelas, código, negrito, etc.) e fórmulas matemáticas LaTeX ($...$ ou $$...$$)." },
                         answer2: { type: "STRING", description: "Resposta secundária (apenas para open_double)" },
                         options: { type: "ARRAY", items: { type: "STRING" }, description: "Opções (apenas para multiple_choice)" },
                         image: { type: "STRING", description: "URL ou Base64 da imagem da pergunta (opcional)" },
@@ -214,8 +271,8 @@ const deckTools = [
                     properties: {
                         index: { type: "NUMBER", description: "O índice (começando em 0) do card a ser editado." },
                         type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki", "divisor"] },
-                        description: { type: "STRING" },
-                        answer: { type: "STRING" },
+                        description: { type: "STRING", description: "Pergunta, conceito ou texto do divisor. Para 'anki', suporta Markdown e LaTeX ($...$ ou $$...$$)." },
+                        answer: { type: "STRING", description: "Resposta ou explicação detalhada. Para 'anki', suporta Markdown e fórmulas LaTeX ($...$ ou $$...$$)." },
                         answer2: { type: "STRING" },
                         options: { type: "ARRAY", items: { type: "STRING" } },
                         image: { type: "STRING" },
@@ -262,8 +319,8 @@ const deckTools = [
                                 type: "OBJECT",
                                 properties: {
                                     type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki", "divisor"] },
-                                    description: { type: "STRING" },
-                                    answer: { type: "STRING" },
+                                    description: { type: "STRING", description: "Pergunta, conceito ou texto do divisor. Para 'anki', suporta Markdown e LaTeX ($...$ ou $$...$$)." },
+                                    answer: { type: "STRING", description: "Resposta principal ou explicação detalhada. Para 'anki', suporta Markdown rico e fórmulas matemáticas LaTeX ($...$ ou $$...$$)." },
                                     answer2: { type: "STRING" },
                                     options: { type: "ARRAY", items: { type: "STRING" } },
                                     image: { type: "STRING" },
@@ -1087,27 +1144,17 @@ submitModal21Btn.addEventListener('click', async () => {
     modal21LoadingMsg.classList.remove('hidden');
 
     try {
-        const basePrompt = `Com base nos arquivos enviados, o objetivo é processar todo o conteúdo e gerar uma lista extensa de termos técnicos para revisão, incluindo nomes de moléculas, estruturas, etapas de processos e quaisquer conceitos com nomes específicos. Em seguida, usar das informações que classificou na primeira etapa para gerar um arquivo .json baseado em todo o conteúdo que juntou na primeira etapa. O nível de detalhe deve ser apropriado para um estudante de medicina. A sua resposta vai ser apenas o JSON com os flashcards, a primeira etapa serve apenas para você planejar os flashcards. Busque sempre fazer a pergunta como uma descrição e a(s) resposta(s) com o menor numero de palavras possíveis, preferencialmente o nome de um termo, conceito, molécula... Ao final revise se os flashcards criados realmente abordam por extenso tudo que foi enviado. Devem ser gerados aproximadamente 100 flashcards.
-        Use uma linguagem telegráfica e objetiva. Sem conectivos.
-        PROIBIDO incluir texto explicativo fora do array JSON.
-Retorne EXCLUSIVAMENTE um array JSON ([]) contendo os objetos de flashcards.
-Formatos permitidos:
-1. open: {"type": "open", "description": "Pergunta ou descrição de conceito/medicamento/teste/mecanismo...", "answer": "Resposta objetiva, nome do conceito/medicamento/teste/mecanismo. Deve conter o mínimo de palavras possível, idealmente 1 só"}
-2. open_double: {"type": "open_double", "description": "Pergunta comparativa/dupla", "answer": "Primeira resposta", "answer2": "Segunda resposta", "placeholder1": "Rótulo 1", "placeholder2": "Rótulo 2"}
-3. multiple_choice: {"type": "multiple_choice", "description": "Enunciado da questão", "answer": "Alternativa correta", "options": ["Alt 1", "Alt 2", "Alternativa correta", "Alt 4"]}
-4. anki: {"type": "anki", "description": "Conceito a ser lembrado", "answer": "Explicação completa e detalhada para repetição espaçada"}
+        let userTaskPrompt = `Com base nos arquivos enviados, o objetivo é processar todo o conteúdo e gerar uma lista extensa de termos técnicos para revisão, incluindo nomes de moléculas, estruturas, etapas de processos e quaisquer conceitos com nomes específicos. Em seguida, usar das informações que classificou na primeira etapa para gerar um arquivo .json baseado em todo o conteúdo que juntou na primeira etapa. A sua resposta vai ser apenas o JSON com os flashcards, a primeira etapa serve apenas para você planejar os flashcards.
+Gere aproximadamente 100 flashcards completos e aprofundados cobrindo todo o material enviado (se necessário para cobrir todo o conteúdo essencial, pode ultrapassar esse valor).
+Ao final revise se os flashcards criados realmente abordam por extenso tudo que foi enviado.
+Retorne EXCLUSIVAMENTE o array JSON ([]) contendo os flashcards estruturados conforme as diretrizes do sistema.`;
 
-Linhas ou anotações iniciadas por '#' nos arquivos de texto/documentos são comentários/notas e devem ser ignoradas, nunca convertidas em perguntas.
-
-Gere aproximadamente 100 flashcards completos e aprofundados cobrindo todo o material enviado, se o usuário solicitar, ultrapasse esse limite.`;
-
-        let promptToSend = basePrompt;
         const customText = modal21Prompt.value.trim();
         if (customText) {
-            promptToSend += `\n\nDemandas adicionais do usuário:\n${customText}`;
+            userTaskPrompt += `\n\nDemandas adicionais do usuário (prioridade máxima sobre os padrões quando conflitarem):\n${customText}`;
         }
 
-        const parts = [promptToSend];
+        const parts = [userTaskPrompt];
 
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
@@ -1149,6 +1196,7 @@ Gere aproximadamente 100 flashcards completos e aprofundados cobrindo todo o mat
         const genAI = new GoogleGenerativeAI(apiKey);
         const genModel = genAI.getGenerativeModel({
             model: currentEditorModel || "gemini-flash-latest",
+            systemInstruction: generationSystemInstruction,
             generationConfig: {
                 thinkingConfig: {
                     thinkingLevel: "HIGH"
@@ -1323,7 +1371,7 @@ submitModal22Btn.addEventListener('click', async () => {
         const fillPrompt = `Aqui está uma lista de flashcards que precisam que você preencha os campos '[GEMINI]'.
 Para 'open_double', preencha 'placeholder1' e 'placeholder2' com rótulos descritivos curtos para as respostas.
 Para 'multiple_choice', complete o array 'options' com alternativas incorretas porém plausíveis (distratores), mantendo a resposta correta informada.
-Para 'anki', mantenha o type 'anki' intacto, preservando exatamente 'description' (frente/pergunta) e 'answer' (verso/resposta detalhada).
+Para 'anki', mantenha o type 'anki' intacto, preservando exatamente 'description' (frente/pergunta) e 'answer' (verso/resposta detalhada, que suporta Markdown e LaTeX).
 Para 'open', mantenha o type 'open' intacto com 'description' e 'answer'.
 Mantenha quaisquer itens com type 'divisor', 'anki' e 'open' intactos e em suas respectivas posições entre os cartões.
 Ao terminar, chame 'adicionar_varios_cards' para enviar o baralho finalizado.
@@ -1982,7 +2030,13 @@ function createCardElement(card, index) {
     cardEl.appendChild(typeBadge);
 
     const descLabel = card.type === 'anki' ? 'Frente:' : 'P:';
-    const descStr = `<strong>${descLabel}</strong> <span class="text-gray-800 dark:text-gray-200">${card.description || '(Sem texto)'}</span>`;
+    let descContent = card.description || '(Sem texto)';
+    if (card.type === 'anki') {
+        descContent = `<div class="anki-markdown-content text-gray-800 dark:text-gray-200 mt-0.5">${renderMathAndMarkdown(descContent)}</div>`;
+    } else {
+        descContent = `<span class="text-gray-800 dark:text-gray-200">${descContent}</span>`;
+    }
+    const descStr = `<strong>${descLabel}</strong> ${descContent}`;
     let ansStr = `<strong>R:</strong> <span class="text-green-600 dark:text-green-400">${card.answer || ''}</span>`;
 
     if (card.type === 'open_double') {
@@ -1994,11 +2048,12 @@ function createCardElement(card, index) {
         }).join(' | ');
         ansStr = `<span class="text-xs text-gray-500">Opções: ${optsList}</span>`;
     } else if (card.type === 'anki') {
-        ansStr = `<strong>Verso:</strong> <div class="text-indigo-600 dark:text-indigo-400 whitespace-pre-line mt-0.5">${card.answer || ''}</div>`;
+        const renderedAns = renderMathAndMarkdown(card.answer || '');
+        ansStr = `<strong>Verso:</strong> <div class="anki-markdown-content text-indigo-600 dark:text-indigo-400 mt-1">${renderedAns}</div>`;
     }
 
     const textCont = document.createElement('div');
-    textCont.innerHTML = `<p class="mb-1 text-sm mt-3 pr-20">${descStr}</p><p class="text-sm">${ansStr}</p>`;
+    textCont.innerHTML = `<div class="mb-2 text-sm mt-3 pr-20">${descStr}</div><div class="text-sm">${ansStr}</div>`;
     cardEl.appendChild(textCont);
 
     // Question Image

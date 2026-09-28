@@ -11,6 +11,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="manifest" href="../manifest.json">
     <link rel="stylesheet" href="../css/style.css">
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- KaTeX for LaTeX Math formula rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <!-- Mammoth.js for .docx text extraction in the browser -->
     <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
     <!-- JSZip for PPTX text extraction in the browser -->
@@ -512,7 +517,7 @@
                 <div id="creator-group-anki" class="space-y-3 hidden">
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Resposta / Descrição Longa</label>
-                        <textarea id="creator-ans-anki" rows="5" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm resize-y" placeholder="Explicação detalhada revelada ao virar o cartão... Suporta múltiplos parágrafos"></textarea>
+                        <textarea id="creator-ans-anki" rows="5" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm resize-y" placeholder="Explicação detalhada revelada ao virar o cartão... Suporta Markdown, listas e fórmulas LaTeX ($x^2$)"></textarea>
                     </div>
                     <div>
                         <div class="flex items-center justify-between mb-1">
@@ -685,7 +690,7 @@
                 <div id="edit-card-anki-group" class="hidden space-y-3">
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Resposta Detalhada</label>
-                        <textarea id="edit-card-anki-answer" rows="5" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 text-sm resize-y" placeholder="Explicação detalhada... Suporta múltiplos parágrafos"></textarea>
+                        <textarea id="edit-card-anki-answer" rows="5" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 text-sm resize-y" placeholder="Explicação detalhada... Suporta Markdown, listas e fórmulas LaTeX ($x^2$)"></textarea>
                     </div>
                 </div>
 
@@ -811,7 +816,7 @@
     </div>
 
     <!-- External Script Module -->
-    <script type="module" src="../js/generate.js?v=2.4"></script>
+    <script type="module" src="../js/generate.js?v=3.5"></script>
 </body>
 
 </html>

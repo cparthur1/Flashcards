@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { normalizeString, calculateSimilarity, shuffleArray, callWithRetry, checkAndResetModelFallback, ROUTES } from './utils.js';
+import { normalizeString, calculateSimilarity, shuffleArray, callWithRetry, checkAndResetModelFallback, ROUTES, renderMathAndMarkdown } from './utils.js';
 import { initTransfer } from './transfer.js';
 import { initStatsSession, recordStatsAnswer, archiveCurrentSession } from './stats-tracker.js';
 
@@ -603,18 +603,19 @@ function loadQuestion() {
             sourceTagElem.classList.remove('hidden');
         }
         if (bodyElem) {
-            bodyElem.innerHTML = currentQuestion.description || '';
+            bodyElem.innerHTML = (currentQuestion.type === 'anki' || (currentQuestion.description && /\$|```/.test(currentQuestion.description))) ? renderMathAndMarkdown(currentQuestion.description || '') : (currentQuestion.description || '');
         } else {
-            questionText.innerHTML = `<span class="text-xs uppercase tracking-wider text-blue-500 font-bold mb-1.5 block">${currentQuestion.sourceDeck}</span>${currentQuestion.description || ''}`;
+            const desc = (currentQuestion.type === 'anki' || (currentQuestion.description && /\$|```/.test(currentQuestion.description))) ? renderMathAndMarkdown(currentQuestion.description || '') : (currentQuestion.description || '');
+            questionText.innerHTML = `<span class="text-xs uppercase tracking-wider text-blue-500 font-bold mb-1.5 block">${currentQuestion.sourceDeck}</span>${desc}`;
         }
     } else {
         if (sourceTagElem) {
             sourceTagElem.classList.add('hidden');
         }
         if (bodyElem) {
-            bodyElem.innerHTML = currentQuestion.description || '';
+            bodyElem.innerHTML = (currentQuestion.type === 'anki' || (currentQuestion.description && /\$|```/.test(currentQuestion.description))) ? renderMathAndMarkdown(currentQuestion.description || '') : (currentQuestion.description || '');
         } else {
-            questionText.innerHTML = currentQuestion.description || '';
+            questionText.innerHTML = (currentQuestion.type === 'anki' || (currentQuestion.description && /\$|```/.test(currentQuestion.description))) ? renderMathAndMarkdown(currentQuestion.description || '') : (currentQuestion.description || '');
         }
     }
 
@@ -734,7 +735,7 @@ function flipAnkiCard() {
     isAnkiFlipped = true;
 
     if (ankiAnswerContainer) {
-        ankiAnswerText.innerHTML = formatMultiParagraphText(currentQuestion.answer || '');
+        ankiAnswerText.innerHTML = renderMathAndMarkdown(currentQuestion.answer || '');
         if (currentQuestion.answerImage && ankiAnswerImage && ankiAnswerImageContainer) {
             ankiAnswerImage.src = currentQuestion.answerImage;
             ankiAnswerImageContainer.classList.remove('hidden');
@@ -1197,7 +1198,7 @@ async function sendChatMessage() {
                 Resposta(s) Correta(s) no Banco: "${correctAnswers.join(' / ')}"
                 Resposta que o Usuário deu inicialmente: "${lastUserAnswerForChat}"
                 
-                Responda de forma didática, objetiva e curta. Se o usuário errou, explique o porquê de forma simples. Use markdown se necessário para listas ou ênfase.
+                Responda de forma didática, objetiva e curta. Se o usuário errou, explique o porquê de forma simples. Use Markdown para listas, tabelas, ênfase e fórmulas matemáticas/químicas em LaTeX ($...$ ou $$...$$).
                 Mantenha o contexto desta questão durante toda a conversa.
             `;
 
@@ -1215,76 +1216,6 @@ async function sendChatMessage() {
             addMsg('ai', "Erro ao conectar com a IA.");
         }
     }
-}
-
-function renderMathAndMarkdown(text) {
-    const mathBlocks = [];
-    
-    // 1. Temporarily extract block math ($$...$$)
-    let placeholderText = text.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
-        const placeholder = `%%BLOCK_MATH_${mathBlocks.length}%%`;
-        mathBlocks.push({
-            type: 'block',
-            text: math
-        });
-        return placeholder;
-    });
-
-    // 2. Temporarily extract inline math ($...$)
-    placeholderText = placeholderText.replace(/\$(?!\s)((?:\\\$|[^\$])+?)(?<!\s)\$/g, (match, math) => {
-        const placeholder = `%%INLINE_MATH_${mathBlocks.length}%%`;
-        mathBlocks.push({
-            type: 'inline',
-            text: math
-        });
-        return placeholder;
-    });
-
-    // 3. Parse Markdown
-    let html = typeof marked !== 'undefined' ? marked.parse(placeholderText) : placeholderText;
-
-    // 4. Extract code blocks from HTML to prevent rendering math inside them
-    const codeBlocks = [];
-    html = html.replace(/<code[\s\S]*?<\/code>/gi, (match) => {
-        const placeholder = `%%CODE_BLOCK_${codeBlocks.length}%%`;
-        codeBlocks.push(match);
-        return placeholder;
-    });
-
-    // 5. Restore math blocks and render them with KaTeX
-    if (typeof katex !== 'undefined') {
-        html = html.replace(/%%(BLOCK|INLINE)_MATH_(\d+)%%/g, (match, type, index) => {
-            const mathItem = mathBlocks[parseInt(index, 10)];
-            try {
-                return katex.renderToString(mathItem.text, {
-                    displayMode: type === 'BLOCK',
-                    throwOnError: false
-                });
-            } catch (err) {
-                console.error("KaTeX error:", err);
-                return match;
-            }
-        });
-    } else {
-        // Fallback: restore raw math text
-        html = html.replace(/%%(BLOCK|INLINE)_MATH_(\d+)%%/g, (match, type, index) => {
-            const mathItem = mathBlocks[parseInt(index, 10)];
-            return type === 'BLOCK' ? `$$${mathItem.text}$$` : `$${mathItem.text}$`;
-        });
-    }
-
-    // 6. Restore code blocks
-    html = html.replace(/%%CODE_BLOCK_(\d+)%%/g, (match, index) => {
-        return codeBlocks[parseInt(index, 10)];
-    });
-
-    // 7. Restore any remaining math placeholders (which were inside code blocks)
-    html = html.replace(/%%(BLOCK|INLINE)_MATH_(\d+)%%/g, (match, type, index) => {
-        const mathItem = mathBlocks[parseInt(index, 10)];
-        return type === 'BLOCK' ? `$$${mathItem.text}$$` : `$${mathItem.text}$`;
-    });
-
-    return html;
 }
 
 function addMsg(sender, text) {

@@ -1,3 +1,41 @@
+CHANGELOG: ANKI CARDS MARKDOWN & LATEX MATH ENGINE + GEMINI PROMPTS
+Date: 2026-09-28
+
+OVERVIEW:
+Added full Markdown (GFM, tables, lists, blockquotes, code blocks) and LaTeX math formula rendering (KaTeX inline $...$ and block $$...$$) to Anki cards (front and back) during gameplay and in the deck generator/editor preview. Also updated Gemini AI prompts and tool definitions so Gemini generates flashcards using Markdown and LaTeX formulas.
+
+1. MARKDOWN & LATEX RENDERING ENGINE
+- Implemented `renderMathAndMarkdown()` in `js/utils.js`:
+  - Parses block math (`$$...$$`, `\[...\]`) and inline math (`$...$`, `\(...\)`) using KaTeX.
+  - Renders Markdown via `marked` with GFM and line breaks enabled (`breaks: true`).
+  - Shields `<code>` and `<pre>` blocks from math parsing.
+  - Fully preserves existing `<mark class="card-hl ...">` highlight tags.
+- Added Marked.js and KaTeX CDN assets to `pages/generate.html` and updated `pages/game.html`.
+- Styled Markdown elements and KaTeX math blocks for `#anki-answer-text`, `#question-body-text`, and `.anki-markdown-content` in `css/style.css` (tables, bulleted/numbered lists, inline code, pre blocks, responsive typography).
+
+2. GAMEPLAY & GENERATOR PREVIEW INTEGRATION
+- Updated `js/game.js`:
+  - `loadQuestion()` renders front description with `renderMathAndMarkdown()` for Anki cards.
+  - `flipAnkiCard()` renders back answer with `renderMathAndMarkdown()`.
+  - Cleaned `#anki-answer-text` container styling to prevent double spacing with Markdown blocks.
+- Updated `js/generate.js`:
+  - `createCardElement()` previews Anki cards with `renderMathAndMarkdown()` for both front and back.
+  - Updated card creation and inline edit modal placeholders in `pages/generate.html` and `pages/game.html`.
+
+3. GEMINI AI PROMPTS & ARCHITECTURE (TIPS 1, 2, 4, 5)
+- Separated `systemInstruction` from user prompt in `generate.js` for material generation (`generationSystemInstruction`).
+- Resolved contradiction between telegraphic open answers and in-depth Anki cards by strictly scoping rules per card type.
+- Added realistic few-shot JSON examples demonstrating `open`, `open_double`, `multiple_choice`, and `anki` with KaTeX and Markdown.
+- Generalised prompt persona to university/post-graduate level across any academic or technical domain (medicine, exact sciences, engineering, law, etc.).
+- Explicitly prioritized custom user demands over default generation parameters.
+- Updated tool declarations (`deckTools`) and in-game AI tutor prompt.
+
+4. CACHING & VERSIONS
+- Incremented `CACHE_NAME` in `sw.js` to `flashcards-v3.5`.
+- Updated script query cache busters to `v=3.5` in `pages/game.html` and `pages/generate.html`.
+
+--------------------------------------------------------------------------------
+
 CHANGELOG: DESKTOP AUTO-SKIP ON WRONG ANSWER FIX
 Date: 2026-09-24
 

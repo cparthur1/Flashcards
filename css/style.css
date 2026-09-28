@@ -696,18 +696,146 @@ mark.card-hl-purple {
     filter: invert(28%) sepia(91%) saturate(3421%) hue-rotate(345deg) brightness(96%) contrast(92%);
 }
 
-/* Multi-paragraph Anki Cards Answer Styling */
-#anki-answer-text {
-    white-space: pre-line;
+/* ==========================================================================
+   ANKI CARDS MARKDOWN & MATH (KATEX) ENGINE
+   ========================================================================== */
+#anki-answer-text,
+.anki-markdown-content {
+    white-space: normal;
     word-break: break-word;
 }
 
-#anki-answer-text p {
-    margin-bottom: 0.75rem;
+#question-body-text {
+    white-space: normal;
 }
 
-#anki-answer-text p:last-child {
+#anki-answer-text p,
+#question-body-text p,
+.anki-markdown-content p {
+    margin-bottom: 0.6rem;
+}
+
+#anki-answer-text p:last-child,
+#question-body-text p:last-child,
+.anki-markdown-content p:last-child {
     margin-bottom: 0;
+}
+
+#anki-answer-text h1, #question-body-text h1, .anki-markdown-content h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0.75rem 0 0.5rem;
+    color: inherit;
+}
+
+#anki-answer-text h2, #question-body-text h2, .anki-markdown-content h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0.65rem 0 0.4rem;
+    color: inherit;
+}
+
+#anki-answer-text h3, #question-body-text h3, .anki-markdown-content h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0.5rem 0 0.3rem;
+    color: inherit;
+}
+
+#anki-answer-text ul, #question-body-text ul, .anki-markdown-content ul {
+    list-style-type: disc;
+    margin: 0.5rem auto;
+    padding-left: 1.5rem;
+    text-align: left;
+    display: inline-block;
+    max-width: 100%;
+}
+
+#anki-answer-text ol, #question-body-text ol, .anki-markdown-content ol {
+    list-style-type: decimal;
+    margin: 0.5rem auto;
+    padding-left: 1.5rem;
+    text-align: left;
+    display: inline-block;
+    max-width: 100%;
+}
+
+#anki-answer-text li, #question-body-text li, .anki-markdown-content li {
+    margin-bottom: 0.25rem;
+}
+
+#anki-answer-text table, #question-body-text table, .anki-markdown-content table {
+    width: auto;
+    max-width: 100%;
+    margin: 0.75rem auto;
+    border-collapse: collapse;
+    font-size: 0.9em;
+    text-align: left;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+#anki-answer-text th, #question-body-text th, .anki-markdown-content th,
+#anki-answer-text td, #question-body-text td, .anki-markdown-content td {
+    border: 1px solid rgba(156, 163, 175, 0.35);
+    padding: 0.45rem 0.75rem;
+}
+
+#anki-answer-text th, #question-body-text th, .anki-markdown-content th {
+    background-color: rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+}
+
+.dark #anki-answer-text th, .dark #question-body-text th, .dark .anki-markdown-content th {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+#anki-answer-text code, #question-body-text code, .anki-markdown-content code {
+    background-color: rgba(0, 0, 0, 0.06);
+    padding: 0.15em 0.35em;
+    border-radius: 0.25rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.88em;
+}
+
+.dark #anki-answer-text code, .dark #question-body-text code, .dark .anki-markdown-content code {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+#anki-answer-text pre, #question-body-text pre, .anki-markdown-content pre {
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    text-align: left;
+    margin: 0.75rem 0;
+}
+
+.dark #anki-answer-text pre, .dark #question-body-text pre, .dark .anki-markdown-content pre {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+#anki-answer-text blockquote, #question-body-text blockquote, .anki-markdown-content blockquote {
+    border-left: 3px solid #3b82f6;
+    padding-left: 0.75rem;
+    margin: 0.5rem 0;
+    text-align: left;
+    font-style: italic;
+    opacity: 0.9;
+}
+
+/* KaTeX formula display styling */
+.katex-display {
+    margin: 0.5rem 0 !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.25rem 0;
+}
+
+.katex {
+    font-size: 1.05em;
+    text-rendering: auto;
 }
 
 
