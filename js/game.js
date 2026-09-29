@@ -1093,7 +1093,7 @@ function resetUI() {
     fillInputs.forEach(inp => {
         inp.disabled = false;
         inp.readOnly = false;
-        inp.classList.remove('animate-pulse', 'border-red-500', 'border-green-500', 'fill-box-shake', 'fill-box-pop');
+        inp.classList.remove('animate-pulse', 'border-red-500', 'border-green-500', 'border-amber-400', 'dark:border-yellow-400', 'bg-amber-50', 'bg-green-50', 'bg-red-50', 'dark:bg-yellow-950/40', 'text-amber-800', 'dark:text-yellow-300', 'fill-box-shake', 'fill-box-pop', 'fill-box-pop-yellow');
     });
 
     if (currentQuestion) {
@@ -1176,7 +1176,7 @@ function handleFillSubmit() {
         blankResults.forEach(({ input, isCorrect }) => {
             input.readOnly = true;
             input.blur();
-            input.classList.remove('border-dashed', 'border-blue-400', 'dark:border-blue-500', 'border-green-500', 'border-red-500', 'bg-green-50', 'bg-red-50', 'dark:bg-green-950/40', 'dark:bg-red-950/40', 'text-green-600', 'text-red-600', 'dark:text-green-300', 'dark:text-red-300', 'fill-box-shake', 'fill-box-pop');
+            input.classList.remove('border-dashed', 'border-blue-400', 'dark:border-blue-500', 'border-green-500', 'border-red-500', 'border-amber-400', 'dark:border-yellow-400', 'bg-green-50', 'bg-red-50', 'bg-amber-50', 'dark:bg-green-950/40', 'dark:bg-red-950/40', 'dark:bg-yellow-950/40', 'text-green-600', 'text-red-600', 'text-amber-800', 'dark:text-green-300', 'dark:text-red-300', 'dark:text-yellow-300', 'fill-box-shake', 'fill-box-pop', 'fill-box-pop-yellow');
 
             if (isCorrect) {
                 input.classList.add('border-solid', 'border-green-500', 'bg-green-50', 'dark:bg-green-950/40', 'text-green-600', 'dark:text-green-300');
@@ -1187,13 +1187,13 @@ function handleFillSubmit() {
 
         showFeedback(false);
 
-        // Phase 2: At ~550ms, wrong boxes pop green with the right answer (total duration ~1.2s)
+        // Phase 2: At ~550ms, wrong boxes pop yellow with the right answer so user knows where to focus (total duration ~1.2s)
         setTimeout(() => {
             blankResults.forEach(({ input, synonyms, expectedVal, isCorrect }) => {
                 if (!isCorrect) {
                     const primaryExpected = synonyms[0] || expectedVal;
                     input.classList.remove('border-red-500', 'bg-red-50', 'dark:bg-red-950/40', 'text-red-600', 'dark:text-red-300', 'fill-box-shake');
-                    input.classList.add('border-solid', 'border-green-500', 'bg-green-50', 'dark:bg-green-950/40', 'text-green-600', 'dark:text-green-300', 'fill-box-pop');
+                    input.classList.add('border-solid', 'border-amber-400', 'dark:border-yellow-400', 'bg-amber-50', 'dark:bg-yellow-950/40', 'text-amber-800', 'dark:text-yellow-300', 'fill-box-pop-yellow');
                     input.value = primaryExpected;
                     if (synonyms.length > 1) {
                         input.title = synonyms.join(' / ');

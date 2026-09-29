@@ -14,7 +14,7 @@ Added a 5th flashcard format: "fill" (Preencher Lacunas / Cloze), allowing users
   - Per-blank visual feedback & inline correction animation (~1.2s):
     • Correct blanks immediately turn solid green.
     • Wrong blanks turn red and shake side-to-side for ~500ms (@keyframes fillBoxShake) keeping the user's typed value in red.
-    • At ~550ms, wrong blanks dynamically pop green (@keyframes fillBoxPopGreen), adjusting width and revealing the correct answer directly inside the box.
+    • At ~550ms, wrong blanks dynamically pop yellow/amber (@keyframes fillBoxPopYellow), adjusting width and revealing the correct answer directly inside the box so the user immediately knows where they need to focus. Correctly answered blanks remain green for clear visual contrast.
     • Removed the cluttered bottom "Respostas Corretas" box for fill cards so the entire feedback experience is integrated in-place.
 - Post-submission & AI check: Seamless integration with AI explanations and stats tracking. Pressing Enter/Space advances to the next question once correction animation finishes.
 - In-game card editor modal: Added #edit-fill-answer-group with #edit-fill-answer-input allowing real-time edits to fill card answers.
