@@ -562,7 +562,7 @@ function renderFillBlanksQuestion(text) {
     for (let i = 0; i < totalSpots; i++) {
         const isLast = (i === totalSpots - 1);
         const enterHint = isLast ? 'done' : 'next';
-        const inputHtml = `<input type="text" class="fill-blank-input inline-block text-center font-bold px-2 py-0.5 mx-1 rounded-md border-2 border-dashed border-blue-400 dark:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600 text-sm sm:text-base shadow-sm transition-all align-middle placeholder-gray-400 dark:placeholder-gray-500" data-blank-index="${i}" placeholder="${i + 1}" enterkeyhint="${enterHint}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" style="min-width: 60px; max-width: 220px; width: 64px;">`;
+        const inputHtml = `<input type="text" class="fill-blank-input inline-block text-center font-bold px-2 py-0.5 mx-1 rounded-md border-2 border-dashed border-blue-400 dark:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600 text-sm sm:text-base shadow-sm transition-all align-middle" data-blank-index="${i}" enterkeyhint="${enterHint}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" style="min-width: 60px; max-width: 220px; width: 64px;">`;
         renderedHtml = renderedHtml.replace(new RegExp(`%%FILL_SPOT_${i}%%`, 'g'), inputHtml);
     }
 

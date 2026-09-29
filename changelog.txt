@@ -5,7 +5,7 @@ OVERVIEW:
 Added a 5th flashcard format: "fill" (Preencher Lacunas / Cloze), allowing users to fill in one or multiple spots/blanks marked with "_" in a phrase or reference table (e.g. KDIGO albuminuria cutoffs: < 30, 30-300, > 300). Implemented end-to-end support across gameplay, document conversion, manual card creation, modal editing, analytics, and Gemini AI generation and function calling.
 
 1. GAMEPLAY & INLINE BLANKS UX (pages/game.html, js/game.js, css/style.css)
-- In-line input rendering: Transforms "_" blanks into interactive, auto-resizing text inputs directly within the question body text, protecting LaTeX formulas ($...$, $$...$$).
+- In-line input rendering: Transforms "_" blanks into interactive, auto-resizing text inputs directly within the question body text, protecting LaTeX formulas ($...$, $$...$$). Text boxes are rendered clean and completely empty (no whispering placeholders) so sequential numbering never hints at numeric answers.
 - Auto-focus & Navigation: First blank auto-focused; pressing Enter or Tab smoothly moves focus to the subsequent blank; pressing Enter on the last blank submits the card.
 - Intelligent validation:
   - Exact match and case-insensitive/diacritic-insensitive matching.
