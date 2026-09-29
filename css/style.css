@@ -1095,33 +1095,34 @@ mark.card-hl-purple {
     box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
-/* Tactile Skip Button (Darker Amber Primary CTA for Wrong Answers) */
+/* Tactile Skip Button (Light Yellow 2.5D Primary CTA for Wrong Answers) */
 .btn-skip-tactile,
 #next-question-btn {
-    background: linear-gradient(180deg, #d97706 0%, #92400e 100%);
-    box-shadow: 0 4px 12px -2px rgba(180, 83, 9, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
-    border: 1px solid rgba(146, 64, 14, 0.7);
-    color: #ffffff;
+    background: linear-gradient(180deg, #fef9c3 0%, #fef08a 100%);
+    box-shadow: 0 3px 8px -1px rgba(202, 138, 4, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    border: 1.5px solid #facc15;
+    color: #713f12;
     touch-action: manipulation;
     transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-skip-tactile:hover,
 #next-question-btn:hover {
-    background: linear-gradient(180deg, #f59e0b 0%, #92400e 100%);
-    box-shadow: 0 6px 16px -2px rgba(180, 83, 9, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    background: linear-gradient(180deg, #fefce8 0%, #fde047 100%);
+    box-shadow: 0 5px 14px -1px rgba(202, 138, 4, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.98);
     transform: translateY(-1.5px);
+    border-color: #eab308;
 }
 
 .btn-skip-tactile:active,
 #next-question-btn:active {
     transform: translateY(1px) scale(0.99);
-    box-shadow: 0 2px 4px rgba(180, 83, 9, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 2px 4px rgba(202, 138, 4, 0.2), inset 0 1px 2px rgba(113, 63, 18, 0.12);
 }
 
 #next-question-btn img,
 .btn-skip-tactile img {
-    filter: brightness(0) invert(1);
+    filter: none;
     opacity: 0.95;
     transition: transform 0.2s ease, opacity 0.2s ease;
 }
