@@ -18,6 +18,13 @@ Added a 5th flashcard format: "fill" (Preencher Lacunas / Cloze), allowing users
     • Removed the cluttered bottom "Respostas Corretas" box for fill cards so the entire feedback experience is integrated in-place.
 - Post-submission & AI check: Seamless integration with AI explanations and stats tracking. Pressing Enter/Space advances to the next question once correction animation finishes.
 - In-game card editor modal: Added #edit-fill-answer-group with #edit-fill-answer-input allowing real-time edits to fill card answers.
+- Dynamic Streak Counter Pill (#streak-pill):
+  • Centralized at the top of the deck container (#game-container) tracking consecutive correct answers.
+  • Streak < 3: Sleek neutral gray pill with muted flame icon.
+  • Streak >= 3: Upward bottom-to-top shimmer wave (@keyframes streakShimmerUp) dynamically coloring the pill progressively from warm gold/yellow (streak 3), to amber/orange (streaks 4-6), to blazing fiery red (streaks 7-10+).
+  • On wrong answer: Downward top-to-bottom graying shimmer (@keyframes streakShimmerDown) extinguishing the flame and smoothly washing the pill back to 0.
+  • Anki cards neutral exemption: Anki cards do not count up or down on the streak, leaving it intact.
+  • AI correction recovery: Restores and increments streak if Gemini AI validates an initially marked wrong answer.
 
 2. DOCUMENT CONVERSION & PARSING ((fill) TAG)
 - Document parser (convertDocumentToCards and parseTxtToJSONWithPlaceholders in js/generate.js):
