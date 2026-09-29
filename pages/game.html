@@ -20,7 +20,7 @@
             }
         }
     </script>
-    <link rel="stylesheet" href="../css/style.css?v=3.8">
+    <link rel="stylesheet" href="../css/style.css?v=3.9">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
@@ -257,6 +257,18 @@
 
     <div id="game-container"
         class="w-full max-w-2xl mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-2xl p-4 sm:p-8 transition-all duration-300 relative">
+        <!-- STREAK COUNTER PILL (Centralized on top of the deck holder) -->
+        <div id="streak-pill-container" class="absolute -top-3.5 left-1/2 -translate-x-1/2 z-30 select-none flex justify-center pointer-events-none">
+            <div id="streak-pill"
+                class="pointer-events-auto relative overflow-hidden flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-black shadow-md border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 transition-all duration-300"
+                title="Sequência de acertos consecutivos">
+                <div id="streak-bg-color" class="absolute inset-0 transition-opacity duration-300 opacity-0 pointer-events-none"></div>
+                <div id="streak-shimmer-sweep" class="absolute inset-0 pointer-events-none opacity-0"></div>
+                <span id="streak-fire-icon" class="relative z-10 text-xs transition-transform duration-300 grayscale opacity-60">🔥</span>
+                <span id="streak-count" class="relative z-10 font-black tracking-tight text-xs text-gray-600 dark:text-gray-300">0</span>
+            </div>
+        </div>
+
         <div id="question-card"
             class="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-lg mb-3 sm:mb-6 min-h-[90px] sm:min-h-[120px] flex flex-col items-center justify-center relative z-10 group transition-all duration-300">
             <!-- Bookmark Button -->

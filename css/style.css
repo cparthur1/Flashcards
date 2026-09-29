@@ -899,4 +899,73 @@ mark.card-hl-purple {
     user-select: text;
 }
 
+/* ==========================================================================
+   STREAK COUNTER PILL & SHIMMER ANIMATIONS
+   ========================================================================== */
+
+#streak-pill {
+    transition: transform 0.25s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+@keyframes streakShimmerUp {
+    0% {
+        transform: translateY(115%);
+        opacity: 0;
+    }
+    20% {
+        opacity: 0.95;
+    }
+    60% {
+        opacity: 0.95;
+    }
+    100% {
+        transform: translateY(-115%);
+        opacity: 0;
+    }
+}
+
+.anim-streak-up {
+    animation: streakShimmerUp 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes streakShimmerDown {
+    0% {
+        transform: translateY(-115%);
+        opacity: 0;
+    }
+    20% {
+        opacity: 0.95;
+    }
+    60% {
+        opacity: 0.95;
+    }
+    100% {
+        transform: translateY(115%);
+        opacity: 0;
+    }
+}
+
+.anim-streak-down {
+    animation: streakShimmerDown 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes streakPop {
+    0% {
+        transform: scale(0.92);
+    }
+    45% {
+        transform: scale(1.15);
+    }
+    75% {
+        transform: scale(0.98);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.anim-streak-pop {
+    animation: streakPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
 

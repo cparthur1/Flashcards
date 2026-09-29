@@ -67,6 +67,15 @@ const correctionOptions = document.getElementById('correction-options');
 const editBtn = document.getElementById('edit-btn');
 const deleteCorrectionBtn = document.getElementById('delete-correction-btn');
 
+const streakPill = document.getElementById('streak-pill');
+const streakBgColor = document.getElementById('streak-bg-color');
+const streakShimmerSweep = document.getElementById('streak-shimmer-sweep');
+const streakFireIcon = document.getElementById('streak-fire-icon');
+const streakCount = document.getElementById('streak-count');
+
+let currentStreak = 0;
+let lastStreakBeforeWrong = 0;
+
 const editModal = document.getElementById('edit-modal');
 const editQuestionInput = document.getElementById('edit-question-input');
 const editAnswerInput = document.getElementById('edit-answer-input');
@@ -599,6 +608,169 @@ function initFillBlankInputs() {
     }, 50);
 }
 
+// --- STREAK COUNTER LOGIC & ANIMATIONS ---
+function getStreakColorConfig(streak) {
+    if (streak < 3) {
+        return {
+            active: false,
+            gradient: '',
+            border: '',
+            glow: '',
+            shimmerGradient: 'linear-gradient(0deg, transparent 0%, rgba(255, 255, 255, 0.8) 50%, transparent 100%)'
+        };
+    }
+    if (streak === 3) {
+        return {
+            active: true,
+            gradient: 'linear-gradient(135deg, #eab308, #ca8a04)',
+            border: '#eab308',
+            glow: '0 0 10px rgba(234, 179, 8, 0.45)',
+            shimmerGradient: 'linear-gradient(0deg, transparent 0%, rgba(254, 240, 138, 0.9) 50%, transparent 100%)'
+        };
+    } else if (streak === 4) {
+        return {
+            active: true,
+            gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
+            border: '#f59e0b',
+            glow: '0 0 12px rgba(245, 158, 11, 0.5)',
+            shimmerGradient: 'linear-gradient(0deg, transparent 0%, rgba(253, 230, 138, 0.9) 50%, transparent 100%)'
+        };
+    } else if (streak === 5) {
+        return {
+            active: true,
+            gradient: 'linear-gradient(135deg, #f97316, #ea580c)',
+            border: '#f97316',
+            glow: '0 0 14px rgba(249, 115, 22, 0.55)',
+            shimmerGradient: 'linear-gradient(0deg, transparent 0%, rgba(254, 215, 170, 0.9) 50%, transparent 100%)'
+        };
+    } else if (streak === 6) {
+        return {
+            active: true,
+            gradient: 'linear-gradient(135deg, #fb923c, #dc2626)',
+            border: '#ea580c',
+            glow: '0 0 16px rgba(234, 88, 12, 0.6)',
+            shimmerGradient: 'linear-gradient(0deg, transparent 0%, rgba(254, 205, 211, 0.9) 50%, transparent 100%)'
+        };
+    } else if (streak === 7) {
+        return {
+            active: true,
+            gradient: 'linear-gradient(135deg, #f87171, #ef4444)',
+            border: '#ef4444',
+            glow: '0 0 18px rgba(239, 68, 68, 0.65)',
+            shimmerGradient: 'linear-gradient(0deg, transparent 0%, rgba(254, 202, 202, 0.9) 50%, transparent 100%)'
+        };
+    } else if (streak === 8) {
+        return {
+            active: true,
+            gradient: 'linear-gradient(135deg, #ef4444, #dc2626)',
+            border: '#dc2626',
+            glow: '0 0 20px rgba(220, 38, 38, 0.7)',
+            shimmerGradient: 'linear-gradient(0deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, transparent 100%)'
+        };
+    } else if (streak === 9) {
+        return {
+            active: true,
+            gradient: 'linear-gradient(135deg, #dc2626, #b91c1c)',
+            border: '#b91c1c',
+            glow: '0 0 22px rgba(185, 28, 28, 0.75)',
+            shimmerGradient: 'linear-gradient(0deg, transparent 0%, rgba(255, 255, 255, 0.95) 50%, transparent 100%)'
+        };
+    } else {
+        return {
+            active: true,
+            gradient: 'linear-gradient(135deg, #e11d48, #991b1b)',
+            border: '#e11d48',
+            glow: '0 0 25px rgba(225, 29, 72, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.35)',
+            shimmerGradient: 'linear-gradient(0deg, transparent 0%, rgba(255, 255, 255, 1) 50%, transparent 100%)'
+        };
+    }
+}
+
+function updateStreakUI(animate = false) {
+    if (!streakPill || !streakCount) return;
+    const config = getStreakColorConfig(currentStreak);
+
+    streakCount.textContent = currentStreak;
+
+    if (config.active) {
+        if (streakBgColor) {
+            streakBgColor.style.background = config.gradient;
+            streakBgColor.style.opacity = '1';
+        }
+        streakPill.style.borderColor = config.border;
+        streakPill.style.boxShadow = config.glow;
+        streakPill.style.color = '#ffffff';
+
+        if (streakFireIcon) {
+            streakFireIcon.style.filter = 'none';
+            streakFireIcon.style.opacity = '1';
+            streakFireIcon.style.transform = currentStreak >= 8 ? 'scale(1.25)' : 'scale(1.1)';
+        }
+
+        streakCount.className = 'relative z-10 font-black tracking-tight text-xs text-white drop-shadow-sm';
+
+        if (animate && streakShimmerSweep) {
+            streakShimmerSweep.style.background = config.shimmerGradient;
+            streakShimmerSweep.classList.remove('anim-streak-up', 'anim-streak-down');
+            void streakShimmerSweep.offsetWidth;
+            streakShimmerSweep.classList.add('anim-streak-up');
+
+            streakPill.classList.remove('anim-streak-pop');
+            void streakPill.offsetWidth;
+            streakPill.classList.add('anim-streak-pop');
+        }
+    } else {
+        if (streakBgColor) {
+            streakBgColor.style.opacity = '0';
+        }
+        streakPill.style.borderColor = '';
+        streakPill.style.boxShadow = '';
+        streakPill.style.color = '';
+
+        if (streakFireIcon) {
+            streakFireIcon.style.filter = 'grayscale(1)';
+            streakFireIcon.style.opacity = '0.6';
+            streakFireIcon.style.transform = 'scale(0.95)';
+        }
+
+        streakCount.className = 'relative z-10 font-black tracking-tight text-xs text-gray-600 dark:text-gray-300';
+    }
+}
+
+function incrementStreak() {
+    currentStreak++;
+    saveGameState();
+    const shouldShimmer = currentStreak >= 3;
+    updateStreakUI(shouldShimmer);
+}
+
+function resetStreak() {
+    lastStreakBeforeWrong = currentStreak;
+    const hadStreak = currentStreak > 0;
+    currentStreak = 0;
+    saveGameState();
+
+    if (hadStreak && streakShimmerSweep) {
+        // Shimmer from top to bottom graying out the pill back to 0
+        streakShimmerSweep.style.background = 'linear-gradient(180deg, rgba(156, 163, 175, 0.95) 0%, rgba(107, 114, 128, 0.9) 50%, rgba(75, 85, 99, 0.8) 100%)';
+        streakShimmerSweep.classList.remove('anim-streak-up', 'anim-streak-down');
+        void streakShimmerSweep.offsetWidth;
+        streakShimmerSweep.classList.add('anim-streak-down');
+
+        setTimeout(() => {
+            updateStreakUI(false);
+        }, 220);
+    } else {
+        updateStreakUI(false);
+    }
+}
+
+function restoreStreakAfterAiCorrection() {
+    currentStreak = lastStreakBeforeWrong + 1;
+    saveGameState();
+    updateStreakUI(currentStreak >= 3);
+}
+
 // --- HELPER: FILTER PLAYABLE CARDS (EXCLUDE DEVISORS / NOTES) ---
 function isPlayableCard(card) {
     return card && card.type !== 'divisor' && card.type !== 'divider' && card.type !== 'note';
@@ -618,6 +790,8 @@ function loadQuestion() {
         setTimeout(() => {
             balls = [];
             score = 0;
+            currentStreak = 0;
+            updateStreakUI(false);
             scoreDisplay.textContent = '0';
             questionsPool = allQuestions.filter(isPlayableCard);
             currentStep = 0;
@@ -1104,6 +1278,15 @@ function showFeedback(isCorrect, element) {
     const ballIdx = createBall(isCorrect);
     questionCard.classList.add(isCorrect ? 'glow-correct' : 'glow-incorrect');
 
+    // Update streak counter (Anki cards are handled separately and do NOT touch streak)
+    if (currentQuestion && currentQuestion.type !== 'anki') {
+        if (isCorrect) {
+            incrementStreak();
+        } else {
+            resetStreak();
+        }
+    }
+
     if (!isCorrect && isAiEnabled) {
         askAiBtn.classList.remove('hidden');
         if (userAnswer) {
@@ -1217,7 +1400,7 @@ function saveGameState() {
     try {
         if (activeMode === 'notebook') {
             localStorage.setItem('flashcardsNotebook', JSON.stringify({
-                questionsPool, allQuestions, score, deckTitle: "Caderno"
+                questionsPool, allQuestions, score, currentStreak, deckTitle: "Caderno"
             }));
         } else if (activeMode === 'exam') {
             let examData = {};
@@ -1229,11 +1412,12 @@ function saveGameState() {
                 questionsPool,
                 allQuestions,
                 score,
+                currentStreak,
                 deckTitle: "Semana de Provas"
             }));
         } else {
             localStorage.setItem('flashcardsSave', JSON.stringify({
-                questionsPool, allQuestions, score, deckTitle: deckTitle.textContent
+                questionsPool, allQuestions, score, currentStreak, deckTitle: deckTitle.textContent
             }));
         }
     } catch (e) {
@@ -1354,6 +1538,7 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
             // Sucesso! A IA corrigiu o erro.
             balls[ballIdx].color = 'rgba(250, 204, 21, 0.8)'; // Amarelo/Dourado para correção IA
             score++;
+            restoreStreakAfterAiCorrection();
 
             // Remove da pool se ainda for a mesma questão e salva
             const idx = questionsPool.findIndex(card => card.description === questionObj.description);
@@ -1949,6 +2134,8 @@ if (restartGameBtn) {
         animateCardsFromHeaderToDeck(() => {
             balls = [];
             score = 0;
+            currentStreak = 0;
+            updateStreakUI(false);
             scoreDisplay.textContent = '0';
             if (activeMode === 'exam') {
                 let examData = {};
@@ -2905,6 +3092,8 @@ function initGame() {
     allQuestions = data.allQuestions || [];
     questionsPool = (data.questionsPool || []).filter(isPlayableCard);
     score = data.score || 0;
+    currentStreak = data.currentStreak || 0;
+    updateStreakUI(false);
     deckTitle.textContent = data.deckTitle || (activeMode === 'notebook' ? "Caderno" : (activeMode === 'exam' ? "Semana de Provas" : "Flashcards"));
     document.title = data.deckTitle ? `${data.deckTitle} | Flashcards` : "Estudando Flashcards";
     scoreDisplay.textContent = score; 
