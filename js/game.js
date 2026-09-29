@@ -989,10 +989,7 @@ function loadQuestion() {
         if (card.type === 'fill') {
             return renderFillBlanksQuestion(card.description || '');
         }
-        if (card.type === 'anki' || (card.description && /\$|```/.test(card.description))) {
-            return renderMathAndMarkdown(card.description || '');
-        }
-        return card.description || '';
+        return renderMathAndMarkdown(card.description || '');
     };
 
     if ((activeMode === 'notebook' || activeMode === 'exam') && currentQuestion.sourceDeck) {
@@ -1502,7 +1499,7 @@ function updateFeedbackText() {
 
     if (currentQuestion && currentQuestion.isBeingCorrected) {
         if (bodyElem && currentQuestion.type !== 'fill') {
-            bodyElem.innerHTML = currentQuestion.description || '';
+            bodyElem.innerHTML = renderMathAndMarkdown(currentQuestion.description || '');
         }
         let feedbackHtml = '';
         if (currentQuestion.type === 'open_double') {
@@ -1531,11 +1528,11 @@ function updateFeedbackText() {
                 feedbackElem.classList.add('hidden');
             }
         } else if (feedbackHtml) {
-            questionText.innerHTML = `${currentQuestion.description || ''}<br>${feedbackHtml}`;
+            questionText.innerHTML = `${renderMathAndMarkdown(currentQuestion.description || '')}<br>${feedbackHtml}`;
         }
     } else {
         if (bodyElem && currentQuestion && currentQuestion.type !== 'fill') {
-            bodyElem.innerHTML = currentQuestion.description || '';
+            bodyElem.innerHTML = renderMathAndMarkdown(currentQuestion.description || '');
         }
         if (feedbackElem) {
             feedbackElem.innerHTML = '';

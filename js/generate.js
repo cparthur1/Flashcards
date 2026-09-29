@@ -190,10 +190,11 @@ const FILES_DEFAULT_SVG = '<svg class="w-8 h-8 text-gray-400" fill="none" stroke
 
 const systemInstruction = "Sua função é gerenciar um baralho de flashcards para um estudante universitário. Você pode adicionar, editar ou remover cards usando as ferramentas fornecidas. Tipos suportados: 'open' (conceito aberto), 'open_double' (dupla resposta), 'multiple_choice' (múltipla escolha com 2 a 6 opções), 'fill' (preencher lacunas marcadas por '_' em frases ou textos), e 'anki' (conceito/pergunta e explicação detalhada para repetição espaçada).\n\n" +
     "REGRAS MANDATÓRIAS DE RESPOSTA E FORMATAÇÃO:\n" +
-    "1. RESPOSTAS DIGITADAS ('open', 'open_double' e lacunas de 'fill'): Os campos de resposta digitada ('answer', 'answer2' e itens do array 'answers') DEVEM CONTER EXCLUSIVAMENTE TEXTO PURO. É terminantemente PROIBIDO usar formatação Markdown (sem negrito **, sem itálico *, sem crases ` de código) nesses campos de resposta digitada.\n" +
-    "2. FÓRMULAS NUNCA DEVEM SER RESPOSTAS DIGITADAS: Fórmulas matemáticas, químicas ou expressões em LaTeX ($...$, $$...$$, frações, potências, etc.) JAMAIS devem ser respostas digitadas nos tipos 'open', 'open_double' ou 'fill'. O estudante digita com teclado comum e não pode digitar fórmulas complexas. Se a pergunta for sobre uma fórmula ou equação, crie OBRIGATORIAMENTE um card do tipo 'anki' (frente com o conceito e verso com a fórmula em LaTeX) ou 'multiple_choice' (onde o estudante seleciona a alternativa).\n" +
-    "3. LIBERDADE DE MARKDOWN EM 'ANKI' E 'MULTIPLE_CHOICE': Os tipos 'anki' (frente e verso) e 'multiple_choice' (enunciado, opções e resposta) podem e devem usar Markdown rico (tabelas, listas, negrito) e fórmulas LaTeX ($...$ e $$...$$) livremente.\n" +
-    "4. NO TIPO 'FILL': O enunciado ('description') pode conter Markdown e fórmulas LaTeX para contextualização, mas as lacunas '_' devem ser preenchidas apenas com termos simples, números ou parâmetros em texto puro, sem Markdown.\n\n" +
+    "1. PERGUNTAS E ENUNCIADOS ('description'): As perguntas de TODOS os tipos de cartões — inclusive cartões de resposta escrita ('open', 'open_double' e 'fill') — PODEM e DEVEM conter elementos Markdown ricos (**negrito**, *itálico*, listas, tabelas) e fórmulas LaTeX ($...$ e $$...$$) livremente para destacar termos essenciais e organizar o raciocínio.\n" +
+    "2. RESPOSTAS DIGITADAS NA GAMEPLAY ('open', 'open_double' e lacunas de 'fill'): A ÚNICA coisa que NÃO pode conter Markdown é a resposta que o estudante precisa digitar na gameplay. Os campos 'answer', 'answer2' e itens do array 'answers' DEVEM ser estritamente TEXTO PURO (sem negrito **, sem itálico *, sem crases ` de código).\n" +
+    "3. FÓRMULAS NUNCA DEVEM SER RESPOSTAS DIGITADAS: Fórmulas matemáticas, químicas ou expressões em LaTeX ($...$, $$...$$, frações, potências, etc.) JAMAIS devem ser respostas digitadas nos tipos 'open', 'open_double' ou 'fill'. O estudante digita com teclado comum e não pode digitar fórmulas complexas. Se o conteúdo for sobre uma fórmula ou equação, crie OBRIGATORIAMENTE um card do tipo 'anki' (frente com o conceito e verso com a fórmula em LaTeX) ou 'multiple_choice' (onde o estudante seleciona a alternativa).\n" +
+    "4. LIBERDADE TOTAL DE MARKDOWN EM 'ANKI' E 'MULTIPLE_CHOICE': Os tipos 'anki' (frente e verso) e 'multiple_choice' (enunciado, opções e resposta) podem e devem usar Markdown rico (tabelas, listas, negrito) e fórmulas LaTeX ($...$ e $$...$$) livremente.\n" +
+    "5. NO TIPO 'FILL': O enunciado ('description') pode conter Markdown e fórmulas LaTeX para contextualização, mas as lacunas '_' devem ser preenchidas apenas com termos simples, números ou parâmetros em texto puro, sem Markdown.\n\n" +
     "Mantenha o tom profissional, analítico e pragmático.";
 
 const generationSystemInstruction = `Você é um especialista em educação e elaboração de flashcards acadêmicos de alto rendimento.
@@ -205,7 +206,10 @@ DIRETRIZES DE FORMATO E QUALIDADE:
 3. Linhas ou anotações iniciadas por "#" nos arquivos de texto/documentos são notas ou títulos e devem ser ignoradas como perguntas diretas.
 
 REGRAS MANDATÓRIAS DE RESPOSTA E FORMATAÇÃO:
-• PROIBIDO O USO DE MARKDOWN EM RESPOSTAS DIGITADAS:
+• PERGUNTAS E ENUNCIADOS PODEM USAR MARKDOWN LIVREMENTE:
+  - As perguntas e enunciados ("description") de TODOS os tipos de cartões — inclusive cartões de resposta escrita ("open", "open_double", "fill") — PODEM E DEVEM usar elementos Markdown (**negrito**, *itálico*, listas, tabelas) e fórmulas LaTeX ($...$ e $$...$$) livremente para destacar termos essenciais e organizar o raciocínio.
+• PROIBIDO O USO DE MARKDOWN EM RESPOSTAS DIGITADAS NA GAMEPLAY:
+  - A ÚNICA coisa que NÃO PODE conter Markdown é a resposta que o usuário precisa digitar na gameplay.
   - Nos cartões com resposta digitada ("open", "open_double" e as lacunas de "fill"), os campos "answer", "answer2" e cada item do array "answers" DEVEM CONTER EXCLUSIVAMENTE TEXTO PURO (plain text).
   - NUNCA use negrito (**texto**), itálico (*texto* ou _texto_), crases de código (\`texto\`), cabeçalhos (#) ou delimitadores matemáticos nesses campos de resposta digitada.
 • FÓRMULAS NUNCA DEVEM SER RESPOSTAS DIGITADAS:
@@ -222,10 +226,10 @@ REGRAS MANDATÓRIAS DE RESPOSTA E FORMATAÇÃO:
 
 DISTRIBUIÇÃO E REGRAS POR TIPO DE CARTÃO:
 - "open":
-  • Pergunta ("description"): Formulação clara, direta e objetiva de um conceito, termo, estrutura, lei, patologia ou princípio.
+  • Pergunta ("description"): Formulação clara, direta e objetiva de um conceito, termo, estrutura, lei, patologia ou princípio. Pode e deve conter formatação Markdown (**negrito**, *itálico*, listas, destaques) e fórmulas LaTeX ($...$).
   • Resposta ("answer"): Curta, telegráfica e precisa (idealmente de 1 a 3 palavras) em TEXTO PURO, SEM Markdown (sem **, *, \`) e SEM fórmulas.
 - "open_double":
-  • Pergunta ("description"): Questionamento comparativo ou que envolva dois conceitos interligados (ex: causa e efeito, agonista e antagonista, dois parâmetros ou limites).
+  • Pergunta ("description"): Questionamento comparativo ou que envolva dois conceitos interligados (ex: causa e efeito, agonista e antagonista, dois parâmetros ou limites). Pode e deve conter formatação Markdown e fórmulas LaTeX ($...$).
   • Respostas ("answer" e "answer2"): Duas respostas diretas em TEXTO PURO, SEM Markdown e SEM fórmulas.
   • Rótulos ("placeholder1" e "placeholder2"): Rótulos descritivos e concisos para cada campo de resposta.
 - "fill":
@@ -289,7 +293,7 @@ const deckTools = [
                     type: "OBJECT",
                     properties: {
                         type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki", "divisor", "fill"], description: "Tipo do card: 'open', 'open_double', 'multiple_choice', 'anki', 'divisor' ou 'fill' (preencher lacunas '_')" },
-                        description: { type: "STRING", description: "Pergunta, conceito, texto do divisor ou frase com lacunas '_' (para tipo 'fill'). Para cards 'anki' e 'fill', suporta Markdown e fórmulas LaTeX ($...$ ou $$...$$)." },
+                        description: { type: "STRING", description: "Pergunta, conceito, texto do divisor ou frase com lacunas '_' (para tipo 'fill'). As perguntas de TODOS os tipos de cartões (incluindo 'open', 'open_double', 'fill', 'anki') podem e devem usar Markdown (**negrito**, *itálico*, listas) e fórmulas LaTeX ($...$ ou $$...$$)." },
                         answer: { type: "STRING", description: "Resposta principal, explicação detalhada ou respostas das lacunas separadas por ';' (tipo 'fill'). REGRA: Para respostas digitadas ('open', 'open_double', 'fill'), use estritamente texto puro SEM Markdown (sem **, *, `) e NUNCA use fórmulas matemáticas/LaTeX como resposta digitada. Fórmulas e Markdown rico são permitidos apenas para 'anki' e 'multiple_choice'." },
                         answer2: { type: "STRING", description: "Resposta secundária (apenas para open_double). Estritamente texto puro, sem Markdown e sem fórmulas." },
                         answers: { type: "ARRAY", items: { type: "STRING" }, description: "Lista ordenada de respostas para preencher as lacunas '_' no tipo 'fill'. Use estritamente texto puro sem Markdown e sem fórmulas." },
@@ -308,7 +312,7 @@ const deckTools = [
                     properties: {
                         index: { type: "NUMBER", description: "O índice (começando em 0) do card a ser editado." },
                         type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki", "divisor", "fill"] },
-                        description: { type: "STRING", description: "Pergunta, conceito, texto do divisor ou frase com lacunas '_' (para tipo 'fill')." },
+                        description: { type: "STRING", description: "Pergunta, conceito, texto do divisor ou frase com lacunas '_' (para tipo 'fill'). Suporta e incentiva Markdown e fórmulas LaTeX para todos os tipos de card." },
                         answer: { type: "STRING", description: "Resposta, explicação detalhada ou respostas das lacunas separadas por ';' (tipo 'fill'). REGRA: Para respostas digitadas ('open', 'open_double', 'fill'), use estritamente texto puro SEM Markdown e SEM fórmulas." },
                         answer2: { type: "STRING", description: "Resposta secundária (apenas para open_double). Estritamente texto puro, sem Markdown e sem fórmulas." },
                         answers: { type: "ARRAY", items: { type: "STRING" }, description: "Lista ordenada de respostas das lacunas (tipo 'fill'). Use estritamente texto puro sem Markdown e sem fórmulas." },
@@ -357,7 +361,7 @@ const deckTools = [
                                 type: "OBJECT",
                                 properties: {
                                     type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki", "divisor", "fill"] },
-                                    description: { type: "STRING", description: "Pergunta, conceito, texto do divisor ou frase com lacunas '_' (tipo 'fill')." },
+                                    description: { type: "STRING", description: "Pergunta, conceito, texto do divisor ou frase com lacunas '_' (tipo 'fill'). Suporta e incentiva Markdown e fórmulas LaTeX para todos os tipos de card." },
                                     answer: { type: "STRING", description: "Resposta principal, explicação detalhada ou respostas das lacunas separadas por ';' (tipo 'fill'). REGRA: Para respostas digitadas ('open', 'open_double', 'fill'), use estritamente texto puro SEM Markdown e SEM fórmulas." },
                                     answer2: { type: "STRING", description: "Resposta secundária (apenas para open_double). Estritamente texto puro, sem Markdown e sem fórmulas." },
                                     answers: { type: "ARRAY", items: { type: "STRING" }, description: "Lista ordenada de respostas das lacunas (tipo 'fill'). Use estritamente texto puro sem Markdown e sem fórmulas." },
@@ -1543,17 +1547,18 @@ submitModal22Btn.addEventListener('click', async () => {
             model: "gemini-flash-latest",
             generationConfig: { temperature: 0.7, responseMimeType: "text/plain" },
             tools: deckTools,
-            systemInstruction: systemInstruction + "\nPreencha os placeholders '[GEMINI]' no JSON de flashcards e retorne-os usando a ferramenta 'adicionar_varios_cards'. Preserve cards com type 'anki' (frente e verso), 'fill' (lacunas), 'open' e 'divisor' exatamente como foram fornecidos. REGRA MANDATÓRIA: Respostas digitadas ('open', 'open_double', 'fill') NUNCA devem usar Markdown nem fórmulas matemáticas. Fórmulas e Markdown são permitidos em 'anki' e 'multiple_choice'."
+            systemInstruction: systemInstruction + "\nPreencha os placeholders '[GEMINI]' no JSON de flashcards e retorne-os usando a ferramenta 'adicionar_varios_cards'. Preserve cards com type 'anki' (frente e verso), 'fill' (lacunas), 'open' e 'divisor' exatamente como foram fornecidos. REGRA MANDATÓRIA: As perguntas ('description') de todos os cartões podem e devem usar Markdown e LaTeX livremente. Apenas respostas digitadas na gameplay ('open', 'open_double', 'fill') NUNCA devem usar Markdown nem fórmulas matemáticas."
         });
 
         currentGenModel = model;
 
         const fillPrompt = `Aqui está uma lista de flashcards que precisam que você preencha os campos '[GEMINI]'.
+As perguntas ('description') de todos os tipos de cartões podem usar formatação Markdown e fórmulas LaTeX livremente.
 Para 'open_double', preencha 'placeholder1' e 'placeholder2' com rótulos descritivos curtos para as respostas. Respostas digitadas devem ser texto puro sem Markdown e sem fórmulas.
 Para 'multiple_choice', complete o array 'options' com alternativas incorretas porém plausíveis (distratores), mantendo a resposta correta informada. Pode usar Markdown e LaTeX livremente.
 Para 'fill', se 'answers' contiver '[GEMINI]' ou estiver vazio, identifique as respostas corretas para cada lacuna '_' na frase de 'description' e preencha o array 'answers' com as respostas em ordem. As respostas das lacunas DEVEM SER ESTRITAMENTE TEXTO PURO (sem negrito **, sem itálico *, sem código \` e sem fórmulas LaTeX). Se 'answers' já estiver preenchido, mantenha-o intacto.
 Para 'anki', mantenha o type 'anki' intacto, preservando exatamente 'description' (frente/pergunta) e 'answer' (verso/resposta detalhada, que suporta Markdown e LaTeX livremente).
-Para 'open', mantenha o type 'open' intacto com 'description' e 'answer' (estritamente texto puro, sem Markdown e sem fórmulas).
+Para 'open', mantenha o type 'open' intacto com 'description' (que pode usar Markdown e LaTeX livremente) e 'answer' (estritamente texto puro, sem Markdown e sem fórmulas).
 Mantenha quaisquer itens com type 'divisor', 'anki', 'fill' e 'open' intactos e em suas respectivas posições entre os cartões.
 Ao terminar, chame 'adicionar_varios_cards' para enviar o baralho finalizado.
 
@@ -2255,7 +2260,7 @@ function createCardElement(card, index) {
         });
         descContent = `<span class="text-gray-800">${highlighted}</span>`;
     } else {
-        descContent = `<span class="text-gray-800">${descContent}</span>`;
+        descContent = `<span class="text-gray-800">${renderMathAndMarkdown(descContent)}</span>`;
     }
     const descStr = `<strong>${descLabel}</strong> ${descContent}`;
     let ansStr = `<strong>R:</strong> <span class="text-green-600">${card.answer || ''}</span>`;
