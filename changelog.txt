@@ -11,8 +11,12 @@ Added a 5th flashcard format: "fill" (Preencher Lacunas / Cloze), allowing users
   - Exact match and case-insensitive/diacritic-insensitive matching.
   - Multi-synonym support per blank separated by "/" (e.g. "30 / trinta").
   - Levenshtein 80% fuzzy similarity threshold for minor typos.
-  - Per-blank visual feedback: Green border/background for correct inputs, red border/background with tooltip for incorrect inputs.
-- Post-submission & AI check: Detailed feedback pill list showing correct answers for each blank numbered [1], [2], etc.
+  - Per-blank visual feedback & inline correction animation (~1.2s):
+    • Correct blanks immediately turn solid green.
+    • Wrong blanks turn red and shake side-to-side for ~500ms (@keyframes fillBoxShake) keeping the user's typed value in red.
+    • At ~550ms, wrong blanks dynamically pop green (@keyframes fillBoxPopGreen), adjusting width and revealing the correct answer directly inside the box.
+    • Removed the cluttered bottom "Respostas Corretas" box for fill cards so the entire feedback experience is integrated in-place.
+- Post-submission & AI check: Seamless integration with AI explanations and stats tracking. Pressing Enter/Space advances to the next question once correction animation finishes.
 - In-game card editor modal: Added #edit-fill-answer-group with #edit-fill-answer-input allowing real-time edits to fill card answers.
 
 2. DOCUMENT CONVERSION & PARSING ((fill) TAG)

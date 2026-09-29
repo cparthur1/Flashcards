@@ -918,7 +918,8 @@ function resetUI() {
     const fillInputs = questionCard.querySelectorAll('.fill-blank-input');
     fillInputs.forEach(inp => {
         inp.disabled = false;
-        inp.classList.remove('animate-pulse', 'border-red-500', 'border-green-500');
+        inp.readOnly = false;
+        inp.classList.remove('animate-pulse', 'border-red-500', 'border-green-500', 'fill-box-shake', 'fill-box-pop');
     });
 
     if (currentQuestion) {
@@ -951,7 +952,7 @@ function resetUI() {
 }
 
 function handleFillSubmit() {
-    if (isOpenSubmitting || submitBtn.disabled || currentQuestion?.isBeingCorrected) return;
+    if (isOpenSubmitting || submitBtn.disabled || currentQuestion?.isBeingCorrected || isAnimating) return;
     const inputs = Array.from(questionCard.querySelectorAll('.fill-blank-input'));
     if (inputs.length === 0) return;
 
@@ -970,8 +971,7 @@ function handleFillSubmit() {
         : (currentQuestion.answer || '').split(';').map(s => s.trim());
 
     let allCorrect = true;
-
-    inputs.forEach((input, i) => {
+    const blankResults = inputs.map((input, i) => {
         const userVal = userAnswers[i] || '';
         const expectedVal = rawExpected[i] || '';
         const synonyms = expectedVal.split('/').map(s => s.trim()).filter(Boolean);
@@ -982,15 +982,61 @@ function handleFillSubmit() {
 
         if (!isCorrect) allCorrect = false;
 
-        input.classList.remove('border-dashed', 'border-blue-400', 'dark:border-blue-500', 'border-green-500', 'border-red-500', 'bg-green-50', 'bg-red-50', 'dark:bg-green-950/40', 'dark:bg-red-950/40', 'text-green-600', 'text-red-600', 'dark:text-green-300', 'dark:text-red-300');
-        if (isCorrect) {
-            input.classList.add('border-solid', 'border-green-500', 'bg-green-50', 'dark:bg-green-950/40', 'text-green-600', 'dark:text-green-300');
-        } else {
-            input.classList.add('border-solid', 'border-red-500', 'bg-red-50', 'dark:bg-red-950/40', 'text-red-600', 'dark:text-red-300');
-        }
+        return { input, userVal, expectedVal, synonyms, isCorrect };
     });
 
-    showFeedback(allCorrect);
+    currentQuestion._lastUserAnswer = userAnswers.join(' ; ');
+
+    if (allCorrect) {
+        inputs.forEach(input => {
+            input.readOnly = true;
+            input.blur();
+            input.classList.remove('border-dashed', 'border-blue-400', 'dark:border-blue-500');
+            input.classList.add('border-solid', 'border-green-500', 'bg-green-50', 'dark:bg-green-950/40', 'text-green-600', 'dark:text-green-300');
+        });
+        showFeedback(true);
+    } else {
+        isAnimating = true;
+
+        // Phase 1: Correct boxes turn green immediately; wrong boxes turn red and shake side-to-side for ~500ms
+        blankResults.forEach(({ input, isCorrect }) => {
+            input.readOnly = true;
+            input.blur();
+            input.classList.remove('border-dashed', 'border-blue-400', 'dark:border-blue-500', 'border-green-500', 'border-red-500', 'bg-green-50', 'bg-red-50', 'dark:bg-green-950/40', 'dark:bg-red-950/40', 'text-green-600', 'text-red-600', 'dark:text-green-300', 'dark:text-red-300', 'fill-box-shake', 'fill-box-pop');
+
+            if (isCorrect) {
+                input.classList.add('border-solid', 'border-green-500', 'bg-green-50', 'dark:bg-green-950/40', 'text-green-600', 'dark:text-green-300');
+            } else {
+                input.classList.add('border-solid', 'border-red-500', 'bg-red-50', 'dark:bg-red-950/40', 'text-red-600', 'dark:text-red-300', 'fill-box-shake');
+            }
+        });
+
+        showFeedback(false);
+
+        // Phase 2: At ~550ms, wrong boxes pop green with the right answer (total duration ~1.2s)
+        setTimeout(() => {
+            blankResults.forEach(({ input, synonyms, expectedVal, isCorrect }) => {
+                if (!isCorrect) {
+                    const primaryExpected = synonyms[0] || expectedVal;
+                    input.classList.remove('border-red-500', 'bg-red-50', 'dark:bg-red-950/40', 'text-red-600', 'dark:text-red-300', 'fill-box-shake');
+                    input.classList.add('border-solid', 'border-green-500', 'bg-green-50', 'dark:bg-green-950/40', 'text-green-600', 'dark:text-green-300', 'fill-box-pop');
+                    input.value = primaryExpected;
+                    if (synonyms.length > 1) {
+                        input.title = synonyms.join(' / ');
+                    }
+
+                    // Dynamically adjust box width to fit the correct answer comfortably
+                    const len = primaryExpected.length;
+                    input.style.width = Math.max(64, Math.min(240, (len + 2) * 11)) + 'px';
+                }
+            });
+
+            // Unlock next navigation once the 1.2s correction animation completes
+            setTimeout(() => {
+                isAnimating = false;
+            }, 650);
+        }, 550);
+    }
 }
 
 function handleOpenSubmit() {
@@ -1040,7 +1086,7 @@ function showFeedback(isCorrect, element) {
         userAnswer = element ? element.textContent : "";
     } else if (currentQuestion.type === 'fill') {
         const fillInputs = Array.from(questionCard.querySelectorAll('.fill-blank-input'));
-        userAnswer = fillInputs.map(inp => inp.value.trim()).join(' ; ');
+        userAnswer = currentQuestion._lastUserAnswer || fillInputs.map(inp => inp.value.trim()).join(' ; ');
     } else {
         userAnswer = answerInput.value;
     }
@@ -1079,11 +1125,13 @@ function showFeedback(isCorrect, element) {
     }
 
     if (!isCorrect) {
-        // Card shakes on wrong guess and waits for user to skip/ask/edit/delete
-        questionCard.classList.remove('card-shake');
-        void questionCard.offsetWidth; // Force reflow
-        questionCard.classList.add('card-shake');
-        setTimeout(() => questionCard.classList.remove('card-shake'), 450);
+        if (currentQuestion.type !== 'fill') {
+            // Card shakes on wrong guess and waits for user to skip/ask/edit/delete
+            questionCard.classList.remove('card-shake');
+            void questionCard.offsetWidth; // Force reflow
+            questionCard.classList.add('card-shake');
+            setTimeout(() => questionCard.classList.remove('card-shake'), 450);
+        }
 
         currentQuestion.isBeingCorrected = true;
         isOpenSubmitting = false;
@@ -1094,8 +1142,10 @@ function showFeedback(isCorrect, element) {
             [answerInput, answerInput1, answerInput2].forEach(inp => {
                 if (inp) inp.disabled = true;
             });
-            const fillInputs = questionCard.querySelectorAll('.fill-blank-input');
-            fillInputs.forEach(inp => inp.disabled = true);
+            if (currentQuestion.type !== 'fill') {
+                const fillInputs = questionCard.querySelectorAll('.fill-blank-input');
+                fillInputs.forEach(inp => inp.disabled = true);
+            }
         }
         nextQuestionBtn.classList.remove('hidden');
         correctionOptions.classList.add('flex');
@@ -1134,19 +1184,7 @@ function updateFeedbackText() {
                 <span class="text-green-500 font-semibold mt-2 block">${label2}: ${a2}</span>
             `;
         } else if (currentQuestion.type === 'fill') {
-            const rawExpected = currentQuestion.answers && currentQuestion.answers.length > 0
-                ? currentQuestion.answers
-                : (currentQuestion.answer || '').split(';').map(s => s.trim());
-            const items = rawExpected.map((ans, idx) => {
-                const clean = ans.replace(/\//g, ' ou ');
-                return `<span class="inline-flex items-center gap-1 bg-white dark:bg-gray-800 border border-green-300 dark:border-green-700 rounded-lg px-2.5 py-1 text-xs font-semibold text-green-700 dark:text-green-300 shadow-sm"><span class="text-gray-400 font-mono text-[11px]">[${idx + 1}]</span>${clean}</span>`;
-            }).join(' ');
-            feedbackHtml = `
-                <div class="mt-3 p-3 rounded-xl bg-green-50/90 dark:bg-green-950/40 border border-green-200 dark:border-green-800/60 text-left">
-                    <span class="text-xs uppercase tracking-wider font-bold text-green-800 dark:text-green-300 block mb-2">Respostas Corretas:</span>
-                    <div class="flex flex-wrap gap-2">${items}</div>
-                </div>
-            `;
+            feedbackHtml = '';
         } else if (currentQuestion.type === 'anki') {
             feedbackHtml = `<span class="text-indigo-500 font-semibold mt-2 block">Resposta: ${currentQuestion.answer || ''}</span>`;
         } else {
@@ -1156,8 +1194,12 @@ function updateFeedbackText() {
 
         if (feedbackElem) {
             feedbackElem.innerHTML = feedbackHtml;
-            feedbackElem.classList.remove('hidden');
-        } else {
+            if (feedbackHtml) {
+                feedbackElem.classList.remove('hidden');
+            } else {
+                feedbackElem.classList.add('hidden');
+            }
+        } else if (feedbackHtml) {
             questionText.innerHTML = `${currentQuestion.description || ''}<br>${feedbackHtml}`;
         }
     } else {
@@ -2080,6 +2122,14 @@ document.addEventListener('keydown', (e) => {
     // Ignore when any modal is open
     const isModalOpen = [editModal, apiModal, instructionsModal, imageZoomModal].some(m => m && !m.classList.contains('hidden'));
     if (isModalOpen) return;
+
+    if (!nextQuestionBtn.classList.contains('hidden') && !isAnimating) {
+        if (e.key === 'Enter' || e.code === 'Space') {
+            e.preventDefault();
+            nextQuestionBtn.click();
+            return;
+        }
+    }
 
     if (currentQuestion && currentQuestion.type === 'anki') {
         if (!isAnkiFlipped) {
