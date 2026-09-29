@@ -99,6 +99,7 @@ export function initStatsSession(deckTitle, mode = 'normal', totalCards = 0, cur
             open: { total: 0, correct: 0 },
             open_double: { total: 0, correct: 0 },
             multiple_choice: { total: 0, correct: 0 },
+            fill: { total: 0, correct: 0 },
             anki: { total: 0, correct: 0 }
         },
         answersLog: [],
@@ -161,6 +162,7 @@ export function recordStatsAnswer({ card, isCorrect, rating, timeSpentSeconds, u
     const typeKey = card.type === 'anki' ? 'anki'
         : card.type === 'multiple_choice' ? 'multiple_choice'
         : card.type === 'open_double' ? 'open_double'
+        : card.type === 'fill' ? 'fill'
         : 'open';
 
     if (!sess.byType) {
@@ -168,6 +170,7 @@ export function recordStatsAnswer({ card, isCorrect, rating, timeSpentSeconds, u
             open: { total: 0, correct: 0 },
             open_double: { total: 0, correct: 0 },
             multiple_choice: { total: 0, correct: 0 },
+            fill: { total: 0, correct: 0 },
             anki: { total: 0, correct: 0 }
         };
     }

@@ -108,6 +108,9 @@ const creatorGroupOpenDouble = document.getElementById('creator-group-open-doubl
 const creatorAnsDouble1 = document.getElementById('creator-ans-double-1');
 const creatorAnsDouble2 = document.getElementById('creator-ans-double-2');
 
+const creatorGroupFill = document.getElementById('creator-group-fill');
+const creatorAnsFill = document.getElementById('creator-ans-fill');
+
 const creatorGroupAnki = document.getElementById('creator-group-anki');
 const creatorAnsAnki = document.getElementById('creator-ans-anki');
 const creatorAnsImgUrl = document.getElementById('creator-ans-img-url');
@@ -149,6 +152,8 @@ const editCardAns1Group = document.getElementById('edit-card-ans1-group');
 const editCardAns1Label = document.getElementById('edit-card-ans1-label');
 const editCardAns2Group = document.getElementById('edit-card-ans2-group');
 const editCardAns2 = document.getElementById('edit-card-ans2');
+const editCardFillGroup = document.getElementById('edit-card-fill-group');
+const editCardFillAnswer = document.getElementById('edit-card-fill-answer');
 const editCardAnkiGroup = document.getElementById('edit-card-anki-group');
 const editCardAnkiAnswer = document.getElementById('edit-card-anki-answer');
 const editCardMcGroup = document.getElementById('edit-card-mc-group');
@@ -183,7 +188,7 @@ let lastFailedLocalCards = null;
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const FILES_DEFAULT_SVG = '<svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>';
 
-const systemInstruction = "Sua função é gerenciar um baralho de flashcards para um estudante universitário. Você pode adicionar, editar ou remover cards usando as ferramentas fornecidas. Tipos suportados: 'open' (conceito aberto), 'open_double' (dupla resposta), 'multiple_choice' (múltipla escolha com 2 a 6 opções), e 'anki' (conceito/pergunta e explicação detalhada para repetição espaçada). Nos cartões 'anki', tanto a frente ('description') quanto o verso ('answer') contam com suporte total a formatação Markdown rico (tabelas, listas com marcadores ou números, negrito, blocos de código) e fórmulas matemáticas em LaTeX/KaTeX ($fórmula$ inline e $$fórmula$$ em bloco). Use essa rica formatação matemática e markdown sempre que oportuno para explicar conceitos complexos, passos de processos, fórmulas ou tabelas comparativas. Mantenha o tom profissional, analítico e pragmático.";
+const systemInstruction = "Sua função é gerenciar um baralho de flashcards para um estudante universitário. Você pode adicionar, editar ou remover cards usando as ferramentas fornecidas. Tipos suportados: 'open' (conceito aberto), 'open_double' (dupla resposta), 'multiple_choice' (múltipla escolha com 2 a 6 opções), 'fill' (preencher lacunas marcadas por '_' em frases ou textos), e 'anki' (conceito/pergunta e explicação detalhada para repetição espaçada). Nos cartões 'fill', a propriedade 'description' contém o texto/enunciado com as lacunas representadas por '_' (ou '___') e 'answer'/'answers' contém as respostas corretas ordenadas para cada lacuna, separadas por ';' no texto ou como array de strings. Nos cartões 'anki' e 'fill', há suporte total a formatação Markdown rico (tabelas, listas, negrito) e fórmulas matemáticas em LaTeX/KaTeX ($fórmula$ inline e $$fórmula$$ em bloco). Use essa rica formatação matemática e markdown sempre que oportuno para explicar conceitos complexos, passos de processos, fórmulas ou tabelas comparativas. Mantenha o tom profissional, analítico e pragmático.";
 
 const generationSystemInstruction = `Você é um especialista em educação e elaboração de flashcards acadêmicos de alto rendimento.
 Sua missão é sintetizar materiais de estudo (artigos, livros, apresentações, apostilas ou anotações) em flashcards de nível universitário/pós-graduação com máxima precisão conceitual, adaptando-se com rigor e profundidade ao domínio temático abordado (ciências da saúde, biológicas, exatas, engenharia, direito, humanas ou tecnologia).
@@ -201,6 +206,9 @@ DISTRIBUIÇÃO E REGRAS POR TIPO DE CARTÃO:
   • Pergunta ("description"): Questionamento comparativo ou que envolva dois conceitos interligados (ex: causa e efeito, agonista e antagonista, dois parâmetros ou limites).
   • Respostas ("answer" e "answer2"): Duas respostas diretas e telegráficas.
   • Rótulos ("placeholder1" e "placeholder2"): Rótulos descritivos e concisos para cada campo de resposta.
+- "fill":
+  • Enunciado / Frase ("description"): Texto, tabela, lista estruturada ou frase contendo lacunas representadas por "_" (ou "___") nos locais exatos onde os valores numéricos, dosagens, parâmetros, termos ou conceitos-chave foram omitidos para o estudante preencher diretamente no texto. Suporta Markdown rico e fórmulas LaTeX ($...$).
+  • Respostas ("answer" e "answers"): As respostas corretas na ordem exata de aparição das lacunas no texto. Forneça como array "answers" (ex: ["30", "3", "300"]) e como string "answer" separada por ponto e vírgula ";" (ex: "30; 3; 300"). Quando houver sinônimos aceitáveis para uma mesma lacuna, separe por "/" (ex: "30 / trinta").
 - "multiple_choice":
   • Enunciado ("description"): Questão bem contextualizada, cenário aplicado, problema técnico ou pergunta conceitual.
   • Resposta ("answer"): A alternativa correta exata.
@@ -223,6 +231,12 @@ EXEMPLOS DE ESTRUTURA (FEW-SHOT):
     "answer2": "Glicina",
     "placeholder1": "Encéfalo",
     "placeholder2": "Medula espinhal"
+  },
+  {
+    "type": "fill",
+    "description": "Quais são as faixas de categorização da albuminúria pela Relação Albumina/Creatinina (RAC) em amostra isolada de urina?\\n\\nEstadiamento da Albuminúria (KDIGO / SBD):\\n• A1 (Normoalbuminúria ou ligeiro aumento): RAC < _ mg/g (< _ mg/mmol)\\n• A2 (Microalbuminúria / Aumento moderado): RAC entre _ e _ mg/g (_ — _ mg/mmol)\\n• A3 (Macroalbuminúria / Aumento grave): RAC > _ mg/g (> _ mg/mmol)",
+    "answer": "30; 3; 30; 300; 3; 30; 300; 30",
+    "answers": ["30", "3", "30", "300", "3", "30", "300", "30"]
   },
   {
     "type": "multiple_choice",
@@ -252,10 +266,11 @@ const deckTools = [
                 parameters: {
                     type: "OBJECT",
                     properties: {
-                        type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki", "divisor"], description: "Tipo do card" },
-                        description: { type: "STRING", description: "Pergunta, conceito ou texto do divisor. Para cards 'anki', suporta Markdown e fórmulas LaTeX ($...$ ou $$...$$)." },
-                        answer: { type: "STRING", description: "Resposta principal ou explicação detalhada (opcional para divisor). Para cards 'anki', suporta Markdown completo (listas, tabelas, código, negrito, etc.) e fórmulas matemáticas LaTeX ($...$ ou $$...$$)." },
+                        type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki", "divisor", "fill"], description: "Tipo do card: 'open', 'open_double', 'multiple_choice', 'anki', 'divisor' ou 'fill' (preencher lacunas '_')" },
+                        description: { type: "STRING", description: "Pergunta, conceito, texto do divisor ou frase com lacunas '_' (para tipo 'fill'). Para cards 'anki' e 'fill', suporta Markdown e fórmulas LaTeX ($...$ ou $$...$$)." },
+                        answer: { type: "STRING", description: "Resposta principal, explicação detalhada ou respostas das lacunas separadas por ';' (tipo 'fill')." },
                         answer2: { type: "STRING", description: "Resposta secundária (apenas para open_double)" },
+                        answers: { type: "ARRAY", items: { type: "STRING" }, description: "Lista ordenada de respostas para preencher as lacunas '_' no tipo 'fill'" },
                         options: { type: "ARRAY", items: { type: "STRING" }, description: "Opções (apenas para multiple_choice)" },
                         image: { type: "STRING", description: "URL ou Base64 da imagem da pergunta (opcional)" },
                         answerImage: { type: "STRING", description: "URL ou Base64 da imagem da resposta (opcional)" }
@@ -270,10 +285,11 @@ const deckTools = [
                     type: "OBJECT",
                     properties: {
                         index: { type: "NUMBER", description: "O índice (começando em 0) do card a ser editado." },
-                        type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki", "divisor"] },
-                        description: { type: "STRING", description: "Pergunta, conceito ou texto do divisor. Para 'anki', suporta Markdown e LaTeX ($...$ ou $$...$$)." },
-                        answer: { type: "STRING", description: "Resposta ou explicação detalhada. Para 'anki', suporta Markdown e fórmulas LaTeX ($...$ ou $$...$$)." },
+                        type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki", "divisor", "fill"] },
+                        description: { type: "STRING", description: "Pergunta, conceito, texto do divisor ou frase com lacunas '_' (para tipo 'fill')." },
+                        answer: { type: "STRING", description: "Resposta, explicação detalhada ou respostas das lacunas separadas por ';' (tipo 'fill')." },
                         answer2: { type: "STRING" },
+                        answers: { type: "ARRAY", items: { type: "STRING" }, description: "Lista ordenada de respostas das lacunas (tipo 'fill')" },
                         options: { type: "ARRAY", items: { type: "STRING" } },
                         image: { type: "STRING" },
                         answerImage: { type: "STRING" }
@@ -318,10 +334,11 @@ const deckTools = [
                             items: {
                                 type: "OBJECT",
                                 properties: {
-                                    type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki", "divisor"] },
-                                    description: { type: "STRING", description: "Pergunta, conceito ou texto do divisor. Para 'anki', suporta Markdown e LaTeX ($...$ ou $$...$$)." },
-                                    answer: { type: "STRING", description: "Resposta principal ou explicação detalhada. Para 'anki', suporta Markdown rico e fórmulas matemáticas LaTeX ($...$ ou $$...$$)." },
+                                    type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki", "divisor", "fill"] },
+                                    description: { type: "STRING", description: "Pergunta, conceito, texto do divisor ou frase com lacunas '_' (tipo 'fill')." },
+                                    answer: { type: "STRING", description: "Resposta principal, explicação detalhada ou respostas das lacunas separadas por ';' (tipo 'fill')." },
                                     answer2: { type: "STRING" },
+                                    answers: { type: "ARRAY", items: { type: "STRING" }, description: "Lista ordenada de respostas das lacunas (tipo 'fill')" },
                                     options: { type: "ARRAY", items: { type: "STRING" } },
                                     image: { type: "STRING" },
                                     answerImage: { type: "STRING" }
@@ -453,6 +470,8 @@ function normalizeCard(raw) {
         type = 'multiple_choice';
     } else if (type === 'open_double' || type === 'duplo' || type === 'double') {
         type = 'open_double';
+    } else if (type === 'fill' || type === 'fill_in_the_blank' || type === 'fill_blanks' || type === 'cloze' || type === 'preencher' || type === 'lacuna' || type === 'lacunas') {
+        type = 'fill';
     } else if (type === 'anki' || type === 'anki_like') {
         type = 'anki';
     } else if (type === 'open' || type === 'open_ended' || type === 'traditional' || type === 'aberto') {
@@ -460,15 +479,27 @@ function normalizeCard(raw) {
     } else {
         if (Array.isArray(raw.options) && raw.options.length >= 2) type = 'multiple_choice';
         else if (raw.answer2) type = 'open_double';
+        else if (raw.answers && Array.isArray(raw.answers)) type = 'fill';
+        else if (raw.description && /(?:\[\s*_{1,}\s*\]|(?<![a-zA-Z0-9\u00C0-\u017F])_{1,}(?![a-zA-Z0-9\u00C0-\u017F]))/.test(raw.description) && (raw.answer && raw.answer.includes(';'))) type = 'fill';
         else type = 'open';
     }
 
-    const description = (raw.description || raw.question || raw.pergunta || raw.frente || '').trim();
+    const description = (raw.description || raw.question || raw.pergunta || raw.frente || raw.phrase || raw.text || '').trim();
     if (!description) return null;
 
     let answer = (raw.answer || raw.resposta || raw.verso || '').trim();
     let answer2 = (raw.answer2 || raw.resposta2 || '').trim();
     let options = Array.isArray(raw.options) ? raw.options.map(o => String(o).trim()).filter(Boolean) : (Array.isArray(raw.alternativas) ? raw.alternativas.map(o => String(o).trim()).filter(Boolean) : []);
+
+    let answers = [];
+    if (Array.isArray(raw.answers)) {
+        answers = raw.answers.map(a => String(a).trim()).filter(Boolean);
+    } else if (type === 'fill' && answer) {
+        answers = answer.split(';').map(a => a.trim()).filter(Boolean);
+    }
+    if (type === 'fill' && !answer && answers.length > 0) {
+        answer = answers.join('; ');
+    }
 
     if (type === 'multiple_choice') {
         if (options.length < 2) return null;
@@ -476,6 +507,8 @@ function normalizeCard(raw) {
         else if (!options.includes(answer)) options.unshift(answer);
     } else if (type === 'open_double') {
         if (!answer && !answer2) return null;
+    } else if (type === 'fill') {
+        if (!answer && answers.length === 0) return null;
     } else {
         if (!answer && !raw.image && !raw.answerImage) return null;
     }
@@ -489,6 +522,9 @@ function normalizeCard(raw) {
         card.answer2 = answer2;
         card.placeholder1 = raw.placeholder1 || "Resposta 1";
         card.placeholder2 = raw.placeholder2 || "Resposta 2";
+    }
+    if (type === 'fill') {
+        card.answers = answers;
     }
     if (type === 'multiple_choice') {
         card.options = options;
@@ -789,10 +825,42 @@ function convertDocumentToCards(text, mode = 'anki') {
         }
 
         const openDoubleMatch = line.match(/^[\(\[]\s*(?:open[_-]?double|duplo)\s*[\)\]]:?\s*(.*)$/i);
+        const fillMatch = line.match(/^[\(\[]\s*(?:fill|preencher|lacunas?|cloze)\s*[\)\]]:?\s*(.*)$/i);
         const mcMatch = line.match(/^[\(\[]\s*(?:multiple[_-]?choice|multipla[_-]?escolha|mc)\s*[\)\]]:?\s*(.*)$/i);
         const ankiMatch = line.match(/^[\(\[]\s*(?:anki[_-]?like|anki)\s*[\)\]]:?\s*(.*)$/i);
 
-        if (openDoubleMatch) {
+        if (fillMatch) {
+            const content = fillMatch[1].trim();
+            const colonIndex = content.indexOf(':');
+            if (colonIndex !== -1) {
+                const part1 = content.substring(0, colonIndex).trim();
+                const part2 = content.substring(colonIndex + 1).trim();
+
+                let answersPart = part1;
+                let description = part2;
+
+                const blankRegex = /(?:\[\s*_{1,}\s*\]|(?<![a-zA-Z0-9\u00C0-\u017F])_{1,}(?![a-zA-Z0-9\u00C0-\u017F]))/;
+                if (blankRegex.test(part1) && !blankRegex.test(part2)) {
+                    description = part1;
+                    answersPart = part2;
+                }
+
+                const answers = answersPart.split(';').map(a => a.trim()).filter(Boolean);
+                cards.push({
+                    type: "fill",
+                    description: description,
+                    answers: answers,
+                    answer: answers.join('; ')
+                });
+            } else {
+                cards.push({
+                    type: "fill",
+                    description: content,
+                    answers: [],
+                    answer: ""
+                });
+            }
+        } else if (openDoubleMatch) {
             const content = openDoubleMatch[1].trim();
             const colonIndex = content.indexOf(':');
             if (colonIndex !== -1) {
@@ -852,6 +920,8 @@ function convertDocumentToCards(text, mode = 'anki') {
                 const lastCard = cards[cards.length - 1];
                 if (lastCard.type === 'anki') {
                     lastCard.answer += ' ' + line;
+                } else if (lastCard.type === 'fill') {
+                    lastCard.description += '\n' + line;
                 } else {
                     lastCard.description += ' ' + line;
                 }
@@ -873,6 +943,8 @@ function convertDocumentToCards(text, mode = 'anki') {
                 const lastCard = cards[cards.length - 1];
                 if (lastCard.type === 'anki') {
                     lastCard.answer += ' ' + line;
+                } else if (lastCard.type === 'fill') {
+                    lastCard.description += '\n' + line;
                 } else {
                     lastCard.description += ' ' + line;
                 }
@@ -904,10 +976,42 @@ function parseTxtToJSONWithPlaceholders(text) {
         }
 
         const openDoubleMatch = line.match(/^[\(\[]\s*(?:open[_-]?double|duplo)\s*[\)\]]:?\s*(.*)$/i);
+        const fillMatch = line.match(/^[\(\[]\s*(?:fill|preencher|lacunas?|cloze)\s*[\)\]]:?\s*(.*)$/i);
         const mcMatch = line.match(/^[\(\[]\s*(?:multiple[_-]?choice|multipla[_-]?escolha|mc)\s*[\)\]]:?\s*(.*)$/i);
         const ankiMatch = line.match(/^[\(\[]\s*(?:anki[_-]?like|anki)\s*[\)\]]:?\s*(.*)$/i);
 
-        if (openDoubleMatch) {
+        if (fillMatch) {
+            const content = fillMatch[1].trim();
+            const colonIndex = content.indexOf(':');
+            if (colonIndex !== -1) {
+                const part1 = content.substring(0, colonIndex).trim();
+                const part2 = content.substring(colonIndex + 1).trim();
+
+                let answersPart = part1;
+                let description = part2;
+
+                const blankRegex = /(?:\[\s*_{1,}\s*\]|(?<![a-zA-Z0-9\u00C0-\u017F])_{1,}(?![a-zA-Z0-9\u00C0-\u017F]))/;
+                if (blankRegex.test(part1) && !blankRegex.test(part2)) {
+                    description = part1;
+                    answersPart = part2;
+                }
+
+                const answers = answersPart.split(';').map(a => a.trim()).filter(Boolean);
+                card = {
+                    type: "fill",
+                    description: description,
+                    answers: answers,
+                    answer: answers.join('; ')
+                };
+            } else {
+                card = {
+                    type: "fill",
+                    description: content,
+                    answers: ["[GEMINI]"],
+                    answer: "[GEMINI]"
+                };
+            }
+        } else if (openDoubleMatch) {
             const content = openDoubleMatch[1].trim();
             const colonIndex = content.indexOf(':');
             if (colonIndex !== -1) {
@@ -966,6 +1070,8 @@ function parseTxtToJSONWithPlaceholders(text) {
                 const lastCard = cards[cards.length - 1];
                 if (lastCard.type === 'anki') {
                     lastCard.answer += ' ' + line;
+                } else if (lastCard.type === 'fill') {
+                    lastCard.description += '\n' + line;
                 } else {
                     lastCard.description += ' ' + line;
                 }
@@ -1363,7 +1469,7 @@ submitModal22Btn.addEventListener('click', async () => {
             model: "gemini-flash-latest",
             generationConfig: { temperature: 0.7, responseMimeType: "text/plain" },
             tools: deckTools,
-            systemInstruction: systemInstruction + "\nPreencha os placeholders '[GEMINI]' no JSON de flashcards e retorne-os usando a ferramenta 'adicionar_varios_cards'. Preserve cards com type 'anki' (frente e verso), 'open' e 'divisor' exatamente como foram fornecidos."
+            systemInstruction: systemInstruction + "\nPreencha os placeholders '[GEMINI]' no JSON de flashcards e retorne-os usando a ferramenta 'adicionar_varios_cards'. Preserve cards com type 'anki' (frente e verso), 'fill' (lacunas), 'open' e 'divisor' exatamente como foram fornecidos."
         });
 
         currentGenModel = model;
@@ -1371,9 +1477,10 @@ submitModal22Btn.addEventListener('click', async () => {
         const fillPrompt = `Aqui está uma lista de flashcards que precisam que você preencha os campos '[GEMINI]'.
 Para 'open_double', preencha 'placeholder1' e 'placeholder2' com rótulos descritivos curtos para as respostas.
 Para 'multiple_choice', complete o array 'options' com alternativas incorretas porém plausíveis (distratores), mantendo a resposta correta informada.
+Para 'fill', se 'answers' contiver '[GEMINI]' ou estiver vazio, identifique as respostas corretas para cada lacuna '_' na frase de 'description' e preencha o array 'answers' com as respostas em ordem. Se 'answers' já estiver preenchido, mantenha-o intacto.
 Para 'anki', mantenha o type 'anki' intacto, preservando exatamente 'description' (frente/pergunta) e 'answer' (verso/resposta detalhada, que suporta Markdown e LaTeX).
 Para 'open', mantenha o type 'open' intacto com 'description' e 'answer'.
-Mantenha quaisquer itens com type 'divisor', 'anki' e 'open' intactos e em suas respectivas posições entre os cartões.
+Mantenha quaisquer itens com type 'divisor', 'anki', 'fill' e 'open' intactos e em suas respectivas posições entre os cartões.
 Ao terminar, chame 'adicionar_varios_cards' para enviar o baralho finalizado.
 
 JSON:
@@ -1478,6 +1585,10 @@ if (useTraditionalTxtBtn) {
                 if (copy.type === 'multiple_choice' && Array.isArray(copy.options)) {
                     copy.options = copy.options.map((o, i) => o === '[GEMINI]' ? `Opção ${i + 1}` : o);
                 }
+                if (copy.type === 'fill' && Array.isArray(copy.answers)) {
+                    copy.answers = copy.answers.filter(a => a !== '[GEMINI]');
+                    if (copy.answer === '[GEMINI]') copy.answer = copy.answers.join('; ');
+                }
                 return copy;
             });
             openEditorView('creator');
@@ -1509,6 +1620,7 @@ if (retryGeminiBtn) {
 const typeHints = {
     open: "Pergunta é uma descrição e você digita o nome do conceito.",
     open_double: "Uma pergunta, você digita duas respostas.",
+    fill: "Frase com lacunas marcadas por '_' (ex: 'O KDIGO define A1 como < _ mg/g e A3 como > _ mg/g'). Você digita cada lacuna.",
     anki: "Pergunta é um conceito (curto), ou imagem, e resposta é uma descrição longa, ou imagem. Sem digitação.",
     multiple_choice: "Pergunta é um conceito, você escolhe entre alternativas (2 a 6 opções).",
     divisor: "Adiciona um divisor na lista para organizar tópicos no editor. Não aparece no jogo."
@@ -1521,6 +1633,7 @@ creatorCardType.addEventListener('change', () => {
     // Adjust visibility
     creatorGroupOpen.classList.toggle('hidden', t !== 'open');
     creatorGroupOpenDouble.classList.toggle('hidden', t !== 'open_double');
+    if (creatorGroupFill) creatorGroupFill.classList.toggle('hidden', t !== 'fill');
     creatorGroupAnki.classList.toggle('hidden', t !== 'anki');
     creatorGroupMc.classList.toggle('hidden', t !== 'multiple_choice');
 
@@ -1532,6 +1645,9 @@ creatorCardType.addEventListener('change', () => {
     if (t === 'divisor') {
         creatorQuestionLabel.textContent = "Texto do Divisor / Nota (#)";
         creatorQuestion.placeholder = "Ex: Seção 1 - Fisiologia Renal";
+    } else if (t === 'fill') {
+        creatorQuestionLabel.textContent = "Frase com lacunas (use '_' para cada lacuna)";
+        creatorQuestion.placeholder = "Ex: No KDIGO, A1 é < _ mg/g, A2 é _-_ mg/g e A3 é > _ mg/g";
     } else if (t === 'anki') {
         creatorQuestionLabel.textContent = "Pergunta / Conceito (Curto)";
         creatorQuestion.placeholder = "Escreva a pergunta ou conceito...";
@@ -1716,6 +1832,23 @@ creatorSubmitCardBtn.addEventListener('click', () => {
         }
         newCard.answer = correctText;
         newCard.options = options;
+    } else if (type === 'fill') {
+        const blankRegex = /(?:\[\s*_{1,}\s*\]|(?<![a-zA-Z0-9\u00C0-\u017F])_{1,}(?![a-zA-Z0-9\u00C0-\u017F]))/g;
+        const blanksCount = (desc.match(blankRegex) || []).length;
+        if (blanksCount === 0) {
+            alert("A frase deve conter pelo menos uma lacuna '_' para preenchimento.");
+            creatorQuestion.focus();
+            return;
+        }
+        const ansRaw = creatorAnsFill ? creatorAnsFill.value.trim() : '';
+        const answers = ansRaw.split(';').map(a => a.trim()).filter(Boolean);
+        if (answers.length === 0) {
+            alert("Por favor, informe a(s) resposta(s) esperada(s), separadas por ';' se houver mais de uma.");
+            if (creatorAnsFill) creatorAnsFill.focus();
+            return;
+        }
+        newCard.answers = answers;
+        newCard.answer = answers.join('; ');
     }
 
     deckCards.push(newCard);
@@ -1727,6 +1860,7 @@ creatorSubmitCardBtn.addEventListener('click', () => {
     creatorAnsDouble1.value = '';
     creatorAnsDouble2.value = '';
     creatorAnsAnki.value = '';
+    if (creatorAnsFill) creatorAnsFill.value = '';
     creatorRemoveQImg.click();
     creatorRemoveAnsImg.click();
 
@@ -2023,16 +2157,29 @@ function createCardElement(card, index) {
     } else if (card.type === 'open_double') {
         typeBadge.className += " bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300";
         typeBadge.textContent = "Duplo Aberto";
+    } else if (card.type === 'fill') {
+        typeBadge.className += " bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-300";
+        const count = Array.isArray(card.answers) && card.answers.length > 0 ? card.answers.length : (card.answer ? card.answer.split(';').length : 1);
+        typeBadge.textContent = `Preencher (${count})`;
     } else {
         typeBadge.className += " bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300";
         typeBadge.textContent = "Aberto";
     }
     cardEl.appendChild(typeBadge);
 
-    const descLabel = card.type === 'anki' ? 'Frente:' : 'P:';
+    const descLabel = card.type === 'anki' ? 'Frente:' : (card.type === 'fill' ? 'Frase:' : 'P:');
     let descContent = card.description || '(Sem texto)';
     if (card.type === 'anki') {
         descContent = `<div class="anki-markdown-content text-gray-800 dark:text-gray-200 mt-0.5">${renderMathAndMarkdown(descContent)}</div>`;
+    } else if (card.type === 'fill') {
+        const blankRegex = /(?:\[\s*_{1,}\s*\]|(?<![a-zA-Z0-9\u00C0-\u017F])_{1,}(?![a-zA-Z0-9\u00C0-\u017F]))/g;
+        let blankIndex = 0;
+        const escaped = descContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const highlighted = escaped.replace(blankRegex, () => {
+            blankIndex++;
+            return `<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-teal-100 dark:bg-teal-900/60 text-teal-800 dark:text-teal-200 font-mono text-xs font-bold border border-teal-300 dark:border-teal-700">[${blankIndex}]</span>`;
+        });
+        descContent = `<span class="text-gray-800 dark:text-gray-200">${highlighted}</span>`;
     } else {
         descContent = `<span class="text-gray-800 dark:text-gray-200">${descContent}</span>`;
     }
@@ -2050,6 +2197,16 @@ function createCardElement(card, index) {
     } else if (card.type === 'anki') {
         const renderedAns = renderMathAndMarkdown(card.answer || '');
         ansStr = `<strong>Verso:</strong> <div class="anki-markdown-content text-indigo-600 dark:text-indigo-400 mt-1">${renderedAns}</div>`;
+    } else if (card.type === 'fill') {
+        const answers = Array.isArray(card.answers) && card.answers.length > 0 
+            ? card.answers 
+            : (card.answer ? card.answer.split(';').map(a => a.trim()).filter(Boolean) : []);
+        if (answers.length > 0) {
+            const badges = answers.map((a, i) => `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 text-xs font-semibold"><span class="text-teal-500 font-mono text-[10px]">${i + 1}:</span> ${a}</span>`).join(' ');
+            ansStr = `<strong>Lacunas:</strong> <div class="inline-flex flex-wrap gap-1 mt-1">${badges}</div>`;
+        } else {
+            ansStr = `<strong>Lacunas:</strong> <span class="text-yellow-600 dark:text-yellow-400 text-xs">Nenhuma resposta definida</span>`;
+        }
     }
 
     const textCont = document.createElement('div');
@@ -2114,8 +2271,9 @@ function openInlineEditModal(index) {
 
     // Show/hide groups based on type
     const t = card.type || 'open';
-    editCardAns1Group.classList.toggle('hidden', t === 'anki' || t === 'multiple_choice');
+    editCardAns1Group.classList.toggle('hidden', t === 'anki' || t === 'multiple_choice' || t === 'fill');
     editCardAns2Group.classList.toggle('hidden', t !== 'open_double');
+    if (editCardFillGroup) editCardFillGroup.classList.toggle('hidden', t !== 'fill');
     editCardAnkiGroup.classList.toggle('hidden', t !== 'anki');
     editCardMcGroup.classList.toggle('hidden', t !== 'multiple_choice');
     inlineEditAnsImageGroup.classList.toggle('hidden', t !== 'anki');
@@ -2131,6 +2289,13 @@ function openInlineEditModal(index) {
         editCardAnkiAnswer.value = card.answer || '';
     } else if (t === 'multiple_choice') {
         renderInlineEditMcOptions(card.options || ["", "", "", ""], card.answer);
+    } else if (t === 'fill') {
+        if (editCardFillAnswer) {
+            const answers = Array.isArray(card.answers) && card.answers.length > 0 
+                ? card.answers.join('; ') 
+                : (card.answer || '');
+            editCardFillAnswer.value = answers;
+        }
     }
 
     pendingInlineEditQImage = card.image || '';
@@ -2259,6 +2424,11 @@ saveInlineEditBtn.addEventListener('click', () => {
         const correctIdx = checkedRadio ? parseInt(checkedRadio.value) : 0;
         card.options = options;
         card.answer = optInputs[correctIdx]?.value.trim() || options[0];
+    } else if (card.type === 'fill') {
+        const rawAns = editCardFillAnswer ? editCardFillAnswer.value.trim() : '';
+        const answers = rawAns.split(';').map(a => a.trim()).filter(Boolean);
+        card.answers = answers;
+        card.answer = answers.join('; ');
     }
 
     renderCardsList(true);

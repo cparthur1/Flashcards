@@ -239,7 +239,7 @@
                         Cada linha do documento vai ser um card. No modo <strong>Tradicional</strong>, o que vem antes do <strong>":"</strong> é a resposta e o que vem depois é a pergunta. No modo <strong>Anki-like</strong>, o que vem antes do <strong>":"</strong> é a frente e o que vem depois é o verso. Se quiser digitar a resposta, selecione tradicional, se não, anki-like.
                     </p>
                     <p class="text-xs opacity-90 border-t border-blue-200/60 dark:border-blue-800/60 pt-2">
-                        💡 <strong>Tags especiais:</strong> Use <code>(anki_like) Frente: Verso</code>, <code>(open_double) Resp1;Resp2: Pergunta</code> ou <code>(multiple_choice) Resposta: Pergunta</code> para definir formatos específicos por linha.
+                        💡 <strong>Tags especiais:</strong> Use <code>(anki_like) Frente: Verso</code>, <code>(open_double) Resp1;Resp2: Pergunta</code>, <code>(fill) Resp1;Resp2: Frase com _ e _</code> ou <code>(multiple_choice) Resposta: Pergunta</code> para definir formatos específicos por linha.
                     </p>
                     <p class="text-xs opacity-90">
                         💡 <strong>Notas e Divisores:</strong> Linhas iniciadas com <code>#</code> viram divisores de seção no editor (não aparecem durante o jogo).
@@ -374,6 +374,7 @@
                     <p class="text-xs">• Linha padrão: <code>RESPOSTA: Pergunta</code></p>
                     <p class="text-xs">• Anki-like: inicie com <code>(anki_like) Frente: Verso</code> (a parte antes de ":" é a frente/pergunta e depois é o verso/resposta).</p>
                     <p class="text-xs">• Resposta dupla: inicie com <code>(open_double) Resposta1;Resposta2: Pergunta</code> (o Gemini criará os rótulos adequados).</p>
+                    <p class="text-xs">• Preencher lacunas: inicie com <code>(fill) Resposta1;Resposta2: Frase com _ e _</code> (os pontos a serem preenchidos são identificados por "_").</p>
                     <p class="text-xs">• Múltipla escolha: inicie com <code>(multiple_choice) RespostaCorreta: Pergunta</code> (o Gemini criará distratores plausíveis).</p>
                     <p class="text-xs">• Notas e divisores: inicie com <code># Título da Seção</code> (organizam o baralho no editor e são ignorados no jogo).</p>
                 </div>
@@ -464,6 +465,7 @@
                     <select id="creator-card-type" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 font-semibold text-sm">
                         <option value="open">Tradicional (Aberto)</option>
                         <option value="open_double">Tradicional duplo (Resposta Dupla)</option>
+                        <option value="fill">Preencher Lacunas ("_")</option>
                         <option value="anki">Anki-like [Novo]</option>
                         <option value="multiple_choice">Múltipla Escolha (2 a 6 opções)</option>
                         <option value="divisor">Divisor / Nota (#)</option>
@@ -510,6 +512,17 @@
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Resposta 2</label>
                         <input type="text" id="creator-ans-double-2" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Segunda resposta...">
+                    </div>
+                </div>
+
+                <!-- GROUP: FILL IN THE BLANKS (FILL) -->
+                <div id="creator-group-fill" class="space-y-3 hidden">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Respostas das Lacunas (separadas por ";")</label>
+                        <input type="text" id="creator-ans-fill" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Ex: 30; 3; 300 ou valor1; valor2">
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+                            Use "_" no texto acima para cada lacuna. Cada resposta preenche uma lacuna na ordem de aparição. Sinônimos para a mesma lacuna podem ser separados por "/" (ex: 30 / trinta).
+                        </p>
                     </div>
                 </div>
 
@@ -686,6 +699,13 @@
                     <input type="text" id="edit-card-ans2" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 text-sm">
                 </div>
 
+                <!-- Fill In The Blanks Answer -->
+                <div id="edit-card-fill-group" class="hidden space-y-1">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">Respostas das Lacunas (separadas por ";")</label>
+                    <input type="text" id="edit-card-fill-answer" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 text-sm" placeholder="Ex: 30; 3; 300">
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400">Na ordem das lacunas "_" do texto. Sinônimos podem ser separados por "/".</p>
+                </div>
+
                 <!-- Anki Answer -->
                 <div id="edit-card-anki-group" class="hidden space-y-3">
                     <div>
@@ -816,7 +836,7 @@
     </div>
 
     <!-- External Script Module -->
-    <script type="module" src="../js/generate.js?v=3.5"></script>
+    <script type="module" src="../js/generate.js?v=3.6"></script>
 </body>
 
 </html>

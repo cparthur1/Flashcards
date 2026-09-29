@@ -25,9 +25,10 @@ O **Flashcards AI** transforma materiais brutos (PDFs, documentos Word, apostila
 
 ---
 
-### 🎴 2. Quatro Modos de Cartão & Renderização Avançada
+### 🎴 2. Cinco Modos de Cartão & Renderização Avançada
 - **Aberto (Active Recall):** Digite a resposta esperada para forçar a recuperação ativa da memória.
 - **Aberto Duplo:** Perguntas com 2 respostas obrigatórias (ex.: *Origem & Inserção*, *Mecanismo de Ação & Posologia*).
+- **Preencher Lacunas (Fill in the Blanks / Cloze):** Frase com lacunas marcadas por `_` (ex: valores de referência, tabelas de estadiamento como KDIGO albuminúria: `< _`, `_-_`, `> _`). Inputs interativos inline com autoajuste de largura, navegação ágil por Enter/Tab, suporte a sinônimos com `/` e validação inteligente.
 - **Múltipla Escolha:** 2 a 6 opções com feedback visual imediato e suporte a atalhos de teclado.
 - **Anki (Repetição Espaçada):** Cartões com frente/verso e autoavaliação em 4 botões (*Errei, Difícil, Bom, Fácil*).
 - **Fórmulas Matemáticas (KaTeX):** Renderização impecável de LaTeX inline (`$...$`) e em bloco (`$$...$$`).

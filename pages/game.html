@@ -441,6 +441,13 @@
                     <textarea id="edit-anki-answer-input" rows="5"
                         class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white resize-y text-sm" placeholder="Explicação detalhada... Suporta Markdown, listas e fórmulas LaTeX ($x^2$)"></textarea>
                 </div>
+                <div id="edit-fill-answer-group" class="hidden space-y-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Respostas das Lacunas (separadas por ponto e vírgula ";")</label>
+                    <input type="text" id="edit-fill-answer-input"
+                        class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:text-white text-sm"
+                        placeholder="Ex: 30; 3; 300">
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Cada resposta preenche um "_" na ordem em que aparecem no texto. Sinônimos podem ser separados por "/".</p>
+                </div>
                 <div id="edit-mc-options-group" class="hidden space-y-2">
                     <div class="flex items-center justify-between">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Alternativas (2 a 6)</label>
@@ -734,7 +741,7 @@
         </div>
     </div>
 
-    <script src="../js/game.js?v=3.5" type="module" defer></script>
+    <script src="../js/game.js?v=3.6" type="module" defer></script>
 </body>
 
 </html>

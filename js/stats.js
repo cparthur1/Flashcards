@@ -301,6 +301,7 @@ function renderPerformanceByType(sess) {
         'multiple_choice': { name: 'Múltipla Escolha', icon: '📝', color: 'bg-blue-500' },
         'open': { name: 'Resposta Aberta (Texto)', icon: '⌨️', color: 'bg-emerald-500' },
         'open_double': { name: 'Resposta Dupla', icon: '⚡', color: 'bg-purple-500' },
+        'fill': { name: 'Preencher Lacunas', icon: '✍️', color: 'bg-teal-500' },
         'anki': { name: 'Conceito / Anki', icon: '🧠', color: 'bg-indigo-500' }
     };
 

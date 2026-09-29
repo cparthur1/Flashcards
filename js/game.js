@@ -121,6 +121,8 @@ const editAnsImagePreviewContainer = document.getElementById('edit-ans-image-pre
 const editAnsImagePreview = document.getElementById('edit-ans-image-preview');
 const editRemoveAnsImageBtn = document.getElementById('edit-remove-ans-image-btn');
 const editAnsImageUrlInput = document.getElementById('edit-ans-image-url-input');
+const editFillAnswerGroup = document.getElementById('edit-fill-answer-group');
+const editFillAnswerInput = document.getElementById('edit-fill-answer-input');
 
 const submitBtn = document.getElementById('submit-btn');
 const nextQuestionBtn = document.getElementById('next-question-btn');
@@ -518,6 +520,85 @@ function animate() {
 }
 
 
+// --- HELPER: RENDER FILL-IN-THE-BLANKS QUESTION WITH INTERACTIVE INPUTS ---
+function renderFillBlanksQuestion(text) {
+    if (!text) return '';
+    // 1. Temporarily extract block and inline LaTeX math to protect math underscores
+    const mathBlocks = [];
+    let placeholderText = text.replace(/\\\[([\s\S]*?)\\\]/g, (match) => {
+        mathBlocks.push(match);
+        return `%%MATH_${mathBlocks.length - 1}%%`;
+    });
+    placeholderText = placeholderText.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
+        mathBlocks.push(match);
+        return `%%MATH_${mathBlocks.length - 1}%%`;
+    });
+    placeholderText = placeholderText.replace(/\\\(([\s\S]*?)\\\)/g, (match) => {
+        mathBlocks.push(match);
+        return `%%MATH_${mathBlocks.length - 1}%%`;
+    });
+    placeholderText = placeholderText.replace(/\$(?!\s)((?:\\\$|[^\$])+?)(?<!\s)\$/g, (match) => {
+        mathBlocks.push(match);
+        return `%%MATH_${mathBlocks.length - 1}%%`;
+    });
+
+    // 2. Identify blank spots: e.g. '_', '___', '[_]', '[___]'
+    const blankRegex = /(?:\[\s*_{1,}\s*\]|(?<![a-zA-Z0-9\u00C0-\u017F])_{1,}(?![a-zA-Z0-9\u00C0-\u017F]))/g;
+    let spotIndex = 0;
+    placeholderText = placeholderText.replace(blankRegex, () => {
+        const token = `%%FILL_SPOT_${spotIndex}%%`;
+        spotIndex++;
+        return token;
+    });
+
+    // 3. Restore math blocks before markdown parsing
+    placeholderText = placeholderText.replace(/%%MATH_(\d+)%%/g, (_, idx) => mathBlocks[parseInt(idx, 10)] || '');
+
+    // 4. Render Markdown and KaTeX math
+    let renderedHtml = renderMathAndMarkdown(placeholderText);
+
+    // 5. Replace each spot token with an interactive inline <input>
+    const totalSpots = spotIndex;
+    for (let i = 0; i < totalSpots; i++) {
+        const isLast = (i === totalSpots - 1);
+        const enterHint = isLast ? 'done' : 'next';
+        const inputHtml = `<input type="text" class="fill-blank-input inline-block text-center font-bold px-2 py-0.5 mx-1 rounded-md border-2 border-dashed border-blue-400 dark:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600 text-sm sm:text-base shadow-sm transition-all align-middle placeholder-gray-400 dark:placeholder-gray-500" data-blank-index="${i}" placeholder="${i + 1}" enterkeyhint="${enterHint}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" style="min-width: 60px; max-width: 220px; width: 64px;">`;
+        renderedHtml = renderedHtml.replace(new RegExp(`%%FILL_SPOT_${i}%%`, 'g'), inputHtml);
+    }
+
+    return renderedHtml;
+}
+
+function initFillBlankInputs() {
+    const inputs = Array.from(questionCard.querySelectorAll('.fill-blank-input'));
+    if (inputs.length === 0) return;
+
+    inputs.forEach((input, index) => {
+        const updateWidth = () => {
+            const len = input.value.length;
+            input.style.width = Math.max(64, Math.min(240, (len + 2) * 11)) + 'px';
+        };
+        input.addEventListener('input', updateWidth);
+
+        input.addEventListener('keydown', (e) => {
+            if (e.isComposing) return;
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                    inputs[index + 1].select();
+                } else {
+                    handleOpenSubmit();
+                }
+            }
+        });
+    });
+
+    setTimeout(() => {
+        inputs[0]?.focus();
+    }, 50);
+}
+
 // --- HELPER: FILTER PLAYABLE CARDS (EXCLUDE DEVISORS / NOTES) ---
 function isPlayableCard(card) {
     return card && card.type !== 'divisor' && card.type !== 'divider' && card.type !== 'note';
@@ -597,15 +678,26 @@ function loadQuestion() {
         feedbackElem.classList.add('hidden');
     }
 
+    const formatQuestionText = (card) => {
+        if (!card) return '';
+        if (card.type === 'fill') {
+            return renderFillBlanksQuestion(card.description || '');
+        }
+        if (card.type === 'anki' || (card.description && /\$|```/.test(card.description))) {
+            return renderMathAndMarkdown(card.description || '');
+        }
+        return card.description || '';
+    };
+
     if ((activeMode === 'notebook' || activeMode === 'exam') && currentQuestion.sourceDeck) {
         if (sourceTagElem) {
             sourceTagElem.textContent = currentQuestion.sourceDeck;
             sourceTagElem.classList.remove('hidden');
         }
         if (bodyElem) {
-            bodyElem.innerHTML = (currentQuestion.type === 'anki' || (currentQuestion.description && /\$|```/.test(currentQuestion.description))) ? renderMathAndMarkdown(currentQuestion.description || '') : (currentQuestion.description || '');
+            bodyElem.innerHTML = formatQuestionText(currentQuestion);
         } else {
-            const desc = (currentQuestion.type === 'anki' || (currentQuestion.description && /\$|```/.test(currentQuestion.description))) ? renderMathAndMarkdown(currentQuestion.description || '') : (currentQuestion.description || '');
+            const desc = formatQuestionText(currentQuestion);
             questionText.innerHTML = `<span class="text-xs uppercase tracking-wider text-blue-500 font-bold mb-1.5 block">${currentQuestion.sourceDeck}</span>${desc}`;
         }
     } else {
@@ -613,9 +705,9 @@ function loadQuestion() {
             sourceTagElem.classList.add('hidden');
         }
         if (bodyElem) {
-            bodyElem.innerHTML = (currentQuestion.type === 'anki' || (currentQuestion.description && /\$|```/.test(currentQuestion.description))) ? renderMathAndMarkdown(currentQuestion.description || '') : (currentQuestion.description || '');
+            bodyElem.innerHTML = formatQuestionText(currentQuestion);
         } else {
-            questionText.innerHTML = (currentQuestion.type === 'anki' || (currentQuestion.description && /\$|```/.test(currentQuestion.description))) ? renderMathAndMarkdown(currentQuestion.description || '') : (currentQuestion.description || '');
+            questionText.innerHTML = formatQuestionText(currentQuestion);
         }
     }
 
@@ -655,6 +747,9 @@ function loadQuestion() {
         answerInput1.placeholder = currentQuestion.placeholder1 || 'Resposta 1';
         answerInput2.placeholder = currentQuestion.placeholder2 || 'Resposta 2';
         answerInput1.focus();
+    } else if (currentQuestion.type === 'fill') {
+        submitBtn.classList.remove('hidden');
+        initFillBlankInputs();
     } else {
         openAnswerArea.classList.remove('hidden');
         submitBtn.classList.remove('hidden');
@@ -820,6 +915,12 @@ function resetUI() {
     });
     answerInput.placeholder = 'Digite sua resposta aqui...';
 
+    const fillInputs = questionCard.querySelectorAll('.fill-blank-input');
+    fillInputs.forEach(inp => {
+        inp.disabled = false;
+        inp.classList.remove('animate-pulse', 'border-red-500', 'border-green-500');
+    });
+
     if (currentQuestion) {
         delete currentQuestion.isBeingCorrected;
     }
@@ -849,9 +950,58 @@ function resetUI() {
     });
 }
 
+function handleFillSubmit() {
+    if (isOpenSubmitting || submitBtn.disabled || currentQuestion?.isBeingCorrected) return;
+    const inputs = Array.from(questionCard.querySelectorAll('.fill-blank-input'));
+    if (inputs.length === 0) return;
+
+    const userAnswers = inputs.map(inp => inp.value.trim());
+    if (userAnswers.every(ans => !ans)) {
+        inputs[0].classList.add('animate-pulse', 'border-red-500');
+        setTimeout(() => inputs[0].classList.remove('animate-pulse', 'border-red-500'), 800);
+        inputs[0].focus();
+        return;
+    }
+
+    isOpenSubmitting = true;
+
+    const rawExpected = currentQuestion.answers && currentQuestion.answers.length > 0
+        ? currentQuestion.answers
+        : (currentQuestion.answer || '').split(';').map(s => s.trim());
+
+    let allCorrect = true;
+
+    inputs.forEach((input, i) => {
+        const userVal = userAnswers[i] || '';
+        const expectedVal = rawExpected[i] || '';
+        const synonyms = expectedVal.split('/').map(s => s.trim()).filter(Boolean);
+
+        const isCorrect = synonyms.length > 0
+            ? synonyms.some(syn => calculateSimilarity(normalizeString(userVal), normalizeString(syn)) >= 0.8)
+            : false;
+
+        if (!isCorrect) allCorrect = false;
+
+        input.classList.remove('border-dashed', 'border-blue-400', 'dark:border-blue-500', 'border-green-500', 'border-red-500', 'bg-green-50', 'bg-red-50', 'dark:bg-green-950/40', 'dark:bg-red-950/40', 'text-green-600', 'text-red-600', 'dark:text-green-300', 'dark:text-red-300');
+        if (isCorrect) {
+            input.classList.add('border-solid', 'border-green-500', 'bg-green-50', 'dark:bg-green-950/40', 'text-green-600', 'dark:text-green-300');
+        } else {
+            input.classList.add('border-solid', 'border-red-500', 'bg-red-50', 'dark:bg-red-950/40', 'text-red-600', 'dark:text-red-300');
+        }
+    });
+
+    showFeedback(allCorrect);
+}
+
 function handleOpenSubmit() {
     if (isOpenSubmitting || submitBtn.disabled || currentQuestion?.isBeingCorrected) return;
     const type = currentQuestion.type;
+
+    if (type === 'fill') {
+        handleFillSubmit();
+        return;
+    }
+
     const ans1 = normalizeString(answerInput.value);
     const ans1_d = normalizeString(answerInput1.value);
     const ans2_d = normalizeString(answerInput2.value);
@@ -888,6 +1038,9 @@ function showFeedback(isCorrect, element) {
         userAnswer = `${answerInput1.value} ; ${answerInput2.value}`;
     } else if (currentQuestion.type === 'multiple_choice') {
         userAnswer = element ? element.textContent : "";
+    } else if (currentQuestion.type === 'fill') {
+        const fillInputs = Array.from(questionCard.querySelectorAll('.fill-blank-input'));
+        userAnswer = fillInputs.map(inp => inp.value.trim()).join(' ; ');
     } else {
         userAnswer = answerInput.value;
     }
@@ -941,6 +1094,8 @@ function showFeedback(isCorrect, element) {
             [answerInput, answerInput1, answerInput2].forEach(inp => {
                 if (inp) inp.disabled = true;
             });
+            const fillInputs = questionCard.querySelectorAll('.fill-blank-input');
+            fillInputs.forEach(inp => inp.disabled = true);
         }
         nextQuestionBtn.classList.remove('hidden');
         correctionOptions.classList.add('flex');
@@ -965,7 +1120,7 @@ function updateFeedbackText() {
     const feedbackElem = document.getElementById('question-feedback-text');
 
     if (currentQuestion && currentQuestion.isBeingCorrected) {
-        if (bodyElem) {
+        if (bodyElem && currentQuestion.type !== 'fill') {
             bodyElem.innerHTML = currentQuestion.description || '';
         }
         let feedbackHtml = '';
@@ -977,6 +1132,20 @@ function updateFeedbackText() {
             feedbackHtml = `
                 <span class="text-green-500 font-semibold mt-2 block">${label1}: ${a1}</span>
                 <span class="text-green-500 font-semibold mt-2 block">${label2}: ${a2}</span>
+            `;
+        } else if (currentQuestion.type === 'fill') {
+            const rawExpected = currentQuestion.answers && currentQuestion.answers.length > 0
+                ? currentQuestion.answers
+                : (currentQuestion.answer || '').split(';').map(s => s.trim());
+            const items = rawExpected.map((ans, idx) => {
+                const clean = ans.replace(/\//g, ' ou ');
+                return `<span class="inline-flex items-center gap-1 bg-white dark:bg-gray-800 border border-green-300 dark:border-green-700 rounded-lg px-2.5 py-1 text-xs font-semibold text-green-700 dark:text-green-300 shadow-sm"><span class="text-gray-400 font-mono text-[11px]">[${idx + 1}]</span>${clean}</span>`;
+            }).join(' ');
+            feedbackHtml = `
+                <div class="mt-3 p-3 rounded-xl bg-green-50/90 dark:bg-green-950/40 border border-green-200 dark:border-green-800/60 text-left">
+                    <span class="text-xs uppercase tracking-wider font-bold text-green-800 dark:text-green-300 block mb-2">Respostas Corretas:</span>
+                    <div class="flex flex-wrap gap-2">${items}</div>
+                </div>
             `;
         } else if (currentQuestion.type === 'anki') {
             feedbackHtml = `<span class="text-indigo-500 font-semibold mt-2 block">Resposta: ${currentQuestion.answer || ''}</span>`;
@@ -992,7 +1161,7 @@ function updateFeedbackText() {
             questionText.innerHTML = `${currentQuestion.description || ''}<br>${feedbackHtml}`;
         }
     } else {
-        if (bodyElem && currentQuestion) {
+        if (bodyElem && currentQuestion && currentQuestion.type !== 'fill') {
             bodyElem.innerHTML = currentQuestion.description || '';
         }
         if (feedbackElem) {
@@ -1092,7 +1261,9 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
             }
         });
 
-        const expected = [questionObj.answer, questionObj.answer2].filter(Boolean).join(' / ');
+        const expected = (questionObj.type === 'fill' && questionObj.answers && questionObj.answers.length > 0)
+            ? questionObj.answers.join(' ; ')
+            : [questionObj.answer, questionObj.answer2].filter(Boolean).join(' / ');
 
         const prompt = `
             Você é um revisor de flashcards acadêmicos rigoroso. 
@@ -1187,8 +1358,10 @@ async function sendChatMessage() {
     const tid = showTyping();
     try {
         if (!currentChatSession) {
-            const correctAnswers = [currentQuestion.answer];
-            if (currentQuestion.answer2) correctAnswers.push(currentQuestion.answer2);
+            const correctAnswers = (currentQuestion.type === 'fill' && currentQuestion.answers && currentQuestion.answers.length > 0)
+                ? [currentQuestion.answers.join(' ; ')]
+                : [currentQuestion.answer];
+            if (currentQuestion.type !== 'fill' && currentQuestion.answer2) correctAnswers.push(currentQuestion.answer2);
 
             const systemPrompt = `
                 Você é um professor tutor ajudando um estudante com um flashcard.
@@ -2122,11 +2295,12 @@ editBtn.addEventListener('click', () => {
     editQuestionInput.value = currentQuestion.description || '';
 
     const t = currentQuestion.type || 'open';
-    if (editAnswer1Group) editAnswer1Group.classList.toggle('hidden', t === 'anki' || t === 'multiple_choice');
+    if (editAnswer1Group) editAnswer1Group.classList.toggle('hidden', t === 'anki' || t === 'multiple_choice' || t === 'fill');
     if (editAnswer2Group) editAnswer2Group.classList.toggle('hidden', t !== 'open_double');
     if (editAnkiAnswerGroup) editAnkiAnswerGroup.classList.toggle('hidden', t !== 'anki');
     if (editMcOptionsGroup) editMcOptionsGroup.classList.toggle('hidden', t !== 'multiple_choice');
     if (editAnsImageGroup) editAnsImageGroup.classList.toggle('hidden', t !== 'anki');
+    if (editFillAnswerGroup) editFillAnswerGroup.classList.toggle('hidden', t !== 'fill');
 
     if (t === 'open') {
         if (editAnswer1Label) editAnswer1Label.textContent = "Resposta Principal";
@@ -2135,6 +2309,10 @@ editBtn.addEventListener('click', () => {
         if (editAnswer1Label) editAnswer1Label.textContent = "Resposta 1";
         editAnswerInput.value = currentQuestion.answer || '';
         editAnswer2Input.value = currentQuestion.answer2 || '';
+    } else if (t === 'fill') {
+        if (editFillAnswerInput) {
+            editFillAnswerInput.value = currentQuestion.answer || (currentQuestion.answers || []).join('; ');
+        }
     } else if (t === 'anki') {
         editAnkiAnswerInput.value = currentQuestion.answer || '';
     } else if (t === 'multiple_choice') {
@@ -2161,6 +2339,10 @@ saveEditBtn.addEventListener('click', () => {
     } else if (t === 'open_double') {
         currentQuestion.answer = editAnswerInput.value;
         currentQuestion.answer2 = editAnswer2Input.value;
+    } else if (t === 'fill') {
+        const val = editFillAnswerInput ? editFillAnswerInput.value.trim() : '';
+        currentQuestion.answer = val;
+        currentQuestion.answers = val.split(';').map(s => s.trim()).filter(Boolean);
     } else if (t === 'anki') {
         currentQuestion.answer = editAnkiAnswerInput.value;
         if (pendingEditAnsImage) currentQuestion.answerImage = pendingEditAnsImage;

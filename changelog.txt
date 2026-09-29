@@ -1,3 +1,50 @@
+CHANGELOG: NEW CARD FORMAT - PREENCHER LACUNAS (FILL IN THE BLANKS / CLOZE)
+Date: 2026-09-29
+
+OVERVIEW:
+Added a 5th flashcard format: "fill" (Preencher Lacunas / Cloze), allowing users to fill in one or multiple spots/blanks marked with "_" in a phrase or reference table (e.g. KDIGO albuminuria cutoffs: < 30, 30-300, > 300). Implemented end-to-end support across gameplay, document conversion, manual card creation, modal editing, analytics, and Gemini AI generation and function calling.
+
+1. GAMEPLAY & INLINE BLANKS UX (pages/game.html, js/game.js, css/style.css)
+- In-line input rendering: Transforms "_" blanks into interactive, auto-resizing text inputs directly within the question body text, protecting LaTeX formulas ($...$, $$...$$).
+- Auto-focus & Navigation: First blank auto-focused; pressing Enter or Tab smoothly moves focus to the subsequent blank; pressing Enter on the last blank submits the card.
+- Intelligent validation:
+  - Exact match and case-insensitive/diacritic-insensitive matching.
+  - Multi-synonym support per blank separated by "/" (e.g. "30 / trinta").
+  - Levenshtein 80% fuzzy similarity threshold for minor typos.
+  - Per-blank visual feedback: Green border/background for correct inputs, red border/background with tooltip for incorrect inputs.
+- Post-submission & AI check: Detailed feedback pill list showing correct answers for each blank numbered [1], [2], etc.
+- In-game card editor modal: Added #edit-fill-answer-group with #edit-fill-answer-input allowing real-time edits to fill card answers.
+
+2. DOCUMENT CONVERSION & PARSING ((fill) TAG)
+- Document parser (convertDocumentToCards and parseTxtToJSONWithPlaceholders in js/generate.js):
+  - Recognizes (fill) tag (and aliases (preencher), (lacuna), (cloze)).
+  - Supports format: (fill) Resp1; Resp2; Resp3: Frase com _ e _ e _ (and reversed Frase com _: Resp1; Resp2).
+  - Supports multi-line continuation for long medical tables and descriptions.
+  - Normalizes type: 'fill', answers: [...], and semicolon-separated answer: '...'.
+- Placeholder fulfillment ([GEMINI]): Instructs Gemini to automatically identify and fill missing answers for blanks in description.
+
+3. CREATOR & EDITOR PANEL (pages/generate.html, js/generate.js)
+- Left sidebar creator:
+  - Added option <option value="fill">Preencher Lacunas ("_")</option> to #creator-card-type.
+  - Added #creator-group-fill with dynamic hint, responsive placeholder, and validation requiring at least one "_" blank in the phrase.
+- Deck card list preview:
+  - Badged with teal "Preencher (N)" indicator.
+  - Displays phrase with highlighted blank tokens [1], [2], etc.
+  - Displays answer badges for each blank numbered sequentially.
+- Inline edit modal:
+  - Added #edit-card-fill-group with #edit-card-fill-answer allowing editing of answers separated by ";".
+
+4. GEMINI AI PROMPTS & FUNCTION CALLING
+- Updated generationSystemInstruction and deck editor systemInstruction with dedicated fill rules and KDIGO albuminuria few-shot examples.
+- Updated Gemini deckTools (adicionar_card, editar_card, adicionar_varios_cards) schema declarations to include "fill" in the type enum and optional answers array parameter.
+- Taught Gemini when to favor fill (tables with cutoff values, multi-step sequences, physiological formulas) over standard open cards.
+
+5. ANALYTICS & CACHING
+- Updated js/stats-tracker.js and js/stats.js to track and display Preencher Lacunas with ✍️ icon and teal theme.
+- Bumped CACHE_NAME in sw.js to flashcards-v3.6 and script cache busters in pages/game.html and pages/generate.html.
+
+--------------------------------------------------------------------------------
+
 CHANGELOG: ANKI CARDS MARKDOWN & LATEX MATH ENGINE + GEMINI PROMPTS
 Date: 2026-09-28
 
