@@ -534,25 +534,75 @@ function animateCardsFromHeaderToDeck(callback) {
 }
 
 // --- CANVAS ANIMATION ---
+let isCanvasLoopRunning = false;
+let canvasAnimationId = null;
+
+function startCanvasLoop() {
+    if (!isCanvasLoopRunning) {
+        isCanvasLoopRunning = true;
+        canvasAnimationId = requestAnimationFrame(animate);
+    }
+}
+
+function clearBalls() {
+    balls = [];
+    if (canvasAnimationId) {
+        cancelAnimationFrame(canvasAnimationId);
+        canvasAnimationId = null;
+    }
+    isCanvasLoopRunning = false;
+    if (ctx && canvas) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+}
+
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    balls.forEach(ball => {
+        if (ball.y + ball.radius > canvas.height) {
+            ball.y = canvas.height - ball.radius;
+        }
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+        ctx.fillStyle = ball.color;
+        ctx.fill();
+        ctx.closePath();
+    });
+    if (balls.some(b => !b.isStatic)) {
+        startCanvasLoop();
+    }
 }
 
 function createBall(isCorrect) {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const radius = Math.random() * 5 + 8;
     const x = Math.random() * (canvas.width - radius * 2) + radius;
-    const y = -radius;
+    const y = prefersReducedMotion ? (canvas.height - radius) : -radius;
     const color = isCorrect ? 'rgba(74, 222, 128, 0.8)' : 'rgba(239, 68, 68, 0.8)';
-    balls.push({ x, y, radius, color, dy: 0, isStatic: false });
+    balls.push({ x, y, radius, color, dy: 0, isStatic: prefersReducedMotion });
+
+    if (prefersReducedMotion) {
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.closePath();
+    } else {
+        startCanvasLoop();
+    }
     return balls.length - 1;
 }
 
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let anyMoving = false;
+
     for (let i = 0; i < balls.length; i++) {
         const ball = balls[i];
         if (!ball.isStatic) {
+            anyMoving = true;
             ball.dy += 0.2;
             ball.y += ball.dy;
             if (ball.y + ball.radius >= canvas.height) {
@@ -588,11 +638,20 @@ function animate() {
         }
     }
     balls.forEach(ball => {
-        ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-        ctx.fillStyle = ball.color; ctx.fill(); ctx.closePath();
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+        ctx.fillStyle = ball.color;
+        ctx.fill();
+        ctx.closePath();
     });
     if (balls.length > 300) balls.shift();
-    requestAnimationFrame(animate);
+
+    if (anyMoving) {
+        canvasAnimationId = requestAnimationFrame(animate);
+    } else {
+        isCanvasLoopRunning = false;
+        canvasAnimationId = null;
+    }
 }
 
 
@@ -636,9 +695,7 @@ function renderFillBlanksQuestion(text) {
     // 5. Replace each spot token with an interactive inline <input>
     const totalSpots = spotIndex;
     for (let i = 0; i < totalSpots; i++) {
-        const isLast = (i === totalSpots - 1);
-        const enterHint = isLast ? 'done' : 'next';
-        const inputHtml = `<input type="text" class="fill-blank-input inline-block text-center font-bold px-2 py-0.5 mx-1 rounded-md border-2 border-dashed border-blue-400 dark:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600 text-sm sm:text-base shadow-sm transition-all align-middle" data-blank-index="${i}" enterkeyhint="${enterHint}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" style="min-width: 60px; max-width: 220px; width: 64px;">`;
+        const inputHtml = `<input type="text" class="fill-blank-input" data-blank-index="${i}" enterkeyhint="${enterHint}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true" data-1p-ignore="true" data-bwignore="true">`;
         renderedHtml = renderedHtml.replace(new RegExp(`%%FILL_SPOT_${i}%%`, 'g'), inputHtml);
     }
 
@@ -862,7 +919,7 @@ function loadQuestion() {
         archiveCurrentSession(true);
         showNotificationPill("Sessão concluída! Verifique suas estatísticas.", "stats.svg");
         setTimeout(() => {
-            balls = [];
+            clearBalls();
             score = 0;
             currentStreak = 0;
             updateStreakUI(false);
@@ -1054,7 +1111,7 @@ function renderDynamicMcOptions(rawOptions) {
 
     options.forEach(optText => {
         const btn = document.createElement('button');
-        btn.className = "mc-option-btn w-full bg-gray-200 dark:bg-gray-600 hover:bg-blue-200 dark:hover:bg-blue-800 text-gray-800 dark:text-gray-200 font-semibold py-3.5 px-4 rounded-xl text-md transition text-left sm:text-center shadow-sm";
+        btn.className = "mc-option-btn w-full";
         btn.textContent = optText;
         btn.onclick = () => handleMCSubmit(btn);
         mcAnswerArea.appendChild(btn);
@@ -1389,10 +1446,10 @@ function showFeedback(isCorrect, element) {
     if (element) {
         const dynamicMcBtns = mcAnswerArea.querySelectorAll('.mc-option-btn');
         dynamicMcBtns.forEach(b => b.disabled = true);
-        element.classList.add(isCorrect ? 'bg-green-500' : 'bg-red-500', 'text-white');
+        element.classList.add(isCorrect ? 'mc-correct' : 'mc-incorrect');
         if (!isCorrect) {
             dynamicMcBtns.forEach(b => {
-                if (normalizeString(b.textContent) === normalizeString(currentQuestion.answer)) b.classList.add('bg-green-500', 'text-white');
+                if (normalizeString(b.textContent) === normalizeString(currentQuestion.answer)) b.classList.add('mc-correct');
             });
         }
     }
@@ -2225,7 +2282,7 @@ if (restartGameBtn) {
         }
 
         animateCardsFromHeaderToDeck(() => {
-            balls = [];
+            clearBalls();
             score = 0;
             currentStreak = 0;
             updateStreakUI(false);
@@ -3067,7 +3124,7 @@ function switchActiveMode(newMode) {
     deckTitle.textContent = data.deckTitle || (newMode === 'notebook' ? "Caderno" : (newMode === 'exam' ? "Semana de Provas" : "Flashcards"));
     document.title = data.deckTitle ? `${data.deckTitle} | Flashcards` : "Estudando Flashcards";
     
-    balls = [];
+    clearBalls();
     scoreDisplay.textContent = score;
     updateScoreDisplay();
     isFirstQuestion = true;
