@@ -695,6 +695,7 @@ function renderFillBlanksQuestion(text) {
     // 5. Replace each spot token with an interactive inline <input>
     const totalSpots = spotIndex;
     for (let i = 0; i < totalSpots; i++) {
+        const enterHint = i < totalSpots - 1 ? 'next' : 'done';
         const inputHtml = `<input type="text" class="fill-blank-input" data-blank-index="${i}" enterkeyhint="${enterHint}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true" data-1p-ignore="true" data-bwignore="true">`;
         renderedHtml = renderedHtml.replace(new RegExp(`%%FILL_SPOT_${i}%%`, 'g'), inputHtml);
     }

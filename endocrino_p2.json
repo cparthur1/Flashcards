@@ -1,95 +1,93 @@
 [
     {
         "type": "open_double",
-        "description": "Qual é a origem anatômica dos quilomícrons e qual o seu principal destino metabólico após a hidrólise pela lipase lipoproteica?",
+        "description": "Qual é a origem e o principal destino/função dos quilomícrons no metabolismo lipídico?",
         "answer": "Intestino delgado",
-        "answer2": "Fígado",
+        "answer2": "Fígado e tecidos periféricos",
         "placeholder1": "Origem",
-        "placeholder2": "Destino dos remanescentes"
+        "placeholder2": "Destino principal"
     },
     {
         "type": "open_double",
-        "description": "Em relação à lipoproteína de densidade muito baixa (VLDL), qual o seu sítio primário de síntese e em qual partícula ela se transforma após sucessiva perda de triglicerídeos?",
+        "description": "Em relação à lipoproteína de densidade muito baixa (VLDL), qual é seu sítio de síntese e em qual lipoproteína intermediária se converte após ação da lipase lipoproteica (LPL)?",
         "answer": "Fígado",
         "answer2": "IDL",
-        "placeholder1": "Sítio de síntese",
-        "placeholder2": "Partícula resultante"
+        "placeholder1": "Origem",
+        "placeholder2": "Forma intermediária"
     },
     {
         "type": "open_double",
-        "description": "Na cascata de lipoproteínas endógenas, de qual partícula precursora a IDL é diretamente derivada e em qual partícula aterogênica ela é subsequentemente convertida pela lipase hepática?",
-        "answer": "VLDL",
-        "answer2": "LDL",
-        "placeholder1": "Precursora",
-        "placeholder2": "Produto final"
+        "description": "Qual é o principal componente lipídico transportado pela LDL e qual receptor celular medeia sua captação nos tecidos periféricos e fígado?",
+        "answer": "Colesterol",
+        "answer2": "Receptor de LDL (LDLR)",
+        "placeholder1": "Componente principal",
+        "placeholder2": "Receptor"
     },
     {
         "type": "open_double",
-        "description": "Qual a principal apolipoproteína estrutural presente na partícula de LDL e qual tecido é responsável pela depuração de cerca de 70% dessa lipoproteína circulante?",
+        "description": "Qual é a principal apolipoproteína associada às partículas aterogênicas (como a LDL) e qual é a principal associada à HDL no transporte reverso do colesterol?",
         "answer": "ApoB-100",
-        "answer2": "Fígado",
-        "placeholder1": "Apolipoproteína",
-        "placeholder2": "Principal sítio de depuração"
+        "answer2": "ApoA-I",
+        "placeholder1": "Partícula aterogênica (LDL)",
+        "placeholder2": "Transporte reverso (HDL)"
     },
     {
         "type": "open_double",
-        "description": "Onde ocorre a montagem inicial da HDL nascente e qual via funcional antiaterogênica fundamental ela medeia na circulação?",
-        "answer": "Fígado e intestino",
-        "answer2": "Transporte reverso do colesterol",
-        "placeholder1": "Origem das partículas nascentes",
-        "placeholder2": "Principal função vascular"
+        "description": "Quais são as idades recomendadas pelas diretrizes do ACP e nacionais para início do rastreamento lipídico de rotina em homens e mulheres assintomáticos sem fatores de risco?",
+        "answer": "35 anos",
+        "answer2": "45 anos",
+        "placeholder1": "Homens",
+        "placeholder2": "Mulheres"
     },
     {
-        "type": "open_double",
-        "description": "Quais são os componentes químicos básicos de um triglicerídeo e qual é o principal sítio de armazenamento energético corporal dessas moléculas?",
-        "answer": "Glicerol e 3 ácidos graxos",
-        "answer2": "Tecido adiposo",
-        "placeholder1": "Composição",
-        "placeholder2": "Local de estocagem"
+        "type": "multiple_choice",
+        "description": "Qual manifestação cutânea é característica da hipercolesterolemia familiar em áreas extensoras tendíneas (como o tendão de Aquiles e dorso das mãos)?",
+        "answer": "Xantoma tendíneo",
+        "options": [
+            "Xantoma tendíneo",
+            "Xantoma eruptivo",
+            "Acantose nigricans",
+            "Necrobiese lipoídica"
+        ]
+    },
+    {
+        "type": "multiple_choice",
+        "description": "Em qual situação lipídica observa-se tipicamente o surgimento de xantomas eruptivos e lipemia retinalis no exame clínico e de fundo de olho?",
+        "answer": "Hipertrigliceridemia grave (triglicerídeos > 500 a 1.000 mg/dL)",
+        "options": [
+            "Hipertrigliceridemia grave (triglicerídeos > 500 a 1.000 mg/dL)",
+            "Hipercolesterolemia pura com LDL > 190 mg/dL",
+            "Hipoalfalipoproteinemia com HDL < 20 mg/dL",
+            "Aumento isolado de Lipoproteína(a) > 50 mg/dL"
+        ]
+    },
+    {
+        "type": "anki",
+        "description": "O que é a Lipoproteína(a) [Lp(a)], quais seus mecanismos fisiopatológicos e quais são os valores de corte de risco?",
+        "answer": "A **Lipoproteína(a)** é uma partícula semelhante à LDL unida covalentemente à **apolipoproteína(a)** por ponte dissulfeto.\n\n### Fisiopatologia:\n- **Aterogênica:** penetra na camada íntima arterial e é oxidada com facilidade.\n- **Pró-trombótica / Antifibrinolítica:** apresenta alta homologia estrutural com o plasminogênio, competindo por seus sítios de ligação e inibindo a fibrinólise local.\n- **Pró-inflamatória e Calcificante:** transporta fosfolípides oxidados, acelerando a **estenose valvar aórtica calcificada** e aterogênese precoce.\n\n### Valores de Referência:\n- Seus níveis são determinados geneticamente (90%) e estáveis pela vida (dosar ao menos 1 vez).\n- **Risco aumentado:** $\\ge 50\\text{ mg/dL}$ ou $\\ge 125\\text{ nmol/L}$.\n- **Alto risco isolado:** $> 180\\text{ mg/dL}$ ou $> 390\\text{ nmol/L}$."
+    },
+    {
+        "type": "anki",
+        "description": "Como deve ser interpretado o Escore de Cálcio Coronário (CAC) na estratificação de risco cardiovascular?",
+        "answer": "O **Escore de Cálcio Coronariano (CAC)** por Tomografia Computadorizada quantifica a carga aterosclerótica calcificada nas coronárias:\n\n- **CAC = 0:** excelente prognóstico, risco cardiovascular muito baixo, permitindo postergar o início de estatinas em pacientes de risco intermediário limítrofe.\n- **CAC > 100 unidades Agatston** ou **> percentil 75** para idade e sexo: reclassifica o paciente para **Alto Risco Cardiovascular**.\n- **CAC > 300 unidades Agatston:** define categoria de **Muito Alto Risco Cardiovascular**, demandando controle agressivo do LDL-c."
     },
     {
         "type": "fill",
-        "description": "Segundo as diretrizes de rastreamento do perfil lipídico em adultos saudáveis, o NCEP recomenda início aos _ anos de idade, enquanto o ACP recomenda aos _ anos em homens e aos _ anos em mulheres.",
+        "description": "Quais são as faixas de risco em 10 anos pelo escore PREVENT e suas categorias clínicas correspondentes?\n\n• Baixo risco: Escore PREVENT < _ % em 10 anos, sem comorbidades agravantes.\n• Risco intermediário: Escore PREVENT entre _ % e _ % em 10 anos.\n• Alto risco: Escore PREVENT > _ % em 10 anos, ou LDL-c $\\ge$ _ mg/dL, ou aterosclerose subclínica (< 50% de obstrução), ou DM com fator de risco adicional.\n• Muito alto risco: Doença aterosclerótica clínica manifesta (IAM, AVC, DAOP) ou estenose arterial $\\ge$ _ %.",
+        "answer": "5; 5; 20; 20; 190; 50",
         "answers": [
+            "5",
+            "5",
             "20",
-            "35",
-            "45"
-        ],
-        "answer": "20; 35; 45",
-        "explanation": "NCEP: rastreamento a partir dos 20 anos para todos. ACP: 35 anos para homens e 45 anos para mulheres de baixo risco."
-    },
-    {
-        "type": "anki",
-        "description": "Como são classificadas as dislipidemias quanto à etiologia (primárias vs. secundárias)? Cite as principais causas secundárias.",
-        "answer": "### Classificação Etiológica das Dislipidemias\n\n1. **Causas Primárias (Genéticas):**\n   - **Poligênicas:** Interação de múltiplos polimorfismos genéticos com o estilo de vida (maioria dos casos).\n   - **Monogênicas:** Mutações de efeito maior (ex.: *Hipercolesterolemia Familiar - HF*, com mutações no gene do LDLR, ApoB ou PCSK9).\n\n2. **Causas Secundárias:**\n   - **Estilo de vida e comorbidades:** Obesidade, DM2, hipotireoidismo (reduz expressão de LDLR), síndrome nefrótica (aumento de síntese hepática e perda de LPL), hepatopatia crônica, colestase, doença renal crônica e etilismo (aumento expressivo de triglicerídeos).\n   - **Medicamentos:** Betabloqueadores, diuréticos tiazídicos, corticosteroides, isotretinoína, ciclosporina, inibidores de protease (TARV) e esteroides anabolizantes."
-    },
-    {
-        "type": "anki",
-        "description": "Quais são as principais manifestações estigmáticas do exame físico nas dislipidemias graves e quais frações lipídicas estão tipicamente associadas a cada uma?",
-        "answer": "### Estigmas Físicos das Dislipidemias\n\n- **Xantomas Tendíneos:** Depósitos nodulares de colesterol, comumente no tendão de Aquiles e extensores das mãos. Patognomônicos de **hipercolesterolemia importante / Hipercolesterolemia Familiar** (elevação grave de LDL-c).\n- **Xantelasmas:** Placas amareladas indolores nas pálpebras superiores e inferiores (depósito lipídico periocular; pode ocorrer por LDL elevado ou níveis normais).\n- **Arco Corneano (Gerontoxon):** Depósito esbranquiçado circular na periferia da córnea; altamente sugestivo de HF quando presente em indivíduos < 45 anos.\n- **Xantomas Eruptivos:** Pápulas eritematosas com centro amarelado em tronco, dorso e nádegas. Surgem em hipertrigliceridemias graves ($TG > 1.000\\text{ mg/dL}$).\n- **Lipemia Retinalis:** Visualização de vasos retinianos esbranquiçados na fundoscopia quando $TG > 2.000\\text{ mg/dL}$."
+            "20",
+            "190",
+            "50"
+        ]
     },
     {
         "type": "fill",
-        "description": "A Lipoproteína(a) [Lp(a)] é uma partícula aterogênica geneticamente determinada com dosagem recomendada ao menos uma vez na vida. Níveis séricos > _ mg/dL (ou > _ nmol/L) configuram fator de risco cardiovascular independente e agravante de estenose valvar aórtica calcífica.",
-        "answers": [
-            "50",
-            "125"
-        ],
-        "answer": "50; 125",
-        "explanation": "Lp(a): partícula tipo LDL ligada covalentemente à apolipoproteína(a). Ponto de corte de risco: > 50 mg/dL ou > 125 nmol/L."
-    },
-    {
-        "type": "fill",
-        "description": "Pela escala de Agatston, um Escore de Cálcio Coronariano (CAC) > _ reclassifica o paciente assintomático diretamente para a categoria de muito alto risco cardiovascular.",
-        "answers": [
-            "300"
-        ],
-        "answer": "300",
-        "explanation": "CAC > 300 (Agatston) indica aterosclerose coronariana avançada e reclassifica para muito alto risco cardiovascular."
-    },
-    {
-        "type": "fill",
-        "description": "Metas terapêuticas de LDL-c (mg/dL) e Não-HDL-c recomendadas conforme a categoria de Risco Cardiovascular em 10 anos:\n- Baixo Risco: LDL-c < _ (Não-HDL < _)\n- Risco Intermediário: LDL-c < _ (Não-HDL < _)\n- Alto Risco: LDL-c < _ (Não-HDL < _)\n- Muito Alto Risco: LDL-c < _ (Não-HDL < _)\n- Risco Extremo: LDL-c < _ (Não-HDL < _)",
+        "description": "Complete as metas terapêuticas de LDL-c e Não-HDL-c preconizadas pela Diretriz Brasileira de Dislipidemias conforme o risco cardiovascular:\n\n• Baixo Risco: LDL-c < _ mg/dL | Não-HDL-c < _ mg/dL\n• Risco Intermediário: LDL-c < _ mg/dL | Não-HDL-c < _ mg/dL\n• Alto Risco: LDL-c < _ mg/dL | Não-HDL-c < _ mg/dL\n• Muito Alto Risco: LDL-c < _ mg/dL | Não-HDL-c < _ mg/dL\n• Risco Extremo: LDL-c < _ mg/dL | Não-HDL-c < _ mg/dL",
+        "answer": "115; 145; 100; 130; 70; 100; 50; 80; 40; 70",
         "answers": [
             "115",
             "145",
@@ -101,101 +99,97 @@
             "80",
             "40",
             "70"
-        ],
-        "answer": "115; 145; 100; 130; 70; 100; 50; 80; 40; 70",
-        "explanation": "Metas de LDL-c / Não-HDL-c:\n- Baixo Risco: < 115 / < 145 mg/dL\n- Intermediário: < 100 / < 130 mg/dL\n- Alto: < 70 / < 100 mg/dL\n- Muito Alto: < 50 / < 80 mg/dL\n- Extremo: < 40 / < 70 mg/dL\n(Regra prática: meta Não-HDL = meta LDL + 30 mg/dL)."
+        ]
+    },
+    {
+        "type": "open",
+        "description": "Qual é a enzima limitante da síntese hepática de colesterol que é inibida competitivamente pelas estatinas?",
+        "answer": "HMG-CoA Redutase"
+    },
+    {
+        "type": "open_double",
+        "description": "Cite os dois esquemas posológicos de estatinas isoladas capazes de promover redução do LDL-c $\\ge 50\\%$ (alta intensidade).",
+        "answer": "Atorvastatina 40 a 80 mg",
+        "answer2": "Rosuvastatina 20 a 40 mg",
+        "placeholder1": "Atorvastatina",
+        "placeholder2": "Rosuvastatina"
+    },
+    {
+        "type": "open",
+        "description": "Qual transportador proteico localizado na borda em escova enterocítica é o alvo de bloqueio farmacológico da ezetimiba?",
+        "answer": "NPC1L1"
+    },
+    {
+        "type": "open_double",
+        "description": "Qual é a enzima inibida pelo ácido bempedoico na síntese do colesterol e qual é seu efeito adverso metabólico mais comum?",
+        "answer": "ATP-citrato liase",
+        "answer2": "Hiperuricemia",
+        "placeholder1": "Enzima alvo",
+        "placeholder2": "Efeito adverso metabólico"
+    },
+    {
+        "type": "anki",
+        "description": "Quais são as drogas inibidoras da PCSK9, seu mecanismo de ação molecular e impacto no LDL?",
+        "answer": "### Inibidores da PCSK9\n\n**Mecanismo:**\nA PCSK9 é uma protease que se liga ao receptor de LDL (LDLR) na membrana do hepatócito, direcionando-o para a degradação lisossômica. A sua inibição impede a degradação do LDLR, permitindo sua reciclagem para a membrana celular, o que aumenta expressivamente a depuração do LDL plasmático em até **$60\\%$**.\n\n**Representantes:**\n- **Anticorpos monoclonais:** Evolocumabe e Alirocumabe (injetáveis subcutâneos quinzenais ou mensais).\n- **siRNA (RNA pequeno de interferência):** Inclisirana (bloqueia a síntese hepática da proteína PCSK9; posologia no dia 0, 3 meses e depois a cada 6 meses).\n\n**Indicação:** Pacientes de alto/muito alto risco que persistem fora da meta lipídica mesmo com dose máxima tolerada de estatina combinada a ezetimiba."
     },
     {
         "type": "multiple_choice",
-        "description": "Qual das seguintes orientações dietéticas possui maior impacto sobre a redução direta dos níveis séricos de triglicerídeos?",
-        "answer": "Cessação da ingestão de álcool e restrição drástica de açúcares simples",
+        "description": "Qual é a principal indicação formal para o início imediato de fibratos em um paciente dislipidêmico?",
+        "answer": "Triglicerídeos séricos $\\ge 500\\text{ mg/dL}$ para prevenção de pancreatite aguda",
         "options": [
-            "Cessação da ingestão de álcool e restrição drástica de açúcares simples",
-            "Redução rigorosa do colesterol alimentar presente nas gemas de ovos",
-            "Aumento isolado de fibras solúveis na proporção de 40 g ao dia",
-            "Substituição de ácidos graxos insaturados por carboidratos complexos"
+            "Triglicerídeos séricos $\\ge 500\\text{ mg/dL}$ para prevenção de pancreatite aguda",
+            "LDL-c persistentemente elevado acima de 190 mg/dL",
+            "Redução de risco cardiovascular em pacientes com triglicerídeos entre 150 e 400 mg/dL",
+            "Elevação primária isolada de HDL-c abaixo de 30 mg/dL"
         ]
     },
     {
         "type": "anki",
-        "description": "Qual o mecanismo de ação das estatinas, sua classificação de intensidade posológica e o impacto cardiovascular?",
-        "answer": "### Estatinas\n\n- **Mecanismo de Ação:** Inibem competitivamente a enzima **HMG-CoA redutase** (etapa limitante da síntese intracelular de colesterol no hepatócito). A queda do colesterol livre intracelular induz *upregulation* da expressão de **receptores de LDL (LDLR)** na membrana hepatocitária, aumentando o clearance de LDL-c circulante.\n- **Potências Farmacológicas:**\n  - **Alta Intensidade (redução de LDL $\\ge 50\\%$):**\n    - Atorvastatina $40 - 80\\text{ mg/dia}$\n    - Rosuvastatina $20 - 40\\text{ mg/dia}$\n  - **Moderada Intensidade (redução de LDL $30 - 50\\%$):**\n    - Atorvastatina $10 - 20\\text{ mg/dia}$\n    - Rosuvastatina $5 - 10\\text{ mg/dia}$\n    - Sinvastatina $20 - 40\\text{ mg/dia}$\n    - Pravastatina $20 - 80\\text{ mg/dia}$\n  - **Baixa Intensidade (redução de LDL $< 30\\%$):**\n    - Sinvastatina $10\\text{ mg/dia}$\n    - Pravastatina $10 - 20\\text{ mg/dia}$\n- **Efeito:** Redução comprovada e linear de eventos cardiovasculares maiores (MACE) e mortalidade."
+        "description": "Qual é a conduta diante de alterações de enzimas musculares (CK) e hepáticas (TGO/TGP) secundárias ao uso de estatinas?",
+        "answer": "### Manejo da Toxicidade por Estatinas\n\n**Toxicidade Muscular (CK):**\n- **Assintomático com elevação $< 3\\times$ o LSN:** manter a medicação sem alteração posológica.\n- **Sintomas intoleráveis (mialgia intensa, fraqueza) ou elevação de CK $> 7\\times$ o LSN:** suspender a estatina de imediato por **4 a 6 semanas**. Após normalização da CK e dos sintomas, reiniciar com estatina diferente em menor dose ou posologia em dias alternados.\n\n**Toxicidade Hepática (Transaminases):**\n- Elevações leves são comuns e transitórias.\n- Se **TGO ou TGP $> 3\\times$ o LSN** de forma persistente: suspender a medicação e investigar hepatopatias concomitantes."
     },
     {
         "type": "open",
-        "description": "Qual é a proteína-alvo inibida na borda em escova do enterócito pelo fármaco hipolipemiante ezetimiba?",
-        "answer": "NPC1L1"
+        "description": "Qual classe de fibratos é formalmente contraindicada em associação com estatinas devido ao alto risco de precipitar rabdomiólise?",
+        "answer": "Genfibrozila"
+    },
+    {
+        "type": "open",
+        "description": "Como é definido fisiopatologicamente o Diabetes Mellitus?",
+        "answer": "Distúrbio metabólico hiperglicêmico"
     },
     {
         "type": "anki",
-        "description": "Qual é o mecanismo de ação, sítio de ativação e principais reações adversas do ácido bempedoico?",
-        "answer": "### Ácido Bempedoico\n\n- **Mecanismo:** Pró-fármaco ativado pela enzima ACSVL1 presente quase exclusivamente no **fígado** (ausente no músculo esquelético, o que minimiza queixas musculares). Inibe a **ATP-citrato liase (ACL)**, enzima situada a montante da HMG-CoA redutase na cascata de síntese de colesterol.\n- **Efeito:** Reduz a síntese hepática de colesterol, aumentando os receptores de LDL e reduzindo o LDL-c em $15 - 25\\%$.\n- **Indicação:** Pacientes com intolerância muscular comprovada a estatinas ou terapia adjuvante fora da meta.\n- **Efeitos Colaterais Relevantes:** Compete com o ácido úrico pelos transportadores renais OAT2, podendo levar a **hiperuricemia e crises de gota**, além de discreta elevação de transaminases."
-    },
-    {
-        "type": "open",
-        "description": "Qual classe de fármacos hipolipemiantes injetáveis inclui o evolocumabe, o alirocumabe e o RNA de interferência inclisirana?",
-        "answer": "Inibidores de PCSK9"
-    },
-    {
-        "type": "fill",
-        "description": "Abordagem da hipertrigliceridemia conforme os valores de corte laboratoriais:\n- Triglicerídeos ≥ _ mg/dL: o principal risco é de _ aguda, sendo a conduta prioritária o tratamento com _ (agonistas de PPAR-alfa).\n- Triglicerídeos entre _ e _ mg/dL: o risco primário é aterogênese cardiovascular, sendo a droga de 1ª escolha a _.",
-        "answers": [
-            "500",
-            "pancreatite",
-            "fibratos / fibrato",
-            "150",
-            "499",
-            "estatina / estatinas"
-        ],
-        "answer": "500; pancreatite; fibratos; 150; 499; estatina",
-        "explanation": "TG ≥ 500 mg/dL: risco de pancreatite aguda necro-hemorrágica; tratamento imediato: fibratos. TG 150 a 499 mg/dL: risco cardiovascular; droga de 1ª escolha: estatinas."
-    },
-    {
-        "type": "fill",
-        "description": "Durante a terapia com estatinas, a elevação assintomática de creatinoquinase (CK) superior a _ vezes o limite superior da normalidade (LSN) justifica a suspensão imediata da medicação.",
-        "answers": [
-            "7"
-        ],
-        "answer": "7",
-        "explanation": "CK > 7x LSN ou sintomas musculares intoleráveis exigem suspensão temporária da estatina por 4 a 6 semanas."
-    },
-    {
-        "type": "open",
-        "description": "Qual é o principal transportador de glicose expresso nas membranas de miócitos e adipócitos cuja translocação depende ativamente do estímulo da insulina?",
-        "answer": "GLUT-4"
+        "description": "Explique detalhadamente o mecanismo de secreção de insulina estimulado pela glicose na célula beta pancreática.",
+        "answer": "### Cascata Eletromecânica de Liberação da Insulina\n\n1. **Entrada de Glicose:** a glicose entra na célula beta através do transportador independente de insulina **GLUT-2**.\n2. **Fosforilação:** a enzima **glicoquinase** converte glicose em glicose-6-fosfato (atuando como sensor de glicose).\n3. **Geração de ATP:** a glicólise e o ciclo de Krebs mitocondrial elevam a relação intracelular $\\text{ATP}/\\text{ADP}$.\n4. **Fechamento do Canal de $K^+$:** o aumento de ATP fecha os canais de potássio sensíveis a ATP (**SUR1 / Kir6.2**).\n5. **Despolarização da Membrana:** com o bloqueio da saída de potássio, a membrana plasmática despolariza.\n6. **Abertura dos Canais de $Ca^{2+}$:** ativam-se os canais de cálcio voltagem-dependentes, gerando influxo maciço de $Ca^{2+}$.\n7. **Exocitose:** a elevação do cálcio intracelular induz a fusão dos grânulos secretores com a membrana e a liberação de insulina e peptídeo C na circulação portal."
     },
     {
         "type": "anki",
-        "description": "Descreva as etapas biofísicas e moleculares da secreção de insulina pelas células beta pancreáticas em resposta ao aumento da glicemia.",
-        "answer": "### Acoplamento Estímulo-Secreção da Insulina\n\n1. **Entrada de Glicose:** A glicose extracelular entra na célula beta via transportador independente de insulina (**GLUT-2**).\n2. **Fosforilação e Glicólise:** A enzima **glucoquinase** atua como sensor metabólico, fosforilando a glicose em glicose-6-fosfato, que segue para glicólise e ciclo de Krebs mitocondrial.\n3. **Geração de ATP:** Ocorre elevação da razão intracelular $[\\text{ATP}]/[\\text{ADP}]$.\n4. **Fechamento de Canais de $K_{ATP}$:** O aumento de ATP liga-se à subunidade SUR1 do canal de potássio sensível a ATP, provocando seu **fechamento**.\n5. **Despolarização da Membrana:** O bloqueio da saída de $K^+$ despolariza a membrana plasmática celular.\n6. **Abertura de Canais de $Ca^{2+}$:** A despolarização ativa os canais de cálcio voltagem-dependentes, gerando influxo maciço de cálcio ionizado.\n7. **Exocitose:** O aumento do cálcio citosólico desencadeia a fusão dos grânulos secretórios com a membrana plasmática e a liberação de **insulina e peptídeo C** na circulação portal."
+        "description": "Quais são as principais ações metabólicas da insulina nos carboidratos, lipídeos e proteínas?",
+        "answer": "### Ações Metabólicas da Insulina (Hormônio Anabólico Central)\n\n- **Metabolismo de Carboidratos:** estimula a captação de glicose mediada por **GLUT-4** no músculo esquelético e tecido adiposo; estimula a **glicogenogênese** hepática/muscular; inibe a **glicogenólise** e a **gliconeogênese** no fígado.\n- **Metabolismo Lipídico:** induz a **lipogênese** pela conversão de acetil-CoA em malonil-CoA; ativa a **lipase lipoproteica (LPL)** nos capilares adiposos; inibe a **lipase hormônio-sensível (LHS)**, bloqueando a lipólise e suprimindo a formação hepática de corpos cetônicos.\n- **Metabolismo Proteico:** estimula o transporte de aminoácidos celulares e a **síntese proteica**; inibe a proteólise."
     },
     {
         "type": "open_double",
-        "description": "Quais são as duas principais incretinas intestinais e quais células do trato gastrointestinal as produzem, respectivamente?",
-        "answer": "GLP-1 (células L)",
-        "answer2": "GIP (células K)",
+        "description": "Quais são os dois principais hormônios incretínicos intestinais e quais células do trato digestivo os sintetizam?",
+        "answer": "GLP-1 (Células L)",
+        "answer2": "GIP (Células K)",
         "placeholder1": "Íleo e cólon",
         "placeholder2": "Duodeno e jejuno"
     },
     {
-        "type": "multiple_choice",
-        "description": "Qual hormônio contrarregulador da insulina age em minutos promovendo glicogenólise hepática precoce através da ativação de receptores beta-2 e alfa-1 adrenérgicos?",
-        "answer": "Adrenalina (Epinefrina)",
-        "options": [
-            "Adrenalina (Epinefrina)",
-            "Cortisol",
-            "Hormônio do Crescimento (GH)",
-            "Tiroxina (T4)"
-        ]
+        "type": "anki",
+        "description": "Quais são os 4 principais hormônios contrarreguladores da insulina e como agem sobre a glicemia?",
+        "answer": "### Hormônios Contrarreguladores (Hiperglicemiantes)\n\n1. **Glucagon (células $\\alpha$ pancreáticas):** ação hiperglicemiante rápida; estimula a glicogenólise e a gliconeogênese hepática.\n2. **Epinefrina / Adrenalina (medula adrenal):** estimula a glicogenólise hepática e muscular, estimula a lipólise e inibe diretamente a secreção de insulina pela célula beta.\n3. **Cortisol (córtex adrenal):** ação hiperglicemiante tardia; aumenta a resistência periférica à insulina, mobiliza aminoácidos da proteólise para a gliconeogênese e estimula a lipólise.\n4. **Hormônio do Crescimento (GH):** ação hiperglicemiante tardia; reduz a captação periférica de glicose no músculo e induz lipólise tecidual."
     },
     {
         "type": "anki",
-        "description": "Quais são os componentes do 'Octeto Ominoso' de DeFronzo na fisiopatologia do Diabetes Mellitus tipo 2?",
-        "answer": "### O Octeto Ominoso de Ralph DeFronzo (DM2)\n\n1. **Célula beta pancreática:** Deficiência progressiva de secreção de insulina.\n2. **Célula alfa pancreática:** Hipersecreção de glucagon (hiperglucagonemia inapropriada).\n3. **Fígado:** Aumento da produção hepática de glicose (gliconeogênese desregulada por resistência à insulina).\n4. **Músculo esquelético:** Redução da captação periférica de glicose (resistência insulínica via defeito de translocação do GLUT4).\n5. **Tecido adiposo:** Lipólise acelerada, liberando ácidos graxos livres tóxicos circulantes (lipotoxicidade).\n6. **Trato Gastrointestinal:** Diminuição e falha do efeito incretínico (déficit de ação/secreção de GLP-1 e GIP).\n7. **Rim:** Aumento patológico da reabsorção tubular de glicose via upregulation de SGLT-2.\n8. **Cérebro (SNC):** Disfunção de neurotransmissores hipotalâmicos, gerando resistência aos sinais de saciedade e aumento do apetite."
+        "description": "<p>Quais são os componentes do <mark class=\"card-hl card-hl-purple\">Octeto Ominoso</mark> de DeFronzo na fisiopatologia do DM2?</p>\n",
+        "answer": "<h3>Octeto Ominoso de DeFronzo</h3>\n<ol>\n<li><strong>Pâncreas endócrino (célula <span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>β</mi></mrow><annotation encoding=\"application/x-tex\">\\beta</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8889em;vertical-align:-0.1944em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.05278em;\"></span></span></span></span></strong><mark class=\"card-hl card-hl-purple\"><strong><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"mord mathnormal\" style=\"margin-right:0.05278em;\">β</span></span></span></span>):</strong> diminuição</mark> progressiva da secreção de <mark class=\"card-hl card-hl-purple\">insulina</mark>.</li>\n<li><strong>Pâncreas endócrino (célula</strong><mark class=\"card-hl card-hl-purple\"><strong> <span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>α</mi></mrow><annotation encoding=\"application/x-tex\">\\alpha</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.4306em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.0037em;\">α</span></span></span></span>):</strong> hipersecreção de glucagon</mark> (hiperglucagonemia).</li>\n<li><strong>Fígado:</strong> aumento da produção hepática de glicose (<mark class=\"card-hl card-hl-purple\">neoglicogênese</mark> desregulada).</li>\n<li><strong>Músculo esquelético:</strong> <mark class=\"card-hl card-hl-purple\">diminuição da captação periférica</mark> de glicose mediada por insulina.</li>\n<li><strong>Tecido adiposo:</strong> <mark class=\"card-hl card-hl-purple\">aceleração da lipólise</mark> com liberação maciça de ácidos graxos livres.</li>\n<li><strong>Trato Gastrointestinal:</strong> atenuação do efeito incretínico (secreção ou ação <mark class=\"card-hl card-hl-purple\">reduzida de GLP-1/GIP</mark>).</li>\n<li><strong>Rins:</strong> aumento da <mark class=\"card-hl card-hl-purple\">reabsorção tubular renal de glicose</mark> via cotransportadores SGLT-2.</li>\n<li><strong>Cérebro (SNC):</strong> <mark class=\"card-hl card-hl-purple\">resistência insulínica hipotalâmica</mark> com disfunção de neurotransmissores e desregulação da <mark class=\"card-hl card-hl-purple\">saciedade</mark>.</li>\n</ol>\n"
     },
     {
         "type": "fill",
-        "description": "Critérios diagnósticos laboratoriais para DM e Pré-Diabetes em adultos assintomáticos (SBD / ADA):\n- Glicemia de Jejum: Normal < _ mg/dL; Pré-diabetes _-_ mg/dL; DM ≥ _ mg/dL\n- TTGO 75g (2h): Normal < _ mg/dL; Pré-diabetes _-_ mg/dL; DM ≥ _ mg/dL\n- Hemoglobina Glicada (HbA1c): Normal < _%; Pré-diabetes _-_%; DM ≥ _%\n- Glicemia casual com sintomas clássicos (4Ps): ≥ _ mg/dL fecha diagnóstico de imediato.",
+        "description": "Quais são os pontos de corte diagnósticos de normalidade, pré-diabetes e diabetes para Glicemia de Jejum, TTGO (2 horas) e Hemoglobina Glicada (HbA1c)?\n\n• Glicemia de Jejum (mg/dL):\n  - Normal: < _ mg/dL\n  - Pré-diabetes: _ a _ mg/dL\n  - Diabetes Mellitus: $\\ge$ _ mg/dL\n\n• TTGO 75g após 2 horas (mg/dL):\n  - Normal: < _ mg/dL\n  - Pré-diabetes: _ a _ mg/dL\n  - Diabetes Mellitus: $\\ge$ _ mg/dL\n\n• Hemoglobina Glicada - HbA1c (%):\n  - Normal: < _ %\n  - Pré-diabetes: _ a _ %\n  - Diabetes Mellitus: $\\ge$ _ %",
+        "answer": "100; 100; 125; 126; 140; 140; 199; 200; 5,7; 5,7; 6,4; 6,5",
         "answers": [
             "100",
             "100",
@@ -205,1040 +199,682 @@
             "140",
             "199",
             "200",
-            "5,7 / 5.7",
-            "5,7 / 5.7",
-            "6,4 / 6.4",
-            "6,5 / 6.5",
-            "200"
-        ],
-        "answer": "100; 100; 125; 126; 140; 140; 199; 200; 5,7; 5,7; 6,4; 6,5; 200",
-        "explanation": "Critérios SBD/ADA:\n- Jejum: Normal < 100; Pré-DM 100-125; DM ≥ 126 mg/dL\n- TTGO 2h: Normal < 140; Pré-DM 140-199; DM ≥ 200 mg/dL\n- HbA1c: Normal < 5,7%; Pré-DM 5,7-6,4%; DM ≥ 6,5%\n- Glicemia casual ≥ 200 mg/dL com sintomas clássicos dispensa repetição."
-    },
-    {
-        "type": "open_double",
-        "description": "Cite, respectivamente, uma condição clínica que provoca falsa elevação da HbA1c e outra que provoca falsa redução por alteração do turnover de hemácias.",
-        "answer": "Anemia ferropriva",
-        "answer2": "Anemia hemolítica",
-        "placeholder1": "Falsamente alta",
-        "placeholder2": "Falsamente baixa"
-    },
-    {
-        "type": "anki",
-        "description": "Quais são os cinco principais autoanticorpos marcadores de autoimunidade contra as células beta no DM1 e suas particularidades?",
-        "answer": "### Autoanticorpos no DM1\n\n1. **Anti-Ilhota (ICA):** Detectado por imunofluorescência indireta; é o mais prevalente ao diagnóstico ($75-85\\%$), mas seus títulos declinam rapidamente após a abertura clínica.\n2. **Anti-Insulina (IAA):** Primeiro marcador a surgir na infância; mais prevalente em crianças $< 10\\text{ anos}$ ($50-70\\%$). Não se correlaciona com anticorpos funcionais induzidos por insulina exógena.\n3. **Anti-GAD65 (Descarboxilase do Ácido Glutâmico):** Presente em $70-80\\%$ dos casos. É o marcador de maior persistência temporal no plasma e o principal marcador diagnóstico no **LADA** (positivo em até $95-100\\%$).\n4. **Anti-IA2 (Tirosina Fosfatase-like):** Marcador de progressão rápida para dependência de insulina.\n5. **Anti-ZnT8 (Transportador de Zinco 8):** Positivo em cerca de $60-80\\%$; importante para fechar diagnóstico quando outros marcadores resultam negativos."
-    },
-    {
-        "type": "open",
-        "description": "Como é chamada a fase de remissão transitória precoce do DM1 em que o paciente retoma temporariamente secreção endógena de insulina e necessita de baixíssimas doses exógenas?",
-        "answer": "Lua de mel"
-    },
-    {
-        "type": "anki",
-        "description": "O que define o Diabetes Autoimune Latente do Adulto (LADA) e como diferenciá-lo do DM1 clássico e do DM2?",
-        "answer": "### LADA (Latent Autoimmune Diabetes in Adults)\n\n- **Definição:** Forma de diabetes autoimune que surge na idade adulta, caracterizada por destruição imunomediada lenta e insidiosa das células beta pancreáticas.\n- **Tríade Diagnóstica Clássica:**\n  1. Início na vida adulta (geralmente entre 30 e 50 anos).\n  2. Presença de autoanticorpos contra células beta circulantes (principalmente **Anti-GAD65** positivo).\n  3. **Independência de insulinoterapia inicial por pelo menos 6 meses** após o diagnóstico (diferenciando-se do DM1, cuja dependência é imediata ou em $< 6$ meses).\n- **Diferenciação com DM2:** Falso diagnóstico inicial de DM2 com falência terapêutica secundária precoce a antidiabéticos orais; ausência de traços marcantes de síndrome metabólica e redução progressiva do peptídeo C."
-    },
-    {
-        "type": "fill",
-        "description": "O rastreamento universal do DM2 em adultos assintomáticos é recomendado a partir dos _ anos de idade, devendo ser repetido a cada _ anos se o exame for normal.",
-        "answers": [
-            "35",
-            "3"
-        ],
-        "answer": "35; 3",
-        "explanation": "Diretriz SBD/ADA: rastreamento universal a partir dos 35 anos, com repetição a cada 3 anos se normal."
-    },
-    {
-        "type": "open",
-        "description": "Qual alteração dermatológica hiperpigmentada e aveludada em regiões de dobras cutâneas constitui o estigma clínico mais típico de resistência insulínica grave?",
-        "answer": "Acantose nigricans"
-    },
-    {
-        "type": "anki",
-        "description": "Descreva os 4 estágios pré-clínicos e clínicos de progressão do Diabetes Mellitus tipo 1.",
-        "answer": "### Estadiamento do DM1\n\n- **Estágio 1 (Autoimunidade Normoglicêmica):** Presença de $\\ge 2$ autoanticorpos pancreáticos positivos confirmados; normoglicemia ($GJ < 100$, $TTGO < 140$, $HbA1c < 5,7\\%$); paciente assintomático.\n- **Estágio 2 (Autoimunidade com Disglicemia):** Presença de $\\ge 2$ autoanticorpos positivos; alteração dos níveis glicêmicos compatível com pré-diabetes ($GJ \\text{ } 100-125\\text{ mg/dL}$, $TTGO\\text{ } 140-199\\text{ mg/dL}$ ou $HbA1c\\text{ } 5,7-6,4\\%$); ainda assintomático.\n- **Estágio 3 (Início Clínico):** Presença de autoanticorpos associada a hiperglicemia preenchendo critérios diagnósticos de DM (Estágio 3A: assintomático; Estágio 3B: sintomas clássicos e/ou cetoacidose diabética franca).\n- **Estágio 4:** DM1 estabelecido de longa duração com ausência de secreção de peptídeo C."
-    },
-    {
-        "type": "open_double",
-        "description": "Qual defeito bioquímico intracelular na cadeia de sinalização do receptor de insulina caracteriza o cerne molecular da resistência insulínica no DM2?",
-        "answer": "Fosforilação em serina",
-        "answer2": "Translocação do GLUT-4",
-        "placeholder1": "Tipo de fosforilação anômala",
-        "placeholder2": "Transportador inibido"
-    },
-    {
-        "type": "open_double",
-        "description": "Na diferenciação laboratorial entre DM1 e DM2, quais são os níveis séricos típicos do Peptídeo C ao diagnóstico em cada patologia?",
-        "answer": "Indetectável ou baixo",
-        "answer2": "Normal ou elevado",
-        "placeholder1": "DM1",
-        "placeholder2": "DM2"
-    },
-    {
-        "type": "open_double",
-        "description": "Compare a propensão à Cetoacidose Diabética (CAD) e o padrão etário habitual de acometimento clínico entre o DM1 e o DM2.",
-        "answer": "Frequente e em jovens",
-        "answer2": "Rara e em adultos/idosos",
-        "placeholder1": "DM1",
-        "placeholder2": "DM2"
+            "5,7",
+            "5,7",
+            "6,4",
+            "6,5"
+        ]
     },
     {
         "type": "multiple_choice",
-        "description": "Qual é a taxa de concordância para o desenvolvimento de diabetes em pares de gêmeos monozigóticos para DM1 e DM2, respectivamente?",
-        "answer": "25% a 50% no DM1 e até 75% a 90% no DM2",
+        "description": "Em qual situação o diagnóstico de Diabetes Mellitus é confirmado imediatamente, dispensando uma segunda coleta para confirmação laboratorial?",
+        "answer": "Paciente com sintomas clássicos de hiperglicemia (4 Ps) e glicemia aleatória $\\ge 200\\text{ mg/dL}$",
         "options": [
-            "25% a 50% no DM1 e até 75% a 90% no DM2",
-            "90% no DM1 e menos de 20% no DM2",
-            "5% no DM1 e 10% no DM2",
-            "100% no DM1 e 50% no DM2"
+            "Paciente com sintomas clássicos de hiperglicemia (4 Ps) e glicemia aleatória $\\ge 200\\text{ mg/dL}$",
+            "Paciente assintomático com glicemia de jejum de 138 mg/dL em coleta isolada",
+            "Paciente com HbA1c de 6,7% em paciente com anemia falciforme",
+            "Glicemia capilar de 220 mg/dL obtida por fita reagente em consulta ambulatorial"
         ]
     },
     {
         "type": "anki",
-        "description": "O que são as síndromes MODY (Maturity-Onset Diabetes of the Young) e quais são as principais características genéticas e terapêuticas dos subtipos MODY 2 e MODY 3?",
-        "answer": "### Síndromes MODY\n\n- **Conceito:** Formas monogênicas de diabetes por defeito primário na secreção das células beta pancreáticas, de **herança autossômica dominante** (afeta $\\ge 2-3$ gerações sucessivas), diagnóstico em jovens ($< 25\\text{ anos}$), **sem obesidade e com autoanticorpos negativos**.\n\n- **MODY 2 (Mutação no gene da Glucoquinase - GCK):**\n  - Fisiopatologia: Eleva o limiar de sensibilidade da célula beta à glicose.\n  - Quadro Clínico: Hiperglicemia de jejum leve ($100-140\\text{ mg/dL}$) e estável desde o nascimento, assintomática, que não piora expressivamente com a idade e não desenvolve complicações microvasculares.\n  - Conduta: **Não necessita de farmacoterapia** (apenas dieta/estilo de vida).\n\n- **MODY 3 (Mutação no Fator Nuclear de Hepatócito 1 alfa - HNF1A):**\n  - Fisiopatologia: Defeito progressivo na secreção de insulina e baixo limiar renal para glicosúria.\n  - Quadro Clínico: Hiperglicemia progressiva com risco de complicações crônicas microvasculares.\n  - Conduta: **Excelente resposta a doses baixas de Sulfonilureias** (substitui insulina na maioria dos casos)."
+        "description": "Quais condições clínicas causam falsa elevação e falsa redução da Hemoglobina Glicada (HbA1c)?",
+        "answer": "### Interferências na Medição da HbA1c\n\n**Falsa Elevação (Aumento do tempo de vida das hemácias):**\n- Anemias carenciais: deficiência de ferro, vitamina B12 ou ácido fólico.\n- Esplenectomia (redução da depuração de hemácias velhas).\n- Doença renal crônica avançada e uremia.\n- Hiperbilirrubinemia grave e hipertrigliceridemia grave.\n\n**Falsa Redução (Aumento do turnover eritrocitário):**\n- Anemias hemolíticas e esferocitose.\n- Hemoglobinopatias com menor sobrevida celular.\n- Sangramento agudo ou crônico recente e transfusões sanguíneas.\n- Gravidez (segundo e terceiro trimestres).\n- Uso de altas doses de vitamina C ou E e medicamentos como dapsona."
+    },
+    {
+        "type": "open_double",
+        "description": "Quais são os alelos do complexo principal de histocompatibilidade (HLA classe II) fortemente associados à predisposição genética ao DM1A?",
+        "answer": "HLA-DR3 e HLA-DR4",
+        "answer2": "HLA-DQ2 e HLA-DQ8",
+        "placeholder1": "Alelos DR",
+        "placeholder2": "Alelos DQ"
     },
     {
         "type": "fill",
-        "description": "Critérios diagnósticos de Diabetes Mellitus Gestacional (DMG) no TOTG 75g (24 a 28 semanas de gestação):\n- Glicemia de Jejum: _ a _ mg/dL\n- Glicemia de 1 hora: ≥ _ mg/dL\n- Glicemia de 2 horas: _ a _ mg/dL\n(Se no 1º trimestre a glicemia de jejum for ≥ _ mg/dL ou HbA1c ≥ _%, define-se Overt Diabetes).",
+        "description": "Preencha a classificação estagiada do Diabetes Mellitus tipo 1 (DM1):\n\n• Estágio 1: Presença de _ ou mais autoanticorpos positivos, com glicemia _ e _ de sintomas.\n• Estágio 2: Presença de dois ou mais autoanticorpos positivos com _ (pré-diabetes) e ausência de sintomas.\n• Estágio 3: Hiperglicemia clínica franca preenchendo critérios diagnósticos de DM com autoanticorpos positivos, com ou sem sintomas clínicos.\n• Estágio 4: DM1 de longa duração estabelecido.",
+        "answer": "dois; normal; ausência; disglicemia",
+        "answers": [
+            "dois",
+            "normal",
+            "ausência",
+            "disglicemia"
+        ]
+    },
+    {
+        "type": "open",
+        "description": "Qual é a denominação clínica do período pós-diagnóstico do DM1 caracterizado por recuperação temporária da secreção endógena de insulina com duração de até 6 meses?",
+        "answer": "Lua de mel"
+    },
+    {
+        "type": "multiple_choice",
+        "description": "Qual autoanticorpo apresenta maior persistência a longo prazo no sangue e é o marcador mais sensível para o diagnóstico de LADA (Diabetes Autoimune Latente do Adulto)?",
+        "answer": "Anti-GAD65",
+        "options": [
+            "Anti-GAD65",
+            "Anti-Insulina (IAA)",
+            "Anti-Ilhota (ICA)",
+            "Anti-Transportador de Zinco 8 (ZnT8)"
+        ]
+    },
+    {
+        "type": "anki",
+        "description": "Quais são os critérios clínicos e laboratoriais que definem o LADA (Diabetes Autoimune Latente do Adulto)?",
+        "answer": "### Critérios do LADA (Latent Autoimmune Diabetes in Adults)\n\n1. **Idade:** início na idade adulta (geralmente $> 30$ a $35$ anos).\n2. **Positividade de Autoanticorpos:** presença de marcadores de autoimunidade pancreática (positividade do **Anti-GAD65** em quase 100% dos casos).\n3. **Independência inicial de insulina:** não necessita de insulinoterapia nos primeiros **6 meses** após o diagnóstico (diferenciando-se do DM1 clássico).\n4. **Reserva pancreática em declínio:** Peptídeo C inicialmente presente, porém com queda acelerada progressiva culminando em insulinopenia absoluta nos anos subsequentes."
+    },
+    {
+        "type": "fill",
+        "description": "Quais são os critérios de rastreamento do Diabetes Mellitus tipo 2 (DM2) em adultos assintomáticos?\n\n• Universal para todos os indivíduos a partir dos _ anos de idade.\n• Em qualquer idade para adultos com sobrepeso ou obesidade (IMC $\\ge$ _ $\\text{kg/m}^2$, ou $\\ge$ _ $\\text{kg/m}^2$ em asiáticos) associado a pelo menos um fator de risco (parentes de 1º grau, hipertensão, dislipidemia, SOP, sedentarismo, acantose nigricans).\n• Se os testes laboratoriais forem normais, o intervalo de repetição do rastreamento deve ser a cada _ anos.",
+        "answer": "35; 25; 23; 3",
+        "answers": [
+            "35",
+            "25",
+            "23",
+            "3"
+        ]
+    },
+    {
+        "type": "open_double",
+        "description": "Qual é a porcentagem aproximada de indivíduos com DM1 e DM2 que possuem pelo menos um dos pais acometido pela doença (concordância familiar)?",
+        "answer": "< 10%",
+        "answer2": "~75%",
+        "placeholder1": "DM1",
+        "placeholder2": "DM2"
+    },
+    {
+        "type": "anki",
+        "description": "Quais são as principais diferenças clínicas, fisiopatológicas e laboratoriais entre DM1 e DM2?",
+        "answer": "### Tabela Comparativa: DM1 vs. DM2\n\n| Parâmetro | DM1 | DM2 |\n| :--- | :--- | :--- |\n| **Início dos Sintomas** | Abrupto, agudo, polis marcantes | Insidioso, arrastado, assintomático por anos |\n| **Faixa Etária Típica** | Crianças, jovens (< 30 anos) | Adultos (> 40 anos), idosos |\n| **Biótipo Corporal** | Magro ou eutrófico | Sobrepeso ou obesidade visceral |\n| **Patogênese** | Destruição autoimune de células $\\beta$ | Resistência insulínica + falência de $\\beta$ |\n| **Autoanticorpos** | Positivos em 70–95% dos casos | Ausentes (negativos) |\n| **Nível de Peptídeo C** | Baixo ou indetectável | Normal ou elevado |\n| **Apresentação Crítica** | Cetoacidose diabética (30–40%) | Estado hiperosmolar hiperglicêmico |\n| **História Familiar** | Baixa (< 10%) | Alta (~75%) |"
+    },
+    {
+        "type": "open",
+        "description": "Qual molécula co-secretada em proporção equimolar à insulina reflete a reserva funcional endógena das células beta pancreáticas sem sofrer depuração hepática de primeira passagem?",
+        "answer": "Peptídeo C"
+    },
+    {
+        "type": "anki",
+        "description": "O que caracteriza o Diabetes Monogênico do tipo MODY e quais os subtipos mais frequentes e suas condutas?",
+        "answer": "### Características do MODY (Maturity-Onset Diabetes of the Young)\n\n- **Genética:** herança **autossômica dominante** em 3 ou mais gerações consecutivas.\n- **Idade:** início precoce, tipicamente **$< 25$ anos**.\n- **Clínica:** pacientes não obesos, ausência de resistência insulínica e ausência de autoanticorpos.\n\n### Subtipos Principais:\n- **MODY 2 (Gene GCK - Glicoquinase):** alteração do sensor glicêmico celular. Cursa com hiperglicemia de jejum leve e estável desde o nascimento, sem progressão para complicações microvasculares. **Conduta:** apenas dieta e estilo de vida (não requer fármacos nem insulina).\n- **MODY 3 (Gene HNF1A):** subtipo mais comum (~60%). Cursa com hiperglicemia progressiva e glicosúria precoce. **Conduta:** excelente sensibilidade a baixas doses de **sulfonilureias**.\n- **MODY 1 (Gene HNF4A):** raro, semelhante ao MODY 3, associado a macrossomia fetal e hipoglicemia neonatal. Responde a sulfonilureias.\n- **MODY 5 (Gene HNF1B):** diabetes associado a **cistos renais** e anomalias anatômicas geniturinárias."
+    },
+    {
+        "type": "multiple_choice",
+        "description": "Um homem de 46 anos, ex-etilista com calcificações pancreáticas e esteatorreia crônica, desenvolve hiperglicemia pós-prandial associada a episódios de hipoglicemia noturna. Qual é a etiologia do diabetes?",
+        "answer": "Insuficiência pancreática endócrina secundária à pancreatite crônica",
+        "options": [
+            "Insuficiência pancreática endócrina secundária à pancreatite crônica",
+            "Diabetes autoimune latente do adulto (LADA)",
+            "Diabetes Mellitus tipo 2 com esteatose hepática associada",
+            "Diabetes monogênico tipo MODY 2"
+        ]
+    },
+    {
+        "type": "fill",
+        "description": "Preencha os valores de corte para o diagnóstico de Diabetes Mellitus Gestacional (DMG) pelo TOTG com 75g realizado entre a 24ª e a 28ª semana de gestação:\n\n• Glicemia de Jejum: $\\ge$ _ mg/dL\n• Glicemia de 1 hora: $\\ge$ _ mg/dL\n• Glicemia de 2 horas: $\\ge$ _ mg/dL",
+        "answer": "92; 180; 153",
         "answers": [
             "92",
-            "125",
             "180",
-            "153",
-            "199",
-            "126",
-            "6,5 / 6.5"
-        ],
-        "answer": "92; 125; 180; 153; 199; 126; 6,5",
-        "explanation": "DMG (TOTG 75g 24-28 sem) basta 1 valor alterado: Jejum 92-125, 1h ≥ 180, 2h 153-199 mg/dL. Jejum ≥ 126 ou HbA1c ≥ 6,5% no 1º tri = Overt Diabetes."
-    },
-    {
-        "type": "open",
-        "description": "Qual patologia crônica caracterizada por sobrecarga de ferro tecidual provoca disfunção de ilhotas pancreáticas e hiperpigmentação cutânea, conhecida como 'diabetes bronzeado'?",
-        "answer": "Hemocromatose hereditária"
-    },
-    {
-        "type": "anki",
-        "description": "Por que pacientes submetidos a pancreatectomia total ou com pancreatite crônica avançada apresentam grande labilidade glicêmica com facilidade tanto para hiperglicemia pós-prandial quanto para hipoglicemia de jejum?",
-        "answer": "### Fisiopatologia do Diabetes Pancreatoprivo (Tipo 3c)\n\nA destruição ou ressecção do parênquima pancreático acarreta perda simultânea de dois hormônios fundamentais:\n1. **Ausência de Insulina (células $\\beta$):** Incapacidade de depurar a sobrecarga glicídica das refeições, resultando em intensa hiperglicemia pós-prandial e tendência à perda de peso.\n2. **Ausência de Glucagon (células $\\alpha$):** Durante os períodos interalimentares e noturnos de jejum, a falta de glucagon impede o estímulo fisiológico à glicogenólise e à gliconeogênese hepática, privando o organismo da contrarregulação e provocando **hipoglicemias súbitas e graves**."
-    },
-    {
-        "type": "anki",
-        "description": "Quais são os três corpos cetônicos formados na Cetoacidose Diabética, qual é o predominante em estados graves e por que as tiras reagentes podem gerar falso-negativo?",
-        "answer": "### Corpos Cetônicos na CAD\n\n1. **Beta-hidroxibutirato:** Principal cetoânion circulante na vigência de hipóxia e acidose intensa; produzido em maior quantidade.\n2. **Acetoacetato:** Detectado pelos testes convencionais urinários e séricos de nitroprussiato (fitas reagentes).\n3. **Acetona:** Composto volátil não ionizado, eliminado pela respiração e responsável pelo hálito cetônico característico.\n\n*Armadilha diagnóstica:* Os testes tradicionais em urina e plasma detectam **apenas acetoacetato**. Na CAD grave descompensada com desvio redox mitocondrial, a quase totalidade dos corpos cetônicos está sob a forma de **beta-hidroxibutirato**, o que pode gerar teste de fita fracamente positivo ou falso-negativo."
+            "153"
+        ]
     },
     {
         "type": "open_double",
-        "description": "Entre a Cetoacidose Diabética (CAD) e o Estado Hiperglicêmico Hiperosmolar (EHH), qual apresenta classicamente maiores taxas de mortalidade e qual apresenta quadro clínico de instalação tipicamente abrupta?",
-        "answer": "EHH",
-        "answer2": "CAD",
-        "placeholder1": "Maior mortalidade (até 20%)",
-        "placeholder2": "Instalação abrupta"
-    },
-    {
-        "type": "fill",
-        "description": "A tríade bioquímica e clínica clássica definidora da Cetoacidose Diabética (CAD) é composta por: _, _ metabólica e _ (ou cetonúria).",
-        "answers": [
-            "hiperglicemia",
-            "acidose",
-            "cetonemia / cetose"
-        ],
-        "answer": "hiperglicemia; acidose; cetonemia",
-        "explanation": "Tríade da CAD: Hiperglicemia (> 250 mg/dL), Acidose metabólica (pH ≤ 7,30 e HCO3 ≤ 18) e Cetonemia/Cetonúria positiva."
+        "description": "Dentre os corpos cetônicos produzidos na cetoacidose diabética, qual é o sintetizado em maior proporção plasmática e qual é detectado convencionalmente nas fitas urinárias?",
+        "answer": "Beta-hidroxibutirato",
+        "answer2": "Acetoacetato",
+        "placeholder1": "Maior proporção",
+        "placeholder2": "Fita urinária"
     },
     {
         "type": "anki",
-        "description": "O que é Cetoacidose Diabética (CAD) euglicêmica, quais os principais fatores precipitantes e qual seu mecanismo pelo uso de inibidores de SGLT2?",
-        "answer": "### CAD Euglicêmica\n\n- **Definição:** Presença de cetoacidose metabólica clássica (cetonemia/cetonúria expressiva e acidose metabólica com ânion gap elevado), porém com **níveis glicêmicos $< 200 - 250\\text{ mg/dL}$**.\n- **Fatores Precipitantes:** Uso de **inibidores de SGLT2 (glifozinas)**, gestação, etilismo crônico, hepatopatias e restrição severa de carboidratos/jejum prolongado.\n- **Mecanismo pelos iSGLT2:** Os iSGLT2 promovem perda tubular forçada de glicose na urina (glicosúria), reduzindo a glicemia plasmática sem corrigir a insulinopenia. Com a menor glicemia e ausência de insulina, as células alfa pancreáticas elevam a secreção de **glucagon**, cuja alta razão glucagon/insulina ativa a lipólise e a cetogênese hepática desimpedida."
+        "description": "Compare a fisiopatologia da Cetoacidose Diabética (CAD) e do Estado Hiperglicêmico Hiperosmolar (EHH). Por que o EHH não desenvolve cetose importante?",
+        "answer": "### Diferença Fisiopatológica: CAD vs. EHH\n\n- **CAD (Deficiência Absoluta de Insulina):**\n  - A ausência total de insulina remove o bloqueio sobre a enzima lipase hormônio-sensível no adipócito, provocando **lipólise maciça**.\n  - Os ácidos graxos livres inundam o fígado e, sob forte estímulo de glucagon, ativam a carnitina palmitoiltransferase I (CPT-1), desviando o acetil-CoA para a **cetogênese** (ácido acetoacético e $\\beta$-hidroxibutirato), gerando acidose com ânion gap elevado.\n\n- **EHH (Deficiência Relativa de Insulina):**\n  - Há insulinopenia suficiente para impedir a captação de glicose muscular e conter a gliconeogênese, gerando **hiperglicemia extrema ($> 600\\text{ mg/dL}$)** e diurese osmótica maciça.\n  - Contudo, **resíduos mínimos de insulina** chegam à circulação portal e são suficientes para **inibir a lipólise** no tecido adiposo. Sem substrato lipídico no fígado, a produção de corpos cetônicos é mínima ou ausente."
     },
     {
         "type": "fill",
-        "description": "Critérios diagnósticos clássicos e fórmula do Estado Hiperglicêmico Hiperosmolar (EHH):\n- Fórmula: Osmolalidade Efetiva = 2 × [Na+] + (Glicemia / _)\n- Glicemia sérica: > _ mg/dL\n- Osmolalidade plasmática efetiva: > _ mOsm/kg\n- Parâmetros ácido-base: pH arterial > _ e bicarbonato sérico > _ mEq/L.",
+        "description": "Complete os critérios diagnósticos clássicos da Cetoacidose Diabética (CAD):\n\n• Glicemia plasmática > _ mg/dL (ou > 200 mg/dL em revisões pediátricas);\n• Gasometria: pH arterial $\\le$ _ e/ou Bicarbonato sérico $\\le$ _ mEq/L;\n• Cetonas: Cetonemia $\\ge$ _ mmol/L ou cetonúria significativa ($\\ge 2+$);\n• Ânion Gap elevado (> _ mEq/L).",
+        "answer": "250; 7,3; 18; 3,0; 10",
         "answers": [
+            "250",
+            "7,3",
             "18",
-            "600",
-            "320",
-            "7,30 / 7.30 / 7,3 / 7.3",
-            "18"
-        ],
-        "answer": "18; 600; 320; 7,30; 18",
-        "explanation": "EHH: Osmolalidade efetiva = 2*Na + Glicemia/18. Critérios: Glicemia > 600 mg/dL, Osmolalidade > 320 mOsm/kg, pH > 7,30 e HCO3 > 18 mEq/L."
-    },
-    {
-        "type": "open_double",
-        "description": "Diante de um paciente diabético com dor abdominal em cólica, vômitos, taquipneia profunda e hálito cetônico, qual o provável diagnóstico e qual a conduta imediata?",
-        "answer": "Cetoacidose Diabética",
-        "answer2": "Hidratação venosa vigorosa",
-        "placeholder1": "Diagnóstico",
-        "placeholder2": "Conduta imediata"
-    },
-    {
-        "type": "open",
-        "description": "Qual o padrão respiratório compensatório rápido e profundo observado na gasometria com acidose metabólica grave na CAD?",
-        "answer": "Respiração de Kussmaul"
-    },
-    {
-        "type": "anki",
-        "description": "Por que pacientes com CAD podem apresentar potássio sérico normal ou elevado na admissão apesar de estarem com déficit corporal global severo de potássio?",
-        "answer": "### Paradoxo do Potássio na CAD\n\n- O paciente com CAD apresenta um déficit corporal global grave de $K^+$ ($5\\text{ a }10\\text{ mEq/kg}$), decorrente da diurese osmótica induzida pela glicosúria e perdas gastrointestinais.\n- Entretanto, o nível sérico na admissão encontra-se frequentemente normal ou elevado devido a um **shift do intracelular para o extracelular** gerado por:\n  1. **Acidose metabólica:** Os íons $H^+$ em excesso entram nas células em troca da saída de $K^+$.\n  2. **Hiperosmolalidade plasmática:** O extravasamento de água celular arrasta potássio por solvent drag.\n  3. **Insulinopenia:** Falta do estímulo da bomba $Na^+/K^+$-ATPase dependente de insulina.\n\n*Atenção:* Ao iniciar insulina e hidratação, o potássio migra maciçamente para dentro das células, podendo deflagrar hipocalemia fulminante se não reposto precocemente."
-    },
-    {
-        "type": "fill",
-        "description": "Na Cetoacidose Diabética (CAD), níveis séricos de potássio < _ mEq/L contraindicam o início imediato de insulina, sendo mandatória a reposição venosa com _ antes de iniciar a insulinoterapia.",
-        "answers": [
-            "3,3 / 3.3",
-            "KCl / cloreto de potassio / potassio"
-        ],
-        "answer": "3,3; KCl",
-        "explanation": "Se K+ < 3,3 mEq/L, a insulina agravaria a hipocalemia provocando arritmias letais. Repõe-se KCl (20-30 mEq/h) até K+ ≥ 3,3."
-    },
-    {
-        "type": "anki",
-        "description": "Qual é a **fórmula de Katz** para correção do sódio sérico na hiperglicemia e qual é a sua justificativa fisiopatológica?",
-        "answer": "### Fórmula de Katz (Sódio Corrigido)\n\n$$\\text{Na}_{\\text{corrigido}} = \\text{Na}_{\\text{medido}} + 1{,}6 \\times \\left( \\frac{\\text{Glicemia} - 100}{100} \\right)$$\n\n- **Regra prática:** Adiciona-se **1,6 mEq/L** de sódio para cada **100 mg/dL** de glicemia acima de **100 mg/dL**.\n- **Fisiopatologia:** A glicose atrai água osmoticamente do intracelular para o intravascular, diluindo o sódio (*pseudo-hiponatremia de translocação*)."
-    },
-    {
-        "type": "open",
-        "description": "Qual alteração no leucograma é frequentemente encontrada na CAD aguda devido ao estresse e elevação das catecolaminas, mesmo na ausência de infecção bacteriana?",
-        "answer": "Leucocitose com desvio"
-    },
-    {
-        "type": "open",
-        "description": "Além do pâncreas, qual glândula e tecido contribuem para a elevação inespecífica de amilase sérica comumente descrita em descompensações de CAD sem pancreatite?",
-        "answer": "Glândulas salivares"
-    },
-    {
-        "type": "fill",
-        "description": "Classificação de Gravidade da Cetoacidose Diabética (CAD):\n- CAD Leve: pH arterial _-_ e Bicarbonato sérico _-_ mEq/L (alerta)\n- CAD Moderada: pH arterial _-_ e Bicarbonato sérico _-_ mEq/L (alerta/sonolento)\n- CAD Grave: pH arterial < _ e Bicarbonato sérico < _ mEq/L (estupor/coma)",
-        "answers": [
-            "7,25 / 7.25",
-            "7,30 / 7.30 / 7,3 / 7.3",
-            "15",
-            "18",
-            "7,00 / 7.00 / 7,0 / 7.0 / 7",
-            "7,24 / 7.24",
-            "10",
-            "14",
-            "7,00 / 7.00 / 7,0 / 7.0 / 7",
+            "3,0",
             "10"
-        ],
-        "answer": "7,25; 7,30; 15; 18; 7,00; 7,24; 10; 14; 7,00; 10",
-        "explanation": "Gravidade da CAD:\n- Leve: pH 7,25-7,30 e HCO3 15-18 mEq/L\n- Moderada: pH 7,00-7,24 e HCO3 10-14 mEq/L\n- Grave: pH < 7,00 e HCO3 < 10 mEq/L (classifica pelo pior parâmetro)."
+        ]
+    },
+    {
+        "type": "multiple_choice",
+        "description": "Qual das seguintes classes de antidiabéticos está fortemente implicada na gênese da Cetoacidose Diabética Euglicêmica (glicemia < 200-250 mg/dL)?",
+        "answer": "Inibidores de SGLT-2 (Glifozinas)",
+        "options": [
+            "Inibidores de SGLT-2 (Glifozinas)",
+            "Sulfonilureias de segunda geração",
+            "Inibidores da DPP-4 (Gliptinas)",
+            "Agonistas PPAR-gama (Glitazonas)"
+        ]
+    },
+    {
+        "type": "anki",
+        "description": "Como é calculada a osmolalidade sérica eficaz e quais os critérios diagnósticos do Estado Hiperglicêmico Hiperosmolar (EHH)?",
+        "answer": "### Critérios do EHH e Fórmula de Osmolalidade\n\n**Critérios Diagnósticos:**\n1. **Glicemia plasmática:** $> 600\\text{ mg/dL}$.\n2. **Hiperosmolalidade sérica eficaz:** $> 320\\text{ mOsm/kg}$.\n3. **Equilíbrio ácido-básico:** ausência de cetoacidose significativa (pH arterial $> 7,30$; Bicarbonato sérico $> 18\\text{ mEq/L}$; cetonúria negativa ou traços).\n4. **Neurológico:** rebaixamento do nível de consciência como regra (torpor ou coma).\n\n**Fórmula da Osmolalidade Sérica Eficaz:**\n$$\\text{Osmolalidade Eficaz} = 2 \\times \\text{Na medido (mEq/L)} + \\frac{\\text{Glicemia (mg/dL)}}{18}$$\n*(Atenção: utiliza o sódio medido, e não o sódio corrigido!)*"
     },
     {
         "type": "fill",
-        "description": "Na primeira hora de ressuscitação volêmica do paciente instável em CAD ou EHH, a infusão inicial recomendada de Soro Fisiológico a 0,9% é de _ mL/h (_-_ mL/kg/h).",
+        "description": "Qual é a fórmula de Katz utilizada para calcular o Sódio Corrigido na vigência de hiperglicemia aguda?\n\n$$\\text{Sódio corrigido} = \\text{Sódio medido} + _ \\times \\left( \\frac{\\text{Glicemia} - 100}{_} \\right)$$",
+        "answer": "1,6; 100",
         "answers": [
-            "1000 / 1.000",
-            "10",
-            "20"
-        ],
-        "answer": "1000; 10; 20",
-        "explanation": "Fase de expansão rápida: SF 0,9% 1000 mL/h (10 a 20 mL/kg/h) na primeira hora."
+            "1,6",
+            "100"
+        ]
+    },
+    {
+        "type": "anki",
+        "description": "Por que o paciente com CAD pode apresentar potássio sérico inicial normal ou elevado, mesmo tendo um grave déficit corporal total de potássio?",
+        "answer": "### Dinâmica do Potássio na CAD\n\n- **Déficit corporal real:** o paciente apresenta perda corporal total severa de potássio (entre **5 a 10 mEq/kg**) devido à perda urinária secundária à **diurese osmótica** e à excreção renal obrigatória com os cetoânions.\n- **Desvio transcelular (Shift extracelular):** os níveis séricos na admissão mostram-se normais ou elevados devido a 3 fatores:\n  1. **Deficiência de insulina:** impede a entrada de potássio para dentro das células via bomba $\\text{Na}^+/\\text{K}^+$-ATPase.\n  2. **Acidose metabólica:** o excesso de íons $H^+$ extracelulares penetra nas células e empurra o $K^+$ para o plasma.\n  3. **Hiperosmolalidade:** o efluxo osmótico de água da célula arrasta o $K^+$ por arraste de solvente.\n\n*Alerta:* Ao iniciar hidratação e insulina, o potássio migra rapidamente de volta ao intracelular, acarretando **hipocalemia grave e arritmias fatais** se não for reposto precocemente."
     },
     {
         "type": "open_double",
-        "description": "Após a estabilização hemodinâmica inicial na CAD, qual solução cristaloide deve ser mantida conforme os níveis de sódio sérico corrigido?",
-        "answer": "NaCl a 0,45%",
-        "answer2": "NaCl a 0,9%",
-        "placeholder1": "Se sódio corrigido normal ou alto (≥ 135)",
-        "placeholder2": "Se sódio corrigido baixo (< 135)"
+        "description": "Quais alterações eletrocardiográficas típicas decorrem, respectivamente, da hipercalemia inicial e da hipocalemia de tratamento na CAD?",
+        "answer": "Ondas T apiculadas",
+        "answer2": "Onda U e achatamento de T",
+        "placeholder1": "Hipercalemia inicial",
+        "placeholder2": "Hipocalemia de tratamento"
+    },
+    {
+        "type": "anki",
+        "description": "Quais são as alterações laboratoriais que podem mimetizar patologias infecciosas e cirúrgicas em um paciente em CAD, sem que haja doença primária subjacente?",
+        "answer": "### Armadilhas Laboratoriais na CAD\n\n- **Leucocitose com Desvio à Esquerda:** valores de até $20.000$ a $25.000/\\text{mm}^3$ ocorrem unicamente por desmarginação leucocitária induzida por estresse e hipercortisolemia/hiperadrenalinemia. Apenas contagens $> 25.000/\\text{mm}^3$ ou febre persistente sugerem infecção verdadeira bacteriana.\n- **Amilase e Lipase Aumentadas:** elevações não pancreáticas de amilase (de origem salivar ou microvascular) e lipase são frequentes na CAD sem significar pancreatite aguda.\n- **Dor Abdominal Aguda:** desidratação da cápsula hepática, gastroparesia e acidose peritoneal mimetizam abdome agudo cirúrgico, regredindo com o tratamento da CAD."
+    },
+    {
+        "type": "multiple_choice",
+        "description": "Um paciente de 18 anos em CAD apresenta: Glicemia 380 mg/dL, pH 7,12, Bicarbonato 9 mEq/L, sonolência e ânion gap de 18. Qual é a classificação de gravidade da CAD?",
+        "answer": "CAD Grave",
+        "options": [
+            "CAD Grave",
+            "CAD Moderada",
+            "CAD Leve",
+            "Estado Misto CAD-EHH"
+        ]
+    },
+    {
+        "type": "anki",
+        "description": "Qual é a conduta inicial mandatória de expansão volêmica no paciente com CAD ou EHH?",
+        "answer": "<h3>Expansão Volêmica Inicial</h3>\n<ol>\n<li><strong>Primeira hora (Ressuscitação):</strong> independentemente do sódio inicial, iniciar <strong></strong><mark class=\"card-hl card-hl-purple\"><strong>Soro Fisiológico 0,9%</strong>, <span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mn>1.000</mn><mtext>&nbsp;mL</mtext></mrow><annotation encoding=\"application/x-tex\">1.000\\text{ mL}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.6833em;\"></span><span class=\"mord\">1.000</span><span class=\"mord text\"><span class=\"mord\">&nbsp;mL</span></span></span></span></span></mark><span class=\"katex\"><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"mord text\"><span class=\"mord\"></span></span></span></span></span> aberto na primeira hora (ou <span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mn>10</mn></mrow><annotation encoding=\"application/x-tex\">10</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">10</span></span></span></span> a <span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mn>20</mn><mtext>&nbsp;mL/kg/h</mtext></mrow><annotation encoding=\"application/x-tex\">20\\text{ mL/kg/h}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord\">20</span><span class=\"mord text\"><span class=\"mord\">&nbsp;mL/kg/h</span></span></span></span></span>) até reversão do choque e restauração hemodinâmica.</li>\n<li><strong>Fase de Manutenção:</strong> após restabelecimento volêmico, calcular o <strong>Sódio Corrigido</strong>:<ul>\n<li>Se <span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mtext>Na&nbsp;corrigido</mtext><mo>&lt;</mo><mn>135</mn><mtext>&nbsp;mEq/L</mtext></mrow><annotation encoding=\"application/x-tex\">\\text{Na corrigido} &lt; 135\\text{ mEq/L}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8889em;vertical-align:-0.1944em;\"></span><span class=\"mord text\"><span class=\"mord\"></span></span></span><mark class=\"card-hl card-hl-purple\"><span class=\"base\"><span class=\"mord text\"><span class=\"mord\">Na&nbsp;corrigido</span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">&lt;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord\">135</span><span class=\"mord text\"><span class=\"mord\">&nbsp;mEq/L</span></span></span></mark><span class=\"base\"><span class=\"mord text\"><span class=\"mord\"></span></span></span></span></span>: manter infusão com <strong><mark class=\"card-hl card-hl-purple\">NaCl 0,9%</mark></strong> em velocidade de <span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mn>250</mn></mrow><annotation encoding=\"application/x-tex\">250</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">250</span></span></span></span> a <span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mn>500</mn><mtext>&nbsp;mL/h</mtext></mrow><annotation encoding=\"application/x-tex\">500\\text{ mL/h}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord\">500</span><span class=\"mord text\"><span class=\"mord\">&nbsp;mL/h</span></span></span></span></span>.</li>\n<li>Se <span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mtext>Na&nbsp;corrigido</mtext><mo>≥</mo><mn>135</mn><mtext>&nbsp;mEq/L</mtext></mrow><annotation encoding=\"application/x-tex\">\\text{Na corrigido} \\ge 135\\text{ mEq/L}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8889em;vertical-align:-0.1944em;\"></span><span class=\"mord text\"><span class=\"mord\"></span></span></span><mark class=\"card-hl card-hl-yellow\"><span class=\"base\"><span class=\"mord text\"><span class=\"mord\">Na&nbsp;corrigido</span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">≥</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord\">135</span><span class=\"mord text\"><span class=\"mord\">&nbsp;mEq/L</span></span></span></mark><span class=\"base\"><span class=\"mord text\"><span class=\"mord\"></span></span></span></span></span>: mudar para <strong><mark class=\"card-hl card-hl-yellow\">NaCl 0,45%</mark></strong> em velocidade de <span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mn>250</mn></mrow><annotation encoding=\"application/x-tex\">250</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">250</span></span></span></span> a <span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mn>500</mn><mtext>&nbsp;mL/h</mtext></mrow><annotation encoding=\"application/x-tex\">500\\text{ mL/h}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord\">500</span><span class=\"mord text\"><span class=\"mord\">&nbsp;mL/h</span></span></span></span></span> (evita acidose <mark class=\"card-hl card-hl-yellow\">hiperclorêmica</mark>).</li>\n</ul>\n</li>\n</ol>\n"
+    },
+    {
+        "type": "multiple_choice",
+        "description": "Diante de um paciente com CAD admitido com potássio sérico inicial de 2,8 mEq/L, qual é a conduta imediata correta em relação à insulinoterapia?",
+        "answer": "Suspender/adiar a insulina e administrar reposição venosa vigorosa de potássio (20 a 40 mEq/h) até K+ > 3,3 mEq/L",
+        "options": [
+            "Suspender/adiar a insulina e administrar reposição venosa vigorosa de potássio (20 a 40 mEq/h) até K+ > 3,3 mEq/L",
+            "Iniciar insulina regular em bolus de 0,1 UI/kg e não repor potássio até normalizar o pH",
+            "Iniciar infusão de bicarbonato de sódio a 8,4% associado à insulina regular",
+            "Iniciar insulina regular e administrar cloreto de potássio apenas se houver PCR"
+        ]
     },
     {
         "type": "fill",
-        "description": "Protocolo de insulinoterapia EV na Cetoacidose Diabética (CAD):\n- Dose em infusão contínua em bomba: _ UI/kg/h (ou bolus de _ UI/kg + infusão de _ UI/kg/h).\n- Velocidade de queda glicêmica alvo: _ a _ mg/dL por hora.\n- Ao atingir glicemia de _ a _ mg/dL, deve-se adicionar Soro Glicosado a 5% para prevenir hipoglicemia e edema cerebral.",
+        "description": "Complete as regras de insulinoterapia venosa na Cetoacidose Diabética (CAD):\n\n• A infusão venosa de insulina regular é iniciada na dose de _ UI/kg/h em bomba de infusão (ou bolus de 0,1 UI/kg + _ UI/kg/h).\n• O alvo ideal de queda da glicemia plasmática é de _ a _ mg/dL por hora.\n• Quando a glicemia atingir _ a _ mg/dL na CAD (ou 250 a 300 mg/dL no EHH), deve-se reduzir a dose de insulina pela metade e associar Soro Glicosado a 5% com NaCl 0,45%.",
+        "answer": "0,14; 0,1; 50; 70; 200; 250",
         "answers": [
-            "0,14 / 0.14",
-            "0,1 / 0.1",
-            "0,1 / 0.1",
+            "0,14",
+            "0,1",
             "50",
             "70",
             "200",
             "250"
-        ],
-        "answer": "0,14; 0,1; 0,1; 50; 70; 200; 250",
-        "explanation": "Insulina EV na CAD: 0,14 UI/kg/h (ou 0,1 bolus + 0,1 infusão). Queda alvo: 50 a 70 mg/dL/h. Ao atingir 200-250 mg/dL na CAD (250-300 no EHH), associar SG 5%."
+        ]
+    },
+    {
+        "type": "anki",
+        "description": "Qual é a única indicação formal para o uso de bicarbonato de sódio na CAD e como deve ser administrado?",
+        "answer": "### Uso de Bicarbonato de Sódio na CAD\n\n**Indicação Restrita:**\n- Recomendado **apenas se pH arterial $\\le 6,90$** devido ao risco iminente de colapso circulatório por contratilidade miocárdica deprimida e vasodilatação periférica extrema. Em crianças, a maioria dos consensos contraindica o uso formalmente em qualquer patamar.\n\n**Prescrição:**\n- **$100\\text{ mmol}$ de Bicarbonato de Sódio** ($100\\text{ mL}$ de $\\text{NaHCO}_3$ a 8,4%) diluídos em **$400\\text{ mL}$ de água bidestilada** com **$20\\text{ mEq}$ de KCl**, infundidos em **2 horas**.\n- Repetir até que o pH arterial atinja valor $> 7,0$.\n\n*Riscos do bicarbonato:* hipocalemia refratária, acidose paradoxal no sistema nervoso central por difusão de $CO_2$ e **edema cerebral**."
     },
     {
         "type": "fill",
-        "description": "De acordo com as diretrizes da ADA/SBD, a infusão venosa de bicarbonato de sódio na Cetoacidose Diabética em adultos está estritamente indicada se o pH arterial for ≤ _.",
-        "answers": [
-            "6,9 / 6.9"
-        ],
-        "answer": "6,9",
-        "explanation": "Bicarbonato de sódio é reservado apenas para acidose extrema (pH arterial ≤ 6,9), devido a riscos de hipocalemia e acidose paradoxal do SNC."
-    },
-    {
-        "type": "fill",
-        "description": "A resolução metabólica da Cetoacidose Diabética (CAD) exige glicemia < _ mg/dL associada a pelo menos dois dos seguintes critérios:\n1. Bicarbonato sérico ≥ _ mEq/L;\n2. pH venoso ou arterial > _;\n3. Ânion Gap normalizado ≤ _ mEq/L.",
+        "description": "Complete os critérios laboratoriais para definição de resolução da **Cetoacidose Diabética (CAD)** e do **Estado Hiperglicêmico Hiperosmolar (EHH)**:\n\n**Cetoacidose Diabética (CAD):**\n• Glicemia sérica $\\le$ _ $\\text{mg/dL}$ **E** preenchimento de pelo menos 2 dos seguintes:\n1. Bicarbonato sérico $\\ge$ _ $\\text{mEq/L}$;\n2. pH venoso $>$ _;\n3. Ânion Gap normalizado ($\\le$ _ $\\text{mEq/L}$).\n\n**Estado Hiperglicêmico Hiperosmolar (EHH):**\n• Glicemia sérica $<$ _ $\\text{mg/dL}$;\n• Osmolalidade sérica eficaz $<$ _ $\\text{mOsm/kg}$;\n• Recuperação do estado prévio de consciência/alerta.",
+        "answer": "200; 15; 7,30; 12; 300; 315",
         "answers": [
             "200",
             "15",
-            "7,30 / 7.30 / 7,3 / 7.3",
-            "12"
-        ],
-        "answer": "200; 15; 7,30; 12",
-        "explanation": "Critérios de Resolução da CAD: Glicemia < 200 mg/dL + pelo menos dois de: HCO3 ≥ 15 mEq/L, pH > 7,30 e Ânion Gap ≤ 12 mEq/L."
-    },
-    {
-        "type": "anki",
-        "description": "Qual o protocolo obrigatório para desligamento da bomba de infusão contínua de insulina EV e transição para via subcutânea na CAD resolvida?",
-        "answer": "### Transição de Insulina EV para Subcutânea (SC)\n\n1. **Critério de Início:** Resolução completa dos critérios metabólicos e paciente apto a ingerir dieta oral.\n2. **Sobreposição Temporal Obrigatória:** Aplicar a dose de insulina basal e rápida por via **subcutânea de 1 a 2 horas antes de suspender a bomba** (se usar análogo rápido, no mínimo 30 minutos antes). Se a bomba for desligada sem prévia cobertura SC, a meia-vida ultracurta da insulina EV (cerca de 5 minutos) induz recidiva imediata da cetogênese.\n3. **Cálculo da Dose SC:** Estimar a dose total diária (DTD) baseando-se em $50 - 70\\%$ da média de insulina infundida nas últimas horas estáveis, dividindo em $50\\%$ basal e $50\\%$ prandial (ou recomeçar o esquema prévio domiciliar habitual se este era eficaz)."
+            "7,30",
+            "12",
+            "300",
+            "315"
+        ]
     },
     {
         "type": "open",
-        "description": "Qual é a complicação iatrogênica neurológica mais temida do tratamento rápido da CAD em crianças, decorrente de quedas abruptas da osmolalidade e excesso de fluidos hipotônicos?",
-        "answer": "Edema cerebral"
-    },
-    {
-        "type": "open",
-        "description": "Qual infecção fúngica invasiva fulminante das vias rinosinusais e órbita, provocada por fungos que usam cetona redutase, acomete tipicamente diabéticos em CAD?",
-        "answer": "Mucormicose"
+        "description": "Com quanto tempo de antecedência antes de desligar a bomba de infusão contínua de insulina EV deve ser aplicada a insulina subcutânea no paciente com CAD compensada?",
+        "answer": "30 a 60 minutos"
     },
     {
         "type": "anki",
-        "description": "Por que pode ocorrer acidose hiperclorêmica durante a recuperação da CAD e qual o seu significado clínico?",
-        "answer": "### Acidose Metabólica Hiperclorêmica Pós-CAD\n\n- **Causa:** Infusão de grandes volumes de solução salina a 0,9% ($NaCl$ contém $154\\text{ mEq/L}$ de $Cl^-$, muito superior ao plasma fisiológico de $100\\text{ mEq/L}$). Além disso, os cetoânions que seriam regenerados em bicarbonato pelo fígado são espoliados na urina.\n- **Laboratório:** Ânion gap normal ($< 12\\text{ mEq/L}$) com cloreto sérico elevado e bicarbonato reduzido.\n- **Conduta:** **Benigna e autolimitada**. Não deve ser interpretada como persistência da CAD; resolve-se espontaneamente nos dias subsequentes pelos túbulos renais."
+        "description": "Quais são a etiologia, fatores de risco e conduta imediata do Edema Cerebral como complicação da CAD?",
+        "answer": "### Edema Cerebral na CAD\n\n- **Epidemiologia:** mais comum em crianças e adolescentes (letalidade de 20 a 40%).\n- **Fisiopatologia:** redução rápida e precipitada da osmolalidade sérica plasmática durante reposição hídrica vigorosa, extravasamento vasogênico e uso inadequado de bicarbonato de sódio.\n- **Clínica Precoce:** **cefaleia intensa de início súbito**, rebaixamento progressivo do nível de consciência, bradicardia sustentada e hipertensão arterial (resposta de Cushing).\n- **Tratamento Imediato:**\n  - **Manitol:** 0,25 a 1 g/kg IV em 20 minutos; OU\n  - **Salina Hipertônica a 3%:** 5 a 10 mL/kg em 30 minutos.\n  - Reduzir infusão hídrica, elevar cabeceira a 30° e suporte ventilatório conforme necessidade."
     },
     {
-        "type": "fill",
-        "description": "Em enfermarias clínicas, define-se hiperglicemia hospitalar em pacientes em jejum ou pré-prandiais quando a glicemia sérica for > _ mg/dL.",
-        "answers": [
-            "140"
-        ],
-        "answer": "140",
-        "explanation": "Hiperglicemia hospitalar: glicemia de jejum/pré-prandial > 140 mg/dL ou aleatória/pós-prandial > 180 mg/dL."
-    },
-    {
-        "type": "fill",
-        "description": "Em pacientes hospitalizados não críticos, a introdução de insulinoterapia está indicada a partir de patamares mantidos de glicemia ≥ _ mg/dL.",
-        "answers": [
-            "180"
-        ],
-        "answer": "180",
-        "explanation": "Alvo hospitalar: glicemia mantida ≥ 180 mg/dL indica insulinoterapia para manter níveis entre 140 e 180 mg/dL."
+        "type": "open_double",
+        "description": "Qual microrganismo fúngico invasivo acomete os seios da face em diabéticos com CAD aproveitando o excesso de ferro e cetona redutase, e qual é o tratamento farmacológico de escolha?",
+        "answer": "Rhizopus spp.",
+        "answer2": "Anfotericina B",
+        "placeholder1": "Agente etiológico",
+        "placeholder2": "Tratamento de escolha"
     },
     {
         "type": "multiple_choice",
-        "description": "Por que a prescrição de insulina isolada conforme escala móvel ('sliding scale') é contraindicada como monoterapia na hiperglicemia hospitalar?",
-        "answer": "Porque atua de maneira estritamente reativa à hiperglicemia já estabelecida, elevando a variabilidade glicêmica e o risco de hipoglicemia",
+        "description": "Durante o tratamento da CAD com grandes volumes de Soro Fisiológico 0,9%, o paciente normaliza a glicemia e a cetonemia, mas persiste com bicarbonato de 13 mEq/L e pH 7,28. O ânion gap calculado é de 9. Qual é o diagnóstico?",
+        "answer": "Acidose metabólica hiperclorêmica com ânion gap normal decorrente da infusão de cloreto",
         "options": [
-            "Porque atua de maneira estritamente reativa à hiperglicemia já estabelecida, elevando a variabilidade glicêmica e o risco de hipoglicemia",
-            "Porque sobrecarrega a depuração hepática e precipita acidose tubular renal aguda",
-            "Porque o uso de insulina regular em ambiente hospitalar está proscrito pela OMS",
-            "Porque impede o ajuste empírico dos agentes hipoglicemiantes orais"
+            "Acidose metabólica hiperclorêmica com ânion gap normal decorrente da infusão de cloreto",
+            "Persistência de cetoacidose diabética refratária exigindo aumento da bomba de insulina",
+            "Acidose lática tipo B associada ao uso prévio de metformina",
+            "Insuficiência renal aguda anúrica com acúmulo de sulfatos e fosfatos"
         ]
     },
     {
         "type": "fill",
-        "description": "No paciente crítico instável na UTI, a via de administração de insulina de escolha é a via _ e a faixa de alvo glicêmico recomendado situa-se entre _ e _ mg/dL.",
+        "description": "Defina os valores de corte para Hiperglicemia Hospitalar (HH):\n\n• Glicemia em jejum ou pré-prandial > _ mg/dL\n• Glicemia ao acaso > _ mg/dL\n• Alvo terapêutico recomendado na maioria dos pacientes críticos e não críticos internados: _ a _ mg/dL.",
+        "answer": "140; 180; 140; 180",
         "answers": [
-            "endovenosa / intravenosa / EV / IV",
+            "140",
+            "180",
             "140",
             "180"
-        ],
-        "answer": "endovenosa; 140; 180",
-        "explanation": "Insulina EV contínua em bomba infusora é a escolha em UTI, com alvo glicêmico entre 140 e 180 mg/dL."
-    },
-    {
-        "type": "fill",
-        "description": "Manejo pré-operatório eletivo de antidiabéticos não insulínicos:\n- Inibidores de SGLT-2 (glifozinas): suspender _ a _ dias antes da cirurgia devido ao risco de CAD euglicêmica perioperatória.\n- Agonistas de GLP-1 semanais (ex.: semaglutida): suspender _ a _ dias antes caso haja risco de broncoaspiração por retardo do esvaziamento gástrico.",
-        "answers": [
-            "3",
-            "4",
-            "7",
-            "10"
-        ],
-        "answer": "3; 4; 7; 10",
-        "explanation": "Perioperatório: iSGLT2 suspender 3-4 dias antes (risco de CAD euglicêmica). aGLP-1 semanais suspender 7-10 dias antes (risco de broncoaspiração em intubação)."
-    },
-    {
-        "type": "fill",
-        "description": "No ajuste de insulina basal na manhã de cirurgia eletiva com jejum matinal prolongado:\n- Cirurgia matinal de curta duração: postergar insulina prandial e administrar _ a _% da dose habitual de NPH matinal (ou _% de análogo de ação prolongada como glargina/degludeca).",
-        "answers": [
-            "70",
-            "80",
-            "80"
-        ],
-        "answer": "70; 80; 80",
-        "explanation": "No perioperatório matinal: manter 70-80% da dose de NPH ou 80% do análogo basal, suspendendo a dose prandial rápida."
-    },
-    {
-        "type": "fill",
-        "description": "Classificação das Hipoglicemias segundo a American Diabetes Association (ADA):\n- Nível 1 (Limiar de Alerta): Glicemia entre _ e < _ mg/dL\n- Nível 2 (Clinicamente Significativa): Glicemia < _ mg/dL\n- Nível 3 (Grave): Comprometimento cognitivo necessitando de assistência ativa de _ para recuperação.",
-        "answers": [
-            "54",
-            "70",
-            "54",
-            "terceiros / outra pessoa"
-        ],
-        "answer": "54; 70; 54; terceiros",
-        "explanation": "ADA: Nível 1 = 54 a < 70 mg/dL; Nível 2 = < 54 mg/dL; Nível 3 = evento grave com necessidade de assistência de terceiros independente do valor."
-    },
-    {
-        "type": "fill",
-        "description": "A Tríade de Whipple para investigação de hipoglicemia verdadeira consiste em:\n1. Presença de _ compatíveis;\n2. Documentação laboratorial de _ concomitante;\n3. _ completa dos sintomas após administração de glicose.",
-        "answers": [
-            "sintomas / sinais",
-            "hipoglicemia / glicemia baixa",
-            "reversao / melhora / desaparecimento"
-        ],
-        "answer": "sintomas; hipoglicemia; reversao",
-        "explanation": "Tríade de Whipple: 1. Sintomas autonômicos/neuroglicopênicos; 2. Glicemia baixa comprovada; 3. Reversão dos sintomas com glicose."
-    },
-    {
-        "type": "open_double",
-        "description": "Diferencie, clínica e etiologicamente, os sintomas adrenérgicos/autonômicos dos sintomas neuroglicopênicos na hipoglicemia.",
-        "answer": "Tremor, sudorese e taquicardia",
-        "answer2": "Confusão, convulsão e coma",
-        "placeholder1": "Autonômicos (ativação simpática)",
-        "placeholder2": "Neuroglicopênicos (déficit cerebral)"
-    },
-    {
-        "type": "fill",
-        "description": "Pela clássica 'Regra dos 15' para reversão de hipoglicemia em paciente consciente, deve-se administrar _ g de carboidratos simples e reavaliar a glicemia capilar após _ minutos.",
-        "answers": [
-            "15",
-            "15"
-        ],
-        "answer": "15; 15",
-        "explanation": "Regra dos 15: 15g de carboidrato de ação rápida (ex: 150 mL de suco ou refrigerante comum), aguardar 15 min e reavaliar."
-    },
-    {
-        "type": "open_double",
-        "description": "Quais são as duas opções farmacológicas de emergência para reverter hipoglicemia grave em paciente com rebaixamento do nível de consciência, respectivamente pelas vias IV e SC/IM?",
-        "answer": "Glicose 50% (20 a 50 mL)",
-        "answer2": "Glucagon 1 mg",
-        "placeholder1": "Via intravenosa",
-        "placeholder2": "Via SC ou IM"
-    },
-    {
-        "type": "anki",
-        "description": "Qual é o perfil laboratorial de Peptídeo C, Insulina e Pró-insulina que permite o diagnóstico diferencial de Insulinoma vs. Uso Sub-reptício de Insulina Exógena vs. Sulfonilureias?",
-        "answer": "### Diagnóstico Diferencial de Hipoglicemia Hiperinsulinêmica\n\n| Etiologia | Insulina Sérica | Peptídeo C | Pró-insulina | Rastreio de Sulfonilureias |\n| :--- | :---: | :---: | :---: | :---: |\n| **Insulinoma** | Elevada | **Elevado** ($> 0,6\\text{ ng/mL}$) | **Elevada** ($> 5\\text{ pmol/L}$) | Negativo |\n| **Uso Exógeno de Insulina** | Elevadíssima | **Suprimido / Indetectável** | **Baixa** | Negativo |\n| **Ingestão de Sulfonilureia** | Elevada | **Elevado** | **Elevada** | **Positivo na urina/plasma** |\n| **Síndrome Paraneoplásica (IGF-2)** | Baixa / Suprimida | Baixo | Baixa | Negativo |"
-    },
-    {
-        "type": "fill",
-        "description": "O teste padrão-ouro hospitalar supervisionado para flagrar hipoglicemia de jejum por hiperinsulinismo endógeno (ex.: insulinoma) é o teste de jejum prolongado de até _ horas.",
-        "answers": [
-            "72"
-        ],
-        "answer": "72",
-        "explanation": "Teste de jejum de 72 horas em ambiente hospitalar monitora glicemia, insulina, pró-insulina e peptídeo C."
-    },
-    {
-        "type": "anki",
-        "description": "Por que o endotélio capilar da retina, dos glomérulos renais e das células de Schwann/axônios é particularmente vulnerável à lesão hiperglicêmica crônica?",
-        "answer": "### Vulnerabilidade Microvascular Seletiva\n\n- A maioria das células do organismo diminui a expressão de transportadores de glicose quando exposta a hiperglicemia extracelular para manter a homeostase.\n- Contudo, as **células endoteliais da retina, células mesangiais/endoteliais renais e neurônios/células de Schwann** utilizam predominantemente transportadores independentes de insulina (**GLUT-1 e GLUT-3**), sendo **incapazes de limitar o influxo de glicose**.\n- Isso gera sobrecarga glicolítica intracelular maciça crônica, ativando as 4 vias clássicas de lesão tecidual: acúmulo de sorbitol pela via dos polióis, estresse oxidativo por AGEs, hiperativação da Proteína Quinase C (PKC) e fluxo aumentado da via da hexosamina."
-    },
-    {
-        "type": "open_double",
-        "description": "Quais são os dois exames complementares anuais mandatórios para rastreamento da Doença Renal do Diabetes (DRD)?",
-        "answer": "Creatinina sérica para TFGe",
-        "answer2": "Relação Albumina/Creatinina urinária",
-        "placeholder1": "Função glomerular",
-        "placeholder2": "Lesão de barreira (RAC)"
-    },
-    {
-        "type": "fill",
-        "description": "O rastreamento de complicações microvasculares (retinopatia, nefropatia e neuropatia) deve ser iniciado _ no DM2 e após _ anos de diagnóstico no DM1.",
-        "answers": [
-            "ao diagnostico / no diagnostico",
-            "5"
-        ],
-        "answer": "ao diagnostico; 5",
-        "explanation": "No DM2, as complicações podem estar presentes há anos antes da detecção clínica (início ao diagnóstico). No DM1, o rastreamento inicia após 5 anos."
-    },
-    {
-        "type": "open",
-        "description": "Qual é a lesão histopatológica nodular intercapilar considerada a mais característica da glomeruloesclerose diabética avançada?",
-        "answer": "Nódulos de Kimmelstiel-Wilson"
-    },
-    {
-        "type": "fill",
-        "description": "No estadiamento da albuminúria pela Relação Albumina/Creatinina em amostra isolada de urina (KDIGO / SBD):\n- A1 (Normoalbuminúria / ligeiro aumento): RAC < _ mg/g (< _ mg/mmol)\n- A2 (Microalbuminúria / aumento moderado): RAC _-_ mg/g (_-_ mg/mmol)\n- A3 (Macroalbuminúria / aumento grave): RAC > _ mg/g (> _ mg/mmol)",
-        "answers": [
-            "30",
-            "3",
-            "30",
-            "300",
-            "3",
-            "30",
-            "300",
-            "30"
-        ],
-        "answer": "30; 3; 30; 300; 3; 30; 300; 30",
-        "explanation": "Estadiamento KDIGO/SBD:\nA1: RAC < 30 mg/g (< 3 mg/mmol)\nA2: RAC 30-300 mg/g (3-30 mg/mmol) [exige confirmação em 2 de 3 amostras]\nA3: RAC > 300 mg/g (> 30 mg/mmol)"
-    },
-    {
-        "type": "multiple_choice",
-        "description": "Qual classe de fármacos anti-hipertensivos atua reduzindo preferencialmente a pressão intraglomerular por promover dilatação da arteríola eferente, fornecendo nefroproteção comprovada no diabetes com albuminúria?",
-        "answer": "Inibidores da ECA ou Bloqueadores dos Receptores de Angiotensina (BRA)",
-        "options": [
-            "Inibidores da ECA ou Bloqueadores dos Receptores de Angiotensina (BRA)",
-            "Bloqueadores dos canais de cálcio di-hidropiridínicos",
-            "Betabloqueadores de terceira geração",
-            "Diuréticos de alça em altas doses"
         ]
     },
     {
         "type": "anki",
-        "description": "Quais são os principais tratamentos farmacológicos com benefício nefroprotetor comprovado na Doença Renal do Diabetes?",
-        "answer": "### Pilares Farmacológicos da Nefroproteção no DM\n\n1. **Bloqueadores do SRAA (IECA ou BRA):** Titulados até dose máxima tolerada para pacientes com albuminúria (A2 ou A3), com ou sem hipertensão arterial. *Associação dupla IECA + BRA é formalmente contraindicada*.\n2. **Inibidores de SGLT2 (Dapagliflozina, Empagliflozina, Canagliflozina):** Reduzem a pressão intraglomerular por restaurar o feedback tubuloglomerular e diminuem progressão para diálise e morte cardiovascular.\n3. **Antagonista Mineralocorticoide Não Esteroidal (Finerenona):** Indicada para DM2 com albuminúria persistente em uso de dose máxima de IECA/BRA e $TFGe \\ge 30\\text{ mL/min}$, com monitorização de potássio.\n4. **Agonistas do Receptor de GLP-1:** Reduzem novos episódios de macroalbuminúria e protegem desfechos renais e cardiovasculares."
-    },
-    {
-        "type": "open_double",
-        "description": "Diferencie Retinopatia Diabética Não Proliferativa (RDNP) de Retinopatia Diabética Proliferativa (RDP) quanto ao achado vascular definidor.",
-        "answer": "Microaneurismas e exsudatos",
-        "answer2": "Neovasos e hemorragia vítrea",
-        "placeholder1": "RDNP",
-        "placeholder2": "RDP"
-    },
-    {
-        "type": "fill",
-        "description": "Pela clássica 'Regra 4-2-1' para diagnóstico de Retinopatia Diabética Não Proliferativa (RDNP) Grave (sem neovasos visíveis), basta preencher pelo menos um dos critérios:\n- _ quadrantes com hemorragias intrarretinianas graves;\n- _ ou mais quadrantes com dilatação/ensalsichamento venoso;\n- _ quadrante ou mais com anormalidades microvasculares intrarretinianas (IRMA).",
-        "answers": [
-            "4",
-            "2",
-            "1"
-        ],
-        "answer": "4; 2; 1",
-        "explanation": "Regra 4-2-1: 4 quadrantes com hemorragias graves, 2 quadrantes com ensalsichamento venoso, 1 quadrante com IRMA. Indica alto risco de conversão para RDP."
-    },
-    {
-        "type": "open_double",
-        "description": "Quais são as duas principais modalidades terapêuticas avançadas para Retinopatia Diabética Proliferativa e Edema Macular Diabético, respectivamente?",
-        "answer": "Panfotocoagulação a laser",
-        "answer2": "Anti-VEGF intravítreo",
-        "placeholder1": "RDP",
-        "placeholder2": "Edema macular"
-    },
-    {
-        "type": "anki",
-        "description": "Qual a distribuição e as características clínicas da Polineuropatia Distal Simétrica no diabetes mellitus?",
-        "answer": "### Polineuropatia Simétrica Distal (PSD)\n\n- **Epidemiologia:** Forma mais comum ($> 80\\%$ das neuropatias diabéticas); presente em até $20\\%$ dos pacientes ao diagnóstico de DM2.\n- **Padrão de Distribuição:** Comprimento-dependente (nervos mais longos sofrem primeiro); início insidioso nos dedos e pés, progredindo proximalmente em padrão **'em bota e luva'**.\n- **Acometimento de Fibras Finas (C e A-$\\delta$):** Sintomas positivos precoces — dor em queimação, pontadas, disestesias, hiperalgesia e alodinia (dor com toque do lençol), com piora tipicamente **noturna e em repouso**.\n- **Acometimento de Fibras Grossas (A-$\\alpha$ e A-$\\beta$):** Dormência, perda da sensibilidade vibratória (palestesia) e da sensibilidade protetora tátil, além de hiporreflexia aquileia, culminando em risco elevado de úlcera trófica."
-    },
-    {
-        "type": "fill",
-        "description": "O teste de escolha para rastreamento da perda da sensibilidade protetora plantar no pé diabético utiliza o monofilamento de Semmes-Weinstein calibrado para uma pressão de _ gramas.",
-        "answers": [
-            "10"
-        ],
-        "answer": "10",
-        "explanation": "Monofilamento de Semmes-Weinstein de 10g (calibre 5.07) avalia a sensibilidade tátil e perda da sensibilidade protetora."
-    },
-    {
-        "type": "anki",
-        "description": "Cite quatro manifestações clínicas sistêmicas características da Neuropatia Autonômica Diabética.",
-        "answer": "### Manifestações da Neuropatia Autonômica Diabética\n\n1. **Cardiovascular:** Taquicardia fixa de repouso ($> 100\\text{ bpm}$), perda da variabilidade respiratória da frequência cardíaca, **hipotensão postural/ortostática** e isquemia miocárdica silenciosa.\n2. **Gastrointestinal:** **Gastroparesia diabética** (plenitude pós-prandial, náuseas, vômitos, grande labilidade glicêmica), constipação intestinal alternada com diarreia noturna desautonômica.\n3. **Geniturinário:** **Bexiga neurogênica** (hipotonia vesical, retenção urinária com micção por transbordamento, resíduo pós-miccional elevado, infecções de repetição) e **disfunção erétil**.\n4. **Sudomotora e Metabólica:** Anidrose distal com ressecamento plantar e hiperidrose compensatória em tronco/face; **falência do reconhecimento adrenérgico da hipoglicemia** (*hypoglycemia unawareness*)."
+        "description": "Por que o esquema de 'escala móvel de insulina isolada' é proscrito nas enfermarias e qual é o esquema preferido para pacientes internados não críticos?",
+        "answer": "### Manejo da Hiperglicemia Hospitalar em Não Críticos\n\n- **Inadequação da Escala Móvel Isolada:** a escala móvel administra insulina rápida reativamente após a glicemia já ter subido («correndo atrás do prejuízo»), favorecendo grande variabilidade glicêmica e alternância constante entre hiperglicemias e hipoglicemias.\n- **Esquema Preferencial - Basal-Bolus:**\n  - **Insulina Basal:** (NPH, glargina ou degludeca) cobre a liberação hepática contínua de glicose e deve ser mantida mesmo em menor ingesta.\n  - **Insulina Prandial (Nutricional):** (regular ou ultrarrápida) aplicada antes das refeições para cobrir o carboidrato ofertado.\n  - **Insulina de Correção:** somada à prandial caso a glicemia prévia à refeição esteja acima da meta.\n  - Se o paciente estiver em **jejum**: adotar esquema **Basal-Plus** (insulina basal fixa + correções de resgate se glicemia $> 180\\text{ mg/dL}$)."
     },
     {
         "type": "multiple_choice",
-        "description": "Qual das seguintes classes de medicamentos é indicada como primeira linha no tratamento farmacológico da neuropatia diabética dolorosa?",
-        "answer": "Antidepressivos duais (Duloxetina/Venlafaxina) ou Anticonvulsivantes gabapentinoides (Pregabalina/Gabapentina)",
+        "description": "No perioperatório eletivo de pacientes diabéticos em uso de antidiabéticos não insulínicos, qual das opções abaixo descreve a conduta recomendada para os inibidores de SGLT2 (glifozinas)?",
+        "answer": "Suspender de 3 a 4 dias antes da cirurgia pelo risco de CAD euglicêmica",
         "options": [
-            "Antidepressivos duais (Duloxetina/Venlafaxina) ou Anticonvulsivantes gabapentinoides (Pregabalina/Gabapentina)",
-            "Anti-inflamatórios não esteroidais (AINEs) em uso contínuo",
-            "Corticosteroides orais associados a complexo B",
-            "Benzodiazepínicos em doses crescentes"
+            "Suspender de 3 a 4 dias antes da cirurgia pelo risco de CAD euglicêmica",
+            "Manter até a manhã da cirurgia e suspender apenas no pós-operatório",
+            "Suspender 24 horas antes e associar bicarbonato venoso",
+            "Substituir por sulfonilureia de longa ação no dia anterior"
+        ]
+    },
+    {
+        "type": "fill",
+        "description": "Complete os prazos de suspensão pré-operatória dos seguintes antidiabéticos não insulínicos:\n\n- **Clorpropamida:** suspender _ dias antes do procedimento (meia-vida de até 60h e risco de hipoglicemia).\n- **Inibidores de SGLT2:** suspender _ a _ dias antes da cirurgia (prevenção de CAD euglicêmica).\n- **Agonistas de GLP-1 (uso diário):** suspender _ dias antes da cirurgia.\n- **Agonistas de GLP-1 (uso semanal):** suspender _ dias antes da cirurgia (risco de gastroparesia e broncoaspiração).\n- **Metformina:** manter até a véspera; suspender no dia se houver uso de contraste iodado, choque ou cirurgia com duração $> 4\\text{h}$.",
+        "answer": "3; 3; 4; 3; 10",
+        "answers": [
+            "3",
+            "3",
+            "4",
+            "3",
+            "10"
+        ]
+    },
+    {
+        "type": "fill",
+        "description": "Complete as faixas de categorização da Hipoglicemia:\n\n• Grau 1 (Leve / Limiar de alerta): Glicemia entre _ e _ mg/dL\n• Grau 2 (Clinicamente significativa): Glicemia < _ mg/dL\n• Grau 3 (Grave): Caracterizada por _ com necessidade de auxílio de terceiros, independente do valor numérico da glicemia.",
+        "answer": "55; 70; 54; disfunção neuroglicopênica",
+        "answers": [
+            "55",
+            "70",
+            "54",
+            "disfunção neuroglicopênica"
+        ]
+    },
+    {
+        "type": "anki",
+        "description": "O que constitui a Tríade de Whipple para a confirmação diagnóstica de hipoglicemia verdadeira?",
+        "answer": "### Tríade de Whipple\n\n1. **Sinais e sintomas** clínicos compatíveis com hipoglicemia (autonômicos e/ou neuroglicopênicos).\n2. **Confirmação laboratorial** de glicemia sérica baixa (tipicamente $< 55\\text{ mg/dL}$ em não diabéticos, ou $< 70\\text{ mg/dL}$ em diabéticos sob insulinoterapia).\n3. **Alívio ou desaparecimento completo dos sintomas** imediatamente após a elevação da glicemia provocada pela administração de carboidratos/glicose."
+    },
+    {
+        "type": "open_double",
+        "description": "Diferencie duas manifestações clínicas autonômicas (adrenérgicas/colinérgicas) de duas manifestações neuroglicopênicas da hipoglicemia.",
+        "answer": "Sudorese fria e palpitações",
+        "answer2": "Confusão mental e convulsão",
+        "placeholder1": "Sintomas autonômicos",
+        "placeholder2": "Sintomas neuroglicopênicos"
+    },
+    {
+        "type": "anki",
+        "description": "Como é executado o tratamento da hipoglicemia no paciente diabético consciente versus no paciente inconsciente?",
+        "answer": "### Tratamento da Hipoglicemia\n\n- **Paciente Consciente (Regra dos 15):**\n  - Ingerir **15 a 20 g de carboidratos simples** de rápida absorção por via oral (ex.: 1 colher de sopa de açúcar diluída em 200 mL de água; 150 mL de refrigerante comum; 1 copo de suco de laranja).\n  - Aguardar **15 minutos** em repouso e reavaliar a glicemia capilar.\n  - Se persistir $< 70\\text{ mg/dL}$, repetir a ingestão de 15 g de carboidratos.\n  - Após a correção, fornecer carboidrato complexo para evitar recorrência.\n\n- **Paciente Inconsciente ou sem Acesso Oral:**\n  - **Via Intravenosa:** administrar **20 a 50 mL de Glicose a 50%** IV direta em bólus (ou 100 mL de SG 10%). Manter infusão de manutenção com SG 5% ou 10%.\n  - **Sem Acesso Venoso:** aplicar **Glucagon 1 mg** por via intramuscular (IM) ou subcutânea (SC)."
+    },
+    {
+        "type": "anki",
+        "description": "Como os níveis séricos de Peptídeo C, Insulina e pró-insulina diferenciam as causas de hipoglicemia hiperinsulinêmica no adulto (Insulinoma vs. Uso Exógeno de Insulina vs. Sulfonilureias)?",
+        "answer": "### Diagnóstico Diferencial de Hipoglicemia Hiperinsulinêmica\n\n| Causa | Insulina | Peptídeo C | Pró-insulina | Rastreio de Sulfas |\n| :--- | :---: | :---: | :---: | :---: |\n| **Insulinoma** | Elevada | Elevado | Elevada | Negativo |\n| **Sulfonilureia / Glinidas** | Elevada | Elevado | Elevada | **Positivo** |\n| **Insulina Exógena Factícia** | **Muito Elevada** | **Suprimido/Baixo** | **Baixo** | Negativo |\n| **Tumor Produtor de IGF-2** | Baixa | Baixo | Baixa | Negativo |"
+    },
+    {
+        "type": "anki",
+        "description": "Por que a retina, o glomérulo renal e os nervos periféricos (vasa nervorum) são os principais tecidos lesados pela hiperglicemia crônica microvascular?",
+        "answer": "As células desses tecidos (endotélio retiniano, células mesangiais/endotélio glomerular e células de Schwann/endotélio da vasa nervorum) expressam predominantemente transportadores de glicose independentes de insulina (**GLUT-1**).\n\nAssim, essas células **não conseguem limitar a entrada de glicose intracelular** durante os períodos de hiperglicemia sistêmica. O acúmulo intracelular crônico de glicose sobrecarrega a cadeia mitocondrial e ativa quatro vias patológicas deletérias:\n1. **Via dos Produtos Finais de Glicação Avançada (AGEs)**;\n2. **Via dos Polióis (acúmulo osmótico de sorbitol pela aldose redutase)**;\n3. **Via da Proteína Quinase C (PKC)**, gerando espessamento da membrana basal;\n4. **Via da Hexosamina** com estresse oxidativo e microtrombose."
+    },
+    {
+        "type": "open_double",
+        "description": "Quais são os dois padrões histopatológicos de glomeruloesclerose na Doença Renal Diabética (DRD), destacando qual é o mais comum e qual é o mais específico/característico?",
+        "answer": "Glomeruloesclerose difusa",
+        "answer2": "Nódulos de Kimmelstiel-Wilson",
+        "placeholder1": "Mais comum",
+        "placeholder2": "Mais específico"
+    },
+    {
+        "type": "anki",
+        "description": "Quando deve ser iniciado o rastreamento da Doença Renal do Diabetes (DRD) e da Retinopatia Diabética no DM1 versus no DM2?",
+        "answer": "### Início do Rastreamento Microvascular (DRD e Retinopatia)\n\n- **No DM tipo 2:** o rastreamento deve ser iniciado **imediatamente no momento do diagnóstico**, pois o DM2 possui curso insidioso e o paciente pode já ter 5 a 10 anos de doença subclínica com lesões instaladas.\n- **No DM tipo 1:** o rastreamento deve ser iniciado **5 anos após o diagnóstico da doença** (ou após a puberdade / a partir dos 10 anos de idade, o que ocorrer primeiro), visto que as lesões microvasculares levam anos de exposição à hiperglicemia para se manifestarem.\n\n*Exceções:* Antecipar imediatamente se gestação planejada ou hipertensão arterial sistêmica associada."
+    },
+    {
+        "type": "fill",
+        "description": "Preencha a classificação da albuminúria (Relação Albumina/Creatinina - RAC em amostra isolada de urina) conforme o KDIGO e diretrizes brasileiras:\n\n• Categoria A1 (Normoalbuminúria): RAC < _ mg/g\n• Categoria A2 (Aumento moderado / microalbuminúria): RAC entre _ e _ mg/g\n• Categoria A3 (Aumento grave / macroalbuminúria): RAC > _ mg/g",
+        "answer": "30; 30; 300; 300",
+        "answers": [
+            "30",
+            "30",
+            "300",
+            "300"
+        ]
+    },
+    {
+        "type": "multiple_choice",
+        "description": "Um paciente diabético de 52 anos apresenta RAC de 110 mg/g em amostra urinária. Qual é a conduta preconizada para firmar o diagnóstico de Doença Renal Diabética?",
+        "answer": "Repetir a RAC em 3 a 6 meses; o diagnóstico requer 2 de 3 amostras alteradas",
+        "options": [
+            "Repetir a RAC em 3 a 6 meses; o diagnóstico requer 2 de 3 amostras alteradas",
+            "Iniciar imediatamente hemodiálise de urgência pela presença de nefropatia estabelecida",
+            "Solicitar biópsia renal imediata para afastar glomeruloesclerose nodular",
+            "Considerar o paciente curado se a creatinina sérica for normal"
+        ]
+    },
+    {
+        "type": "anki",
+        "description": "Quais são os 4 pilares farmacológicos com evidência científica de nefroproteção na Doença Renal do Diabetes (DRD)?",
+        "answer": "### Tratamento Farmacológico com Ação Nefroprotetora na DRD\n\n1. **Bloqueadores do SRAA (IECA ou BRA em monoterapia):** reduzem a pressão intraglomerular por vasodilatação preferencial da arteríola eferente. **Regra absoluta:** nunca associar IECA + BRA.\n2. **Inibidores de SGLT2 (Dapagliflozina, Empagliflozina, Canagliflozina):** restauram o feedback túbulo-glomerular ao aumentar o aporte de sódio na mácula densa, promovendo vasoconstrição da arteríola aferente e redução sustentada da hiperfiltração e albuminúria.\n3. **Antagonista Mineralocorticoide Não Esteroidal (Finerenona):** reduz inflamação e fibrose intersticial renal em pacientes com DM2 e albuminúria persistente sob bloqueio máximo de IECA/BRA.\n4. **Agonistas do Receptor de GLP-1 (Liraglutida, Semaglutida, Dulaglutida):** reduzem desfechos renais compostos e progressão da macroalbuminúria."
+    },
+    {
+        "type": "open_double",
+        "description": "Qual alteração no exame de fundo de olho define categoricamente a transição da retinopatia diabética da forma Não Proliferativa para a forma Proliferativa?",
+        "answer": "Neovasos de retina",
+        "answer2": "Hemorragia vítrea ou pré-retiniana",
+        "placeholder1": "Achado vascular",
+        "placeholder2": "Achado hemorrágico"
+    },
+    {
+        "type": "anki",
+        "description": "Quais são os tratamentos indicados para a Retinopatia Diabética Proliferativa e para o Edema Macular Diabético?",
+        "answer": "### Terapias Específicas na Retinopatia Diabética\n\n- **Retinopatia Diabética Proliferativa:**\n  - **Panfotocoagulação a laser:** queima a retina periférica isquêmica para diminuir a produção de VEGF e estabilizar os neovasos, impedindo a progressão para cegueira.\n  - **Vitrectomia cirúrgica:** indicada em hemorragia vítrea persistente ou descolamento tracional de retina.\n\n- **Edema Macular Diabético:**\n  - **Injeções Intravítreas de Anti-VEGF** (Ranibizumabe, Aflibercepte, Bevacizumabe): primeira linha para restaurar acuidade visual e estancar extravasamento na fóvea.\n  - **Corticosteroides intravítreos** (implante de dexametasona ou triancinolona): casos refratários (atenção para o risco de catarata e glaucoma)."
+    },
+    {
+        "type": "open_double",
+        "description": "Quais instrumentos clínicos simples avaliam, respectivamente, a integridade funcional das fibras grossas (vibratória) e a perda da sensibilidade protetora plantar no exame do pé diabético?",
+        "answer": "Diapasão de 128 Hz",
+        "answer2": "Monofilamento de 10 g",
+        "placeholder1": "Sensibilidade vibratória",
+        "placeholder2": "Sensibilidade protetora"
+    },
+    {
+        "type": "multiple_choice",
+        "description": "Qual é a manifestação ocular característica da mononeuropatia diabética do terceiro par craniano (nervo oculomotor), que permite distingui-la clinicamente de lesões compressivas (como aneurismas)?",
+        "answer": "Ptose palpebral e estrabismo divergente com motilidade pupilar preservada (sem midríase)",
+        "options": [
+            "Ptose palpebral e estrabismo divergente com motilidade pupilar preservada (sem midríase)",
+            "Midríase paralítica fixa com dor ocular retrobulbar",
+            "Perda de visão binocular por atrofia óptica isquêmica",
+            "Midríase unilateral súbita sem paralisia dos músculos extraoculares"
+        ]
+    },
+    {
+        "type": "anki",
+        "description": "Quais são as principais manifestações da Neuropatia Autonômica Diabética e seus respectivos tratamentos sintomáticos?",
+        "answer": "### Manifestações e Terapias da Neuropatia Autonômica\n\n- **Cardiovascular:** taquicardia de repouso fixa ($> 100\\text{ bpm}$) e hipotensão ortostática (queda de $\\text{PAS} > 20$ ou $\\text{PAD} > 10\\text{ mmHg}$). *Tratamento:* fludrocortisona, medidas elásticas, midodrina.\n- **Gastrointestinal (Gastroparesia):** empachamento pós-prandial, náuseas, vômitos e hipoglicemias inexplicadas (descompasso entre insulina prandial e absorção retardada). *Tratamento:* fracionamento de dieta pobre em fibras/lipídios, pró-cinéticos (metoclopramida, domperidona) e aplicar insulina prandial APÓS as refeições.\n- **Geniturinária:** bexiga neurogênica (biscartil/betanecol, cateterismo) e disfunção erétil (inibidores da PDE-5: sildenafila, tadalafila).\n- **Sudomotora:** anidrose distal dos pés com pele ressecada e fissuras associada à sudorese gustatória cefálica compensatória."
+    },
+    {
+        "type": "anki",
+        "description": "Quais são as classes farmacológicas de primeira linha recomendadas para o alívio da dor na Polineuropatia Diabética Dolorosa?",
+        "answer": "### Fármacos para Neuropatia Diabética Dolorosa\n\n1. **Antidepressivos Duais (Inibidores da Recaptação de Serotonina e Noradrenalina):**\n   - **Duloxetina** (60 a 120 mg/dia) ou Venlafaxina.\n2. **Anticonvulsivantes / Ligantes dos Canais de Cálcio $\\alpha_2-\\delta$:**\n   - **Pregabalina** (150 a 600 mg/dia) ou **Gabapentina**.\n3. **Antidepressivos Tricíclicos:**\n   - **Amitriptilina** ou Nortriptilina (cautela em idosos pelo efeito anticolinérgico e arritmias cardíacas).\n\n*Nota:* Opioides devem ser estritamente reservados para casos refratários. Corticoides não revertem o dano crônico."
+    },
+    {
+        "type": "open_double",
+        "description": "Diferencie clinicamente uma úlcera de pé diabético puramente neuropática de uma úlcera isquêmica quanto à dor e aos pulsos periféricos.",
+        "answer": "Indolor com pulsos palpáveis",
+        "answer2": "Muito dolorosa com pulsos ausentes ou diminuídos",
+        "placeholder1": "Úlcera Neuropática",
+        "placeholder2": "Úlcera Isquêmica"
+    },
+    {
+        "type": "open",
+        "description": "Qual é a deformidade osteoarticular crônica do pé diabético caracterizada por colapso do arco plantar médio e aspecto em 'mata-borrão' secundário à neuroartropatia?",
+        "answer": "Pé de Charcot"
+    },
+    {
+        "type": "anki",
+        "description": "Quais são as medidas não farmacológicas essenciais para prevenção de úlceras e amputações no pé diabético?",
+        "answer": "<h3>Prevenção do Pé Diabético</h3>\n<ul>\n<li><strong>Autoexame diário:</strong> inspecionar visualmente a planta e espaços interdigitais (usar espelho se necessário).</li>\n<li><strong>Higiene:</strong> lavar diariamente com água morna e secar cuidadosamente, principalmente entre os dedos.</li>\n<li><strong>Hidratação:</strong> hidratar a pele seca com cremes, mas <strong>NUNCA aplicar hidratante entre os dedos</strong> (evita maceração e infecções fúngicas).</li>\n<li><strong>Calçados:</strong> nunca andar descalço; usar sapatos confortáveis de solado rígido; usar meias claras sem costura interna.</li>\n<li><strong>Unhas:</strong> <mark class=\"card-hl card-hl-purple\">cortar em linha reta</mark>, sem retirar cutículas ou desencravar cantos.</li>\n<li><strong>Conduta em lesões:</strong> <mark class=\"card-hl card-hl-purple\">nunca usar calicidas químicos</mark>; buscar atendimento médico imediato diante de bolhas, calos ou fissuras.</li>\n</ul>\n"
+    },
+    {
+        "type": "anki",
+        "description": "Qual é o mecanismo de ação molecular, benefícios, efeitos colaterais e contraindicações renais da Metformina?",
+        "answer": "<h3>Biguanida: Metformina</h3>\n<ul>\n<li><strong>Mecanismo:</strong> <mark class=\"card-hl card-hl-purple\">ativação da enzima <strong>AMPK</strong></mark><strong> (proteína quinase ativada por AMP)</strong> no hepatócito <span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mo>→</mo></mrow><annotation encoding=\"application/x-tex\">\\rightarrow</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.3669em;\"></span><span class=\"mrel\">→</span></span></span></span> <mark class=\"card-hl card-hl-purple\">inibe a gliconeogênese</mark> hepática e reduz a produção de glicose; discreto aumento da <mark class=\"card-hl card-hl-blue\">captação de glicose muscular</mark>.</li>\n<li><strong>Efeitos Metabólicos:</strong> <mark class=\"card-hl card-hl-green\">reduz HbA1c</mark> em 1,5 a 2,0%; efeito neutro ou discreta perda de peso; sem risco de hipoglicemia em monoterapia.</li>\n<li><strong>Efeitos Colaterais:</strong> sintomas gastrointestinais (diarreia, náuseas, flatulência), <strong>má absorção de vitamina B12</strong> (monitorar em uso prolongado para evitar anemia megaloblástica e neuropatia) e acidose lática (rara).</li>\n<li><strong>Manejo Renal (TFGe):</strong><ul>\n<li><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mtext>TFGe</mtext><mo>≥</mo><mn>60</mn><mtext>&nbsp;mL/min</mtext></mrow><annotation encoding=\"application/x-tex\">\\text{TFGe} \\ge 60\\text{ mL/min}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8193em;vertical-align:-0.136em;\"></span><span class=\"mord text\"><span class=\"mord\">TFGe</span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">≥</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord\">60</span><span class=\"mord text\"><span class=\"mord\">&nbsp;mL/min</span></span></span></span></span>: dose máxima de <span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mn>2.550</mn><mtext>&nbsp;mg/dia</mtext></mrow><annotation encoding=\"application/x-tex\">2.550\\text{ mg/dia}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord\">2.550</span><span class=\"mord text\"><span class=\"mord\">&nbsp;mg/dia</span></span></span></span></span>.</li>\n<li><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mtext>TFGe&nbsp;</mtext><mn>45</mn><mo>−</mo><mn>59</mn><mtext>&nbsp;mL/min</mtext></mrow><annotation encoding=\"application/x-tex\">\\text{TFGe } 45 - 59\\text{ mL/min}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.7667em;vertical-align:-0.0833em;\"></span><span class=\"mord text\"><span class=\"mord\">TFGe&nbsp;</span></span><span class=\"mord\">45</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">−</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord\">59</span><span class=\"mord text\"><span class=\"mord\">&nbsp;mL/min</span></span></span></span></span>: dose máxima de <span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mn>2.000</mn><mtext>&nbsp;mg/dia</mtext></mrow><annotation encoding=\"application/x-tex\">2.000\\text{ mg/dia}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord\">2.000</span><span class=\"mord text\"><span class=\"mord\">&nbsp;mg/dia</span></span></span></span></span>.</li>\n<li><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mtext>TFGe&nbsp;</mtext><mn>30</mn><mo>−</mo><mn>44</mn><mtext>&nbsp;mL/min</mtext></mrow><annotation encoding=\"application/x-tex\">\\text{TFGe } 30 - 44\\text{ mL/min}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.7667em;vertical-align:-0.0833em;\"></span><span class=\"mord text\"><span class=\"mord\">TFGe&nbsp;</span></span><span class=\"mord\">30</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">−</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord\">44</span><span class=\"mord text\"><span class=\"mord\">&nbsp;mL/min</span></span></span></span></span>: dose máxima de <span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mn>1.000</mn><mtext>&nbsp;mg/dia</mtext></mrow><annotation encoding=\"application/x-tex\">1.000\\text{ mg/dia}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord\">1.000</span><span class=\"mord text\"><span class=\"mord\">&nbsp;mg/dia</span></span></span></span></span> (não iniciar tratamento novo nesta faixa).</li>\n<li><strong><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mtext>TFGe</mtext><mo>&lt;</mo><mn>30</mn><mtext>&nbsp;mL/min</mtext></mrow><annotation encoding=\"application/x-tex\">\\text{TFGe} &lt; 30\\text{ mL/min}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.7224em;vertical-align:-0.0391em;\"></span><span class=\"mord text\"><span class=\"mord\">TFGe</span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">&lt;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord\">30</span><span class=\"mord text\"><span class=\"mord\">&nbsp;mL/min</span></span></span></span></span>:</strong> <strong>CONTRAINDICADA</strong>.</li>\n</ul>\n</li>\n</ul>\n"
+    },
+    {
+        "type": "multiple_choice",
+        "description": "Qual das seguintes alterações é uma contraindicação absoluta ao uso da Pioglitazona (Tiazolidinediona)?",
+        "answer": "Insuficiência Cardíaca classes funcionais II a IV de NYHA",
+        "options": [
+            "Insuficiência Cardíaca classes funcionais II a IV de NYHA",
+            "Taxa de filtração glomerular estimada de 25 mL/min/1,73m²",
+            "Doença hepática esteatótica não alcoólica leve",
+            "Idade superior a 40 anos"
         ]
     },
     {
         "type": "open_double",
-        "description": "Diferencie uma úlcera de pé diabético puramente neuropática de uma úlcera isquêmica quanto à presença de dor e temperatura cutânea local.",
-        "answer": "Indolor e quente",
-        "answer2": "Dolorosa e fria",
-        "placeholder1": "Polo neuropático",
-        "placeholder2": "Polo isquêmico"
-    },
-    {
-        "type": "open",
-        "description": "Qual deformidade osteoarticular grave do tarso e metatarso resulta de neuroartropatia destrutiva no pé diabético, conferindo aspecto em 'mata-borrão'?",
-        "answer": "Artropatia de Charcot"
+        "description": "Quais são as duas desvantagens metabólicas clínicas mais comuns do uso das sulfonilureias (ex.: gliclazida, glibenclamida)?",
+        "answer": "Hipoglicemia",
+        "answer2": "Ganho de peso",
+        "placeholder1": "Risco agudo",
+        "placeholder2": "Efeito ponderal"
     },
     {
         "type": "anki",
-        "description": "Como funciona a Classificação de Úlceras da Universidade do Texas para avaliação do pé diabético?",
-        "answer": "### Classificação de Úlceras da Universidade do Texas\n\n- **Estruturação:** Matriz combinando **Grau de Profundidade** (0 a III) com **Estágio Fisiopatológico** (A a D).\n\n| Grau | Descrição da Profundidade |\n| :---: | :--- |\n| **Grau 0** | Lesão pré ou pós-ulcerativa completamente epitelizada (ex.: calo, deformidade) |\n| **Grau I** | Ferida superficial não envolvendo tendão, cápsula articular ou osso |\n| **Grau II** | Ferida profunda penetrando até tendão ou cápsula articular |\n| **Grau III**| Ferida que atinge osso ou penetra na cavidade articular (osteomielite) |\n\n| Estágio | Condição Infecciosa e Vascular |\n| :---: | :--- |\n| **Estágio A** | Limpa, sem infecção e sem isquemia |\n| **Estágio B** | Presença de infecção ativa |\n| **Estágio C** | Presença de isquemia tecidual |\n| **Estágio D** | Presença combinada de infecção e isquemia |"
+        "description": "Quais são as diferenças de mecanismo, via de administração, impacto no peso e desfechos cardiovasculares entre os Agonistas de GLP-1 e os Inibidores de DPP-4?",
+        "answer": "### aGLP-1 vs. iDPP-4\n\n| Característica | Agonistas de GLP-1 (ex: Semaglutida, Liraglutida) | Inibidores de DPP-4 (ex: Sitagliptina, Linagliptina) |\n| :--- | :--- | :--- |\n| **Mecanismo** | Estimulam farmacologicamente o receptor de GLP-1 com alta potência | Bloqueiam a degradação enzimática do GLP-1 endógeno |\n| **Via** | Subcutânea (exceto semaglutida oral) | Oral diária |\n| **Efeito no Peso** | **Perda de peso expressiva** (anorexígenos) | **Neutros no peso** |\n| **Desfechos CV** | **Redução comprovada de MACE** e mortalidade | **Neutros** (Saxagliptina aumenta risco de internação por IC) |\n| **Associação** | Nunca devem ser associados conjuntamente (duplicação de via fútil) |"
     },
     {
         "type": "anki",
-        "description": "Qual é o mecanismo de ação molecular, posologia e principais contraindicações da Metformina?",
-        "answer": "### Metformina (Biguanida)\n\n- **Mecanismo de Ação:** Ativação da proteína quinase dependente de AMP (**AMPK**) no hepatócito. Reduz a **produção hepática de glicose** (gliconeogênese), aumenta sensibilidade periférica à insulina e estimula a oxidação anaeróbica intestinal da glicose.\n- **Dose:** Iniciar com $500\\text{ ou }850\\text{ mg}$ às refeições; titular até a dose plena de **$2.000\\text{ a }2.550\\text{ mg/dia}$** (ou $2.000\\text{ mg/dia}$ na formulação XR).\n- **Benefícios:** Não causa hipoglicemia, neutra ou redutora de peso, baixo custo.\n- **Contraindicações e Ajustes na DRC:**\n  - $TFGe \\ge 60\\text{ mL/min}$: Sem restrição ($2.550\\text{ mg}$).\n  - $TFGe\\text{ } 45 - 59\\text{ mL/min}$: Dose máxima de $2.000\\text{ mg/dia}$.\n  - $TFGe\\text{ } 30 - 44\\text{ mL/min}$: Dose máxima de $1.000\\text{ mg/dia}$ (não iniciar novo tratamento).\n  - **$TFGe < 30\\text{ mL/min}$ ou diálise:** **Formalmente contraindicada** (risco de acidose lática).\n- **Efeitos Adversos:** Intolerância gastrointestinal (diarreia, náuseas) e má absorção crônica de **vitamina B12**."
-    },
-    {
-        "type": "anki",
-        "description": "Qual é o mecanismo de ação, benefícios clínicos e principais efeitos adversos da Pioglitazona (Tiazolidinediona)?",
-        "answer": "### Pioglitazona (Glitazona)\n\n- **Mecanismo:** Agonista seletivo do receptor nuclear **PPAR-$\\gamma$** (Peroxisome Proliferator-Activated Receptor gamma). Redistribui gordura ectópica (fígado/músculo) para o tecido celular subcutâneo, potencializando a sensibilidade periférica à insulina.\n- **Dose:** $15\\text{ a }45\\text{ mg}$ uma vez ao dia; **não requer ajuste para taxa de filtração glomerular**.\n- **Benefícios:** Excelente durabilidade glicêmica, melhora marcante da esteatose hepática metabólica (MASLD/MASH) e redução comprovada de AVC isquêmico recorrente.\n- **Efeitos Adversos e Contraindicações:**\n  - **Retenção hídrica:** Aumenta reabsorção tubular distal de sódio via canais ENaC; **contraindicada na Insuficiência Cardíaca classes funcionais II-IV**.\n  - Ganho de peso ponderal ($3 - 5\\text{ kg}$).\n  - Aumento da reabsorção óssea com **risco de fraturas em ossos longos/distais** em mulheres pós-menopausa."
-    },
-    {
-        "type": "open_double",
-        "description": "Quais são as duas classes de antidiabéticos orais secretagogos que atuam fechando o canal SUR1 e qual o principal efeito colateral compartilhado?",
-        "answer": "Sulfonilureias e Glinidas",
-        "answer2": "Hipoglicemia e ganho de peso",
-        "placeholder1": "Classes farmacológicas",
-        "placeholder2": "Efeitos adversos"
-    },
-    {
-        "type": "anki",
-        "description": "Diferencie farmacologicamente os Agonistas do Receptor de GLP-1 (aGLP-1) dos Inibidores da DPP-4 (iDPP-4) quanto ao mecanismo, impacto no peso corporal e desfechos cardiovasculares.",
-        "answer": "### aGLP-1 vs. iDPP-4\n\n| Característica | Agonistas de GLP-1 (-tidas) | Inibidores de DPP-4 (-gliptinas) |\n| :--- | :--- | :--- |\n| **Mecanismo** | Estimulam farmacologicamente o receptor de GLP-1 em níveis suprafisiológicos | Inibem a enzima DPP-4, impedindo a degradação do GLP-1/GIP fisiológico endógeno |\n| **Via** | Subcutânea (exceto semaglutida oral) | Oral |\n| **Impacto no Peso** | **Perda de peso expressiva** (retardo gástrico e saciedade central) | **Neutro** |\n| **Potência na HbA1c** | Muito alta (redução de até $1,5 - 2,0\\%$) | Moderada/Baixa (redução de $0,6 - 0,8\\%$) |\n| **Desfechos CV** | **Benefício comprovado em MACE** e mortalidade (liraglutida, semaglutida, dulaglutida) | **Neutros** em MACE (*saxagliptina eleva risco de internação por IC*) |\n| **Efeitos Adversos** | Náuseas, vômitos, constipação/diarreia | Cefaleia, nasofaringite, dores articulares |"
-    },
-    {
-        "type": "open",
-        "description": "Qual é o único fármaco inibidor da enzima alfa-glicosidase intestinal comercializado no Brasil que reduz a absorção pós-prandial de carboidratos complexos?",
-        "answer": "Acarbose"
-    },
-    {
-        "type": "anki",
-        "description": "Qual é o mecanismo dos Inibidores de SGLT-2 (Glifozinas), seus benefícios em desfechos duros e seus efeitos adversos característicos?",
-        "answer": "### Inibidores de SGLT-2 (Glifozinas)\n\n- **Representantes:** Empagliflozina, Dapagliflozina, Canagliflozina.\n- **Mecanismo:** Inibem o cotransportador de sódio-glicose tipo 2 no segmento S1 do túbulo contorcido proximal renal, bloqueando a reabsorção de $90\\%$ da glicose filtrada e gerando **glicosúria e natriurese**.\n- **Benefícios Multissistêmicos:**\n  - Redução consistente de **hospitalização por Insuficiência Cardíaca e morte cardiovascular** (com ou sem diabetes).\n  - Redução do declínio de taxa de filtração glomerular e retardo da diálise (**nefroproteção**).\n  - Redução pressórica ($3-5\\text{ mmHg}$) e perda de peso ponderal ($2-4\\text{ kg}$).\n- **Efeitos Colaterais:**\n  - **Infecções genitais micóticas** (candidíase vulvovaginal e balanite).\n  - Hipotensão postural e desidratação (especialmente em idosos).\n  - Risco de **Cetoacidose Diabética Euglicêmica** em situações de estresse cirúrgico ou jejum."
+        "description": "Quais são os mecanismos de ação, benefícios cardiorrenais e efeitos adversos clássicos dos Inibidores de SGLT-2 (Glifozinas)?",
+        "answer": "### Inibidores de SGLT-2 (Empagliflozina, Dapagliflozina, Canagliflozina)\n\n- **Mecanismo:** inibem o cotransportador de sódio-glicose 2 no túbulo contorcido proximal renal $\\rightarrow$ bloqueiam a reabsorção de $90\\%$ da glicose filtrada, gerando **glicosúria**.\n- **Benefícios Clínicos:**\n  - Redução de HbA1c;\n  - Perda ponderal e discreta redução da PA;\n  - **Redução marcante de internações por Insuficiência Cardíaca** (ICFER e ICFEP);\n  - **Nefroproteção comprovada** (reduzem progressão para diálise e queda da TFG).\n- **Efeitos Adversos:**\n  - **Infecções genitais micóticas** frequentes (candidíase vulvovaginal e balanopostite);\n  - Hipotensão postural e desidratação em idosos;\n  - **Cetoacidose Diabética Euglicêmica** (em estados de insulinopenia);\n  - Discreto aumento do LDL-c."
     },
     {
         "type": "multiple_choice",
-        "description": "De acordo com a diretriz da SBD/ADA, em um paciente com DM2 recém-diagnosticado portador de Insuficiência Cardíaca com Fração de Ejeção Reduzida e DRC com albuminúria, qual classe de antidiabético deve ser introduzida de forma prioritária e mandatória?",
-        "answer": "Inibidor de SGLT-2",
+        "description": "Em uma paciente diabética com diagnóstico recente de Insuficiência Cardíaca com Fração de Ejeção Reduzida e HbA1c de 7,9%, qual fármaco antidiabético deve ser obrigatoriamente priorizado?",
+        "answer": "Inibidor de SGLT-2 (Dapagliflozina ou Empagliflozina)",
         "options": [
-            "Inibidor de SGLT-2",
-            "Sulfonilureia de segunda geração",
+            "Inibidor de SGLT-2 (Dapagliflozina ou Empagliflozina)",
             "Tiazolidinediona (Pioglitazona)",
-            "Inibidor de DPP-4 (Saxagliptina)"
+            "Inibidor de DPP-4 (Saxagliptina)",
+            "Sulfonilureia (Glibenclamida)"
         ]
     },
     {
-        "type": "anki",
-        "description": "Quais são os medicamentos para controle de diabetes mellitus tipo 2 disponíveis na rede do Sistema Único de Saúde (SUS)?",
-        "answer": "### Antidiabéticos Disponibilizados no SUS\n\n- **Orais da Atenção Básica (Farmácia Básica / Rename):**\n  - **Metformina:** $500\\text{ mg}$ e $850\\text{ mg}$ (formulação convencional de liberação imediata).\n  - **Glibenclamida:** $5\\text{ mg}$ (sulfonilureia de 2ª geração, alto risco de hipoglicemia).\n  - **Gliclazida MR:** $30\\text{ mg}$ ou $60\\text{ mg}$ (sulfonilureia de liberação modificada, menor risco de hipoglicemia).\n- **Inibidores de SGLT2 (Incorporação PCDT SUS):**\n  - **Dapagliflozina $10\\text{ mg}$:** Incorporada para pacientes com DM2 e doença cardiovascular estabelecida clinicamente, além de diretrizes para IC e DRC.\n- **Insulinoterapia:**\n  - **Insulina Humana NPH:** Ação intermediária.\n  - **Insulina Humana Regular:** Ação rápida.\n  - Análogos de longa ação (Glargina) e ultrarrápidos (Asparte/Lispro) via protocolos específicos estaduais ou critérios definidos pelo Ministério da Saúde."
-    },
-    {
         "type": "fill",
-        "description": "Cinética das insulinas humanas:\n- Insulina Regular: início de ação em _-_ minutos e duração de _-_ horas.\n- Insulina NPH: início de ação em _-_ horas e duração de _-_ horas.",
+        "description": "Preencha a cinética de ação das principais insulinas utilizadas na prática clínica:\n\n• Insulina Regular: Início de ação em _ a _ minutos; Pico entre _ e _ horas; Duração de _ a _ horas.\n• Insulinas Ultrarrápidas (Lispro/Asparte/Glulisina): Início de ação em _ a _ minutos; Pico entre _ e _ horas; Duração de _ a _ horas.\n• Insulina NPH: Início de ação em 2 a 4 horas; Pico entre _ e _ horas; Duração de 10 a 18 horas.\n• Insulina Glargina U100: Início em 2 a 4 horas; _ pico; Duração de aproximadamente _ horas.\n• Insulina Degludeca: Início em 20 a 40 minutos; sem pico; Duração superior a _ horas.",
+        "answer": "30; 60; 2; 3; 5; 8; 10; 15; 1; 3; 3; 5; 8; 12; sem; 24; 42",
         "answers": [
             "30",
             "60",
+            "2",
+            "3",
             "5",
             "8",
-            "2",
-            "4",
             "10",
-            "18"
-        ],
-        "answer": "30; 60; 5; 8; 2; 4; 10; 18",
-        "explanation": "Regular: início 30-60 min, pico 2-3h, duração 5-8h. NPH: início 2-4h, pico 4-10h, duração 10-18h."
-    },
-    {
-        "type": "anki",
-        "description": "Quais são as principais insulinas análogas de ação ultrarrápida, seus tempos cinéticos e a regra de memorização do 'S'?",
-        "answer": "### Insulinas Análogas Ultrarrápidas\n\n- **Representantes Principais:** Li**S**pro (Humalog), Gluli**S**ina (Apidra) e A**S**parte (NovoRapid).\n  - *Mnemônico do 'S':* Todas contêm a letra **S** no meio do nome (são as 'Super-rápidas').\n  - **Faster-Aspart (Fiasp):** Possui 3 'S' no nome; adição de niacinamida que acelera o início de ação para apenas **$3\\text{ a }5\\text{ minutos}$**.\n- **Perfil Cinético:**\n  - **Início de Ação:** $10\\text{ a }15\\text{ minutos}$.\n  - **Pico de Ação:** $1\\text{ a }2\\text{ horas}$.\n  - **Duração do Efeito:** $3\\text{ a }5\\text{ horas}$.\n- **Vantagem Clínica:** Podem ser aplicadas imediatamente antes (ou até durante/após) as refeições, conferindo controle pós-prandial fisiológico com menor risco de hipoglicemia tardia."
-    },
-    {
-        "type": "anki",
-        "description": "Qual a cinética, formulação e contraindicações da insulina inalatória de pó seco (Afrezza)?",
-        "answer": "### Insulina Inalatória (Afrezza)\n\n- **Molécula:** Insulina humana regular incorporada a micropartículas carreadoras de tecnosfera.\n- **Cinética:** Início de ação ultrarrápido em cerca de **$12\\text{ minutos}$**, pico em $30-60\\text{ minutos}$ e duração de $2-3\\text{ horas}$.\n- **Uso:** Cobertura prandial pré-refeição em cartuchos de 4, 8 ou 12 UI.\n- **Contraindicações Clínicas Formais:**\n  - Pacientes portadores de **doença pulmonar crônica** (asma ativa, DPOC, fibrose pulmonar).\n  - **Tabagistas ativos** ou tabagismo cessado há menos de 6 meses.\n- **Segurança:** Exige avaliação espirométrica obrigatória da função pulmonar ($VEF_1$) basal, após 6 meses e depois anualmente."
-    },
-    {
-        "type": "open_double",
-        "description": "Cite duas insulinas análogas de ação basal prolongada de 1ª geração e duas ultralentas de 2ª geração, respectivamente.",
-        "answer": "Glargina U100 e Detemir",
-        "answer2": "Glargina U300 e Degludeca",
-        "placeholder1": "Longa ação (1ª geração)",
-        "placeholder2": "Ultralenta (2ª geração)"
+            "15",
+            "1",
+            "3",
+            "3",
+            "5",
+            "8",
+            "12",
+            "sem",
+            "24",
+            "42"
+        ]
     },
     {
         "type": "multiple_choice",
-        "description": "Qual insulina basal de segunda geração possui modificação por adição de uma cadeia lateral de ácido graxo ligada à lisina B29 com deleção da treonina B30, promovendo ligação reversível à albumina e meia-vida superior a 40 horas?",
-        "answer": "Insulina Degludeca",
+        "description": "Qual insulina inalatória em pó seco aprovada pela ANVISA atua como análogo ultrarrápido pré-prandial, sendo formalmente contraindicada em pacientes tabagistas, portadores de asma ou DPOC?",
+        "answer": "Tecnosfera (Afrezza)",
         "options": [
-            "Insulina Degludeca",
-            "Insulina Glargina U300",
-            "Insulina Detemir",
-            "Insulina Humana NPH"
+            "Tecnosfera (Afrezza)",
+            "Faster Asparte (Fiasp)",
+            "Glargina U300 (Toujeo)",
+            "Detemir (Levemir)"
         ]
     },
     {
         "type": "open",
-        "description": "Qual complicação tecidual decorrente da aplicação repetida de insulina no mesmo sítio subcutâneo provoca nódulos cicatriciais e absorção errática do fármaco?",
+        "description": "Qual complicação cutânea local decorre da aplicação repetida de insulina no mesmo ponto subcutâneo sem o devido rodízio de sítios?",
         "answer": "Lipohipertrofia"
     },
     {
-        "type": "fill",
-        "description": "Prescrição empírica inicial de insulina no paciente com DM1:\n- Dose Diária Total (DTD) clássica de início: _ UI/kg/dia (faixa _ a _ UI/kg/dia).\n- Divisão das frações: _% como Insulina Basal e _% como Insulina Prandial (bolus).\n- Regra do Fator de Sensibilidade/Correção (análogos ultrarrápidos): _ / DTD.",
-        "answers": [
-            "0,5 / 0.5",
-            "0,4 / 0.4",
-            "1,0 / 1.0 / 1",
-            "50",
-            "50",
-            "1800 / 1.800"
-        ],
-        "answer": "0,5; 0,4; 1,0; 50; 50; 1800",
-        "explanation": "Início DM1: DTD 0,5 UI/kg/dia (0,4 a 1,0). Divisão: 50% basal / 50% prandial. Fator de Sensibilidade = 1800 / DTD (ou 1500 / DTD para regular)."
+        "type": "anki",
+        "description": "Como deve ser calculada a prescrição inicial de insulinoterapia Basal-Bolus em um paciente com DM1 recém-diagnosticado de 60 kg?",
+        "answer": "### Cálculo Prático do Esquema Basal-Bolus (DM1)\n\n1. **Dose Total Diária (DTD):** $0,5\\text{ UI/kg/dia} \\times 60\\text{ kg} = \\mathbf{30\\text{ UI/dia}}$.\n2. **Componente Basal (50% da DTD = 15 UI):**\n   - Ex.: Insulina Glargina ou Degludeca $15\\text{ UI}$ SC 1 vez ao dia; OU\n   - Insulina NPH $15\\text{ UI/dia}$ fracionada (ex.: 10 UI pela manhã e 5 UI ao deitar).\n3. **Componente Prandial / Bolus (50% da DTD = 15 UI):**\n   - $15\\text{ UI}$ divididas nas 3 refeições principais = **$5\\text{ UI}$ de insulina ultrarrápida ou regular** SC antes do café, almoço e jantar.\n4. **Relação Insulina/Carboidrato:** $450 \\div 30 = 1\\text{ UI}$ para cada $15\\text{ g}$ de carboidratos ingeridos.\n5. **Fator de Sensibilidade / Correção (FC):** $1.500 \\div 30 = 50\\text{ mg/dL}$ (cada 1 UI de insulina rápida reduz $50\\text{ mg/dL}$ na glicemia acima da meta)."
     },
     {
-        "type": "fill",
-        "description": "Metas de glicemia capilar preconizadas pela ADA para adultos não gestantes:\n- Glicemia pré-prandial (jejum e pré-refeições): _ a _ mg/dL\n- Glicemia pós-prandial (1 a 2 horas após início das refeições): < _ mg/dL",
-        "answers": [
-            "80",
-            "130",
-            "180"
-        ],
-        "answer": "80; 130; 180",
-        "explanation": "Metas ADA: Pré-prandial 80-130 mg/dL; Pós-prandial < 180 mg/dL; HbA1c < 7,0% para a maioria dos adultos."
+        "type": "open_double",
+        "description": "Diferencie o Efeito Somogyi do Fenômeno do Alvorecer quanto ao valor da glicemia aferida às 3 horas da madrugada.",
+        "answer": "Hipoglicemia (< 70 mg/dL)",
+        "answer2": "Normoglicemia ou hiperglicemia",
+        "placeholder1": "Efeito Somogyi (às 3h)",
+        "placeholder2": "Fenômeno do Alvorecer (às 3h)"
     },
     {
         "type": "multiple_choice",
-        "description": "Um paciente em esquema de NPH matinal e noturna associada à insulina regular às refeições apresenta glicemias de jejum e pré-refeições normais, porém com pico glicêmico constante de 240 mg/dL 2 horas após o almoço. Qual é a conduta farmacológica mais apropriada?",
-        "answer": "Aumentar a dose de insulina regular administrada antes do almoço",
+        "description": "Um paciente em uso de NPH ao deitar apresenta glicemias matinais em jejum persistentemente elevadas (> 190 mg/dL). A glicemia aferida às 3h da manhã foi de 48 mg/dL. Qual é o diagnóstico e a conduta apropriada?",
+        "answer": "Efeito Somogyi; deve-se reduzir a dose da NPH noturna ou passar a aplicação para o horário da ceia",
         "options": [
-            "Aumentar a dose de insulina regular administrada antes do almoço",
-            "Aumentar a dose de insulina NPH da noite",
-            "Reduzir a dose de insulina NPH matinal",
-            "Aumentar a dose de insulina regular do jantar"
+            "Efeito Somogyi; deve-se reduzir a dose da NPH noturna ou passar a aplicação para o horário da ceia",
+            "Fenômeno do Alvorecer; deve-se aumentar a dose da insulina NPH noturna",
+            "Fenômeno do Alvorecer; deve-se associar sulfonilureia de liberação lenta no café da manhã",
+            "Efeito Somogyi; deve-se aumentar a insulina regular antes do jantar"
         ]
     },
     {
         "type": "anki",
-        "description": "O que é glicotoxicidade no DM2, como identificá-la clinicamente e qual a conduta farmacológica mandatória?",
-        "answer": "### Glicotoxicidade\n\n- **Conceito:** Fenômeno pelo qual a hiperglicemia severa mantida causa estresse oxidativo despolarizante e 'atordoamento' transitório das células beta pancreáticas, inibindo agudamente a secreção de insulina e piorando a resistência periférica.\n- **Identificação Clínica:**\n  - Glicemia de jejum $> 250\\text{ mg/dL}$, casual $> 300\\text{ mg/dL}$ ou $HbA1c > 10\\%$;\n  - Sintomas catabólicos intensos (perda rápida de peso involuntária, cetonúria leve, astenia e 'polis').\n- **Conduta:** **Insulinoterapia imediata** (esquema basal ou basal-bolus) para restaurar a euglicemia. *Secretagogos (sulfonilureias) são ineficazes nessa fase*. Quando a glicotoxicidade é revertida após semanas ou meses, a sensibilidade e secreção das células beta podem se recuperar, permitindo transição para antidiabéticos orais."
+        "description": "Como é caracterizado o estado de Glicotoxicidade no DM2 e qual é a conduta farmacológica mandatória?",
+        "answer": "### Glicotoxicidade no DM2\n\n- **Definição Clínica:** situação aguda em que a hiperglicemia severa mantida (**Glicemia de jejum $> 250\\text{ mg/dL}$, glicemia ao acaso $> 300\\text{ mg/dL}$ ou $\\text{HbA1c} > 10\\%$**) acompanhada de sintomas catabólicos intensos (perda rápida de peso, poliúria acentuada).\n- **Fisiopatologia:** o estresse oxidativo severo decorrente da hiperglicemia \"atordoa\" as células beta pancreáticas, causando bloqueio reversível da secreção insulínica e resistência extrema.\n- **Conduta:**\n  - **Insulinoterapia imediata** (esquema basal ou basal-bolus) para desintoxicar a célula beta.\n  - Contraindicado o uso de sulfonilureias ou iDPP4 neste momento agudo (as células beta atordoadas não respondem).\n  - Após a compensação metabólica, a glicotoxicidade é revertida e a insulina pode frequentemente ser descontinuada para retorno aos antidiabéticos orais."
     },
     {
         "type": "fill",
-        "description": "Na diferenciação da hiperglicemia matinal pela glicemia capilar das 03:00:\n- Efeito Somogyi: cursa com _ (< _ mg/dL) devido a rebote hormonal por excesso de insulina noturna.\n- Fenômeno do Alvorecer: cursa com glicemia _ ou aumentada por liberação fisiológica de GH e cortisol.",
+        "description": "Preencha os cuidados de armazenamento e preparo das insulinas:\n\n• Frascos lacrados fechados devem ser guardados sob refrigeração entre _ °C e _ °C (nunca congelar).\n• Frascos e canetas em uso podem ser mantidos em temperatura ambiente (até 30 °C) por até _ dias.\n• A insulina NPH deve ser homogeneizada rolando o frasco entre as mãos por pelo menos _ vezes.\n• Ao aspirar duas insulinas na mesma seringa, deve-se aspirar primeiro a insulina _ e depois a NPH.",
+        "answer": "2; 8; 28; 10; regular",
         "answers": [
-            "hipoglicemia",
-            "70",
-            "normal / normoglicemia"
-        ],
-        "answer": "hipoglicemia; 70; normal",
-        "explanation": "Às 03h: Somogyi = hipoglicemia (< 70 mg/dL) -> conduta: reduzir insulina noturna. Alvorecer = normo/hiperglicemia -> conduta: aumentar insulina noturna."
-    },
-    {
-        "type": "anki",
-        "description": "Explique as condutas terapêuticas divergentes para correção do Efeito Somogyi versus Fenômeno do Alvorecer.",
-        "answer": "### Somogyi vs. Alvorecer: Condutas\n\n- **Efeito Somogyi (Rebote Hiperglicêmico pós-Hipoglicemia Madrugada):**\n  - **Mecanismo:** A hipoglicemia noturna deflagra surto de hormônios contrarreguladores (adrenalina, glucagon, cortisol), gerando hiperglicemia de rebote ao despertar.\n  - **Conduta:** **Reduzir** a dose de insulina intermediária/basal noturna, transferir o horário da NPH do pré-jantar para o momento imediato **antes de dormir (bedtime)**, ou trocar por análogo basal sem pico (glargina/degludeca).\n\n- **Fenômeno do Alvorecer (Aumento Circadiano Fisiológico dos Contrarreguladores):**\n  - **Mecanismo:** Picos fisiológicos fisiológicos de GH e cortisol no fim da madrugada sem hipoglicemia antecedente.\n  - **Conduta:** **Aumentar** a dose de insulina basal noturna ou programar taxa de infusão basal mais alta no final da noite em bomba de infusão."
+            "2",
+            "8",
+            "28",
+            "10",
+            "regular"
+        ]
     },
     {
         "type": "open",
-        "description": "Qual é a definição etiológica geral do Diabetes Insipidus (DI)?",
+        "description": "Qual é a definição fisiopatológica central do Diabetes Insipidus (DI)?",
         "answer": "Deficiência ou resistência ao ADH"
     },
     {
         "type": "anki",
-        "description": "Quais são as 4 formas etiológicas de Diabetes Insipidus e seus mecanismos fisiopatológicos?",
-        "answer": "### Classificação Etiológica do Diabetes Insipidus (DI)\n\n1. **DI Central (Neurogênico):** Secreção ou síntese insuficiente do hormônio antidiurético (ADH / Arginina Vasopressina) pela destruição do núcleo supraóptico hipotalâmico ou da neuro-hipófise (trauma craniano, cirurgia hipofisária, tumores, infecções).\n2. **DI Nefrogênico:** Secreção hipofisária de ADH normal ou aumentada, associada a **resistência tubular renal** à sua ação nos ductos coletores (mutação do receptor $V_2$, mutação da Aquaporina-2, uso de lítio, hipercalcemia, hipocalemia).\n3. **DI Gestacional:** Superprodução placentária da enzima **vasopressinase** (cistina aminopeptidase), que degrada precocemente o ADH circulante materno no terceiro trimestre.\n4. **Polidipsia Primária (Psicogênica/Dipsogênica):** Ingestão hídrica excessiva e compulsiva sem alteração primária no mecanismo de síntese ou ação do ADH, levando a supressão fisiológica do hormônio."
+        "description": "Explique o mecanismo celular de ação do Hormônio Antidiurético (ADH / Arginina Vasopressina) no túbulo coletor renal.",
+        "answer": "### Mecanismo de Ação Renal do ADH\n\n1. O ADH liga-se aos receptores **$V_2$** localizados na membrana basolateral das células principais dos túbulos coletores renais.\n2. O receptor $V_2$ acopla-se a uma **Proteína Gs**, que ativa a enzima de membrana **Adenilil ciclase**.\n3. A adenilil ciclase catalisa a conversão de ATP em **AMP cíclico (AMPc)**.\n4. O AMPc ativa a **Proteína Quinase A (PKA)**.\n5. A PKA fosforila vesículas intracelulares contendo canais de água **Aquaporina-2 (AQP-2)**, estimulando sua translocação e inserção na membrana apical luminal.\n6. A água livre presente na luz tubular é reabsorvida por gradiente osmótico em direção ao interstício medular hipertônico, concentrando a urina."
+    },
+    {
+        "type": "anki",
+        "description": "Diferencie as quatro principais formas etiológicas de Diabetes Insipidus (Central, Nefrogênico, Gestacional e Psicogênico).",
+        "answer": "### Classificação Etiológica do Diabetes Insipidus\n\n1. **DI Central (Neurogênico):** deficiência na síntese ou secreção de ADH decorrente de lesão do hipotálamo ou neuro-hipófise (trauma cranioencefálico, cirurgias selares, tumores, hipofisite, infecções). Manifesta-se quando $\\ge 80\\%$ dos neurônios magnocelulares são destruídos.\n2. **DI Nefrogênico:** secreção normal ou elevada de ADH pela hipófise, porém associada a **resistência tubular renal** à sua ação (congênito por mutação no receptor $V_2$ ou gene da AQP2; ou adquirido por lítio, hipercalcemia, hipocalemia e uropatia obstrutiva).\n3. **DI Gestacional:** aumento da degradação metabólica do ADH endógeno pela enzima **vasopressinase** (cistina aminopeptidase) produzida em excesso pela placenta no 3º trimestre.\n4. **Polidipsia Primária / Psicogênica (Dipsogênico):** ingestão compulsiva excessiva de água livre sem distúrbio primário na síntese ou ação do ADH; o excesso de água suprime a osmolalidade plasmática e inibe fisiologicamente o ADH."
     },
     {
         "type": "fill",
-        "description": "A tríade clínica clássica compartilhada pelos diferentes subtipos de Diabetes Insipidus (DI) é composta por: _, _ e urina _ (densidade < 1.005 e osmolalidade < 300 mOsm/kg).",
-        "answers": [
-            "poliuria",
-            "polidipsia",
-            "hipotonica / diluida"
-        ],
-        "answer": "poliuria; polidipsia; hipotonica",
-        "explanation": "Tríade do DI: Poliúria (> 3L/dia ou 40-50 mL/kg/dia), Polidipsia compensatória e Urina marcadamente hipotônica."
-    },
-    {
-        "type": "fill",
-        "description": "Interpretação do Teste de Privação Hídrica no Diabetes Insipidus:\n- Indivíduo normal: sob desidratação máxima, concentra a osmolalidade urinária > _ mOsm/kg.\n- DI Central: após desmopressina (dDAVP) exógena, apresenta elevação da osmolalidade urinária > _%.\n- DI Nefrogênico: após dDAVP, não responde ou apresenta aumento < _% por resistência tubular.",
+        "description": "Preencha a tabela de interpretação do Teste de Privação Hídrica (Jejum de Água) no diagnóstico diferencial do Diabetes Insipidus:\n\n• Indivíduo Normal: Osmolalidade urinária (Uosm) na desidratação > _ mOsm/L; incremento pós-vasopressina < _ %.\n• DI Central: Uosm na desidratação permanece < Osmolalidade plasmática; incremento pós-vasopressina exógena > _ %.\n• DI Nefrogênico: Uosm na desidratação permanece < Osmolalidade plasmática; incremento pós-vasopressina exógena < _ %.\n• Polidipsia Psicogênica: Uosm na desidratação atinge níveis intermediários (_ a _ mOsm/L); incremento pós-vasopressina ausente.",
+        "answer": "700; 5; 50; 50; 500; 600",
         "answers": [
             "700",
+            "5",
             "50",
-            "50"
-        ],
-        "answer": "700; 50; 50",
-        "explanation": "No teste de privação hídrica: Normal concentra urina > 700 mOsm/kg. DI Central responde ao dDAVP com aumento > 50% na Uosm. DI Nefrogênico apresenta elevação < 50%."
-    },
-    {
-        "type": "anki",
-        "description": "Qual é o tratamento de escolha para o Diabetes Insipidus Central, DI Nefrogênico e DI Psicogênico?",
-        "answer": "### Tratamento do Diabetes Insipidus\n\n1. **DI Central e Gestacional:**\n   - Fármaco de Escolha: **Desmopressina (dDAVP)** sintética (via nasal ou oral).\n   - Apresenta alta potência antidiurética via receptores $V_2$ e praticamente nulo efeito pressórico em receptores $V_1$.\n2. **DI Nefrogênico:**\n   - O dDAVP é ineficaz.\n   - Tratamento: **Dieta hipossódica** associada a **Diuréticos Tiazídicos** (hidroclorotiazida) e/ou **Amilorida**.\n   - *Mecanismo do Paradoxo Tiazídico:* Promove leve contração do volume extracelular, estimulando a reabsorção ávida compensatória de água e sódio no túbulo proximal e reduzindo o aporte hídrico aos ductos coletores.\n3. **Polidipsia Primária/Psicogênica:**\n   - **Restrição hídrica voluntária** e tratamento psiquiátrico de base. *dDAVP é formalmente contraindicado* pelo risco gravíssimo de intoxicação hídrica e hiponatremia hiposmolar."
-    },
-    {
-        "type": "fill",
-        "description": "A tríade sintomática paroxística clássica do Feocromocitoma é composta por: _, _ e _ profusa.",
-        "answers": [
-            "cefaleia / dor de cabeca",
-            "palpitacoes / taquicardia",
-            "sudorese / diaforese"
-        ],
-        "answer": "cefaleia; palpitacoes; sudorese",
-        "explanation": "Tríade clássica do feocromocitoma: Cefaleia, Palpitações e Sudorese episódica, frequentemente acompanhada de hipertensão paroxística."
-    },
-    {
-        "type": "anki",
-        "description": "Quais são as alterações bioquímicas séricas de cálcio, fósforo e paratormônio (PTH) diagnósticas do Hiperparatireoidismo Primário?",
-        "answer": "### Hiperparatireoidismo Primário\n\n- **Cálcio Total e Iônico:** **Elevados** (hipercalcemia);\n- **Paratormônio (PTH intacto):** **Inapropriadamente normal ou elevado** para o nível de cálcio;\n- **Fósforo Sérico:** **Baixo** ou no limite inferior da normalidade (pela perda tubular renal de fosfato);\n- **Calciúria de 24h:** Geralmente normal ou elevada (diferencia da Hipercalcemia Hipocalciúrica Familiar, em que a fração de excreção de cálcio é $< 1\\%$)."
-    },
-    {
-        "type": "fill",
-        "description": "Na avaliação de excitabilidade neuromuscular na hipocalcemia aguda:\n- Sinal de _: contração dos músculos faciais ipsilaterais provocada pela percussão do nervo facial.\n- Sinal de _: espasmo carpopedal desencadeado pela insuflação do esfigmomanômetro acima da PAS por 3 minutos.",
-        "answers": [
-            "Chvostek",
-            "Trousseau"
-        ],
-        "answer": "Chvostek; Trousseau",
-        "explanation": "Sinal de Chvostek (percussão facial) e Sinal de Trousseau (espasmo carpopedal após torniquete com manguito - mais específico)."
-    },
-    {
-        "type": "multiple_choice",
-        "description": "Em uma paciente com hipotireoidismo prévio bem controlado em uso estável de levotiroxina que acaba de confirmar gestação no primeiro trimestre, qual é a conduta terapêutica imediata mandatória?",
-        "answer": "Aumentar a dose de levotiroxina em 20% a 30% e reavaliar o TSH em 4 a 6 semanas",
-        "options": [
-            "Aumentar a dose de levotiroxina em 20% a 30% e reavaliar o TSH em 4 a 6 semanas",
-            "Manter rigorosamente a mesma posologia até o segundo trimestre",
-            "Reduzir a dose em 15% devido ao aumento fisiológico de TBG",
-            "Suspender a levotiroxina e introduzir suplementação isolada de iodo"
-        ]
-    },
-    {
-        "type": "fill",
-        "description": "Indicações cirúrgicas formais de paratireoidectomia no Hiperparatireoidismo Primário Assintomático:\n1. Cálcio sérico: > _ mg/dL acima do limite superior da normalidade;\n2. Idade: < _ anos;\n3. Densitometria óssea: T-score ≤ _ em coluna, fêmur ou rádio 33%;\n4. Função renal: TFGe < _ mL/min ou calciúria de 24h > _ mg/dia.",
-        "answers": [
-            "1,0 / 1.0 / 1",
             "50",
-            "-2,5 / -2.5",
-            "60",
-            "400"
-        ],
-        "answer": "1,0; 50; -2,5; 60; 400",
-        "explanation": "Critérios cirúrgicos no HPTP assintomático: Cálcio > 1 mg/dL acima do LSN; Idade < 50 anos; T-score ≤ -2,5; TFGe < 60 mL/min ou Calciúria > 400 mg/dia."
+            "500",
+            "600"
+        ]
     },
     {
         "type": "open",
-        "description": "Qual é a etiologia e o anticorpo sérico patognomônico associado à Doença de Graves?",
-        "answer": "TRAb"
-    },
-    {
-        "type": "multiple_choice",
-        "description": "Caso um paciente com hipertireoidismo em uso de Metimazol ou Propiltiouracil desenvolva febre alta e odinofagia aguda, qual conduta diagnóstica e terapêutica imediata deve ser adotada?",
-        "answer": "Suspender imediatamente a medicação e solicitar hemograma urgente para descartar agranulocitose",
-        "options": [
-            "Suspender imediatamente a medicação e solicitar hemograma urgente para descartar agranulocitose",
-            "Trocar o metimazol por propiltiouracil na mesma dose",
-            "Prescrever anti-inflamatório não esteroidal e manter a droga antitireoidiana",
-            "Aguardar evolução clínica e reavaliar leucócitos na consulta de retorno"
-        ]
+        "description": "Qual é o fármaco de primeira linha para o tratamento do Diabetes Insipidus Central e Gestacional?",
+        "answer": "Desmopressina"
     },
     {
         "type": "anki",
-        "description": "Como se diferenciam a Tireoidite Subaguda de De Quervain da Tireoidite de Hashimoto quanto a dor cervical, VHS e captação de iodo radioativo (RAIU)?",
-        "answer": "### De Quervain vs. Hashimoto\n\n| Achado | Tireoidite Subaguda (De Quervain) | Tireoidite de Hashimoto |\n| :--- | :--- | :--- |\n| **Dor Cervical** | **Presente** (dor lancinante na tireoide, irradia para mandíbula/ouvidos) | **Ausente** (bócio indolor, elástico) |\n| **Etiologia** | Pós-viral inflamatória | Autoimune crônica (Anti-TPO e Anti-Tg) |\n| **VHS / PCR** | **Extremamente elevados** ($VHS > 50-100\\text{ mm/h}$) | Normais ou discretamente alterados |\n| **Captação de Iodo (RAIU 24h)** | **Quase nula** ($< 2-5\\%$) por destruição folicular | Normal, aumentada ou reduzida |\n| **Curso Clínico** | Trifásico autolimitado: Tireotoxicose $\\to$ Hipotireoidismo $\\to$ Eutireoidismo | Hipotireoidismo primário progressivo e definitivo |"
-    },
-    {
-        "type": "open",
-        "description": "Qual é o primeiro exame laboratorial mandatório a ser solicitado na abordagem inicial de um nódulo tireoidiano identificado em exame de imagem?",
-        "answer": "TSH sérico"
+        "description": "Qual é a base terapêutica para o tratamento do Diabetes Insipidus Nefrogênico?",
+        "answer": "### Tratamento do Diabetes Insipidus Nefrogênico\n\nComo os túbulos renais não respondem ao ADH nem à desmopressina, o tratamento visa diminuir o volume urinário e prevenir a hipernatremia:\n\n1. **Restrição de Sódio na Dieta:** reduz a carga osmótica de solutos entregue aos néfrons.\n2. **Diuréticos Tiazídicos (Hidroclorotiazida) ou Amilorida:**\n   - *Mecanismo paradoxal:* inibem a reabsorção de sódio no túbulo contorcido distal, gerando contração leve do volume extracelular.\n   - Isso estimula a reabsorção compensatória proximal de água e sódio, diminuindo o aporte hídrico aos ductos coletores coletores e reduzindo o volume urinário em **$50\\%$ a $70\\%$**.\n3. **Anti-inflamatórios Não Esteroidais (Indometacina):** inibem a síntese de prostaglandinas renais (que antagonizam a ação da vasopressina)."
     },
     {
         "type": "multiple_choice",
-        "description": "Diante de um nódulo tireoidiano de 1,5 cm, sólido e hipoecogênico, cuja biópsia por punção aspirativa por agulha fina (PAAF) resultou na categoria Bethesda IV (Neoplasia Folicular), qual é a recomendação de conduta clínica?",
-        "answer": "Testagem molecular ou Cirurgia diagnóstica (lobectomia com istmectomia)",
+        "description": "Por que a administração de desmopressina (dDAVP) é formalmente desaconselhada no tratamento de pacientes com Polidipsia Psicogênica?",
+        "answer": "Pois reduz a excreção de urina sem conter a compulsão hídrica, levando à intoxicação por água e hiponatremia com risco de edema cerebral",
         "options": [
-            "Testagem molecular ou Cirurgia diagnóstica (lobectomia com istmectomia)",
-            "Observação expectante e repetição de USG em 12 meses",
-            "Radioiodoterapia ablativa imediata com dose de 100 mCi",
-            "Terapia de supressão hormonal com levotiroxina para diminuir o nódulo"
-        ]
-    },
-    {
-        "type": "fill",
-        "description": "No Teste de Supressão Noturna com Dexametasona (Teste de Nugent) para rastreio da Síndrome de Cushing, administra-se _ mg de dexametasona às 23h e dosa-se o cortisol sérico às 08h da manhã seguinte:\n- Normal (supressão fisiológica do eixo): Cortisol < _ µg/dL\n- Sugestivo de Síndrome de Cushing (falha de supressão): Cortisol ≥ _ µg/dL.",
-        "answers": [
-            "1 / 1,0 / 1.0",
-            "1,8 / 1.8",
-            "1,8 / 1.8"
-        ],
-        "answer": "1; 1,8; 1,8",
-        "explanation": "Teste de Nugent: 1 mg de dexametasona VO às 23h e cortisol sérico às 08h. Ponto de corte: < 1,8 µg/dL é normal/suprimido; ≥ 1,8 µg/dL indica falha de supressão."
-    },
-    {
-        "type": "open",
-        "description": "Qual achado dermatológico pigmentar mucocutâneo diferencia etiologicamente a Insuficiência Adrenal Primária (Doença de Addison) da Insuficiência Adrenal Secundária?",
-        "answer": "Hiperpigmentação cutânea"
-    },
-    {
-        "type": "anki",
-        "description": "Quais são as alterações metabólicas hidroeletrolíticas clássicas observadas na Crise Adrenal Aguda e qual o tratamento imediato prioritário?",
-        "answer": "### Crise Adrenal Aguda\n\n- **Laboratório Clássico:**\n  - **Hiponatremia** (deficiência de aldosterona e cortisol);\n  - **Hipercalemia** (perda de excreção tubular de $K^+$);\n  - **Hipoglicemia** (perda da gliconeogênese mediada pelo cortisol);\n  - Azotemia pré-renal (ureia e creatinina elevadas por colapso volêmico);\n  - Eosinofilia no leucograma.\n- **Tratamento Imediato Prioritário:**\n  1. Ressuscitação volêmica vigorosa com **Soro Fisiológico a 0,9% + Glicose a 5%** EV aberto.\n  2. Corticoterapia venosa imediata com **Hidrocortisona $100\\text{ mg}$ em bolus IV**, seguida de $50-100\\text{ mg}$ a cada 6 horas.\n  *Nota:* A reposição de mineralocorticoide não é necessária na fase aguda porque altas doses de hidrocortisona possuem efeito mineralocorticoide cruzado intrínseco."
-    },
-    {
-        "type": "multiple_choice",
-        "description": "Qual fármaco anti-hipertensivo antagonista da aldosterona deve ser suspenso por pelo menos 4 a 6 semanas antes da realização do rastreamento laboratorial do Hiperaldosteronismo Primário (razão aldosterona/renina)?",
-        "answer": "Espironolactona",
-        "options": [
-            "Espironolactona",
-            "Anlodipino",
-            "Atenolol",
-            "Hidralazina"
-        ]
-    },
-    {
-        "type": "fill",
-        "description": "No diagnóstico laboratorial da Hiperplasia Adrenal Congênita Não Clássica (deficiência de 21-hidroxilase):\n- Dosagem matinal de 17-OHP na fase folicular precoce > _ ng/dL indica teste de estímulo com ACTH sintético (_ µg de cortrosina).\n- Nível pós-estímulo de 17-OHP > _ ng/dL confirma definitivamente o diagnóstico.",
-        "answers": [
-            "200",
-            "250",
-            "1000 / 1.000"
-        ],
-        "answer": "200; 250; 1000",
-        "explanation": "HAC não clássica: 17-OHP basal > 200 ng/dL indica teste de estímulo com 250 µg de ACTH sintético. Nível pós-estímulo > 1000 ng/dL confirma deficiência de 21-hidroxilase."
-    },
-    {
-        "type": "open",
-        "description": "Qual é a via primária de síntese hepática do colesterol inibida pelas estatinas?",
-        "answer": "HMG-CoA redutase"
-    },
-    {
-        "type": "open",
-        "description": "Qual enzima do tecido adiposo é ativada pelos fibratos via receptores PPAR-alfa para promover a hidrólise de quilomícrons e VLDL?",
-        "answer": "Lipase Lipoproteica"
-    },
-    {
-        "type": "fill",
-        "description": "Pelos critérios da Federação Internacional de Diabetes (IDF) para a população sul-americana, a circunferência abdominal indicativa de risco cardiovascular aumentado é ≥ _ cm no homem e ≥ _ cm na mulher.",
-        "answers": [
-            "90",
-            "80"
-        ],
-        "answer": "90; 80",
-        "explanation": "Pontos de corte IDF para latinos: Homens ≥ 90 cm; Mulheres ≥ 80 cm (padrão mais rigoroso que o NCEP-ATP III de 102/88 cm)."
-    },
-    {
-        "type": "fill",
-        "description": "Critérios de Síndrome Metabólica segundo o NCEP-ATP III / IDF (diagnóstico com pelo menos _ de 5 critérios):\n1. Cintura: ≥ _ cm em homens e ≥ _ cm em mulheres (padrão IDF);\n2. Triglicerídeos: ≥ _ mg/dL;\n3. HDL: < _ mg/dL em homens e < _ mg/dL em mulheres;\n4. Pressão arterial: ≥ _/_ mmHg;\n5. Glicemia de jejum: ≥ _ mg/dL.",
-        "answers": [
-            "3",
-            "90",
-            "80",
-            "150",
-            "40",
-            "50",
-            "130",
-            "85",
-            "100"
-        ],
-        "answer": "3; 90; 80; 150; 40; 50; 130; 85; 100",
-        "explanation": "Síndrome Metabólica (≥ 3 critérios): Cintura ≥ 90/80 cm (homens/mulheres), TG ≥ 150 mg/dL, HDL < 40/50 mg/dL, PA ≥ 130/85 mmHg, Glicemia jejum ≥ 100 mg/dL."
-    },
-    {
-        "type": "open",
-        "description": "Qual é o efeito esperado da amilina endógena ou de seu análogo sintético (pramlintida) sobre a motilidade gástrica?",
-        "answer": "Retardo do esvaziamento"
-    },
-    {
-        "type": "multiple_choice",
-        "description": "Em uma paciente idosa com diagnóstico de DM2 de longa data, histórico de infarto agudo do miocárdio prévio, osteoartrite grave e déficit cognitivo leve, qual seria a meta terapêutica de HbA1c mais prudente e segura?",
-        "answer": "HbA1c até 8,0% a 8,5%",
-        "options": [
-            "HbA1c até 8,0% a 8,5%",
-            "HbA1c estrita menor que 6,0%",
-            "HbA1c mandatória menor que 6,5%",
-            "Manter HbA1c sem monitoramento algum"
+            "Pois reduz a excreção de urina sem conter a compulsão hídrica, levando à intoxicação por água e hiponatremia com risco de edema cerebral",
+            "Pois estimula a secreção adrenal de cortisol piorando a ansiedade de base",
+            "Pois causa aumento imediato da osmolalidade plasmática induzindo hipernatremia desidratante",
+            "Pois bloqueia a absorção intestinal de sódio e potássio"
         ]
     },
     {
         "type": "open",
-        "description": "Qual classe de fármacos antidiabéticos pode desencadear retenção hídrica por upregulation dos canais de sódio renais, agravando edema periférico e insuficiência cardíaca congestiva?",
-        "answer": "Glitazonas (Tiazolidinedionas)"
-    },
-    {
-        "type": "fill",
-        "description": "Valores de referência do Índice Tornozelo-Braquial (ITB = PAS tornozelo / PAS braquial):\n- Normal: _ a _\n- DAOP leve: _ a _\n- DAOP moderada (claudicação intermitente típica): _ a _\n- Isquemia crítica (dor em repouso / risco de perda de membro): ≤ _\n- Artérias incompressíveis (calcificação de Mönckeberg): > _.",
-        "answers": [
-            "0,91 / 0.91",
-            "1,30 / 1.30 / 1,3 / 1.3",
-            "0,71 / 0.71",
-            "0,90 / 0.90 / 0,9 / 0.9",
-            "0,41 / 0.41",
-            "0,70 / 0.70 / 0,7 / 0.7",
-            "0,40 / 0.40 / 0,4 / 0.4",
-            "1,30 / 1.30 / 1,3 / 1.3 / 1,40 / 1.40"
-        ],
-        "answer": "0,91; 1,30; 0,71; 0,90; 0,41; 0,70; 0,40; 1,30",
-        "explanation": "ITB: 0,91-1,30 normal; 0,71-0,90 DAOP leve; 0,41-0,70 DAOP moderada; ≤ 0,40 isquemia crítica; > 1,30-1,40 artérias incompressíveis."
+        "description": "Qual exame de imagem deve ser obrigatoriamente solicitado na investigação etiológica de todo paciente com Diabetes Insipidus Central comprovado?",
+        "answer": "Ressonância magnética sela-túrcica"
     },
     {
         "type": "open_double",
-        "description": "Quais são as duas principais causas precipitantes responsáveis por quase metade das admissões hospitalares por CAD e EHH?",
-        "answer": "Má adesão terapêutica",
-        "answer2": "Infecções agudas",
-        "placeholder1": "Causa comportamental",
-        "placeholder2": "Causa infecciosa"
-    },
-    {
-        "type": "fill",
-        "description": "Em pacientes em uso de Metformina com TFGe < _ mL/min submetidos a exames com contraste iodado intravenoso, a metformina deve ser suspensa no dia do procedimento e a função renal reavaliada após _ horas antes de reiniciar o fármaco, para mitigar o risco de acidose láctica.",
-        "answers": [
-            "60",
-            "48"
-        ],
-        "answer": "60; 48",
-        "explanation": "Metformina e contraste iodado: se TFGe < 60 mL/min, suspender no dia (ou 48h antes se alto risco) e reavaliar função renal após 48h antes de reiniciar."
-    },
-    {
-        "type": "open",
-        "description": "Qual complicação do terceiro par craniano (oculomotor) no DM se caracteriza por ptose e diplopia preservando a reatividade pupilar à luz?",
-        "answer": "Mononeuropatia craniana isquêmica"
-    },
-    {
-        "type": "anki",
-        "description": "Qual é a base molecular do mecanismo de ação das insulinas degludeca e glargina U300 que lhes confere perfil ultralento sem pico?",
-        "answer": "### Insulinas Ultralentas de Segunda Geração\n\n- **Insulina Degludeca:** Possui uma deleção da treonina no sítio B30 e conjugação de uma cadeia de diácido graxo na lisina B29. No subcutâneo, forma **multi-hexâmeros solúveis lineares estáveis** que se dissociam de forma lenta e monótona em monômeros absorvíveis, além de se ligar reversivelmente à albumina circulante, garantindo meia-vida de 25 horas e duração $> 42\\text{ horas}$.\n- **Insulina Glargina U300:** Formulação altamente concentrada ($300\\text{ UI/mL}$) contendo apenas $1/3$ do volume de injeção da U100. Essa redução de área de superfície do depósito subcutâneo diminui a velocidade de liberação dos microprecipitados, gerando um perfil farmacodinâmico mais plano e estável que se estende por até $36\\text{ horas}$."
-    },
-    {
-        "type": "open",
-        "description": "Qual enzima sérica sintetizada na placenta hidrolisa o ADH e a ocitocina no terceiro trimestre gestacional, podendo levar ao DI gestacional?",
-        "answer": "Vasopressinase"
-    },
-    {
-        "type": "multiple_choice",
-        "description": "Durante o acompanhamento ambulatorial de um paciente em uso de estatina de alta potência para hipercolesterolemia, detecta-se elevação isolada de TGO e TGP em 2 vezes o limite superior da normalidade, sem sintomas clínicos. Qual é a conduta preconizada?",
-        "answer": "Manter a posologia da estatina e repetir os exames de enzimas hepáticas em 6 a 12 semanas",
-        "options": [
-            "Manter a posologia da estatina e repetir os exames de enzimas hepáticas em 6 a 12 semanas",
-            "Suspender imediatamente a estatina de forma definitiva",
-            "Trocar a estatina por genfibrozila imediatamente",
-            "Associar ácido nicotínico para acelerar a regeneração hepatocitária"
-        ]
-    },
-    {
-        "type": "anki",
-        "description": "Como a neuropatia autonômica cardiovascular do diabetes altera o tônus simpático e parassimpático cardíaco?",
-        "answer": "### Neuropatia Autonômica Cardiovascular (NAC)\n\n- **Fisiopatologia:** Lesão precoce e predominante das fibras vagais longas (parassimpáticas), levando a perda da modulação inibitória colinérgica e predomínio do tônus simpático.\n- **Consequências Clínicas:**\n  - **Taquicardia de Repouso:** FC constantemente $> 100\\text{ bpm}$ que não responde a estímulos vasovagais normais.\n  - **Perda da Variabilidade da Frequência Cardíaca (VFC):** Incapacidade fisiológica de adaptar a frequência às fases inspiratória e expiratória.\n  - **Isquemia Silenciosa:** Perda das vias aferentes nociceptivas sensoriais cardíacas, impedindo a percepção de angina precordial clássica e favorecendo IAM indolor ou atípico.\n  - **Morte Súbita:** Propensão a arritmias ventriculares fatais e prolongamento do intervalo QT."
-    },
-    {
-        "type": "fill",
-        "description": "Na progressão da doença renal diabética, a proteinúria de 24 horas é definida na faixa nefrótica quando ultrapassa _ g/24h (ou _ mg/24h).",
-        "answers": [
-            "3,5 / 3.5",
-            "3500 / 3.500"
-        ],
-        "answer": "3,5; 3500",
-        "explanation": "Proteinúria nefrótica: > 3,5 g/24h (> 3.500 mg/24h), associada a hipoalbuminemia, edema e dislipidemia."
+        "description": "Na dislipidemia secundária ao **Hipotireoidismo**, qual é a alteração lipídica predominante e qual é o tratamento primordial inicial?",
+        "answer": "Aumento acentuado de Colesterol Total e LDL-c (com discreta elevação de TG)",
+        "answer2": "Reposição de Levotiroxina (normalização do TSH antes de estatinas para prevenir miosite)",
+        "placeholder1": "Resposta 1",
+        "placeholder2": "Resposta 2"
     },
     {
         "type": "open_double",
-        "description": "Quais são as duas opções farmacológicas de estatinas de escolha em portadores de HIV em uso de inibidores de protease na TARV, devido ao menor risco de interação pelo citocromo P450?",
-        "answer": "Pitavastatina",
-        "answer2": "Pravastatina",
-        "placeholder1": "Opção 1",
-        "placeholder2": "Opção 2"
+        "description": "Na dislipidemia secundária ao **Diabetes Mellitus tipo 2**, qual é a alteração lipídica característica e qual é a conduta terapêutica?",
+        "answer": "Hipertrigliceridemia e HDL-c reduzido (com partículas de LDL pequenas e densas)",
+        "answer2": "Otimização do controle glicêmico (MEV e antidiabéticos) associada a estatinas baseadas no risco cardiovascular",
+        "placeholder1": "Resposta 1",
+        "placeholder2": "Resposta 2"
     },
     {
-        "type": "multiple_choice",
-        "description": "Qual medicação hipolipemiante é a única comprovadamente segura e de uso estabelecido para redução de colesterol durante a gravidez e lactação?",
-        "answer": "Colestiramina (resina sequestradora de ácidos biliares)",
-        "options": [
-            "Colestiramina (resina sequestradora de ácidos biliares)",
-            "Atorvastatina em baixas doses",
-            "Ezetimiba",
-            "Fenofibrato micronizado"
-        ]
+        "type": "open_double",
+        "description": "Na dislipidemia secundária à **Síndrome Nefrótica**, qual é o perfil lipídico típico e qual é o pilar terapêutico?",
+        "answer": "Hipercolesterolemia grave (aumento expressivo de Colesterol Total e LDL-c, podendo haver dislipidemia mista)",
+        "answer2": "Tratamento da doença glomerular de base (imunossupressão/antiproteinúricos) associado a estatinas",
+        "placeholder1": "Resposta 1",
+        "placeholder2": "Resposta 2"
     },
     {
-        "type": "anki",
-        "description": "Quais são os mecanismos fisiopatológicos envolvidos no pé diabético infectado e por que as infecções moderadas e graves são consideradas polimicrobianas?",
-        "answer": "### Microbiologia do Pé Diabético\n\n- **Infecções Leves e Superficiais (sem tratamento antibiótico prévio):** Predominam cocos Gram-positivos aeróbios de pele (**Staphylococcus aureus** e **Streptococcus spp.**).\n- **Infecções Moderadas a Graves / Úlceras Profundas Crônicas:**\n  - A necrose tecidual isquêmica com hipóxia local permite a colonização por bactérias **anaeróbias estritas** (*Bacteroides fragilis, Peptostreptococcus*).\n  - A quebra da barreira com internações prévias e uso de antibióticos favorece bacilos **Gram-negativos entéricos** (*Escherichia coli, Klebsiella pneumoniae, Proteus mirabilis*) e oportunistas hospitalares (*Pseudomonas aeruginosa*).\n  - **Conclusão:** Casos graves são caracteristicamente **polimicrobianos**, exigindo antibioticoterapia empírica ampla de amplo espectro combinada a desbridamento cirúrgico precoce."
+        "type": "open_double",
+        "description": "Na dislipidemia secundária à **Hepatopatia crônica / Colestase**, qual alteração lipídica anômala ocorre e qual é a conduta terapêutica?",
+        "answer": "Hipercolesterolemia grave associada ao acúmulo de Lipoproteína X (LpX)",
+        "answer2": "Tratamento da causa subjacente / Ácido ursodesoxicólico (UDCA) ou descompressão da via biliar",
+        "placeholder1": "Resposta 1",
+        "placeholder2": "Resposta 2"
+    },
+    {
+        "type": "open_double",
+        "description": "Na dislipidemia secundária ao **Etilismo crônico/excessivo**, qual é o distúrbio lipídico marcante e qual é o tratamento fundamental?",
+        "answer": "Hipertrigliceridemia acentuada (aumento da síntese de VLDL e triglicerídeos)",
+        "answer2": "Abstinência alcoólica completa (e fibrato se TG $\\ge 500\\text{ mg/dL}$ para prevenção de pancreatite)",
+        "placeholder1": "Resposta 1",
+        "placeholder2": "Resposta 2"
+    },
+    {
+        "type": "open_double",
+        "description": "Na dislipidemia secundária à **Obesidade e Sedentarismo**, qual é o padrão lipídico clássico e qual é a intervenção de primeira linha?",
+        "answer": "Hipertrigliceridemia associada à redução do HDL-c",
+        "answer2": "Mudança do estilo de vida com dieta hipocalórica, perda ponderal e atividade física regular",
+        "placeholder1": "Resposta 1",
+        "placeholder2": "Resposta 2"
     }
 ]
