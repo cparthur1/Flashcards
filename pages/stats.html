@@ -37,13 +37,13 @@
     </style>
 </head>
 
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen flex flex-col p-3 sm:p-6 antialiased selection:bg-blue-500 selection:text-white">
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col p-3 sm:p-6 antialiased selection:bg-blue-500 selection:text-white">
 
     <!-- TOP HEADER -->
-    <header class="w-full max-w-5xl mx-auto flex items-center justify-between pb-4 sm:pb-6 border-b border-gray-200 dark:border-gray-800 gap-3">
+    <header class="w-full max-w-5xl mx-auto flex items-center justify-between pb-4 sm:pb-6 border-b border-gray-200 gap-3">
         <div class="flex items-center gap-3 min-w-0">
             <a href="game.html" id="back-to-game-btn"
-                class="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/80 transition text-sm font-semibold shadow-sm text-gray-700 dark:text-gray-200 group">
+                class="flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 transition text-sm font-semibold shadow-sm text-gray-700 group">
                 <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
                 </svg>
@@ -52,25 +52,25 @@
 
             <div class="min-w-0">
                 <div class="flex items-center gap-2">
-                    <h1 class="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white truncate">Estatísticas</h1>
-                    <span id="deck-badge" class="hidden sm:inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 truncate max-w-[180px]">
+                    <h1 class="text-xl sm:text-2xl font-extrabold text-gray-900 truncate">Estatísticas</h1>
+                    <span id="deck-badge" class="hidden sm:inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 truncate max-w-[180px]">
                         Flashcards
                     </span>
                 </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Acompanhe seu desempenho e retenção</p>
+                <p class="text-xs text-gray-500 truncate">Acompanhe seu desempenho e retenção</p>
             </div>
         </div>
 
         <div class="flex items-center gap-2 flex-shrink-0">
             <button id="export-stats-btn"
-                class="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-xs font-semibold shadow-sm text-gray-700 dark:text-gray-300"
+                class="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 transition text-xs font-semibold shadow-sm text-gray-700"
                 title="Exportar dados estatísticos em JSON">
                 <img src="../assets/img/download.svg" class="w-4 h-4" alt="Exportar">
                 <span>Exportar Dados</span>
             </button>
 
             <button id="clear-stats-btn"
-                class="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition"
+                class="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold text-red-600 hover:bg-red-50 transition"
                 title="Limpar histórico de sessões">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -85,26 +85,26 @@
 
         <!-- NAVIGATION TABS -->
         <div class="flex items-center justify-center sm:justify-start">
-            <nav class="flex p-1 bg-gray-200/80 dark:bg-gray-800 rounded-2xl shadow-inner max-w-full overflow-x-auto custom-scrollbar" aria-label="Abas de Estatísticas">
-                <button id="tab-btn-current" class="tab-btn active px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 whitespace-nowrap flex items-center gap-2 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm">
+            <nav class="flex p-1 bg-gray-200/80 rounded-2xl shadow-inner max-w-full overflow-x-auto custom-scrollbar" aria-label="Abas de Estatísticas">
+                <button id="tab-btn-current" class="tab-btn active px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 whitespace-nowrap flex items-center gap-2 bg-white text-blue-600 shadow-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                     Sessão Atual
                 </button>
-                <button id="tab-btn-history" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 whitespace-nowrap flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                <button id="tab-btn-history" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 whitespace-nowrap flex items-center gap-2 text-gray-600 hover:text-gray-900">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     Sessões Anteriores
-                    <span id="history-badge-count" class="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-300 dark:bg-gray-600 font-semibold">0</span>
+                    <span id="history-badge-count" class="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-300 font-semibold">0</span>
                 </button>
-                <button id="tab-btn-struggling" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 whitespace-nowrap flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                <button id="tab-btn-struggling" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 whitespace-nowrap flex items-center gap-2 text-gray-600 hover:text-gray-900">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                     Foco de Revisão
-                    <span id="struggling-badge-count" class="hidden text-[10px] px-1.5 py-0.5 rounded-full bg-orange-200 dark:bg-orange-900/60 text-orange-800 dark:text-orange-200 font-bold">0</span>
+                    <span id="struggling-badge-count" class="hidden text-[10px] px-1.5 py-0.5 rounded-full bg-orange-200 text-orange-800 font-bold">0</span>
                 </button>
             </nav>
         </div>
@@ -115,60 +115,60 @@
             <!-- HERO METRICS GRID -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <!-- KPI 1: Progresso -->
-                <div class="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between">
-                    <div class="flex items-center justify-between text-gray-500 dark:text-gray-400 mb-2">
+                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-gray-500 mb-2">
                         <span class="text-xs font-semibold uppercase tracking-wider">Progresso</span>
-                        <div class="p-1.5 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg">
+                        <div class="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </div>
                     </div>
                     <div>
                         <div class="flex items-baseline gap-2">
-                            <span id="kpi-progress-percent" class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">0%</span>
-                            <span id="kpi-progress-ratio" class="text-xs font-medium text-gray-500 dark:text-gray-400">0 / 0 cards</span>
+                            <span id="kpi-progress-percent" class="text-2xl sm:text-3xl font-extrabold text-gray-900">0%</span>
+                            <span id="kpi-progress-ratio" class="text-xs font-medium text-gray-500">0 / 0 cards</span>
                         </div>
-                        <div class="w-full bg-gray-100 dark:bg-gray-700 h-2 rounded-full mt-3 overflow-hidden">
+                        <div class="w-full bg-gray-100 h-2 rounded-full mt-3 overflow-hidden">
                             <div id="kpi-progress-bar" class="bg-blue-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- KPI 2: Taxa de Acerto -->
-                <div class="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between">
-                    <div class="flex items-center justify-between text-gray-500 dark:text-gray-400 mb-2">
+                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-gray-500 mb-2">
                         <span class="text-xs font-semibold uppercase tracking-wider">Precisão</span>
-                        <div class="p-1.5 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-lg">
+                        <div class="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
                         </div>
                     </div>
                     <div>
                         <div class="flex items-baseline gap-2">
-                            <span id="kpi-accuracy-percent" class="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">100%</span>
-                            <span id="kpi-accuracy-feedback" class="text-xs font-medium text-emerald-700 dark:text-emerald-300">Excelente</span>
+                            <span id="kpi-accuracy-percent" class="text-2xl sm:text-3xl font-extrabold text-emerald-600">100%</span>
+                            <span id="kpi-accuracy-feedback" class="text-xs font-medium text-emerald-700">Excelente</span>
                         </div>
-                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-2"><span id="kpi-correct-count">0</span> acertos • <span id="kpi-incorrect-count">0</span> erros</p>
+                        <p class="text-xs text-gray-400 mt-2"><span id="kpi-correct-count">0</span> acertos • <span id="kpi-incorrect-count">0</span> erros</p>
                     </div>
                 </div>
 
                 <!-- KPI 3: Tempo de Estudo -->
-                <div class="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between">
-                    <div class="flex items-center justify-between text-gray-500 dark:text-gray-400 mb-2">
+                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-gray-500 mb-2">
                         <span class="text-xs font-semibold uppercase tracking-wider">Tempo Total</span>
-                        <div class="p-1.5 bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 rounded-lg">
+                        <div class="p-1.5 bg-purple-50 text-purple-600 rounded-lg">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </div>
                     </div>
                     <div>
-                        <span id="kpi-duration" class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">00:00</span>
-                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Média: <span id="kpi-time-per-card" class="font-semibold text-gray-700 dark:text-gray-300">0s</span> / card</p>
+                        <span id="kpi-duration" class="text-2xl sm:text-3xl font-extrabold text-gray-900">00:00</span>
+                        <p class="text-xs text-gray-400 mt-2">Média: <span id="kpi-time-per-card" class="font-semibold text-gray-700">0s</span> / card</p>
                     </div>
                 </div>
 
                 <!-- KPI 4: Sequência (Streak) -->
-                <div class="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between">
-                    <div class="flex items-center justify-between text-gray-500 dark:text-gray-400 mb-2">
+                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-gray-500 mb-2">
                         <span class="text-xs font-semibold uppercase tracking-wider">Sequência</span>
-                        <div class="p-1.5 bg-amber-50 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 rounded-lg">
+                        <div class="p-1.5 bg-amber-50 text-amber-600 rounded-lg">
                             <span class="text-sm">🔥</span>
                         </div>
                     </div>
@@ -177,7 +177,7 @@
                             <span id="kpi-current-streak" class="text-2xl sm:text-3xl font-extrabold text-amber-500">0</span>
                             <span class="text-xs text-gray-500">acertos seguidos</span>
                         </div>
-                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Maior recorde: <span id="kpi-best-streak" class="font-bold text-gray-800 dark:text-gray-200">0</span></p>
+                        <p class="text-xs text-gray-400 mt-2">Maior recorde: <span id="kpi-best-streak" class="font-bold text-gray-800">0</span></p>
                     </div>
                 </div>
             </div>
@@ -186,22 +186,22 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                 
                 <!-- Sub-Card 1: Ritmo Cognitivo & Previsão -->
-                <div class="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between">
+                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Previsão & Ritmo</span>
-                            <span id="pace-estimate-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-gray-500">Previsão & Ritmo</span>
+                            <span id="pace-estimate-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
                                 Calculando...
                             </span>
                         </div>
                         <div class="mt-1">
-                            <span id="pace-estimate-time" class="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white">--</span>
-                            <p id="pace-estimate-sub" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">para concluir os cards restantes</p>
+                            <span id="pace-estimate-time" class="text-xl sm:text-2xl font-extrabold text-gray-900">--</span>
+                            <p id="pace-estimate-sub" class="text-xs text-gray-500 mt-0.5">para concluir os cards restantes</p>
                         </div>
                     </div>
-                    <div class="pt-3 mt-3 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                    <div class="pt-3 mt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
                         <div title="Card respondido mais rápido nesta sessão">
-                            ⚡ Mais rápido: <span id="pace-fastest-card" class="font-bold text-emerald-600 dark:text-emerald-400">--</span>
+                            ⚡ Mais rápido: <span id="pace-fastest-card" class="font-bold text-emerald-600">--</span>
                         </div>
                         <div title="Card mais reflexivo nesta sessão">
                             ⏳ Mais lento: <span id="pace-slowest-card" class="font-bold text-amber-500">--</span>
@@ -210,57 +210,57 @@
                 </div>
 
                 <!-- Sub-Card 2: Nível de Maestria do Baralho -->
-                <div class="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between">
+                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Domínio do Baralho</span>
-                            <span id="mastery-level-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-gray-500">Domínio do Baralho</span>
+                            <span id="mastery-level-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
                                 Iniciando
                             </span>
                         </div>
                         <div class="flex items-baseline gap-2 mt-1">
-                            <span id="mastery-score" class="text-xl sm:text-2xl font-extrabold text-purple-600 dark:text-purple-400">0 pts</span>
+                            <span id="mastery-score" class="text-xl sm:text-2xl font-extrabold text-purple-600">0 pts</span>
                             <span class="text-xs text-gray-400">de 100</span>
                         </div>
-                        <div class="w-full bg-gray-100 dark:bg-gray-700 h-2 rounded-full mt-2.5 overflow-hidden">
-                            <div id="mastery-progress-bar" class="bg-gradient-to-r from-blue-500 to-purple-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                        <div class="w-full bg-gray-100 h-2 rounded-full mt-2.5 overflow-hidden">
+                            <div id="mastery-progress-bar" class="bg-purple-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
                         </div>
                     </div>
-                    <p id="mastery-description" class="text-xs text-gray-400 dark:text-gray-500 mt-2.5 pt-2 border-t border-gray-100 dark:border-gray-700/60 truncate">
+                    <p id="mastery-description" class="text-xs text-gray-400 mt-2.5 pt-2 border-t border-gray-100 truncate">
                         Avançando na memorização ativa
                     </p>
                 </div>
 
                 <!-- Sub-Card 3: Destaques de Estudo (Marca-texto) -->
-                <div class="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between">
+                <div class="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Grifos & Destaques</span>
-                            <span id="highlights-total-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-gray-500">Grifos & Destaques</span>
+                            <span id="highlights-total-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
                                 0 cards
                             </span>
                         </div>
                         <div class="mt-1">
-                            <span id="highlights-summary-text" class="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white">0</span>
-                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 ml-1">trechos marcados</span>
+                            <span id="highlights-summary-text" class="text-xl sm:text-2xl font-extrabold text-gray-900">0</span>
+                            <span class="text-xs font-medium text-gray-500 ml-1">trechos marcados</span>
                         </div>
                     </div>
-                    <div id="highlights-swatches-container" class="pt-3 mt-3 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between text-xs">
+                    <div id="highlights-swatches-container" class="pt-3 mt-3 border-t border-gray-100 flex items-center justify-between text-xs">
                         <div class="flex items-center gap-1.5" title="Amarelo Pastel">
                             <span class="w-3 h-3 rounded-full bg-[#fef08a] border border-yellow-400 inline-block shadow-xs"></span>
-                            <span id="hl-count-yellow" class="font-bold text-gray-700 dark:text-gray-300">0</span>
+                            <span id="hl-count-yellow" class="font-bold text-gray-700">0</span>
                         </div>
                         <div class="flex items-center gap-1.5" title="Verde Pastel">
                             <span class="w-3 h-3 rounded-full bg-[#bbf7d0] border border-green-400 inline-block shadow-xs"></span>
-                            <span id="hl-count-green" class="font-bold text-gray-700 dark:text-gray-300">0</span>
+                            <span id="hl-count-green" class="font-bold text-gray-700">0</span>
                         </div>
                         <div class="flex items-center gap-1.5" title="Azul Pastel">
                             <span class="w-3 h-3 rounded-full bg-[#bfdbfe] border border-blue-400 inline-block shadow-xs"></span>
-                            <span id="hl-count-blue" class="font-bold text-gray-700 dark:text-gray-300">0</span>
+                            <span id="hl-count-blue" class="font-bold text-gray-700">0</span>
                         </div>
                         <div class="flex items-center gap-1.5" title="Roxo Pastel">
                             <span class="w-3 h-3 rounded-full bg-[#e9d5ff] border border-purple-400 inline-block shadow-xs"></span>
-                            <span id="hl-count-purple" class="font-bold text-gray-700 dark:text-gray-300">0</span>
+                            <span id="hl-count-purple" class="font-bold text-gray-700">0</span>
                         </div>
                     </div>
                 </div>
@@ -274,18 +274,18 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 
                 <!-- Panel 1: Anki Memory Quality Distribution -->
-                <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between">
+                <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-3">
                             <div>
-                                <h2 class="font-bold text-base text-gray-900 dark:text-white">Qualidade da Lembrança (Anki)</h2>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Distribuição das classificações dos cards</p>
+                                <h2 class="font-bold text-base text-gray-900">Qualidade da Lembrança (Anki)</h2>
+                                <p class="text-xs text-gray-500">Distribuição das classificações dos cards</p>
                             </div>
-                            <span id="anki-total-badge" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">0 respostas</span>
+                            <span id="anki-total-badge" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">0 respostas</span>
                         </div>
 
                         <!-- Segmented progress bar -->
-                        <div class="w-full h-4 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex mb-4 shadow-inner">
+                        <div class="w-full h-4 bg-gray-100 rounded-full overflow-hidden flex mb-4 shadow-inner">
                             <div id="anki-bar-again" class="bg-red-500 transition-all duration-500" style="width: 0%" title="Errei"></div>
                             <div id="anki-bar-hard" class="bg-orange-500 transition-all duration-500" style="width: 0%" title="Difícil"></div>
                             <div id="anki-bar-good" class="bg-emerald-500 transition-all duration-500" style="width: 0%" title="Médio"></div>
@@ -294,24 +294,24 @@
 
                         <!-- 4 Breakdown Boxes -->
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                            <div class="p-2 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40 text-center">
-                                <span class="text-[10px] uppercase font-bold text-red-600 dark:text-red-400 block">Errei</span>
-                                <span id="anki-count-again" class="text-lg font-extrabold text-red-700 dark:text-red-300">0</span>
+                            <div class="p-2 rounded-xl bg-red-50 border border-red-100 text-center">
+                                <span class="text-[10px] uppercase font-bold text-red-600 block">Errei</span>
+                                <span id="anki-count-again" class="text-lg font-extrabold text-red-700">0</span>
                                 <span id="anki-pct-again" class="text-[10px] text-red-500 block">0%</span>
                             </div>
-                            <div class="p-2 rounded-xl bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/40 text-center">
-                                <span class="text-[10px] uppercase font-bold text-orange-600 dark:text-orange-400 block">Difícil</span>
-                                <span id="anki-count-hard" class="text-lg font-extrabold text-orange-700 dark:text-orange-300">0</span>
+                            <div class="p-2 rounded-xl bg-orange-50 border border-orange-100 text-center">
+                                <span class="text-[10px] uppercase font-bold text-orange-600 block">Difícil</span>
+                                <span id="anki-count-hard" class="text-lg font-extrabold text-orange-700">0</span>
                                 <span id="anki-pct-hard" class="text-[10px] text-orange-500 block">0%</span>
                             </div>
-                            <div class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40 text-center">
-                                <span class="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block">Médio</span>
-                                <span id="anki-count-good" class="text-lg font-extrabold text-emerald-700 dark:text-emerald-300">0</span>
+                            <div class="p-2 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
+                                <span class="text-[10px] uppercase font-bold text-emerald-600 block">Médio</span>
+                                <span id="anki-count-good" class="text-lg font-extrabold text-emerald-700">0</span>
                                 <span id="anki-pct-good" class="text-[10px] text-emerald-500 block">0%</span>
                             </div>
-                            <div class="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 text-center">
-                                <span class="text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400 block">Fácil</span>
-                                <span id="anki-count-easy" class="text-lg font-extrabold text-blue-700 dark:text-blue-300">0</span>
+                            <div class="p-2 rounded-xl bg-blue-50 border border-blue-100 text-center">
+                                <span class="text-[10px] uppercase font-bold text-blue-600 block">Fácil</span>
+                                <span id="anki-count-easy" class="text-lg font-extrabold text-blue-700">0</span>
                                 <span id="anki-pct-easy" class="text-[10px] text-blue-500 block">0%</span>
                             </div>
                         </div>
@@ -319,10 +319,10 @@
                 </div>
 
                 <!-- Panel 2: Performance by Question Type -->
-                <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between">
+                <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
                     <div>
-                        <h2 class="font-bold text-base text-gray-900 dark:text-white mb-1">Desempenho por Formato</h2>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Taxa de sucesso de acordo com o tipo de card</p>
+                        <h2 class="font-bold text-base text-gray-900 mb-1">Desempenho por Formato</h2>
+                        <p class="text-xs text-gray-500 mb-4">Taxa de sucesso de acordo com o tipo de card</p>
 
                         <div class="space-y-3" id="by-type-container">
                             <!-- Type rows injected dynamically in stats.js -->
@@ -332,13 +332,13 @@
             </div>
 
             <!-- CHRONOLOGICAL ANSWER FLOW (TIMELINE STRIP) -->
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
                 <div class="flex items-center justify-between mb-3">
                     <div>
-                        <h2 class="font-bold text-base text-gray-900 dark:text-white">Linha do Tempo da Sessão</h2>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Últimos 10 cards respondidos nesta rodada</p>
+                        <h2 class="font-bold text-base text-gray-900">Linha do Tempo da Sessão</h2>
+                        <p class="text-xs text-gray-500">Últimos 10 cards respondidos nesta rodada</p>
                     </div>
-                    <span id="timeline-counter-badge" class="text-xs text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1">
+                    <span id="timeline-counter-badge" class="text-xs text-blue-600 font-semibold flex items-center gap-1">
                         <span>&larr; Mais recentes (últimos 10)</span>
                     </span>
                 </div>
@@ -349,13 +349,13 @@
             </div>
 
             <!-- INSIGHTS BANNER -->
-            <div id="session-insight-card" class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200/80 dark:border-blue-800/60 p-4 sm:p-5 rounded-2xl flex items-start gap-3">
+            <div id="session-insight-card" class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 p-4 sm:p-5 rounded-2xl flex items-start gap-3">
                 <div class="p-2 bg-blue-600 text-white rounded-xl flex-shrink-0 mt-0.5">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <h3 class="text-sm font-bold text-blue-950 dark:text-blue-200" id="insight-title">Diagnóstico de Aprendizagem</h3>
-                    <p class="text-xs text-blue-800 dark:text-blue-300 mt-1 leading-relaxed" id="insight-text">
+                    <h3 class="text-sm font-bold text-blue-950" id="insight-title">Diagnóstico de Aprendizagem</h3>
+                    <p class="text-xs text-blue-800 mt-1 leading-relaxed" id="insight-text">
                         Comece a responder cards para receber análises inteligentes de retenção, velocidade de resposta e recomendações de estudo.
                     </p>
                 </div>
@@ -368,23 +368,23 @@
 
             <!-- ALL-TIME AGGREGATE SUMMARY -->
             <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
-                <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
+                <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm text-center">
                     <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Total de Sessões</span>
-                    <span id="alltime-sessions" class="text-2xl font-extrabold text-gray-900 dark:text-white">0</span>
+                    <span id="alltime-sessions" class="text-2xl font-extrabold text-gray-900">0</span>
                 </div>
-                <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
+                <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm text-center">
                     <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Tempo Acumulado</span>
-                    <span id="alltime-time" class="text-2xl font-extrabold text-purple-600 dark:text-purple-400">0h 0m</span>
+                    <span id="alltime-time" class="text-2xl font-extrabold text-purple-600">0h 0m</span>
                 </div>
-                <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
+                <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm text-center">
                     <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Cards Revisados</span>
-                    <span id="alltime-cards" class="text-2xl font-extrabold text-blue-600 dark:text-blue-400">0</span>
+                    <span id="alltime-cards" class="text-2xl font-extrabold text-blue-600">0</span>
                 </div>
-                <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center">
+                <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm text-center">
                     <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Precisão Histórica</span>
-                    <span id="alltime-accuracy" class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">0%</span>
+                    <span id="alltime-accuracy" class="text-2xl font-extrabold text-emerald-600">0%</span>
                 </div>
-                <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm text-center col-span-2 sm:col-span-1">
+                <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm text-center col-span-2 sm:col-span-1">
                     <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Recorde de Sequência</span>
                     <span id="alltime-best-streak" class="text-2xl font-extrabold text-amber-500">🔥 0</span>
                 </div>
@@ -394,20 +394,20 @@
             <section id="ai-history-subjects-section" class="w-full transition-all duration-300"></section>
 
             <!-- ACCURACY OVER TIME CHART -->
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h2 class="font-bold text-base text-gray-900 dark:text-white">Evolução da Precisão (Sessão a Sessão)</h2>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Taxa de acertos registrada ao longo das sessões anteriores</p>
+                        <h2 class="font-bold text-base text-gray-900">Evolução da Precisão (Sessão a Sessão)</h2>
+                        <p class="text-xs text-gray-500">Taxa de acertos registrada ao longo das sessões anteriores</p>
                     </div>
-                    <span id="chart-trend-badge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 hidden">
+                    <span id="chart-trend-badge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 hidden">
                         📈 +0%
                     </span>
                 </div>
 
                 <!-- Responsive Pure SVG / CSS Bar Chart -->
                 <div class="w-full overflow-x-auto custom-scrollbar py-2">
-                    <div id="accuracy-chart-container" class="min-w-[400px] h-48 flex items-end gap-3 pt-6 pb-2 border-b border-gray-200 dark:border-gray-700">
+                    <div id="accuracy-chart-container" class="min-w-[400px] h-48 flex items-end gap-3 pt-6 pb-2 border-b border-gray-200">
                         <!-- Bars injected dynamically -->
                     </div>
                 </div>
@@ -418,9 +418,9 @@
             </div>
 
             <!-- PAST SESSIONS LIST -->
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="font-bold text-base text-gray-900 dark:text-white">Histórico Detalhado de Sessões</h2>
+                    <h2 class="font-bold text-base text-gray-900">Histórico Detalhado de Sessões</h2>
                 </div>
 
                 <div id="history-list" class="space-y-3">
@@ -433,11 +433,11 @@
         <!-- ==================== TAB 3: FOCO DE REVISÃO ==================== -->
         <div id="tab-content-struggling" class="space-y-6 hidden">
 
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h2 class="font-bold text-base text-gray-900 dark:text-white">Cards que Precisam de Atenção</h2>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Top 20 cards com mais erros nesta sessão em ordem decrescente</p>
+                        <h2 class="font-bold text-base text-gray-900">Cards que Precisam de Atenção</h2>
+                        <p class="text-xs text-gray-500">Top 20 cards com mais erros nesta sessão em ordem decrescente</p>
                     </div>
                     <button id="add-all-to-notebook-btn" class="hidden text-xs font-bold px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition shadow-sm">
                         + Adicionar Todos ao Caderno
@@ -453,7 +453,7 @@
 
     </main>
 
-    <footer class="w-full max-w-5xl mx-auto pt-8 pb-4 text-center text-xs text-gray-400 dark:text-gray-600">
+    <footer class="w-full max-w-5xl mx-auto pt-8 pb-4 text-center text-xs text-gray-400">
         Flashcards • Estatísticas & Analítica de Retenção
     </footer>
 
@@ -462,13 +462,13 @@
 
     <!-- AI CONFIG MODAL -->
     <div id="ai-config-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-gray-200 dark:border-gray-700 animate-in fade-in zoom-in-95 duration-200">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750 flex justify-between items-center">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-gray-200 animate-in fade-in zoom-in-95 duration-200">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
                 <div class="flex items-center gap-2">
                     <span class="text-base">✨</span>
-                    <h3 class="font-bold text-base text-gray-900 dark:text-white">Configurar Gemini API Key</h3>
+                    <h3 class="font-bold text-base text-gray-900">Configurar Gemini API Key</h3>
                 </div>
-                <button id="close-ai-modal-btn" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition">
+                <button id="close-ai-modal-btn" class="text-gray-400 hover:text-gray-600 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -476,26 +476,26 @@
             </div>
             <form id="stats-api-key-form" autocomplete="on" onsubmit="return false;" class="m-0 p-0 flex flex-col">
                 <div class="p-6 space-y-4">
-                    <p class="text-xs text-gray-600 dark:text-gray-300">
+                    <p class="text-xs text-gray-600">
                         A chave de API do Gemini Flash-Lite é usada localmente no seu navegador para agrupar baralhos em matérias e cartões em tópicos com semântica avançada.
                     </p>
                     <div>
-                        <label for="modal-api-key-input" class="block text-xs font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Sua Chave de API</label>
+                        <label for="modal-api-key-input" class="block text-xs font-semibold mb-1.5 text-gray-700">Sua Chave de API</label>
                         <input type="text" id="stats-api-key-username" name="username" autocomplete="username" class="sr-only" tabindex="-1" aria-hidden="true">
                         <input type="password" id="modal-api-key-input" name="password" autocomplete="current-password"
-                            class="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 transition text-gray-900 dark:text-white"
+                            class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 transition text-gray-900"
                             placeholder="AIzaSy...">
                         <p class="text-[11px] text-gray-400 mt-1.5">Sua chave é armazenada com segurança na sessão do navegador.</p>
                     </div>
-                    <div class="bg-purple-50 dark:bg-purple-950/30 p-3 rounded-xl border border-purple-100 dark:border-purple-900/50 flex items-center justify-between text-xs text-purple-700 dark:text-purple-300">
+                    <div class="bg-purple-50 p-3 rounded-xl border border-purple-100 flex items-center justify-between text-xs text-purple-700">
                         <span>Não tem uma chave ainda?</span>
-                        <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="font-bold underline hover:text-purple-800 dark:hover:text-purple-200">
+                        <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="font-bold underline hover:text-purple-800">
                             Obter no Google AI Studio &rarr;
                         </a>
                     </div>
                 </div>
-                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-750 border-t border-gray-200 dark:border-gray-700 flex gap-2.5 justify-end">
-                    <button type="button" id="modal-disable-ai-btn" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex gap-2.5 justify-end">
+                    <button type="button" id="modal-disable-ai-btn" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-200 transition">
                         Desativar IA
                     </button>
                     <button type="submit" id="modal-save-api-key-btn" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 transition shadow-sm">
@@ -506,7 +506,7 @@
         </div>
     </div>
 
-    <script src="../js/stats.js" type="module"></script>
+    <script src="../js/stats.js?v=5.2" type="module"></script>
 </body>
 
 </html>

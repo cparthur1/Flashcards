@@ -7,6 +7,7 @@
 export function normalizeString(str) {
     if (!str) return '';
     return str.replace(/\(.*?\)/g, '')
+        .replace(/[*_`$#]/g, '')
         .trim()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")

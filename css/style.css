@@ -160,13 +160,6 @@ body {
     }
 }
 
-/* Fallback definition for custom dark gray-750 class used in modal headers */
-.dark .dark\:bg-gray-750,
-.dark\:bg-gray-750 {
-    background-color: #242f3d !important;
-}
-
-
 /* Custom Scrollbars */
 textarea::-webkit-scrollbar,
 .custom-scrollbar::-webkit-scrollbar {
@@ -182,11 +175,6 @@ textarea::-webkit-scrollbar-thumb,
 .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: #cbd5e1;
     border-radius: 20px;
-}
-
-.dark textarea::-webkit-scrollbar-thumb,
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: #4b5563;
 }
 
 /* Animations */
@@ -232,10 +220,6 @@ textarea::-webkit-scrollbar-thumb,
     border-radius: 0.75rem 0.75rem 0.75rem 0;
     width: fit-content;
     align-self: flex-start;
-}
-
-.dark .typing-indicator {
-    background: #374151;
 }
 
 .typing-dot {
@@ -301,11 +285,6 @@ textarea::-webkit-scrollbar-thumb,
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.dark .chat-message-ai {
-    background: #374151;
-    color: #f3f4f6;
-}
-
 .chat-message-user {
     background: #7c3aed;
     color: white;
@@ -347,20 +326,12 @@ textarea::-webkit-scrollbar-thumb,
     font-family: monospace;
 }
 
-.dark .chat-message-ai code {
-    background: rgba(255, 255, 255, 0.1);
-}
-
 .chat-message-ai pre {
     background: rgba(0, 0, 0, 0.05);
     padding: 0.5rem;
     border-radius: 0.5rem;
     overflow-x: auto;
     margin: 0.5rem 0;
-}
-
-.dark .chat-message-ai pre {
-    background: rgba(255, 255, 255, 0.05);
 }
 
 .chat-message-ai strong {
@@ -401,12 +372,6 @@ textarea::-webkit-scrollbar-thumb,
 
 .generating-deck-bg {
     background: linear-gradient(135deg, #f8fafc 0%, #ede9fe 50%, #f1f5f9 100%) !important;
-    background-size: 200% 200% !important;
-    animation: ambientLightShift 12s ease-in-out infinite !important;
-}
-
-.dark .generating-deck-bg {
-    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%) !important;
     background-size: 200% 200% !important;
     animation: ambientLightShift 12s ease-in-out infinite !important;
 }
@@ -477,11 +442,6 @@ textarea::-webkit-scrollbar-thumb,
     background: #f3f4f6;
     padding: 0.25rem 0.75rem;
     border-radius: 9999px;
-}
-
-.dark .chat-question-label {
-    background: #374151;
-    color: #6b7280;
 }
 
 /* Flashcard Image Styling & Lightbox Zoom */
@@ -600,19 +560,19 @@ textarea::-webkit-scrollbar-thumb,
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
-/* Hamburger Menu Physical Animation */
+/* Hamburger Menu Physical Animation - Drop Down */
 #hamburger-menu:not(.hidden) {
-    animation: menuFadeIn 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: menuDropDown 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes menuFadeIn {
+@keyframes menuDropDown {
     from {
         opacity: 0;
-        transform: scale(0.96) translateY(-4px);
+        transform: translateY(-12px);
     }
     to {
         opacity: 1;
-        transform: scale(1) translateY(0);
+        transform: translateY(0);
     }
 }
 
@@ -652,19 +612,10 @@ mark.card-hl:hover {
     filter: brightness(0.96);
 }
 
-.dark mark.card-hl:hover {
-    filter: brightness(1.1);
-}
-
 /* Pastel Yellow */
 mark.card-hl-yellow {
     background-color: #fef08a;
     color: #1e293b;
-}
-.dark mark.card-hl-yellow {
-    background-color: rgba(234, 179, 8, 0.35);
-    color: #fef9c3;
-    border-bottom: 1.5px solid rgba(234, 179, 8, 0.65);
 }
 
 /* Pastel Green */
@@ -672,32 +623,17 @@ mark.card-hl-green {
     background-color: #bbf7d0;
     color: #1e293b;
 }
-.dark mark.card-hl-green {
-    background-color: rgba(34, 197, 94, 0.35);
-    color: #dcfce7;
-    border-bottom: 1.5px solid rgba(34, 197, 94, 0.65);
-}
 
 /* Pastel Blue */
 mark.card-hl-blue {
     background-color: #bfdbfe;
     color: #1e293b;
 }
-.dark mark.card-hl-blue {
-    background-color: rgba(59, 130, 246, 0.35);
-    color: #dbeafe;
-    border-bottom: 1.5px solid rgba(59, 130, 246, 0.65);
-}
 
 /* Pastel Purple */
 mark.card-hl-purple {
     background-color: #e9d5ff;
     color: #1e293b;
-}
-.dark mark.card-hl-purple {
-    background-color: rgba(168, 85, 247, 0.35);
-    color: #f3e8ff;
-    border-bottom: 1.5px solid rgba(168, 85, 247, 0.65);
 }
 
 /* Floating Highlight Popup Animation */
@@ -720,10 +656,6 @@ mark.card-hl-purple {
 #hl-trigger-btn.is-marked {
     background-color: #fee2e2;
     color: #dc2626;
-}
-.dark #hl-trigger-btn.is-marked {
-    background-color: rgba(239, 68, 68, 0.25);
-    color: #f87171;
 }
 #hl-trigger-btn.is-marked img {
     filter: invert(28%) sepia(91%) saturate(3421%) hue-rotate(345deg) brightness(96%) contrast(92%);
@@ -820,20 +752,12 @@ mark.card-hl-purple {
     font-weight: 600;
 }
 
-.dark #anki-answer-text th, .dark #question-body-text th, .dark .anki-markdown-content th {
-    background-color: rgba(255, 255, 255, 0.08);
-}
-
 #anki-answer-text code, #question-body-text code, .anki-markdown-content code {
     background-color: rgba(0, 0, 0, 0.06);
     padding: 0.15em 0.35em;
     border-radius: 0.25rem;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.88em;
-}
-
-.dark #anki-answer-text code, .dark #question-body-text code, .dark .anki-markdown-content code {
-    background-color: rgba(255, 255, 255, 0.12);
 }
 
 #anki-answer-text pre, #question-body-text pre, .anki-markdown-content pre {
@@ -843,10 +767,6 @@ mark.card-hl-purple {
     overflow-x: auto;
     text-align: left;
     margin: 0.75rem 0;
-}
-
-.dark #anki-answer-text pre, .dark #question-body-text pre, .dark .anki-markdown-content pre {
-    background-color: rgba(0, 0, 0, 0.3);
 }
 
 #anki-answer-text blockquote, #question-body-text blockquote, .anki-markdown-content blockquote {
@@ -983,24 +903,11 @@ mark.card-hl-purple {
                 color 0.2s ease;
 }
 
-.dark .fill-blank-input {
-    background-color: rgba(31, 41, 55, 0.85);
-    border: 1.5px solid rgba(59, 130, 246, 0.45);
-    color: #f8fafc;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
-}
-
 .fill-blank-input:focus {
     outline: none;
     background-color: #ffffff;
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25), inset 0 1px 1px rgba(0, 0, 0, 0.04);
-}
-
-.dark .fill-blank-input:focus {
-    background-color: #111827;
-    border-color: #60a5fa;
-    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3), inset 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 .fill-blank-input:read-only {
@@ -1054,20 +961,6 @@ mark.card-hl-purple {
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08), inset 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
-.dark .mc-option-btn {
-    border: 1px solid rgba(75, 85, 99, 0.6);
-    background: linear-gradient(180deg, #374151 0%, #1f2937 100%);
-    color: #f3f4f6;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.dark .mc-option-btn:hover:not(:disabled) {
-    border-color: #3b82f6;
-    background: linear-gradient(180deg, #1e3a8a 0%, #172554 100%);
-    color: #bfdbfe;
-    box-shadow: 0 4px 10px -2px rgba(30, 58, 138, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-
 .mc-option-btn.mc-correct {
     border-color: #10b981 !important;
     background: linear-gradient(180deg, #10b981 0%, #059669 100%) !important;
@@ -1082,7 +975,7 @@ mark.card-hl-purple {
     box-shadow: 0 4px 12px -2px rgba(239, 68, 68, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
 }
 
-/* Anki Gamepad Rating Buttons */
+/* Anki Gamepad Rating Buttons (Soft Pastel Aesthetic with Tactile Depth) */
 .anki-rating-btn {
     position: relative;
     display: flex;
@@ -1090,61 +983,97 @@ mark.card-hl-purple {
     align-items: center;
     justify-content: center;
     gap: 0.25rem;
-    padding: 0.875rem 0.5rem;
+    padding: 0.85rem 0.5rem;
     border-radius: 0.875rem;
     font-weight: 700;
     font-size: 0.95rem;
-    color: #ffffff;
     cursor: pointer;
     user-select: none;
     touch-action: manipulation;
-    transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1),
+    transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1),
                 filter 0.2s ease,
-                box-shadow 0.2s ease;
-    border: 1px solid transparent;
+                box-shadow 0.2s ease,
+                background-color 0.2s ease;
+    border-width: 1.5px;
+    border-style: solid;
 }
 
 .anki-rating-btn:hover {
-    filter: brightness(1.06);
+    filter: brightness(1.04);
     transform: translateY(-1.5px);
 }
 
 .anki-rating-btn:active {
-    transform: translateY(1px) scale(0.97);
+    transform: translateY(1px) scale(0.975);
 }
 
 .anki-rating-btn .shortcut-badge {
     font-size: 0.65rem;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-weight: 600;
-    opacity: 0.85;
-    background: rgba(0, 0, 0, 0.2);
+    font-weight: 700;
     padding: 0.1rem 0.45rem;
     border-radius: 0.35rem;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+/* 1. Errei - Pastel Rose/Red */
 .anki-btn-again {
-    background: linear-gradient(180deg, #f87171 0%, #dc2626 100%);
-    border-color: rgba(220, 38, 38, 0.6);
-    box-shadow: 0 4px 10px -2px rgba(220, 38, 38, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    background: linear-gradient(180deg, #fee2e2 0%, #fecaca 100%);
+    border-color: #f87171;
+    color: #991b1b;
+    box-shadow: 0 2px 6px -1px rgba(239, 68, 68, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.anki-btn-again .shortcut-badge {
+    background: rgba(153, 27, 27, 0.12);
+    color: #991b1b;
+}
+.anki-btn-again:hover {
+    box-shadow: 0 4px 10px -1px rgba(239, 68, 68, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
+/* 2. Difícil - Pastel Peach/Orange */
 .anki-btn-hard {
-    background: linear-gradient(180deg, #fb923c 0%, #ea580c 100%);
-    border-color: rgba(234, 88, 12, 0.6);
-    box-shadow: 0 4px 10px -2px rgba(234, 88, 12, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    background: linear-gradient(180deg, #ffedd5 0%, #fed7aa 100%);
+    border-color: #fb923c;
+    color: #9a3412;
+    box-shadow: 0 2px 6px -1px rgba(249, 115, 22, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.anki-btn-hard .shortcut-badge {
+    background: rgba(154, 52, 18, 0.12);
+    color: #9a3412;
+}
+.anki-btn-hard:hover {
+    box-shadow: 0 4px 10px -1px rgba(249, 115, 22, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
+/* 3. Médio - Pastel Mint/Green */
 .anki-btn-good {
-    background: linear-gradient(180deg, #34d399 0%, #059669 100%);
-    border-color: rgba(5, 150, 105, 0.6);
-    box-shadow: 0 4px 10px -2px rgba(5, 150, 105, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    background: linear-gradient(180deg, #dcfce7 0%, #bbf7d0 100%);
+    border-color: #4ade80;
+    color: #166534;
+    box-shadow: 0 2px 6px -1px rgba(34, 197, 94, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.anki-btn-good .shortcut-badge {
+    background: rgba(22, 101, 52, 0.12);
+    color: #166534;
+}
+.anki-btn-good:hover {
+    box-shadow: 0 4px 10px -1px rgba(34, 197, 94, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
+/* 4. Fácil - Pastel Sky/Blue */
 .anki-btn-easy {
-    background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
-    border-color: rgba(37, 99, 235, 0.6);
-    box-shadow: 0 4px 10px -2px rgba(37, 99, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    background: linear-gradient(180deg, #dbeafe 0%, #bfdbfe 100%);
+    border-color: #60a5fa;
+    color: #1e40af;
+    box-shadow: 0 2px 6px -1px rgba(59, 130, 246, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.anki-btn-easy .shortcut-badge {
+    background: rgba(30, 64, 175, 0.12);
+    color: #1e40af;
+}
+.anki-btn-easy:hover {
+    box-shadow: 0 4px 10px -1px rgba(59, 130, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
 /* Tactile Primary Button */
@@ -1164,6 +1093,43 @@ mark.card-hl-purple {
 .btn-primary-tactile:active {
     transform: translateY(1px) scale(0.99);
     box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* Tactile Skip Button (Darker Amber Primary CTA for Wrong Answers) */
+.btn-skip-tactile,
+#next-question-btn {
+    background: linear-gradient(180deg, #d97706 0%, #92400e 100%);
+    box-shadow: 0 4px 12px -2px rgba(180, 83, 9, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(146, 64, 14, 0.7);
+    color: #ffffff;
+    touch-action: manipulation;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-skip-tactile:hover,
+#next-question-btn:hover {
+    background: linear-gradient(180deg, #f59e0b 0%, #92400e 100%);
+    box-shadow: 0 6px 16px -2px rgba(180, 83, 9, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    transform: translateY(-1.5px);
+}
+
+.btn-skip-tactile:active,
+#next-question-btn:active {
+    transform: translateY(1px) scale(0.99);
+    box-shadow: 0 2px 4px rgba(180, 83, 9, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+#next-question-btn img,
+.btn-skip-tactile img {
+    filter: brightness(0) invert(1);
+    opacity: 0.95;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+#next-question-btn:hover img,
+.btn-skip-tactile:hover img {
+    opacity: 1;
+    transform: rotate(15deg);
 }
 
 /* ==========================================================================

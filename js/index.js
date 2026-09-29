@@ -440,14 +440,14 @@ function init() {
             totalCards += deck.cards.length;
 
             const item = document.createElement('div');
-            item.className = 'flex items-center justify-between p-2.5 rounded-xl bg-gray-50 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 transition group';
+            item.className = 'flex items-center justify-between p-2.5 rounded-xl bg-gray-50 border border-gray-200 transition group';
             item.innerHTML = `
                 <div class="flex items-center gap-2.5 min-w-0 flex-1">
                     <svg class="w-4 h-4 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate flex-1 text-left" title="${deck.name}">${deck.name}</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-medium flex-shrink-0">${deck.cards.length} cards</span>
+                    <span class="text-sm font-semibold text-gray-800 truncate flex-1 text-left" title="${deck.name}">${deck.name}</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-medium flex-shrink-0">${deck.cards.length} cards</span>
                 </div>
-                <button type="button" class="remove-deck-btn ml-2 p-1 text-gray-400 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition" title="Remover baralho">
+                <button type="button" class="remove-deck-btn ml-2 p-1 text-gray-400 hover:text-red-500 transition" title="Remover baralho">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                 </button>
             `;

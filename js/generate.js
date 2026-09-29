@@ -188,7 +188,13 @@ let lastFailedLocalCards = null;
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const FILES_DEFAULT_SVG = '<svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>';
 
-const systemInstruction = "Sua função é gerenciar um baralho de flashcards para um estudante universitário. Você pode adicionar, editar ou remover cards usando as ferramentas fornecidas. Tipos suportados: 'open' (conceito aberto), 'open_double' (dupla resposta), 'multiple_choice' (múltipla escolha com 2 a 6 opções), 'fill' (preencher lacunas marcadas por '_' em frases ou textos), e 'anki' (conceito/pergunta e explicação detalhada para repetição espaçada). Nos cartões 'fill', a propriedade 'description' contém o texto/enunciado com as lacunas representadas por '_' (ou '___') e 'answer'/'answers' contém as respostas corretas ordenadas para cada lacuna, separadas por ';' no texto ou como array de strings. Nos cartões 'anki' e 'fill', há suporte total a formatação Markdown rico (tabelas, listas, negrito) e fórmulas matemáticas em LaTeX/KaTeX ($fórmula$ inline e $$fórmula$$ em bloco). Use essa rica formatação matemática e markdown sempre que oportuno para explicar conceitos complexos, passos de processos, fórmulas ou tabelas comparativas. Mantenha o tom profissional, analítico e pragmático.";
+const systemInstruction = "Sua função é gerenciar um baralho de flashcards para um estudante universitário. Você pode adicionar, editar ou remover cards usando as ferramentas fornecidas. Tipos suportados: 'open' (conceito aberto), 'open_double' (dupla resposta), 'multiple_choice' (múltipla escolha com 2 a 6 opções), 'fill' (preencher lacunas marcadas por '_' em frases ou textos), e 'anki' (conceito/pergunta e explicação detalhada para repetição espaçada).\n\n" +
+    "REGRAS MANDATÓRIAS DE RESPOSTA E FORMATAÇÃO:\n" +
+    "1. RESPOSTAS DIGITADAS ('open', 'open_double' e lacunas de 'fill'): Os campos de resposta digitada ('answer', 'answer2' e itens do array 'answers') DEVEM CONTER EXCLUSIVAMENTE TEXTO PURO. É terminantemente PROIBIDO usar formatação Markdown (sem negrito **, sem itálico *, sem crases ` de código) nesses campos de resposta digitada.\n" +
+    "2. FÓRMULAS NUNCA DEVEM SER RESPOSTAS DIGITADAS: Fórmulas matemáticas, químicas ou expressões em LaTeX ($...$, $$...$$, frações, potências, etc.) JAMAIS devem ser respostas digitadas nos tipos 'open', 'open_double' ou 'fill'. O estudante digita com teclado comum e não pode digitar fórmulas complexas. Se a pergunta for sobre uma fórmula ou equação, crie OBRIGATORIAMENTE um card do tipo 'anki' (frente com o conceito e verso com a fórmula em LaTeX) ou 'multiple_choice' (onde o estudante seleciona a alternativa).\n" +
+    "3. LIBERDADE DE MARKDOWN EM 'ANKI' E 'MULTIPLE_CHOICE': Os tipos 'anki' (frente e verso) e 'multiple_choice' (enunciado, opções e resposta) podem e devem usar Markdown rico (tabelas, listas, negrito) e fórmulas LaTeX ($...$ e $$...$$) livremente.\n" +
+    "4. NO TIPO 'FILL': O enunciado ('description') pode conter Markdown e fórmulas LaTeX para contextualização, mas as lacunas '_' devem ser preenchidas apenas com termos simples, números ou parâmetros em texto puro, sem Markdown.\n\n" +
+    "Mantenha o tom profissional, analítico e pragmático.";
 
 const generationSystemInstruction = `Você é um especialista em educação e elaboração de flashcards acadêmicos de alto rendimento.
 Sua missão é sintetizar materiais de estudo (artigos, livros, apresentações, apostilas ou anotações) em flashcards de nível universitário/pós-graduação com máxima precisão conceitual, adaptando-se com rigor e profundidade ao domínio temático abordado (ciências da saúde, biológicas, exatas, engenharia, direito, humanas ou tecnologia).
@@ -198,23 +204,39 @@ DIRETRIZES DE FORMATO E QUALIDADE:
 2. PROIBIDO incluir texto explicativo, introduções ou notas fora do array JSON.
 3. Linhas ou anotações iniciadas por "#" nos arquivos de texto/documentos são notas ou títulos e devem ser ignoradas como perguntas diretas.
 
+REGRAS MANDATÓRIAS DE RESPOSTA E FORMATAÇÃO:
+• PROIBIDO O USO DE MARKDOWN EM RESPOSTAS DIGITADAS:
+  - Nos cartões com resposta digitada ("open", "open_double" e as lacunas de "fill"), os campos "answer", "answer2" e cada item do array "answers" DEVEM CONTER EXCLUSIVAMENTE TEXTO PURO (plain text).
+  - NUNCA use negrito (**texto**), itálico (*texto* ou _texto_), crases de código (\`texto\`), cabeçalhos (#) ou delimitadores matemáticos nesses campos de resposta digitada.
+• FÓRMULAS NUNCA DEVEM SER RESPOSTAS DIGITADAS:
+  - Fórmulas matemáticas, equações físicas, reações químicas ou expressões em LaTeX ($...$, $$...$$, frações \\frac, potências, etc.) JAMAIS devem ser a resposta a ser digitada pelo estudante nos tipos "open", "open_double" ou "fill". O estudante utiliza teclado comum e não dispõe de teclado LaTeX para digitar fórmulas.
+  - Se o material exigir a memorização de uma fórmula matemática ou científica:
+    * Crie OBRIGATORIAMENTE um cartão "anki" (frente com o questionamento/conceito e verso com a fórmula completa em LaTeX KaTeX e explicação detalhada) OU um cartão "multiple_choice" (onde as alternativas contêm as fórmulas para o estudante reconhecer e escolher).
+    * NUNCA crie perguntas abertas ou lacunas cuja resposta digitada seja uma fórmula!
+• LIBERDADE DE MARKDOWN E LATEX EM "ANKI" E "MULTIPLE_CHOICE":
+  - Cartões "anki": Uso de Markdown rico (tabelas, listas com marcadores, negrito de destaque) e fórmulas matemáticas/científicas em LaTeX ($fórmula$ inline e $$fórmula$$ em bloco) é TOTALMENTE LIBERADO E INCENTIVADO na frente ("description") e no verso/explicação ("answer").
+  - Cartões "multiple_choice": Uso de Markdown e fórmulas LaTeX ($...$) é TOTALMENTE LIBERADO na pergunta ("description"), nas opções ("options") e na resposta correta ("answer").
+• NO TIPO "FILL":
+  - O enunciado ("description") PODE usar tabelas, listas e fórmulas LaTeX para contextualizar o texto com as lacunas "_".
+  - Porém, as lacunas omitidas e suas respectivas respostas em "answers" DEVEM ser termos simples, palavras-chave, dosagens ou números em texto puro digitável, NUNCA código LaTeX ou fórmulas.
+
 DISTRIBUIÇÃO E REGRAS POR TIPO DE CARTÃO:
 - "open":
   • Pergunta ("description"): Formulação clara, direta e objetiva de um conceito, termo, estrutura, lei, patologia ou princípio.
-  • Resposta ("answer"): Curta, telegráfica e precisa (idealmente de 1 a 3 palavras), sem frases explicativas ou conectivos desnecessários.
+  • Resposta ("answer"): Curta, telegráfica e precisa (idealmente de 1 a 3 palavras) em TEXTO PURO, SEM Markdown (sem **, *, \`) e SEM fórmulas.
 - "open_double":
   • Pergunta ("description"): Questionamento comparativo ou que envolva dois conceitos interligados (ex: causa e efeito, agonista e antagonista, dois parâmetros ou limites).
-  • Respostas ("answer" e "answer2"): Duas respostas diretas e telegráficas.
+  • Respostas ("answer" e "answer2"): Duas respostas diretas em TEXTO PURO, SEM Markdown e SEM fórmulas.
   • Rótulos ("placeholder1" e "placeholder2"): Rótulos descritivos e concisos para cada campo de resposta.
 - "fill":
-  • Enunciado / Frase ("description"): Texto, tabela, lista estruturada ou frase contendo lacunas representadas por "_" (ou "___") nos locais exatos onde os valores numéricos, dosagens, parâmetros, termos ou conceitos-chave foram omitidos para o estudante preencher diretamente no texto. Suporta Markdown rico e fórmulas LaTeX ($...$).
-  • Respostas ("answer" e "answers"): As respostas corretas na ordem exata de aparição das lacunas no texto. Forneça como array "answers" (ex: ["30", "3", "300"]) e como string "answer" separada por ponto e vírgula ";" (ex: "30; 3; 300"). Quando houver sinônimos aceitáveis para uma mesma lacuna, separe por "/" (ex: "30 / trinta").
+  • Enunciado / Frase ("description"): Texto, tabela, lista estruturada ou frase contendo lacunas representadas por "_" (ou "___") nos locais exatos onde os valores numéricos, dosagens, parâmetros ou termos foram omitidos para o estudante preencher diretamente no texto. Pode conter formatação Markdown e LaTeX no enunciado para contextualizar.
+  • Respostas ("answer" e "answers"): As respostas corretas em TEXTO PURO (sem Markdown, sem LaTeX e sem fórmulas), na ordem exata de aparição das lacunas no texto. Forneça como array "answers" (ex: ["30", "3", "300"]) e como string "answer" separada por ponto e vírgula ";" (ex: "30; 3; 300"). Quando houver sinônimos aceitáveis para uma mesma lacuna, separe por "/" (ex: "30 / trinta").
 - "multiple_choice":
   • Enunciado ("description"): Questão bem contextualizada, cenário aplicado, problema técnico ou pergunta conceitual.
-  • Resposta ("answer"): A alternativa correta exata.
+  • Resposta ("answer"): A alternativa correta exata. Pode conter Markdown e fórmulas LaTeX ($...$).
   • Opções ("options"): Array com 4 alternativas plausíveis (1 correta e 3 distratores inteligentes). A resposta correta DEVE estar contida obrigatoriamente neste array.
 - "anki":
-  • Frente ("description"): Conceito, processo, questionamento técnico ou dedução a ser compreendida e memorizada. Suporta Markdown e fórmulas LaTeX ($...$).
+  • Frente ("description"): Conceito, processo, dedução ou pergunta sobre fórmula a ser compreendida e memorizada. Suporta Markdown e fórmulas LaTeX ($...$).
   • Verso ("answer"): Explicação aprofundada, completa e estruturada para repetição espaçada. Suporta e deve utilizar Markdown rico (tópicos com marcadores, negrito para termos-chave, tabelas comparativas) e fórmulas matemáticas/científicas em LaTeX/KaTeX ($fórmula$ inline ou $$fórmula$$ em bloco) quando pertinentes.
 
 EXEMPLOS DE ESTRUTURA (FEW-SHOT):
@@ -268,10 +290,10 @@ const deckTools = [
                     properties: {
                         type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki", "divisor", "fill"], description: "Tipo do card: 'open', 'open_double', 'multiple_choice', 'anki', 'divisor' ou 'fill' (preencher lacunas '_')" },
                         description: { type: "STRING", description: "Pergunta, conceito, texto do divisor ou frase com lacunas '_' (para tipo 'fill'). Para cards 'anki' e 'fill', suporta Markdown e fórmulas LaTeX ($...$ ou $$...$$)." },
-                        answer: { type: "STRING", description: "Resposta principal, explicação detalhada ou respostas das lacunas separadas por ';' (tipo 'fill')." },
-                        answer2: { type: "STRING", description: "Resposta secundária (apenas para open_double)" },
-                        answers: { type: "ARRAY", items: { type: "STRING" }, description: "Lista ordenada de respostas para preencher as lacunas '_' no tipo 'fill'" },
-                        options: { type: "ARRAY", items: { type: "STRING" }, description: "Opções (apenas para multiple_choice)" },
+                        answer: { type: "STRING", description: "Resposta principal, explicação detalhada ou respostas das lacunas separadas por ';' (tipo 'fill'). REGRA: Para respostas digitadas ('open', 'open_double', 'fill'), use estritamente texto puro SEM Markdown (sem **, *, `) e NUNCA use fórmulas matemáticas/LaTeX como resposta digitada. Fórmulas e Markdown rico são permitidos apenas para 'anki' e 'multiple_choice'." },
+                        answer2: { type: "STRING", description: "Resposta secundária (apenas para open_double). Estritamente texto puro, sem Markdown e sem fórmulas." },
+                        answers: { type: "ARRAY", items: { type: "STRING" }, description: "Lista ordenada de respostas para preencher as lacunas '_' no tipo 'fill'. Use estritamente texto puro sem Markdown e sem fórmulas." },
+                        options: { type: "ARRAY", items: { type: "STRING" }, description: "Opções (apenas para multiple_choice). Suporta Markdown e fórmulas LaTeX." },
                         image: { type: "STRING", description: "URL ou Base64 da imagem da pergunta (opcional)" },
                         answerImage: { type: "STRING", description: "URL ou Base64 da imagem da resposta (opcional)" }
                     },
@@ -287,9 +309,9 @@ const deckTools = [
                         index: { type: "NUMBER", description: "O índice (começando em 0) do card a ser editado." },
                         type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki", "divisor", "fill"] },
                         description: { type: "STRING", description: "Pergunta, conceito, texto do divisor ou frase com lacunas '_' (para tipo 'fill')." },
-                        answer: { type: "STRING", description: "Resposta, explicação detalhada ou respostas das lacunas separadas por ';' (tipo 'fill')." },
-                        answer2: { type: "STRING" },
-                        answers: { type: "ARRAY", items: { type: "STRING" }, description: "Lista ordenada de respostas das lacunas (tipo 'fill')" },
+                        answer: { type: "STRING", description: "Resposta, explicação detalhada ou respostas das lacunas separadas por ';' (tipo 'fill'). REGRA: Para respostas digitadas ('open', 'open_double', 'fill'), use estritamente texto puro SEM Markdown e SEM fórmulas." },
+                        answer2: { type: "STRING", description: "Resposta secundária (apenas para open_double). Estritamente texto puro, sem Markdown e sem fórmulas." },
+                        answers: { type: "ARRAY", items: { type: "STRING" }, description: "Lista ordenada de respostas das lacunas (tipo 'fill'). Use estritamente texto puro sem Markdown e sem fórmulas." },
                         options: { type: "ARRAY", items: { type: "STRING" } },
                         image: { type: "STRING" },
                         answerImage: { type: "STRING" }
@@ -336,9 +358,9 @@ const deckTools = [
                                 properties: {
                                     type: { type: "STRING", enum: ["open", "open_double", "multiple_choice", "anki", "divisor", "fill"] },
                                     description: { type: "STRING", description: "Pergunta, conceito, texto do divisor ou frase com lacunas '_' (tipo 'fill')." },
-                                    answer: { type: "STRING", description: "Resposta principal, explicação detalhada ou respostas das lacunas separadas por ';' (tipo 'fill')." },
-                                    answer2: { type: "STRING" },
-                                    answers: { type: "ARRAY", items: { type: "STRING" }, description: "Lista ordenada de respostas das lacunas (tipo 'fill')" },
+                                    answer: { type: "STRING", description: "Resposta principal, explicação detalhada ou respostas das lacunas separadas por ';' (tipo 'fill'). REGRA: Para respostas digitadas ('open', 'open_double', 'fill'), use estritamente texto puro SEM Markdown e SEM fórmulas." },
+                                    answer2: { type: "STRING", description: "Resposta secundária (apenas para open_double). Estritamente texto puro, sem Markdown e sem fórmulas." },
+                                    answers: { type: "ARRAY", items: { type: "STRING" }, description: "Lista ordenada de respostas das lacunas (tipo 'fill'). Use estritamente texto puro sem Markdown e sem fórmulas." },
                                     options: { type: "ARRAY", items: { type: "STRING" } },
                                     image: { type: "STRING" },
                                     answerImage: { type: "STRING" }
@@ -365,7 +387,8 @@ const toolFunctions = {
     editar_card: (args) => {
         const { index, ...updates } = args;
         if (deckCards[index]) {
-            deckCards[index] = { ...deckCards[index], ...updates };
+            const merged = { ...deckCards[index], ...updates };
+            deckCards[index] = normalizeCard(merged) || merged;
             renderCardsList(true);
             return { success: true, message: `Card no índice ${index} foi editado.` };
         }
@@ -420,9 +443,9 @@ function updateApiKeyStatusUI() {
     if (dashboardKeyStatus) {
         dashboardKeyStatus.textContent = key ? "API Key Configurada ✓" : "Configurar API Key";
         if (key) {
-            dashboardKeyStatus.classList.add("text-green-600", "dark:text-green-400");
+            dashboardKeyStatus.classList.add("text-green-600");
         } else {
-            dashboardKeyStatus.classList.remove("text-green-600", "dark:text-green-400");
+            dashboardKeyStatus.classList.remove("text-green-600");
         }
     }
     if (quickApiInput) quickApiInput.value = key;
@@ -449,6 +472,40 @@ function renderFileIcons(files, container, defaultSvg) {
         icon.title = file.name;
         container.appendChild(icon);
     });
+}
+
+/**
+ * Strips markdown and LaTeX markup from typed answers (open, open_double, fill).
+ * Multiple choice options and Anki cards are intentionally exempted.
+ */
+function stripMarkdownFromTypedAnswer(str) {
+    if (!str || typeof str !== 'string') return '';
+    let s = str.trim();
+    // Strip LaTeX block ($$formula$$) and inline ($formula$)
+    s = s.replace(/\$\$([^$]+)\$\$/g, '$1');
+    s = s.replace(/\$([^$]+)\$/g, '$1');
+    // Strip bold and italics: **text**, *text*, __text__
+    s = s.replace(/\*\*([^*]+)\*\*/g, '$1');
+    s = s.replace(/\*([^*]+)\*/g, '$1');
+    s = s.replace(/__([^_]+)__/g, '$1');
+    // Strip code backticks `text`
+    s = s.replace(/`([^`]+)`/g, '$1');
+    // Strip markdown headers (#, ##, etc.)
+    s = s.replace(/^#+\s*/gm, '');
+    // Clean common LaTeX formatting wrappers like \text{...}, \mathrm{...}
+    s = s.replace(/\\(?:text|mathrm|mathbf|mathit)\{([^}]+)\}/g, '$1');
+    // Remove isolated backslashes from simple LaTeX commands
+    s = s.replace(/\\([a-zA-Z]+)/g, '$1');
+    return s.trim();
+}
+
+/**
+ * Checks if a string contains a complex LaTeX or mathematical formula that cannot be typed.
+ */
+function containsComplexFormula(str) {
+    if (!str || typeof str !== 'string') return false;
+    // Detect typical LaTeX formula commands, block math, or equations with sub/superscript
+    return /\\(?:frac|sqrt|int|sum|prod|partial|pm|times|div|alpha|beta|gamma|delta|theta|lambda|mu|sigma|omega|approx|leq|geq|infty|lim|sin|cos|tan|log|ln)\b|\$\$|\\begin\{|\b[a-zA-Z]\s*=\s*[^;,\n]{4,}/.test(str);
 }
 
 // Normalizes and validates card properties across all supported modes and aliases
@@ -499,6 +556,23 @@ function normalizeCard(raw) {
     }
     if (type === 'fill' && !answer && answers.length > 0) {
         answer = answers.join('; ');
+    }
+
+    // If an 'open', 'open_double' or 'fill' card contains a complex formula as the answer, convert to 'anki'
+    if ((type === 'open' || type === 'open_double') && (containsComplexFormula(answer) || containsComplexFormula(answer2))) {
+        type = 'anki';
+    } else if (type === 'fill' && answers.some(containsComplexFormula)) {
+        type = 'anki';
+    }
+
+    // For typed answer cards ('open', 'open_double', 'fill'), strip any accidental markdown formatting
+    if (type === 'open' || type === 'open_double' || type === 'fill') {
+        answer = stripMarkdownFromTypedAnswer(answer);
+        if (answer2) answer2 = stripMarkdownFromTypedAnswer(answer2);
+        if (answers && answers.length > 0) {
+            answers = answers.map(stripMarkdownFromTypedAnswer);
+            answer = answers.join('; ');
+        }
     }
 
     if (type === 'multiple_choice') {
@@ -674,10 +748,10 @@ function addAiChatGeneratingBubble(text) {
     removeAiChatGeneratingBubble();
     const bubble = document.createElement('div');
     bubble.id = 'ai-chat-generating-bubble';
-    bubble.className = "self-start bg-gradient-to-b from-purple-50/90 to-purple-100/60 dark:from-purple-950/50 dark:to-purple-900/40 border border-purple-200/80 dark:border-purple-800/60 p-3.5 rounded-2xl rounded-tl-sm text-xs text-purple-900 dark:text-purple-200 flex items-center gap-3 shadow-[0_2px_8px_rgba(109,40,217,0.05),inset_0_1px_0_rgba(255,255,255,0.8)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]";
+    bubble.className = "self-start bg-gradient-to-b from-purple-50/90 to-purple-100/60 border border-purple-200/80 p-3.5 rounded-2xl rounded-tl-sm text-xs text-purple-900 flex items-center gap-3 shadow-[0_2px_8px_rgba(109,40,217,0.05),inset_0_1px_0_rgba(255,255,255,0.8)]";
     bubble.innerHTML = `
         <div class="relative flex-shrink-0 w-2.5 h-2.5 flex items-center justify-center">
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-purple-600 dark:bg-purple-400 animate-pulse shadow-[0_0_6px_rgba(147,51,234,0.5)]"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-purple-600 animate-pulse shadow-[0_0_6px_rgba(147,51,234,0.5)]"></span>
         </div>
         <span class="font-medium">${text}</span>
     `;
@@ -1101,12 +1175,12 @@ function openEditorView(initialTab = 'creator') {
 function switchSidebarTab(tab) {
     if (tab === 'creator') {
         tabCreatorBtn.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition bg-blue-600 text-white shadow-sm";
-        tabAiChatBtn.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700";
+        tabAiChatBtn.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition text-gray-600 hover:bg-gray-200";
         cardCreatorPanel.classList.remove('hidden');
         aiEditorChatPanel.classList.add('hidden');
     } else {
         tabAiChatBtn.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition bg-purple-600 text-white shadow-sm";
-        tabCreatorBtn.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700";
+        tabCreatorBtn.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition text-gray-600 hover:bg-gray-200";
         cardCreatorPanel.classList.add('hidden');
         aiEditorChatPanel.classList.remove('hidden');
     }
@@ -1469,17 +1543,17 @@ submitModal22Btn.addEventListener('click', async () => {
             model: "gemini-flash-latest",
             generationConfig: { temperature: 0.7, responseMimeType: "text/plain" },
             tools: deckTools,
-            systemInstruction: systemInstruction + "\nPreencha os placeholders '[GEMINI]' no JSON de flashcards e retorne-os usando a ferramenta 'adicionar_varios_cards'. Preserve cards com type 'anki' (frente e verso), 'fill' (lacunas), 'open' e 'divisor' exatamente como foram fornecidos."
+            systemInstruction: systemInstruction + "\nPreencha os placeholders '[GEMINI]' no JSON de flashcards e retorne-os usando a ferramenta 'adicionar_varios_cards'. Preserve cards com type 'anki' (frente e verso), 'fill' (lacunas), 'open' e 'divisor' exatamente como foram fornecidos. REGRA MANDATÓRIA: Respostas digitadas ('open', 'open_double', 'fill') NUNCA devem usar Markdown nem fórmulas matemáticas. Fórmulas e Markdown são permitidos em 'anki' e 'multiple_choice'."
         });
 
         currentGenModel = model;
 
         const fillPrompt = `Aqui está uma lista de flashcards que precisam que você preencha os campos '[GEMINI]'.
-Para 'open_double', preencha 'placeholder1' e 'placeholder2' com rótulos descritivos curtos para as respostas.
-Para 'multiple_choice', complete o array 'options' com alternativas incorretas porém plausíveis (distratores), mantendo a resposta correta informada.
-Para 'fill', se 'answers' contiver '[GEMINI]' ou estiver vazio, identifique as respostas corretas para cada lacuna '_' na frase de 'description' e preencha o array 'answers' com as respostas em ordem. Se 'answers' já estiver preenchido, mantenha-o intacto.
-Para 'anki', mantenha o type 'anki' intacto, preservando exatamente 'description' (frente/pergunta) e 'answer' (verso/resposta detalhada, que suporta Markdown e LaTeX).
-Para 'open', mantenha o type 'open' intacto com 'description' e 'answer'.
+Para 'open_double', preencha 'placeholder1' e 'placeholder2' com rótulos descritivos curtos para as respostas. Respostas digitadas devem ser texto puro sem Markdown e sem fórmulas.
+Para 'multiple_choice', complete o array 'options' com alternativas incorretas porém plausíveis (distratores), mantendo a resposta correta informada. Pode usar Markdown e LaTeX livremente.
+Para 'fill', se 'answers' contiver '[GEMINI]' ou estiver vazio, identifique as respostas corretas para cada lacuna '_' na frase de 'description' e preencha o array 'answers' com as respostas em ordem. As respostas das lacunas DEVEM SER ESTRITAMENTE TEXTO PURO (sem negrito **, sem itálico *, sem código \` e sem fórmulas LaTeX). Se 'answers' já estiver preenchido, mantenha-o intacto.
+Para 'anki', mantenha o type 'anki' intacto, preservando exatamente 'description' (frente/pergunta) e 'answer' (verso/resposta detalhada, que suporta Markdown e LaTeX livremente).
+Para 'open', mantenha o type 'open' intacto com 'description' e 'answer' (estritamente texto puro, sem Markdown e sem fórmulas).
 Mantenha quaisquer itens com type 'divisor', 'anki', 'fill' e 'open' intactos e em suas respectivas posições entre os cartões.
 Ao terminar, chame 'adicionar_varios_cards' para enviar o baralho finalizado.
 
@@ -1669,7 +1743,7 @@ function renderCreatorMcOptions(options = ["", "", "", ""], selectedIdx = 0) {
         row.className = "flex items-center gap-2";
         row.innerHTML = `
             <input type="radio" name="creator-mc-correct" value="${i}" ${i === selectedIdx ? 'checked' : ''} class="w-4 h-4 text-blue-600 focus:ring-blue-500 cursor-pointer" title="Marcar como alternativa correta">
-            <input type="text" class="creator-mc-opt-val flex-1 p-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm" placeholder="Opção ${i + 1}" value="${optText}">
+            <input type="text" class="creator-mc-opt-val flex-1 p-2 bg-gray-50 border border-gray-300 rounded-lg text-sm" placeholder="Opção ${i + 1}" value="${optText}">
             <button type="button" class="creator-mc-remove-opt-btn p-1 text-gray-400 hover:text-red-500 transition" title="Remover alternativa">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
             </button>
@@ -1905,8 +1979,8 @@ function showGeneratingAnimation(initialMessage = "Processando arquivos e gerand
     if (statusText) statusText.textContent = initialMessage;
     if (counterNum) counterNum.textContent = '0';
     if (badgeStatus) {
-        badgeStatus.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gradient-to-b from-purple-50 to-purple-100 dark:from-purple-950/60 dark:to-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:shadow-none";
-        badgeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-purple-600 dark:bg-purple-400 animate-pulse"></span> AO VIVO';
+        badgeStatus.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gradient-to-b from-purple-50 to-purple-100 text-purple-700 border border-purple-200/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]";
+        badgeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-purple-600 animate-pulse"></span> AO VIVO';
     }
     if (titleText) titleText.textContent = "O Gemini está gerando seus flashcards";
     if (progressBar) progressBar.classList.remove('hidden');
@@ -1968,11 +2042,11 @@ function finishGeneratingAnimation(success = true, count = 0) {
         if (titleText) titleText.textContent = "Flashcards gerados com sucesso!";
         if (statusText) statusText.textContent = `${count} cards prontos. Você já pode estudar ou pedir edições pelo Assistente de IA.`;
         if (badgeStatus) {
-            badgeStatus.className = "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gradient-to-b from-green-50 to-green-100/90 dark:from-green-950/60 dark:to-green-900/40 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:shadow-none";
+            badgeStatus.className = "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gradient-to-b from-green-50 to-green-100/90 text-green-700 border border-green-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]";
             badgeStatus.innerHTML = '✓ CONCLUÍDO';
         }
         if (counterBadge) {
-            counterBadge.className = "text-xs font-semibold text-green-700 dark:text-green-300 bg-gradient-to-b from-green-50 to-green-100/80 dark:from-green-950/50 dark:to-green-900/40 px-3 py-1 rounded-full border border-green-200 dark:border-green-800/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:shadow-none";
+            counterBadge.className = "text-xs font-semibold text-green-700 bg-gradient-to-b from-green-50 to-green-100/80 px-3 py-1 rounded-full border border-green-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]";
             counterBadge.textContent = `${count} cards`;
         }
 
@@ -1989,7 +2063,7 @@ function finishGeneratingAnimation(success = true, count = 0) {
         if (titleText) titleText.textContent = "Geração não concluída";
         if (statusText) statusText.textContent = "Não foi possível extrair cards automaticamente. Verifique os arquivos enviados ou tente novamente.";
         if (badgeStatus) {
-            badgeStatus.className = "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gradient-to-b from-red-50 to-red-100/90 dark:from-red-950/60 dark:to-red-900/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:shadow-none";
+            badgeStatus.className = "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gradient-to-b from-red-50 to-red-100/90 text-red-700 border border-red-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]";
             badgeStatus.innerHTML = '⚠ ATENÇÃO';
         }
     }
@@ -2004,45 +2078,45 @@ function renderCardsList(fullReRender = false) {
         if (isGeneratingCards) {
             cardsList.innerHTML = `
                 <div id="cards-skeleton-loader" class="flex flex-col gap-3">
-                    <div class="bg-white dark:bg-gray-750 border border-gray-200/80 dark:border-gray-700/80 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col gap-3 animate-pulse">
+                    <div class="bg-white border border-gray-200/80 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col gap-3 animate-pulse">
                         <div class="flex justify-between items-center">
-                            <div class="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-                            <div class="h-4 w-16 bg-purple-100 dark:bg-purple-900/40 rounded"></div>
+                            <div class="h-3 w-20 bg-gray-200 rounded-md"></div>
+                            <div class="h-4 w-16 bg-purple-100 rounded"></div>
                         </div>
                         <div class="space-y-2">
-                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded-md w-5/6"></div>
-                            <div class="h-4 bg-gray-100 dark:bg-gray-800 rounded-md w-3/5"></div>
+                            <div class="h-4 bg-gray-200 rounded-md w-5/6"></div>
+                            <div class="h-4 bg-gray-100 rounded-md w-3/5"></div>
                         </div>
-                        <div class="h-4 bg-green-100 dark:bg-green-950/40 rounded-md w-2/5 mt-1"></div>
+                        <div class="h-4 bg-green-100 rounded-md w-2/5 mt-1"></div>
                     </div>
-                    <div class="bg-white dark:bg-gray-750 border border-gray-200/80 dark:border-gray-700/80 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col gap-3 animate-pulse opacity-75">
+                    <div class="bg-white border border-gray-200/80 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col gap-3 animate-pulse opacity-75">
                         <div class="flex justify-between items-center">
-                            <div class="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-                            <div class="h-4 w-24 bg-blue-100 dark:bg-blue-900/40 rounded"></div>
+                            <div class="h-3 w-20 bg-gray-200 rounded-md"></div>
+                            <div class="h-4 w-24 bg-blue-100 rounded"></div>
                         </div>
                         <div class="space-y-2">
-                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded-md w-11/12"></div>
-                            <div class="h-4 bg-gray-100 dark:bg-gray-800 rounded-md w-2/3"></div>
+                            <div class="h-4 bg-gray-200 rounded-md w-11/12"></div>
+                            <div class="h-4 bg-gray-100 rounded-md w-2/3"></div>
                         </div>
-                        <div class="h-4 bg-green-100 dark:bg-green-950/40 rounded-md w-1/3 mt-1"></div>
+                        <div class="h-4 bg-green-100 rounded-md w-1/3 mt-1"></div>
                     </div>
-                    <div class="bg-white dark:bg-gray-750 border border-gray-200/80 dark:border-gray-700/80 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col gap-3 animate-pulse opacity-50">
+                    <div class="bg-white border border-gray-200/80 p-4 rounded-xl shadow-sm relative overflow-hidden flex flex-col gap-3 animate-pulse opacity-50">
                         <div class="flex justify-between items-center">
-                            <div class="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-                            <div class="h-4 w-20 bg-indigo-100 dark:bg-indigo-900/40 rounded"></div>
+                            <div class="h-3 w-20 bg-gray-200 rounded-md"></div>
+                            <div class="h-4 w-20 bg-indigo-100 rounded"></div>
                         </div>
                         <div class="space-y-2">
-                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded-md w-4/5"></div>
-                            <div class="h-4 bg-gray-100 dark:bg-gray-800 rounded-md w-1/2"></div>
+                            <div class="h-4 bg-gray-200 rounded-md w-4/5"></div>
+                            <div class="h-4 bg-gray-100 rounded-md w-1/2"></div>
                         </div>
-                        <div class="h-4 bg-green-100 dark:bg-green-950/40 rounded-md w-1/4 mt-1"></div>
+                        <div class="h-4 bg-green-100 rounded-md w-1/4 mt-1"></div>
                     </div>
                 </div>
             `;
             return;
         } else {
             cardsList.innerHTML = `
-                <div class="text-center py-12 text-gray-400 dark:text-gray-500">
+                <div class="text-center py-12 text-gray-400">
                     <svg class="w-12 h-12 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                     <p class="font-medium text-sm">Nenhum cartão no baralho ainda.</p>
                     <p class="text-xs mt-1">Crie um novo cartão ao lado ou peça ao Assistente de IA.</p>
@@ -2082,13 +2156,13 @@ function createDivisorElement(divisor, index) {
     divisorEl.dataset.index = index;
 
     const leftLine = document.createElement('div');
-    leftLine.className = "h-px bg-gray-300 dark:bg-gray-700 flex-grow";
+    leftLine.className = "h-px bg-gray-300 flex-grow";
 
     const textSpan = document.createElement('div');
-    textSpan.className = "flex items-center gap-1.5 px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm max-w-[85%]";
+    textSpan.className = "flex items-center gap-1.5 px-3 py-1 bg-gray-100 rounded-lg border border-gray-200 text-xs sm:text-sm font-semibold text-gray-600 shadow-sm max-w-[85%]";
 
     const hashTag = document.createElement('span');
-    hashTag.className = "text-blue-500 dark:text-blue-400 font-mono font-bold text-xs select-none";
+    hashTag.className = "text-blue-500 font-mono font-bold text-xs select-none";
     hashTag.textContent = "#";
 
     const labelSpan = document.createElement('span');
@@ -2100,14 +2174,14 @@ function createDivisorElement(divisor, index) {
     textSpan.appendChild(labelSpan);
 
     const rightLine = document.createElement('div');
-    rightLine.className = "h-px bg-gray-300 dark:bg-gray-700 flex-grow";
+    rightLine.className = "h-px bg-gray-300 flex-grow";
 
     // Action buttons on hover (edit & delete)
     const actionsDiv = document.createElement('div');
     actionsDiv.className = "flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-1 flex-shrink-0";
 
     const editBtn = document.createElement('button');
-    editBtn.className = "p-1.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/60 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-300 rounded-lg transition";
+    editBtn.className = "p-1.5 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition";
     editBtn.title = "Editar nota do divisor";
     editBtn.innerHTML = '<img src="../assets/img/edit.svg" class="w-3.5 h-3.5" alt="Editar">';
     editBtn.onclick = () => {
@@ -2121,7 +2195,7 @@ function createDivisorElement(divisor, index) {
     };
 
     const delBtn = document.createElement('button');
-    delBtn.className = "p-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900/60 dark:hover:bg-red-800 text-red-600 dark:text-red-300 rounded-lg transition";
+    delBtn.className = "p-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition";
     delBtn.title = "Excluir divisor";
     delBtn.innerHTML = '<img src="../assets/img/delete.svg" class="w-3.5 h-3.5" alt="Excluir">';
     delBtn.onclick = () => {
@@ -2142,27 +2216,27 @@ function createDivisorElement(divisor, index) {
 
 function createCardElement(card, index) {
     const cardEl = document.createElement('div');
-    cardEl.className = "bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative group shadow-sm flex flex-col gap-2 transition flashcard-item card-enter-anim";
+    cardEl.className = "bg-white border border-gray-200 p-4 rounded-xl relative group shadow-sm flex flex-col gap-2 transition flashcard-item card-enter-anim";
     cardEl.dataset.index = index;
 
     const typeBadge = document.createElement('span');
     typeBadge.className = "absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded";
 
     if (card.type === 'anki') {
-        typeBadge.className += " bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-300";
+        typeBadge.className += " bg-indigo-100 text-indigo-800";
         typeBadge.textContent = "Anki-like";
     } else if (card.type === 'multiple_choice') {
-        typeBadge.className += " bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-300";
+        typeBadge.className += " bg-purple-100 text-purple-800";
         typeBadge.textContent = `Múltipla Escolha (${card.options ? card.options.length : 4})`;
     } else if (card.type === 'open_double') {
-        typeBadge.className += " bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300";
+        typeBadge.className += " bg-amber-100 text-amber-800";
         typeBadge.textContent = "Duplo Aberto";
     } else if (card.type === 'fill') {
-        typeBadge.className += " bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-300";
+        typeBadge.className += " bg-teal-100 text-teal-800";
         const count = Array.isArray(card.answers) && card.answers.length > 0 ? card.answers.length : (card.answer ? card.answer.split(';').length : 1);
         typeBadge.textContent = `Preencher (${count})`;
     } else {
-        typeBadge.className += " bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300";
+        typeBadge.className += " bg-gray-100 text-gray-700";
         typeBadge.textContent = "Aberto";
     }
     cardEl.appendChild(typeBadge);
@@ -2170,42 +2244,42 @@ function createCardElement(card, index) {
     const descLabel = card.type === 'anki' ? 'Frente:' : (card.type === 'fill' ? 'Frase:' : 'P:');
     let descContent = card.description || '(Sem texto)';
     if (card.type === 'anki') {
-        descContent = `<div class="anki-markdown-content text-gray-800 dark:text-gray-200 mt-0.5">${renderMathAndMarkdown(descContent)}</div>`;
+        descContent = `<div class="anki-markdown-content text-gray-800 mt-0.5">${renderMathAndMarkdown(descContent)}</div>`;
     } else if (card.type === 'fill') {
         const blankRegex = /(?:\[\s*_{1,}\s*\]|(?<![a-zA-Z0-9\u00C0-\u017F])_{1,}(?![a-zA-Z0-9\u00C0-\u017F]))/g;
         let blankIndex = 0;
         const escaped = descContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const highlighted = escaped.replace(blankRegex, () => {
             blankIndex++;
-            return `<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-teal-100 dark:bg-teal-900/60 text-teal-800 dark:text-teal-200 font-mono text-xs font-bold border border-teal-300 dark:border-teal-700">[${blankIndex}]</span>`;
+            return `<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-teal-100 text-teal-800 font-mono text-xs font-bold border border-teal-300">[${blankIndex}]</span>`;
         });
-        descContent = `<span class="text-gray-800 dark:text-gray-200">${highlighted}</span>`;
+        descContent = `<span class="text-gray-800">${highlighted}</span>`;
     } else {
-        descContent = `<span class="text-gray-800 dark:text-gray-200">${descContent}</span>`;
+        descContent = `<span class="text-gray-800">${descContent}</span>`;
     }
     const descStr = `<strong>${descLabel}</strong> ${descContent}`;
-    let ansStr = `<strong>R:</strong> <span class="text-green-600 dark:text-green-400">${card.answer || ''}</span>`;
+    let ansStr = `<strong>R:</strong> <span class="text-green-600">${card.answer || ''}</span>`;
 
     if (card.type === 'open_double') {
-        ansStr += `<br><strong>R2:</strong> <span class="text-green-600 dark:text-green-400">${card.answer2 || ''}</span>`;
+        ansStr += `<br><strong>R2:</strong> <span class="text-green-600">${card.answer2 || ''}</span>`;
     } else if (card.type === 'multiple_choice') {
         const optsList = (card.options || []).map(opt => {
             const isCorrect = opt === card.answer;
-            return isCorrect ? `<strong class="text-green-600 dark:text-green-400">✓ ${opt}</strong>` : opt;
+            return isCorrect ? `<strong class="text-green-600">✓ ${opt}</strong>` : opt;
         }).join(' | ');
         ansStr = `<span class="text-xs text-gray-500">Opções: ${optsList}</span>`;
     } else if (card.type === 'anki') {
         const renderedAns = renderMathAndMarkdown(card.answer || '');
-        ansStr = `<strong>Verso:</strong> <div class="anki-markdown-content text-indigo-600 dark:text-indigo-400 mt-1">${renderedAns}</div>`;
+        ansStr = `<strong>Verso:</strong> <div class="anki-markdown-content text-indigo-600 mt-1">${renderedAns}</div>`;
     } else if (card.type === 'fill') {
         const answers = Array.isArray(card.answers) && card.answers.length > 0 
             ? card.answers 
             : (card.answer ? card.answer.split(';').map(a => a.trim()).filter(Boolean) : []);
         if (answers.length > 0) {
-            const badges = answers.map((a, i) => `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 text-xs font-semibold"><span class="text-teal-500 font-mono text-[10px]">${i + 1}:</span> ${a}</span>`).join(' ');
+            const badges = answers.map((a, i) => `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-50 border border-teal-200 text-teal-700 text-xs font-semibold"><span class="text-teal-500 font-mono text-[10px]">${i + 1}:</span> ${a}</span>`).join(' ');
             ansStr = `<strong>Lacunas:</strong> <div class="inline-flex flex-wrap gap-1 mt-1">${badges}</div>`;
         } else {
-            ansStr = `<strong>Lacunas:</strong> <span class="text-yellow-600 dark:text-yellow-400 text-xs">Nenhuma resposta definida</span>`;
+            ansStr = `<strong>Lacunas:</strong> <span class="text-yellow-600 text-xs">Nenhuma resposta definida</span>`;
         }
     }
 
@@ -2216,7 +2290,7 @@ function createCardElement(card, index) {
     // Question Image
     if (card.image) {
         const imgDiv = document.createElement('div');
-        imgDiv.className = "w-full max-h-32 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center justify-center p-1 mt-1";
+        imgDiv.className = "w-full max-h-32 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center p-1 mt-1";
         imgDiv.innerHTML = `<img src="${card.image}" alt="Imagem" class="max-h-28 w-auto object-contain rounded">`;
         cardEl.appendChild(imgDiv);
     }
@@ -2224,7 +2298,7 @@ function createCardElement(card, index) {
     // Answer Image (Anki)
     if (card.answerImage) {
         const ansImgDiv = document.createElement('div');
-        ansImgDiv.className = "w-full max-h-32 overflow-hidden rounded-lg border border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-950/30 flex items-center justify-center p-1 mt-1";
+        ansImgDiv.className = "w-full max-h-32 overflow-hidden rounded-lg border border-indigo-200 bg-indigo-50/50 flex items-center justify-center p-1 mt-1";
         ansImgDiv.innerHTML = `<img src="${card.answerImage}" alt="Imagem Resposta" class="max-h-28 w-auto object-contain rounded">`;
         cardEl.appendChild(ansImgDiv);
     }
@@ -2234,12 +2308,12 @@ function createCardElement(card, index) {
     actionsDiv.className = "absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity";
 
     const editBtn = document.createElement('button');
-    editBtn.className = "p-1.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-600 dark:text-blue-300 rounded-lg";
+    editBtn.className = "p-1.5 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg";
     editBtn.innerHTML = '<img src="../assets/img/edit.svg" class="w-4 h-4" alt="Editar">';
     editBtn.onclick = () => openInlineEditModal(index);
 
     const delBtn = document.createElement('button');
-    delBtn.className = "p-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 text-red-600 dark:text-red-300 rounded-lg";
+    delBtn.className = "p-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg";
     delBtn.innerHTML = '<img src="../assets/img/delete.svg" class="w-4 h-4" alt="Excluir">';
     delBtn.onclick = () => {
         if (confirm('Excluir este flashcard permanentemente?')) {
@@ -2327,7 +2401,7 @@ function renderInlineEditMcOptions(options, correctAnswer) {
         row.className = "flex items-center gap-2";
         row.innerHTML = `
             <input type="radio" name="inline-edit-mc-correct" value="${i}" ${isCorrect ? 'checked' : ''} class="w-4 h-4 text-blue-600 focus:ring-blue-500 cursor-pointer">
-            <input type="text" class="inline-edit-mc-opt-val flex-1 p-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm" value="${optText}">
+            <input type="text" class="inline-edit-mc-opt-val flex-1 p-2 bg-gray-50 border border-gray-300 rounded-lg text-sm" value="${optText}">
             <button type="button" class="inline-edit-remove-opt-btn p-1 text-gray-400 hover:text-red-500 transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
             </button>
@@ -2438,7 +2512,7 @@ saveInlineEditBtn.addEventListener('click', () => {
 // --- AI CHAT INTEGRATION ---
 function addChatMessage(role, text) {
     const msg = document.createElement('div');
-    msg.className = `py-2 px-4 rounded-xl max-w-[85%] text-sm ${role === 'user' ? 'self-end bg-purple-600 text-white rounded-tr-sm' : 'self-start bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-tl-sm'}`;
+    msg.className = `py-2 px-4 rounded-xl max-w-[85%] text-sm ${role === 'user' ? 'self-end bg-purple-600 text-white rounded-tr-sm' : 'self-start bg-gray-200 text-gray-800 rounded-tl-sm'}`;
     msg.textContent = text;
     chatHistory.appendChild(msg);
     chatHistory.scrollTop = chatHistory.scrollHeight;

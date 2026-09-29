@@ -96,7 +96,6 @@ O Flashcards AI foi projetado segundo diretrizes rigorosas documentadas em [`css
 - **Luz e Sombra Monocromáticas:** Gradientes suaves que representam iluminação direcional física (claro no topo, sutilmente mais escuro na base), banindo gradientes arco-íris estridentes.
 - **Profundidade Skeuomórfica Tátil:** Chanfros internos finos (`inset 0 1px 0 rgba(255,255,255,...)`), reentrâncias em trilhos de barra de progresso (`inset 0 1px 2px rgba(0,0,0,...)`) e sombras macias em elevações.
 - **Menu Hambúrguer Estruturado:** Header despoluído com 4 seções organizadas (*Inteligência Artificial*, *Baralho*, *Estudo & Sessão*, *Sair*).
-- **Dark Mode Completo:** Ajuste visual relaxante para estudos noturnos prolongados.
 
 ---
 

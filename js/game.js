@@ -194,10 +194,10 @@ function showNotificationPill(message, iconName, isWarning = false) {
     const pill = document.createElement('div');
     pill.id = 'notification-pill';
     // Samsung One UI style: pill-shaped, superior, blurred, centered
-    pill.className = `fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-2.5 rounded-full shadow-2xl backdrop-blur-xl border border-white/20 transition-all duration-500 transform -translate-y-20 opacity-0 ${isWarning ? 'bg-yellow-100/90 dark:bg-yellow-900/80' : 'bg-white/90 dark:bg-gray-800/90'}`;
+    pill.className = `fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-2.5 rounded-full shadow-2xl backdrop-blur-xl border border-white/20 transition-all duration-500 transform -translate-y-20 opacity-0 ${isWarning ? 'bg-yellow-100/90' : 'bg-white/90'}`;
     pill.innerHTML = `
         <img src="../assets/img/${iconName}" class="w-5 h-5" alt="icon">
-        <span class="text-[13px] font-medium text-gray-800 dark:text-white whitespace-nowrap">${message}</span>
+        <span class="text-[13px] font-medium text-gray-800 whitespace-nowrap">${message}</span>
     `;
 
     document.body.appendChild(pill);
@@ -266,16 +266,16 @@ function updateHapticUI() {
 
     if (!hasVibrationSupport) {
         hapticStatusBadge.textContent = 'Indisponível';
-        hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400';
+        hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500';
         return;
     }
 
     if (enabled) {
         hapticStatusBadge.textContent = 'Ativa';
-        hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300';
+        hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700';
     } else {
         hapticStatusBadge.textContent = 'Desativada';
-        hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400';
+        hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500';
     }
 }
 
@@ -472,7 +472,7 @@ function animateCardsFromHeaderToDeck(callback) {
     for (let i = 0; i < cardCount; i++) {
         setTimeout(() => {
             const cardEl = document.createElement('div');
-            cardEl.className = 'fixed rounded-lg shadow-xl border border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-800 flex items-center justify-center pointer-events-none';
+            cardEl.className = 'fixed rounded-lg shadow-xl border border-blue-200 bg-white flex items-center justify-center pointer-events-none';
             cardEl.style.width = `${cardRect.width}px`;
             cardEl.style.height = `${cardRect.height}px`;
             cardEl.style.top = `${cardRect.top}px`;
@@ -480,7 +480,7 @@ function animateCardsFromHeaderToDeck(callback) {
             cardEl.style.zIndex = `${9990 + i}`;
             cardEl.style.transformOrigin = 'center center';
             cardEl.innerHTML = `
-                <div class="flex flex-col items-center justify-center gap-2 text-blue-500 dark:text-blue-400 opacity-70">
+                <div class="flex flex-col items-center justify-center gap-2 text-blue-500 opacity-70">
                     <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                     </svg>
@@ -857,7 +857,7 @@ function updateStreakUI(animate = false) {
             streakFireIcon.style.transform = 'scale(0.95)';
         }
 
-        streakCount.className = 'relative z-10 font-black tracking-tight text-xs text-gray-600 dark:text-gray-300';
+        streakCount.className = 'relative z-10 font-black tracking-tight text-xs text-gray-600';
     }
 }
 
@@ -1133,7 +1133,6 @@ function formatMultiParagraphText(text) {
 function flipAnkiCard() {
     if (currentQuestion.type !== 'anki' || isAnkiFlipped) return;
     isAnkiFlipped = true;
-    triggerHaptic('cardFlip');
 
     if (ankiAnswerContainer) {
         ankiAnswerText.innerHTML = renderMathAndMarkdown(currentQuestion.answer || '');
@@ -1229,7 +1228,7 @@ function resetUI() {
     fillInputs.forEach(inp => {
         inp.disabled = false;
         inp.readOnly = false;
-        inp.classList.remove('animate-pulse', 'border-red-500', 'border-green-500', 'border-amber-400', 'dark:border-yellow-400', 'bg-amber-50', 'bg-green-50', 'bg-red-50', 'dark:bg-yellow-950/40', 'text-amber-800', 'dark:text-yellow-300', 'fill-box-shake', 'fill-box-pop', 'fill-box-pop-yellow');
+        inp.classList.remove('animate-pulse', 'border-red-500', 'border-green-500', 'border-amber-400', 'bg-amber-50', 'bg-green-50', 'bg-red-50', 'text-amber-800', 'fill-box-shake', 'fill-box-pop', 'fill-box-pop-yellow');
     });
 
     if (currentQuestion) {
@@ -1257,7 +1256,7 @@ function resetUI() {
     dynamicMcBtns.forEach(btn => {
         btn.disabled = false;
         btn.classList.remove('bg-green-500', 'bg-red-500', 'text-white');
-        btn.classList.add('bg-gray-200', 'dark:bg-gray-600');
+        btn.classList.add('bg-gray-200');
     });
 }
 
@@ -1301,8 +1300,8 @@ function handleFillSubmit() {
         inputs.forEach(input => {
             input.readOnly = true;
             input.blur();
-            input.classList.remove('border-dashed', 'border-blue-400', 'dark:border-blue-500');
-            input.classList.add('border-solid', 'border-green-500', 'bg-green-50', 'dark:bg-green-950/40', 'text-green-600', 'dark:text-green-300');
+            input.classList.remove('border-dashed', 'border-blue-400');
+            input.classList.add('border-solid', 'border-green-500', 'bg-green-50', 'text-green-600');
         });
         showFeedback(true);
     } else {
@@ -1312,12 +1311,12 @@ function handleFillSubmit() {
         blankResults.forEach(({ input, isCorrect }) => {
             input.readOnly = true;
             input.blur();
-            input.classList.remove('border-dashed', 'border-blue-400', 'dark:border-blue-500', 'border-green-500', 'border-red-500', 'border-amber-400', 'dark:border-yellow-400', 'bg-green-50', 'bg-red-50', 'bg-amber-50', 'dark:bg-green-950/40', 'dark:bg-red-950/40', 'dark:bg-yellow-950/40', 'text-green-600', 'text-red-600', 'text-amber-800', 'dark:text-green-300', 'dark:text-red-300', 'dark:text-yellow-300', 'fill-box-shake', 'fill-box-pop', 'fill-box-pop-yellow');
+            input.classList.remove('border-dashed', 'border-blue-400', 'border-green-500', 'border-red-500', 'border-amber-400', 'bg-green-50', 'bg-red-50', 'bg-amber-50', 'text-green-600', 'text-red-600', 'text-amber-800', 'fill-box-shake', 'fill-box-pop', 'fill-box-pop-yellow');
 
             if (isCorrect) {
-                input.classList.add('border-solid', 'border-green-500', 'bg-green-50', 'dark:bg-green-950/40', 'text-green-600', 'dark:text-green-300');
+                input.classList.add('border-solid', 'border-green-500', 'bg-green-50', 'text-green-600');
             } else {
-                input.classList.add('border-solid', 'border-red-500', 'bg-red-50', 'dark:bg-red-950/40', 'text-red-600', 'dark:text-red-300', 'fill-box-shake');
+                input.classList.add('border-solid', 'border-red-500', 'bg-red-50', 'text-red-600', 'fill-box-shake');
             }
         });
 
@@ -1331,8 +1330,8 @@ function handleFillSubmit() {
                 if (!isCorrect) {
                     anyPopped = true;
                     const primaryExpected = synonyms[0] || expectedVal;
-                    input.classList.remove('border-red-500', 'bg-red-50', 'dark:bg-red-950/40', 'text-red-600', 'dark:text-red-300', 'fill-box-shake');
-                    input.classList.add('border-solid', 'border-amber-400', 'dark:border-yellow-400', 'bg-amber-50', 'dark:bg-yellow-950/40', 'text-amber-800', 'dark:text-yellow-300', 'fill-box-pop-yellow');
+                    input.classList.remove('border-red-500', 'bg-red-50', 'text-red-600', 'fill-box-shake');
+                    input.classList.add('border-solid', 'border-amber-400', 'bg-amber-50', 'text-amber-800', 'fill-box-pop-yellow');
                     input.value = primaryExpected;
                     if (synonyms.length > 1) {
                         input.title = synonyms.join(' / ');
@@ -1586,7 +1585,7 @@ function updateAiUI() {
         if (menuAiIcon) menuAiIcon.src = '../assets/img/enabled_ai.svg';
         if (menuAiStatusBadge) {
             menuAiStatusBadge.textContent = 'Ativada';
-            menuAiStatusBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300';
+            menuAiStatusBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700';
         }
         if (menuAiSubtitle) menuAiSubtitle.textContent = 'Verificação inteligente ativa';
         if (aiIconOff) aiIconOff.classList.add('hidden');
@@ -1595,7 +1594,7 @@ function updateAiUI() {
         if (menuAiIcon) menuAiIcon.src = '../assets/img/config_ai.svg';
         if (menuAiStatusBadge) {
             menuAiStatusBadge.textContent = 'Desativada';
-            menuAiStatusBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400';
+            menuAiStatusBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500';
         }
         if (menuAiSubtitle) menuAiSubtitle.textContent = 'Clique para configurar';
         if (aiIconOff) aiIconOff.classList.remove('hidden');
@@ -2655,7 +2654,7 @@ function renderEditMcOptions(options = ["", "", "", ""], correctAnswer = "") {
         row.className = "flex items-center gap-2";
         row.innerHTML = `
             <input type="radio" name="edit-mc-correct" value="${i}" ${isCorrect ? 'checked' : ''} class="w-4 h-4 text-blue-600 focus:ring-blue-500 cursor-pointer" title="Marcar como correta">
-            <input type="text" class="edit-mc-opt-val flex-1 p-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm" value="${optText}">
+            <input type="text" class="edit-mc-opt-val flex-1 p-2 bg-gray-50 border border-gray-300 rounded-lg text-sm" value="${optText}">
             <button type="button" class="edit-mc-remove-opt-btn p-1 text-gray-400 hover:text-red-500 transition" title="Remover alternativa">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
             </button>
@@ -2897,17 +2896,17 @@ function openDeckDropdown() {
     
     // Clear highlights
     [deckItemNormal, deckItemNotebook, deckItemExam].forEach(el => {
-        el?.classList.remove('bg-blue-50', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400', 'bg-purple-50', 'dark:bg-purple-900/30', 'text-purple-600', 'dark:text-purple-400');
+        el?.classList.remove('bg-blue-50', 'text-blue-600', 'bg-purple-50', 'text-purple-600');
     });
 
     if (activeMode === 'notebook') {
-        deckItemNotebook?.classList.add('bg-blue-50', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
+        deckItemNotebook?.classList.add('bg-blue-50', 'text-blue-600');
         dropdownExamDecksSection?.classList.add('hidden');
     } else if (activeMode === 'exam') {
-        deckItemExam?.classList.add('bg-purple-50', 'dark:bg-purple-900/30', 'text-purple-600', 'dark:text-purple-400');
+        deckItemExam?.classList.add('bg-purple-50', 'text-purple-600');
         renderExamDecksInDropdown(examData);
     } else {
-        deckItemNormal?.classList.add('bg-blue-50', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
+        deckItemNormal?.classList.add('bg-blue-50', 'text-blue-600');
         dropdownExamDecksSection?.classList.add('hidden');
     }
 }
@@ -2929,19 +2928,19 @@ function renderExamDecksInDropdown(examData) {
 
     decks.forEach((deck) => {
         const item = document.createElement('div');
-        item.className = 'flex items-center justify-between p-2 rounded-xl bg-gray-50/80 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition text-xs';
+        item.className = 'flex items-center justify-between p-2 rounded-xl bg-gray-50/80 hover:bg-gray-100 transition text-xs';
         
         const isEnabled = deck.enabled !== false;
         const cardCount = allQuestions.filter(q => q.deckId === deck.id || q.sourceDeck === deck.name).length;
 
         item.innerHTML = `
             <label class="flex items-center gap-2 min-w-0 flex-1 cursor-pointer select-none">
-                <input type="checkbox" class="exam-deck-toggle rounded text-purple-600 focus:ring-purple-500 dark:bg-gray-900 dark:border-gray-600" ${isEnabled ? 'checked' : ''} data-deck-id="${deck.id}">
-                <span class="font-medium text-gray-800 dark:text-gray-200 truncate ${isEnabled ? '' : 'line-through opacity-50'}" title="${deck.name}">${deck.name}</span>
+                <input type="checkbox" class="exam-deck-toggle rounded text-purple-600 focus:ring-purple-500" ${isEnabled ? 'checked' : ''} data-deck-id="${deck.id}">
+                <span class="font-medium text-gray-800 truncate ${isEnabled ? '' : 'line-through opacity-50'}" title="${deck.name}">${deck.name}</span>
             </label>
             <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
-                <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-semibold">${cardCount}</span>
-                <button type="button" class="exam-deck-del-btn p-1 text-gray-400 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition" title="Remover da mistura">
+                <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 font-semibold">${cardCount}</span>
+                <button type="button" class="exam-deck-del-btn p-1 text-gray-400 hover:text-red-500 transition" title="Remover da mistura">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                 </button>
             </div>

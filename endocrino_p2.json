@@ -393,17 +393,9 @@
         "explanation": "Se K+ < 3,3 mEq/L, a insulina agravaria a hipocalemia provocando arritmias letais. Repõe-se KCl (20-30 mEq/h) até K+ ≥ 3,3."
     },
     {
-        "type": "fill",
-        "description": "Pela fórmula de Katz para correção do sódio sérico na hiperglicemia, adiciona-se _ mEq/L de sódio para cada _ mg/dL de glicemia acima de _ mg/dL:\nSódio Corrigido = Na+ medido + _ × [(Glicemia - _) / 100]",
-        "answers": [
-            "1,6 / 1.6",
-            "100",
-            "100",
-            "1,6 / 1.6",
-            "100"
-        ],
-        "answer": "1,6; 100; 100; 1,6; 100",
-        "explanation": "Fórmula de Katz: Na corrigido = Na medido + 1,6 * [(Glicemia - 100) / 100]. A glicose atrai água para o intravascular, diluindo o sódio (pseudo-hiponatremia de translocação)."
+        "type": "anki",
+        "description": "Qual é a **fórmula de Katz** para correção do sódio sérico na hiperglicemia e qual é a sua justificativa fisiopatológica?",
+        "answer": "### Fórmula de Katz (Sódio Corrigido)\n\n$$\\text{Na}_{\\text{corrigido}} = \\text{Na}_{\\text{medido}} + 1{,}6 \\times \\left( \\frac{\\text{Glicemia} - 100}{100} \\right)$$\n\n- **Regra prática:** Adiciona-se **1,6 mEq/L** de sódio para cada **100 mg/dL** de glicemia acima de **100 mg/dL**.\n- **Fisiopatologia:** A glicose atrai água osmoticamente do intracelular para o intravascular, diluindo o sódio (*pseudo-hiponatremia de translocação*)."
     },
     {
         "type": "open",

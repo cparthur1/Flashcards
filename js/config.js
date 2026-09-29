@@ -13,7 +13,7 @@
 // Centralized tailwind config and global settings
 window.tailwind = window.tailwind || {};
 window.tailwind.config = {
-    darkMode: 'media',
+    darkMode: 'class',
     theme: {
         extend: {
             colors: {
