@@ -20,7 +20,7 @@
             }
         }
     </script>
-    <link rel="stylesheet" href="../css/style.css?v=4.0">
+    <link rel="stylesheet" href="../css/style.css?v=4.1">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
@@ -110,6 +110,22 @@
                 </div>
                 <span class="text-[10px] font-bold bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">Ver</span>
             </a>
+
+            <!-- Vibration / Haptic Feedback Toggle -->
+            <button id="haptic-toggle-btn"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/70 transition text-left group"
+                title="Ativar ou Desativar Vibração Tátil no Celular">
+                <svg id="haptic-menu-icon" class="w-5 h-5 flex-shrink-0 text-gray-500 dark:text-gray-400 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2zM5 8v8M19 8v8" />
+                </svg>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">Vibração Tátil</p>
+                        <span id="haptic-status-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300">Ativa</span>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Feedback sincronizado com animações</p>
+                </div>
+            </button>
 
             <!-- Restart Game -->
             <button id="restart-game-btn"
@@ -395,8 +411,9 @@
 
             <div id="correction-options" class="hidden flex-col gap-3 mt-4">
                 <button id="ask-ai-btn"
-                    class="hidden w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition transform hover:scale-105">
-                    <img src="../assets/img/ask.svg" class="w-6 h-6 -translate-y-[1px]" alt="IA"> Perguntar
+                    class="hidden w-full bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/60 dark:hover:bg-purple-900/80 text-purple-700 dark:text-purple-200 font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition border border-purple-200 dark:border-purple-700 shadow-xs transform hover:scale-[1.02] active:scale-98">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 -960 960 960" width="22px" fill="currentColor" class="w-5 h-5 -translate-y-[1px]"><path d="M380-360q42 0 71-29l160-160q29-29 29-71t-29-71q-29-29-71-29t-71 29q-37-13-73-6t-61 32q-25 25-32 61t6 73q-29 29-29 71t29 71q29 29 71 29ZM240-80v-172q-57-52-88.5-121.5T120-520q0-150 105-255t255-105q125 0 221.5 73.5T827-615l52 205q5 19-7 34.5T840-360h-80v120q0 33-23.5 56.5T680-160h-80v80h-80v-160h160v-200h108l-38-155q-23-91-98-148t-172-57q-116 0-198 81t-82 197q0 60 24.5 114t69.5 96l26 24v208h-80Zm254-360Z"/></svg>
+                    Perguntar
                 </button>
                 <div class="flex gap-2 justify-center">
                     <button id="edit-btn"
@@ -753,7 +770,7 @@
         </div>
     </div>
 
-    <script src="../js/game.js?v=4.0" type="module" defer></script>
+    <script src="../js/game.js?v=4.1" type="module" defer></script>
 </body>
 
 </html>

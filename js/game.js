@@ -214,6 +214,71 @@ function showNotificationPill(message, iconName, isWarning = false) {
     }, 4000);
 }
 
+// --- HAPTIC FEEDBACK (VIBRATION API) ---
+const HAPTIC_STORAGE_KEY = 'flashcardsHapticEnabled';
+
+const HAPTIC_PATTERNS = {
+    // Subtle crisp tap for mechanical / tactile micro-confirmations
+    tap: [10],
+    correct: [12],
+    scorePulse: [15],
+    cardFlip: [10],
+    cardToBack: [8],
+    // Rhythmic double flutter synchronized with shake oscillations (450ms - 500ms)
+    wrong: [20, 50, 20],
+    shake: [20, 50, 20],
+    // Soft distinct tactile pop right when fill-the-blank morphs yellow revealing correct answer
+    fillPop: [18],
+    // Rising energetic pulse on streak milestones (>= 3)
+    streakUp: [15, 35, 25],
+    // Subtle damping notch when streak resets
+    streakReset: [25]
+};
+
+function isHapticEnabled() {
+    return localStorage.getItem(HAPTIC_STORAGE_KEY) !== 'false';
+}
+
+function setHapticEnabled(enabled) {
+    localStorage.setItem(HAPTIC_STORAGE_KEY, enabled ? 'true' : 'false');
+    updateHapticUI();
+    if (enabled) {
+        triggerHaptic('tap');
+    }
+}
+
+function triggerHaptic(type) {
+    if (!isHapticEnabled()) return;
+    if (typeof navigator === 'undefined' || !('vibrate' in navigator)) return;
+    try {
+        const pattern = HAPTIC_PATTERNS[type] || [12];
+        navigator.vibrate(pattern);
+    } catch (e) {
+        // Silently catch if blocked by browser policy or platform restrictions
+    }
+}
+
+function updateHapticUI() {
+    const hapticStatusBadge = document.getElementById('haptic-status-badge');
+    if (!hapticStatusBadge) return;
+    const hasVibrationSupport = typeof navigator !== 'undefined' && 'vibrate' in navigator;
+    const enabled = isHapticEnabled();
+
+    if (!hasVibrationSupport) {
+        hapticStatusBadge.textContent = 'Indisponível';
+        hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400';
+        return;
+    }
+
+    if (enabled) {
+        hapticStatusBadge.textContent = 'Ativa';
+        hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300';
+    } else {
+        hapticStatusBadge.textContent = 'Desativada';
+        hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400';
+    }
+}
+
 // --- CARD ANIMATION UTILITIES ---
 function getHeaderScoreTarget() {
     const scoreVal = document.getElementById('score');
@@ -257,6 +322,7 @@ function animateCardToBack(callback) {
     setTimeout(() => {
         if (clone && clone.parentElement) {
             clone.style.zIndex = '5';
+            triggerHaptic('cardToBack');
         }
     }, 200);
 
@@ -347,6 +413,7 @@ function animateCardToHeader(callback) {
         if (finished) return;
         finished = true;
         clone.remove();
+        triggerHaptic('scorePulse');
 
         const pulseTarget = document.getElementById('score') || targetEl;
         pulseTarget.animate([
@@ -742,6 +809,9 @@ function incrementStreak() {
     saveGameState();
     const shouldShimmer = currentStreak >= 3;
     updateStreakUI(shouldShimmer);
+    if (shouldShimmer) {
+        triggerHaptic('streakUp');
+    }
 }
 
 function resetStreak() {
@@ -756,6 +826,10 @@ function resetStreak() {
         streakShimmerSweep.classList.remove('anim-streak-up', 'anim-streak-down');
         void streakShimmerSweep.offsetWidth;
         streakShimmerSweep.classList.add('anim-streak-down');
+
+        if (lastStreakBeforeWrong >= 3) {
+            triggerHaptic('streakReset');
+        }
 
         setTimeout(() => {
             updateStreakUI(false);
@@ -1002,6 +1076,7 @@ function formatMultiParagraphText(text) {
 function flipAnkiCard() {
     if (currentQuestion.type !== 'anki' || isAnkiFlipped) return;
     isAnkiFlipped = true;
+    triggerHaptic('cardFlip');
 
     if (ankiAnswerContainer) {
         ankiAnswerText.innerHTML = renderMathAndMarkdown(currentQuestion.answer || '');
@@ -1034,6 +1109,7 @@ function handleAnkiRating(rating) {
     if (rating === 'easy') {
         // "easy": removes card from deck
         createBall(true);
+        triggerHaptic('correct');
         questionCard.classList.add('glow-correct');
         score++;
         questionsPool.splice(currentQuestionIndexInPool, 1);
@@ -1047,6 +1123,7 @@ function handleAnkiRating(rating) {
     } else if (rating === 'good') {
         // "medium": keeps card in rotation with moderate repetition frequency (+8)
         createBall(true);
+        triggerHaptic('correct');
         currentQuestion.dueStep = currentStep + 8;
         saveGameState();
         animateCardToBack(() => {
@@ -1055,6 +1132,7 @@ function handleAnkiRating(rating) {
     } else if (rating === 'hard') {
         // "hard": keeps card in rotation with medium-high repetition frequency (+4)
         createBall(false);
+        triggerHaptic('tap');
         currentQuestion.dueStep = currentStep + 4;
         saveGameState();
         animateCardToBack(() => {
@@ -1066,6 +1144,7 @@ function handleAnkiRating(rating) {
         questionCard.classList.remove('card-shake');
         void questionCard.offsetWidth;
         questionCard.classList.add('card-shake');
+        triggerHaptic('shake');
         setTimeout(() => questionCard.classList.remove('card-shake'), 450);
 
         currentQuestion.dueStep = currentStep + 2;
@@ -1185,12 +1264,15 @@ function handleFillSubmit() {
             }
         });
 
+        triggerHaptic('shake');
         showFeedback(false);
 
         // Phase 2: At ~550ms, wrong boxes pop yellow with the right answer so user knows where to focus (total duration ~1.2s)
         setTimeout(() => {
+            let anyPopped = false;
             blankResults.forEach(({ input, synonyms, expectedVal, isCorrect }) => {
                 if (!isCorrect) {
+                    anyPopped = true;
                     const primaryExpected = synonyms[0] || expectedVal;
                     input.classList.remove('border-red-500', 'bg-red-50', 'dark:bg-red-950/40', 'text-red-600', 'dark:text-red-300', 'fill-box-shake');
                     input.classList.add('border-solid', 'border-amber-400', 'dark:border-yellow-400', 'bg-amber-50', 'dark:bg-yellow-950/40', 'text-amber-800', 'dark:text-yellow-300', 'fill-box-pop-yellow');
@@ -1204,6 +1286,10 @@ function handleFillSubmit() {
                     input.style.width = Math.max(64, Math.min(240, (len + 2) * 11)) + 'px';
                 }
             });
+
+            if (anyPopped) {
+                triggerHaptic('fillPop');
+            }
 
             // Unlock next navigation once the 1.2s correction animation completes
             setTimeout(() => {
@@ -1278,6 +1364,10 @@ function showFeedback(isCorrect, element) {
     const ballIdx = createBall(isCorrect);
     questionCard.classList.add(isCorrect ? 'glow-correct' : 'glow-incorrect');
 
+    if (isCorrect) {
+        triggerHaptic('correct');
+    }
+
     // Update streak counter (Anki cards are handled separately and do NOT touch streak)
     if (currentQuestion && currentQuestion.type !== 'anki') {
         if (isCorrect) {
@@ -1313,6 +1403,7 @@ function showFeedback(isCorrect, element) {
             questionCard.classList.remove('card-shake');
             void questionCard.offsetWidth; // Force reflow
             questionCard.classList.add('card-shake');
+            triggerHaptic('shake');
             setTimeout(() => questionCard.classList.remove('card-shake'), 450);
         }
 
@@ -1549,6 +1640,7 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
 
             // Somente aplica feedback visual e carrega nova questão se o usuário ainda estiver na mesma questão
             if (questionObj === currentQuestion) {
+                triggerHaptic('correct');
                 questionCard.classList.remove('glow-incorrect', 'card-shake');
                 questionCard.classList.add('glow-correct');
                 setTimeout(() => {
@@ -1656,6 +1748,7 @@ resetBtn.addEventListener('click', () => {
 // --- HAMBURGER MENU LOGIC ---
 function openHamburgerMenu() {
     if (!hamburgerMenu) return;
+    updateHapticUI();
     hamburgerBackdrop?.classList.remove('hidden');
     hamburgerMenu.classList.remove('hidden');
     hamburgerBtn?.setAttribute('aria-expanded', 'true');
@@ -2194,6 +2287,18 @@ aiToggleBtn.addEventListener('click', () => {
     apiKeyInput.value = geminiApiKey; 
     setTimeout(() => apiKeyInput.focus(), 50);
 });
+
+const hapticToggleBtn = document.getElementById('haptic-toggle-btn');
+if (hapticToggleBtn) {
+    hapticToggleBtn.addEventListener('click', () => {
+        const nextState = !isHapticEnabled();
+        setHapticEnabled(nextState);
+        showNotificationPill(
+            nextState ? "Vibração tátil ativada" : "Vibração tátil desativada",
+            "stats.svg"
+        );
+    });
+}
 
 const handleSaveApiKey = (e) => {
     if (e) e.preventDefault();
@@ -3108,6 +3213,7 @@ function initGame() {
     loadQuestion(); 
     initializeAi();
     updateAiUI();
+    updateHapticUI();
     requestAnimationFrame(pollGamepad);
     initMobileFocusHelpers();
 }

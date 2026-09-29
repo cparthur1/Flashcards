@@ -1,3 +1,36 @@
+CHANGELOG: PASTEL AI BUTTON & MOBILE HAPTIC VIBRATION FEEDBACK
+Date: 2026-09-29
+
+OVERVIEW:
+1. Softened the "Perguntar" (AI) button to a pastel purple theme matching the application's minimalist, skeuomorphic design language.
+2. Implemented subtle, intentional mobile haptic feedback (W3C Vibration API) tightly synchronized with physical card and UI animations.
+
+1. PASTEL "PERGUNTAR" AI BUTTON (pages/game.html, assets/img/ask.svg)
+- Replaced the saturated bg-purple-600 styling with a soft pastel lilac/purple palette:
+  • Light mode: bg-purple-100 hover:bg-purple-200 text-purple-700 border-purple-200
+  • Dark mode: bg-purple-900/60 hover:bg-purple-900/80 text-purple-200 border-purple-700/80
+- Seamlessly harmonizes with neighbor action buttons: #edit-btn (pastel blue), #delete-correction-btn (pastel red), and #next-question-btn (pastel yellow).
+- Uses inline SVG with fill="currentColor" and updated assets/img/ask.svg to automatically respect dynamic theme contrast.
+
+2. SUBTLE MOBILE HAPTIC FEEDBACK (VIBRATION API) (js/game.js, pages/game.html)
+- Micro-pulse tactile feedback (8ms - 25ms) engineered for natural, mechanical feel without disruptive buzzes:
+  • Success confirmation: 12ms crisp micro-pulse on correct answers (multiple choice, open, fill, Anki easy/good).
+  • Score impact pulse: 15ms notch tap right as the flying card is absorbed into the header score counter (animateCardToHeader finishFlight).
+  • Card tuck behind deck: 8ms feather-light tick when sliding behind the deck (animateCardToBack).
+  • Error shake: [20, 50, 20] ms double-flutter synced with 450ms-500ms cardShake and fillBoxShake.
+  • Fill-in-the-blank inline correction:
+    - Phase 1 (0ms): Red shake vibration flutter [20, 50, 20] ms.
+    - Phase 2 (550ms): Soft 18ms tactile pop right as the wrong box expands and morphs yellow revealing the correct answer.
+  • Streak milestones: [15, 35, 25] ms ascending pulse when streak hits >= 3 with upward heat shimmer.
+  • Streak reset: 25ms dampening buzz when an active streak is broken.
+  • Anki card flip: 10ms mechanical notch tap on revealing answer.
+- Accessibility & Settings:
+  • Added #haptic-toggle-btn in the hamburger menu under "Estudo & Sessão" with active state pill ("Ativa", "Desativada", "Indisponível").
+  • Preference persisted across sessions in localStorage (flashcardsHapticEnabled).
+  • Graceful fallback on devices/browsers without Vibration API support.
+
+--------------------------------------------------------------------------------
+
 CHANGELOG: NEW CARD FORMAT - PREENCHER LACUNAS (FILL IN THE BLANKS / CLOZE)
 Date: 2026-09-29
 
