@@ -1,3 +1,15 @@
+CHANGELOG: CARD-TO-BACK HAPTIC ANIMATION ("zzzTZ")
+Date: 2026-10-01
+
+OVERVIEW:
+Synchronized card transition to the back of the deck (animateCardToBack) with a multi-phase haptic waveform:
+1. "zzz": Delicate high-frequency micro-pulses (12ms on / 20ms off across ~170ms) while the card rises upwards.
+2. Pause (~210ms) while the card translates behind the deck.
+3. "TZ": Short, punchy 42ms solid pulse right as the card sinks and vanishes into 0 opacity.
+4. Strictly constrained to the visual animation window (424ms total vs 550ms CSS animation) and terminated immediately upon animation cleanup/interruption.
+
+--------------------------------------------------------------------------------
+
 CHANGELOG: PASTEL AI BUTTON & MOBILE HAPTIC VIBRATION FEEDBACK
 Date: 2026-09-29
 

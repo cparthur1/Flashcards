@@ -223,7 +223,9 @@ const HAPTIC_PATTERNS = {
     correct: [12],
     scorePulse: [15],
     cardFlip: [10],
-    cardToBack: [8],
+    // "zzzTZ": vibra leve enquanto sobe (micro-pulsos rápidos ~170ms), pausa na descida e curto mais forte quando some (42ms)
+    // Duração total: 172ms + 210ms + 42ms = 424ms (dentro dos 550ms da animação gráfica)
+    cardToBack: [12, 20, 12, 20, 12, 20, 12, 20, 12, 20, 12, 210, 42],
     // Rhythmic double flutter synchronized with shake oscillations (450ms - 500ms)
     wrong: [20, 50, 20],
     shake: [20, 50, 20],
@@ -251,7 +253,11 @@ function triggerHaptic(type) {
     if (!isHapticEnabled()) return;
     if (typeof navigator === 'undefined' || !('vibrate' in navigator)) return;
     try {
-        const pattern = HAPTIC_PATTERNS[type] || [12];
+        if (type === 'stop') {
+            navigator.vibrate(0);
+            return;
+        }
+        const pattern = Array.isArray(type) ? type : (HAPTIC_PATTERNS[type] || [12]);
         navigator.vibrate(pattern);
     } catch (e) {
         // Silently catch if blocked by browser policy or platform restrictions
@@ -319,10 +325,14 @@ function animateCardToBack(callback) {
 
     clone.classList.add('anim-card-to-back');
 
+    const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!prefersReducedMotion) {
+        triggerHaptic('cardToBack');
+    }
+
     setTimeout(() => {
         if (clone && clone.parentElement) {
             clone.style.zIndex = '5';
-            triggerHaptic('cardToBack');
         }
     }, 200);
 
@@ -337,6 +347,7 @@ function animateCardToBack(callback) {
     const cleanup = () => {
         if (cleaned) return;
         cleaned = true;
+        triggerHaptic('stop');
         clone.remove();
         questionCard.style.transition = '';
         questionCard.style.transform = '';
@@ -1177,7 +1188,6 @@ function handleAnkiRating(rating) {
     } else if (rating === 'good') {
         // "medium": keeps card in rotation with moderate repetition frequency (+8)
         createBall(true);
-        triggerHaptic('correct');
         currentQuestion.dueStep = currentStep + 8;
         saveGameState();
         animateCardToBack(() => {
@@ -1186,7 +1196,6 @@ function handleAnkiRating(rating) {
     } else if (rating === 'hard') {
         // "hard": keeps card in rotation with medium-high repetition frequency (+4)
         createBall(false);
-        triggerHaptic('tap');
         currentQuestion.dueStep = currentStep + 4;
         saveGameState();
         animateCardToBack(() => {
