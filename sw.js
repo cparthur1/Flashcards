@@ -1,4 +1,4 @@
-const CACHE_NAME = 'flashcards-v5.5'; // Increment version to trigger update
+const CACHE_NAME = 'flashcards-v6.5-select-flush'; // Increment version to trigger update
 
 const BASE_PATH = self.registration && self.registration.scope 
   ? new URL(self.registration.scope).pathname.replace(/\/$/, '') 
@@ -11,22 +11,36 @@ const RAW_ASSETS = [
   '/pages/generate.html',
   '/pages/stats.html',
   '/css/style.css',
+  '/assets/fonts/fonts.css',
+  '/assets/fonts/material-symbols-rounded.woff2',
+  '/assets/fonts/roboto-flex.woff2',
+  '/assets/vendor/material-web.bundle.js',
   '/js/index.js',
   '/js/game.js',
   '/js/generate.js',
   '/js/stats.js',
   '/js/stats-tracker.js',
+  '/js/ripple.js',
   '/js/utils.js',
   '/js/config.js',
   '/js/pdf-worker.js',
   '/manifest.json',
   '/favicon.png',
   '/assets/img/favicon.png',
+  '/assets/img/logo.svg',
+  '/assets/img/logo.png',
   '/assets/img/menu.svg',
   '/assets/img/stats.svg',
   '/assets/img/config_ai.svg',
   '/assets/img/enabled_ai.svg',
-  '/assets/img/highlight.svg'
+  '/assets/img/highlight.svg',
+  '/assets/img/exit.svg',
+  '/assets/img/open.svg',
+  '/assets/img/open_double.svg',
+  '/assets/img/fill.svg',
+  '/assets/img/anki.svg',
+  '/assets/img/multiple choice.svg',
+  '/assets/img/comment.svg'
 ];
 
 const ASSETS_TO_CACHE = RAW_ASSETS.map(p => p === '/' ? (BASE_PATH || '/') : `${BASE_PATH}${p}`);

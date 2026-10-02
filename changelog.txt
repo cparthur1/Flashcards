@@ -1,3 +1,38 @@
+CHANGELOG: MATERIAL YOU V3 & EXPRESSIVE MOTION REDESIGN (v10.0)
+Date: 2026-10-02
+
+OVERVIEW:
+Comprehensive update of the application to Material Design 3 (Material You V3 Expressive), including new typography, official web components, tactile ripple effects, spring/collision animations, redesigned card creator and settings.
+
+1. MATERIAL YOU V3 DESIGN SYSTEM & PALETTE (DESIGN_LANGUAGE.md)
+- Complete design language specification with tonal palettes, elevation roles, and typography standards.
+- Integrated Roboto Flex variable font across titles (Index, Editor, Stats) in #3b82f7.
+
+2. MATERIAL WEB COMPONENTS
+- Indeterminate four-color progress indicators (<md-circular-progress> & <md-linear-progress>) for AI generation states.
+- Outlined Text Field (<md-outlined-text-field>) for secure Gemini API key input.
+- Animated switch component (<md-switch>) with spring transitions for vibration toggling.
+
+3. TACTILE INTERACTION & RIPPLES (js/ripple.js)
+- Expressive touch and click radial ripple physics for all buttons and interactive elements.
+
+4. M3 OUTLINED SELECT & CARD CREATOR (pages/generate.html, css/style.css)
+- Custom M3 Outlined Select dropdown with floating notched label, animated chevron, and elevated surface.
+- Renamed card types with custom SVGs: "Escrever", "Escrever duplo", "Preencher", "Anki", "Multipla escolha", "Comentário".
+- Dropdown opens flush against the trigger button, seamlessly overlaying explanation text.
+
+5. EXPRESSIVE MOTION & CONNECTED CARDS
+- Elastic collision entrance animation for new cards added to the editor deck with damped spring physics and auto-scroll.
+- Dynamic connected card border-radii for editor deck (rounded top/bottom caps, 4px inner seams).
+- Smooth tab transitions on generator and stats pages.
+
+6. VISUAL POLISH & ASSET REFINEMENTS
+- Restored original logo, deck icon, and choose files typography.
+- Standardized exit button styling, AI wand icon colors, and hamburger menu settings section.
+- Updated Service Worker cache to v6.5-select-flush.
+
+--------------------------------------------------------------------------------
+
 CHANGELOG: CARD-TO-BACK HAPTIC ANIMATION ("zzzTZ")
 Date: 2026-10-01
 

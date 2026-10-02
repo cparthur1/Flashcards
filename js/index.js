@@ -145,9 +145,9 @@ function init() {
             if (startBtn) {
                 startBtn.disabled = false;
                 startBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                startBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                startBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
                 if (selectedFiles.length === 1) {
-                    startBtn.innerHTML = `<img src="assets/img/folder.svg" class="w-6 h-6" alt="Pasta"> Abrir ${selectedFiles[0].name}`;
+                    startBtn.innerHTML = `<span class="material-symbols-rounded text-xl">folder_open</span> Abrir ${selectedFiles[0].name}`;
                 } else {
                     startBtn.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg> Abrir Semana de Provas (${selectedFiles.length} baralhos)`;
                 }

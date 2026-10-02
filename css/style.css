@@ -1,29 +1,628 @@
 /* ==========================================================================
-   DESIGN LANGUAGE & SYSTEM GUIDELINES
-   --------------------------------------------------------------------------
-   • Aesthetic: Minimalistic, Blue & Purple themed, with tactile skeuomorphic depth.
-   • Light & Shadow Gradients:
-     - AVOID loud, multi-hue, or high-contrast rainbow gradients.
-     - Gradients must ONLY be used as subtle tonal variations of the same color
-       (or closely adjacent monochromatic values) to model light, curvature, and shadow.
-     - Simulates natural directional lighting: lighter highlight stop at the top edge,
-       subtle ambient occlusion / deeper tone towards the bottom edge.
-   • Skeuomorphic Depth & Tactile Touches:
-     - Subtle top-edge inner highlights (inset 0 1px 0 rgba(255, 255, 255, 0.15–0.8))
-       to simulate bevels on cards, buttons, and badges.
-     - Recessed inner shadows on tracks, wells, and inputs (inset 0 1px 2px rgba(0, 0, 0, 0.12)).
-     - Tactile layered drop shadows with soft, diffuse blurs for physical elevation.
-   • Animation Principles:
-     - Minimalistic, fluid, and calm.
-     - Avoid distracting high-frequency flashing, intense neon glows, or harsh pings.
-     - Use gentle ambient breathing, smooth specular sheens, and physically damped transitions.
+   MATERIAL YOU EXPRESSIVE (MATERIAL 3) DESIGN SYSTEM & TOKENS
+   Following @material/web Guidelines (https://m3.material.io & MWC)
    ========================================================================== */
+
+@import url('../assets/fonts/fonts.css');
+
+:root {
+  /* Typeface Tokens */
+  --md-ref-typeface-brand: 'Roboto Flex', 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+  --md-ref-typeface-plain: 'Roboto Flex', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Material 3 Expressive Corner Shapes */
+  --md-sys-shape-corner-none: 0px;
+  --md-sys-shape-corner-extra-small: 4px;
+  --md-sys-shape-corner-small: 8px;
+  --md-sys-shape-corner-medium: 12px;
+  --md-sys-shape-corner-large: 16px;
+  --md-sys-shape-corner-extra-large: 28px;
+  --md-sys-shape-corner-full: 9999px;
+
+  /* Material 3 Expressive Elevations */
+  --md-sys-elevation-level-0: none;
+  --md-sys-elevation-level-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.08), 0px 1px 2px 0px rgba(0, 0, 0, 0.12);
+  --md-sys-elevation-level-2: 0px 2px 6px 2px rgba(0, 0, 0, 0.08), 0px 1px 2px 0px rgba(0, 0, 0, 0.14);
+  --md-sys-elevation-level-3: 0px 4px 12px 3px rgba(0, 0, 0, 0.08), 0px 1px 3px 0px rgba(0, 0, 0, 0.14);
+  --md-sys-elevation-level-4: 0px 6px 16px 4px rgba(0, 0, 0, 0.09), 0px 2px 4px 0px rgba(0, 0, 0, 0.14);
+  --md-sys-elevation-level-5: 0px 8px 24px 6px rgba(0, 0, 0, 0.10), 0px 4px 8px 0px rgba(0, 0, 0, 0.14);
+
+  /* ==========================================================================
+     MATERIAL DESIGN 3 MOTION SYSTEM (https://m3.material.io/styles/motion/overview/how-it-works)
+     ========================================================================== */
+  /* M3 Easing Tokens */
+  --md-sys-motion-easing-linear: cubic-bezier(0, 0, 1, 1);
+  --md-sys-motion-easing-standard: cubic-bezier(0.2, 0.0, 0, 1.0);
+  --md-sys-motion-easing-standard-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1.0);
+  --md-sys-motion-easing-standard-accelerate: cubic-bezier(0.3, 0.0, 1.0, 1.0);
+  --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0.0, 0, 1.0);
+  --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1.0);
+  --md-sys-motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0.0, 0.8, 0.15);
+  --md-sys-motion-easing-expressive: cubic-bezier(0.05, 0.7, 0.1, 1.0);
+  --md-sys-motion-easing-spring: cubic-bezier(0.34, 1.35, 0.64, 1.0);
+
+  /* M3 Duration Tokens */
+  --md-sys-motion-duration-short1: 50ms;
+  --md-sys-motion-duration-short2: 100ms;
+  --md-sys-motion-duration-short3: 150ms;
+  --md-sys-motion-duration-short4: 200ms;
+  --md-sys-motion-duration-medium1: 250ms;
+  --md-sys-motion-duration-medium2: 300ms;
+  --md-sys-motion-duration-medium3: 350ms;
+  --md-sys-motion-duration-medium4: 400ms;
+  --md-sys-motion-duration-long1: 450ms;
+  --md-sys-motion-duration-long2: 500ms;
+  --md-sys-motion-duration-long3: 550ms;
+  --md-sys-motion-duration-long4: 600ms;
+  --md-sys-motion-duration-extra-long1: 700ms;
+  --md-sys-motion-duration-extra-long2: 800ms;
+  --md-sys-motion-duration-extra-long3: 900ms;
+  --md-sys-motion-duration-extra-long4: 1000ms;
+
+  /* Backward Compatibility Aliases */
+  --md-sys-motion-duration-short: var(--md-sys-motion-duration-short3);
+  --md-sys-motion-duration-medium: var(--md-sys-motion-duration-medium2);
+  --md-sys-motion-duration-long: var(--md-sys-motion-duration-long2);
+
+  /* Light Theme Color Roles (Material You Vibrant Expressive Palette) */
+  --md-sys-color-primary: #1a56db;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #dbeafe;
+  --md-sys-color-on-primary-container: #1e3a8a;
+
+  --md-sys-color-secondary: #4f46e5;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #ede9fe;
+  --md-sys-color-on-secondary-container: #3730a3;
+
+  --md-sys-color-tertiary: #7c3aed;
+  --md-sys-color-on-tertiary: #ffffff;
+  --md-sys-color-tertiary-container: #f3e8ff;
+  --md-sys-color-on-tertiary-container: #581c87;
+
+  --md-sys-color-error: #ba1a1a;
+  --md-sys-color-on-error: #ffffff;
+  --md-sys-color-error-container: #ffdad6;
+  --md-sys-color-on-error-container: #410002;
+
+  --md-sys-color-success: #15803d;
+  --md-sys-color-on-success: #ffffff;
+  --md-sys-color-success-container: #dcfce7;
+  --md-sys-color-on-success-container: #14532d;
+
+  --md-sys-color-warning: #b45309;
+  --md-sys-color-on-warning: #ffffff;
+  --md-sys-color-warning-container: #fef3c7;
+  --md-sys-color-on-warning-container: #78350f;
+
+  --md-sys-color-background: #f8fafc;
+  --md-sys-color-on-background: #0f172a;
+
+  --md-sys-color-surface: #f8fafc;
+  --md-sys-color-on-surface: #0f172a;
+  --md-sys-color-on-surface-variant: #475569;
+
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #f1f5f9;
+  --md-sys-color-surface-container: #e2e8f0;
+  --md-sys-color-surface-container-high: #cbd5e1;
+  --md-sys-color-surface-container-highest: #94a3b8;
+
+  --md-sys-color-outline: #64748b;
+  --md-sys-color-outline-variant: #e2e8f0;
+
+  /* Material Web Components Overrides */
+  --md-filled-button-container-shape: var(--md-sys-shape-corner-full);
+  --md-outlined-button-container-shape: var(--md-sys-shape-corner-full);
+  --md-elevated-button-container-shape: var(--md-sys-shape-corner-full);
+  --md-filled-tonal-button-container-shape: var(--md-sys-shape-corner-full);
+  --md-dialog-container-shape: var(--md-sys-shape-corner-extra-large);
+  --md-dialog-container-color: var(--md-sys-color-surface-container-lowest);
+  --md-fab-container-shape: 18px;
+
+  /* Material 3 Switch Component Overrides */
+  --md-switch-track-width: 52px;
+  --md-switch-track-height: 32px;
+  --md-switch-selected-track-color: var(--md-sys-color-primary);
+  --md-switch-selected-handle-color: var(--md-sys-color-on-primary);
+  --md-switch-selected-hover-track-color: var(--md-sys-color-primary);
+  --md-switch-selected-focus-track-color: var(--md-sys-color-primary);
+  --md-switch-selected-pressed-track-color: var(--md-sys-color-primary);
+
+  /* Material 3 Four-Color Progress Indicator Tokens */
+  --md-circular-progress-four-color-active-indicator-one-color: #3b82f7;
+  --md-circular-progress-four-color-active-indicator-two-color: #ea4335;
+  --md-circular-progress-four-color-active-indicator-three-color: #fbbc04;
+  --md-circular-progress-four-color-active-indicator-four-color: #34a853;
+
+  --md-linear-progress-four-color-active-indicator-one-color: #3b82f7;
+  --md-linear-progress-four-color-active-indicator-two-color: #ea4335;
+  --md-linear-progress-four-color-active-indicator-three-color: #fbbc04;
+  --md-linear-progress-four-color-active-indicator-four-color: #34a853;
+  --md-linear-progress-track-color: rgba(226, 232, 240, 0.6);
+  --md-linear-progress-track-shape: var(--md-sys-shape-corner-full);
+  --md-linear-progress-track-height: 4px;
+  --md-linear-progress-active-indicator-height: 4px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --md-sys-color-primary: #93c5fd;
+    --md-sys-color-on-primary: #1e3a8a;
+    --md-sys-color-primary-container: #1e40af;
+    --md-sys-color-on-primary-container: #dbeafe;
+
+    --md-sys-color-secondary: #c4b5fd;
+    --md-sys-color-on-secondary: #3730a3;
+    --md-sys-color-secondary-container: #4338ca;
+    --md-sys-color-on-secondary-container: #ede9fe;
+
+    --md-sys-color-tertiary: #d8b4fe;
+    --md-sys-color-on-tertiary: #581c87;
+    --md-sys-color-tertiary-container: #6b21a8;
+    --md-sys-color-on-tertiary-container: #f3e8ff;
+
+    --md-sys-color-error: #ffb4ab;
+    --md-sys-color-on-error: #690005;
+    --md-sys-color-error-container: #93000a;
+    --md-sys-color-on-error-container: #ffdad6;
+
+    --md-sys-color-success: #86efac;
+    --md-sys-color-on-success: #14532d;
+    --md-sys-color-success-container: #166534;
+    --md-sys-color-on-success-container: #dcfce7;
+
+    --md-sys-color-warning: #fde047;
+    --md-sys-color-on-warning: #713f12;
+    --md-sys-color-warning-container: #854d0e;
+    --md-sys-color-on-warning-container: #fef9c3;
+
+    --md-sys-color-background: #0f172a;
+    --md-sys-color-on-background: #f8fafc;
+
+    --md-sys-color-surface: #0f172a;
+    --md-sys-color-on-surface: #f8fafc;
+    --md-sys-color-on-surface-variant: #94a3b8;
+
+    --md-sys-color-surface-container-lowest: #020617;
+    --md-sys-color-surface-container-low: #1e293b;
+    --md-sys-color-surface-container: #334155;
+    --md-sys-color-surface-container-high: #475569;
+    --md-sys-color-surface-container-highest: #64748b;
+
+    --md-sys-color-outline: #94a3b8;
+    --md-sys-color-outline-variant: #334155;
+
+    /* Dark Mode Four-Color Indicator Tokens */
+    --md-circular-progress-four-color-active-indicator-one-color: #8ab4f8;
+    --md-circular-progress-four-color-active-indicator-two-color: #f28b82;
+    --md-circular-progress-four-color-active-indicator-three-color: #fdd663;
+    --md-circular-progress-four-color-active-indicator-four-color: #81c995;
+
+    --md-linear-progress-four-color-active-indicator-one-color: #8ab4f8;
+    --md-linear-progress-four-color-active-indicator-two-color: #f28b82;
+    --md-linear-progress-four-color-active-indicator-three-color: #fdd663;
+    --md-linear-progress-four-color-active-indicator-four-color: #81c995;
+    --md-linear-progress-track-color: rgba(51, 65, 85, 0.6);
+  }
+}
+
+/* Brand Expressive Page Titles (Material You Roboto Flex Variable) */
+.brand-page-title {
+  font-family: 'Roboto Flex', sans-serif !important;
+  font-variation-settings: 'opsz' 144, 'wdth' 135, 'wght' 1000, 'XOPQ' 154, 'XTRA' 518, 'YOPQ' 53, 'YTDE' -203, 'YTFI' 738, 'YTLC' 514, 'YTUC' 712 !important;
+  font-weight: 1000 !important;
+  color: #3b82f7 !important;
+}
+
+/* ==========================================================================
+   MATERIAL 3 RIPPLE SYSTEM
+   ========================================================================== */
+
+button,
+.m3-btn-expressive,
+.tab-btn,
+.action-btn,
+[role="button"],
+.ripple-surface {
+  position: relative;
+}
+
+.m3-ripple-host {
+  position: absolute !important;
+  inset: 0 !important;
+  overflow: hidden !important;
+  border-radius: inherit !important;
+  pointer-events: none !important;
+  contain: strict !important;
+  z-index: 10 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.m3-ripple-wave {
+  position: absolute !important;
+  border-radius: 50% !important;
+  pointer-events: none !important;
+  background-color: currentColor;
+  opacity: 0.16;
+  transform: scale(0);
+  animation: m3-ripple-expand 350ms cubic-bezier(0.2, 0, 0, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.m3-ripple-wave.fade-out {
+  opacity: 0 !important;
+  transition: opacity 250ms cubic-bezier(0.2, 0, 0, 1) !important;
+}
+
+@keyframes m3-ripple-expand {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Ensure tab icons turn pure white when tab is selected */
+#tab-ai-chat-btn.bg-purple-600 img,
+#tab-ai-chat-btn.text-white img,
+#tab-ai-chat-btn[aria-selected="true"] img,
+.tab-selected img {
+  filter: none !important;
+}
+
+/* Material 3 Switch Component */
+md-switch {
+  display: inline-flex;
+  vertical-align: middle;
+  flex-shrink: 0;
+  cursor: pointer;
+  --md-focus-ring-shape: var(--md-sys-shape-corner-full);
+}
+
+/* Material 3 Outlined Text Field Component */
+md-outlined-text-field {
+  display: block;
+  width: 100%;
+  font-family: inherit;
+  --md-outlined-text-field-container-shape: 16px;
+  --md-outlined-text-field-outline-color: var(--md-sys-color-outline-variant, #cbd5e1);
+  --md-outlined-text-field-hover-outline-color: var(--md-sys-color-outline, #94a3b8);
+  --md-outlined-text-field-focus-outline-color: var(--md-sys-color-primary, #1a56db);
+  --md-outlined-text-field-label-text-color: var(--md-sys-color-on-surface-variant, #64748b);
+  --md-outlined-text-field-hover-label-text-color: var(--md-sys-color-on-surface-variant, #475569);
+  --md-outlined-text-field-focus-label-text-color: var(--md-sys-color-primary, #1a56db);
+  --md-outlined-text-field-input-text-color: var(--md-sys-color-on-surface, #0f172a);
+  --md-outlined-text-field-supporting-text-color: var(--md-sys-color-on-surface-variant, #64748b);
+}
+
+@media (prefers-color-scheme: dark) {
+  md-outlined-text-field {
+    --md-outlined-text-field-outline-color: var(--md-sys-color-outline-variant, #334155);
+    --md-outlined-text-field-hover-outline-color: var(--md-sys-color-outline, #64748b);
+    --md-outlined-text-field-focus-outline-color: var(--md-sys-color-primary, #93c5fd);
+    --md-outlined-text-field-label-text-color: var(--md-sys-color-on-surface-variant, #94a3b8);
+    --md-outlined-text-field-hover-label-text-color: var(--md-sys-color-on-surface-variant, #cbd5e1);
+    --md-outlined-text-field-focus-label-text-color: var(--md-sys-color-primary, #93c5fd);
+    --md-outlined-text-field-input-text-color: var(--md-sys-color-on-surface, #f8fafc);
+    --md-outlined-text-field-supporting-text-color: var(--md-sys-color-on-surface-variant, #94a3b8);
+  }
+}
+
+/* ==========================================================================
+   MATERIAL DESIGN 3 MOTION PATTERNS (https://m3.material.io/styles/motion)
+   ========================================================================== */
+
+/* 1. M3 Shared Axis X: Horizontal Peer & Tab Transitions */
+@keyframes m3-shared-axis-x-forward-in {
+  from {
+    opacity: 0;
+    transform: translateX(36px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes m3-shared-axis-x-forward-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-36px);
+  }
+}
+
+@keyframes m3-shared-axis-x-backward-in {
+  from {
+    opacity: 0;
+    transform: translateX(-36px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes m3-shared-axis-x-backward-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(36px);
+  }
+}
+
+.m3-tab-panel-enter-forward {
+  animation: m3-shared-axis-x-forward-in var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.m3-tab-panel-enter-backward {
+  animation: m3-shared-axis-x-backward-in var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+/* 2. M3 Fade Through (Dashboard <-> Editor & High-Level Transitions) */
+@keyframes m3-fade-through-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes m3-fade-through-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+.m3-fade-through-enter {
+  animation: m3-fade-through-in var(--md-sys-motion-duration-medium3) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.m3-fade-through-exit {
+  animation: m3-fade-through-out var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-accelerate) both;
+}
+
+/* 3. M3 Shared Axis Z / Dialog Scale-Elevation Entrance */
+@keyframes m3-dialog-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes m3-backdrop-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.m3-dialog-enter {
+  animation: m3-dialog-enter var(--md-sys-motion-duration-medium3) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.modal-overlay:not(.hidden) {
+  animation: m3-backdrop-fade-in var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard) both;
+}
+
+/* 4. M3 View Transitions API Integration (Modern Web Guidance) */
+::view-transition-old(m3-tab-content),
+::view-transition-new(m3-tab-content) {
+  animation-duration: var(--md-sys-motion-duration-medium2);
+}
+
+html:active-view-transition-type(forward)::view-transition-old(m3-tab-content) {
+  animation: m3-shared-axis-x-forward-out var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-accelerate) both;
+}
+
+html:active-view-transition-type(forward)::view-transition-new(m3-tab-content) {
+  animation: m3-shared-axis-x-forward-in var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+html:active-view-transition-type(backward)::view-transition-old(m3-tab-content) {
+  animation: m3-shared-axis-x-backward-out var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-accelerate) both;
+}
+
+html:active-view-transition-type(backward)::view-transition-new(m3-tab-content) {
+  animation: m3-shared-axis-x-backward-in var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+html:active-view-transition-type(fade-through)::view-transition-old(m3-view-content) {
+  animation: m3-fade-through-out var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-accelerate) both;
+}
+
+html:active-view-transition-type(fade-through)::view-transition-new(m3-view-content) {
+  animation: m3-fade-through-in var(--md-sys-motion-duration-medium3) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+/* Material Symbols Helper */
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded', sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'liga';
+}
 
 /* Global Styles & Animations */
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--md-ref-typeface-plain);
     overflow-x: hidden;
     overflow-y: auto;
+    color: var(--md-sys-color-on-background);
+}
+
+/* Material 3 Expressive Component Utilities */
+.m3-card-expressive {
+    background-color: var(--md-sys-color-surface-container-lowest);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-extra-large);
+    box-shadow: var(--md-sys-elevation-level-2);
+    transition: transform var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-expressive),
+                box-shadow var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-expressive),
+                border-color var(--md-sys-motion-duration-short) ease;
+}
+
+.m3-card-expressive:hover {
+    box-shadow: var(--md-sys-elevation-level-3);
+}
+
+.m3-btn-expressive {
+    font-family: var(--md-ref-typeface-plain);
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.015em;
+    border-radius: var(--md-sys-shape-corner-full);
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    transition: transform 0.2s var(--md-sys-motion-easing-expressive),
+                box-shadow 0.2s var(--md-sys-motion-easing-expressive),
+                filter 0.2s ease, background 0.2s ease;
+    cursor: pointer;
+    border: none;
+    outline: none;
+}
+
+.m3-btn-expressive:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.015);
+    filter: brightness(1.05);
+}
+
+.m3-btn-expressive:active:not(:disabled) {
+    transform: translateY(1px) scale(0.985);
+    filter: brightness(0.95);
+}
+
+.m3-btn-filled {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    box-shadow: var(--md-sys-elevation-level-1);
+}
+
+.m3-btn-filled:hover:not(:disabled) {
+    box-shadow: var(--md-sys-elevation-level-2);
+}
+
+.m3-btn-tonal {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+}
+
+.m3-btn-tertiary-tonal {
+    background: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+}
+
+.m3-btn-outlined {
+    background: transparent;
+    color: var(--md-sys-color-primary);
+    border: 1px solid var(--md-sys-color-outline);
+}
+
+.m3-btn-outlined:hover:not(:disabled) {
+    background: var(--md-sys-color-primary-container);
+    border-color: var(--md-sys-color-primary);
+}
+
+.m3-btn-text {
+    background: transparent;
+    color: var(--md-sys-color-primary);
+    box-shadow: none;
+    padding: 0.5rem 1rem;
+}
+
+.m3-btn-text:hover:not(:disabled) {
+    background: rgba(26, 86, 219, 0.08);
+    box-shadow: none;
+    transform: none;
+}
+
+/* Material 3 Expressive Chips */
+.m3-chip-expressive {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: var(--md-sys-shape-corner-full);
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: var(--md-sys-color-surface-container-low);
+    color: var(--md-sys-color-on-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    transition: all 0.2s var(--md-sys-motion-easing-expressive);
+}
+
+.m3-chip-expressive:hover {
+    background: var(--md-sys-color-surface-container);
+    border-color: var(--md-sys-color-outline);
+}
+
+.m3-chip-selected {
+    background: var(--md-sys-color-primary-container) !important;
+    color: var(--md-sys-color-on-primary-container) !important;
+    border-color: var(--md-sys-color-primary) !important;
+}
+
+/* Material 3 Expressive Dialog */
+.m3-dialog-card {
+    background: var(--md-sys-color-surface-container-lowest);
+    border-radius: var(--md-sys-shape-corner-extra-large);
+    box-shadow: var(--md-sys-elevation-level-4);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    overflow: hidden;
+}
+
+/* Material 3 Expressive Progress Bar */
+.m3-linear-progress {
+    height: 6px;
+    border-radius: var(--md-sys-shape-corner-full);
+    background: var(--md-sys-color-surface-container);
+    overflow: hidden;
+    position: relative;
+}
+
+.m3-linear-progress-bar {
+    height: 100%;
+    border-radius: var(--md-sys-shape-corner-full);
+    background: var(--md-sys-color-primary);
+    transition: width 0.35s var(--md-sys-motion-easing-expressive);
 }
 
 .glow-correct {
@@ -142,17 +741,17 @@ body {
     -webkit-backdrop-filter: blur(6px);
 }
 
-/* Modal Inner Card Physical Entrance Animation */
+/* Modal Inner Card Physical Entrance Animation (M3 Shared Axis Z / Elevate) */
 .modal-overlay:not(.hidden) > div,
 .modal-overlay:not(.hidden) > form > div,
 #transfer-modal:not(.hidden) #transfer-modal-content {
-    animation: modalEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: modalEnter var(--md-sys-motion-duration-medium3) var(--md-sys-motion-easing-emphasized-decelerate) forwards;
 }
 
 @keyframes modalEnter {
     from {
         opacity: 0;
-        transform: scale(0.96) translateY(10px);
+        transform: scale(0.92) translateY(12px);
     }
     to {
         opacity: 1;
@@ -499,7 +1098,45 @@ textarea::-webkit-scrollbar-thumb,
     animation: skeuomorphicGlide 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-/* Physical Card Enter (damped inertia) */
+/* ==========================================================================
+   M3 DYNAMIC BORDER RADIUS FOR EDITOR DECK CARDS (CONNECTED GROUP)
+   Reference: Material 3 Grouped List / Card Deck (Temp/card deck.png)
+   ========================================================================== */
+.flashcard-item {
+    border-radius: var(--md-sys-shape-corner-extra-small, 4px);
+    transition: border-radius var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized),
+                box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+                border-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+/* Single card in deck/group: fully rounded outer edges */
+.flashcard-item.m3-card-shape-single,
+#cards-list > .flashcard-item:only-child {
+    border-radius: 24px !important;
+}
+
+/* First card in deck/group: rounded top, subtle bottom */
+.flashcard-item.m3-card-shape-first,
+#cards-list > .flashcard-item:first-child:not(:last-child) {
+    border-radius: 24px 24px 4px 4px !important;
+}
+
+/* Middle cards in deck/group: subtle rounded edges throughout */
+.flashcard-item.m3-card-shape-mid {
+    border-radius: 4px !important;
+}
+
+/* Last card in deck/group: subtle top, rounded bottom */
+.flashcard-item.m3-card-shape-last,
+#cards-list > .flashcard-item:last-child:not(:first-child) {
+    border-radius: 4px 4px 24px 24px !important;
+}
+
+/* ==========================================================================
+   M3 ELASTIC COLLISION ENTRANCE ANIMATION FOR NEW DECK CARDS
+   ========================================================================== */
+
+/* Physical Card Enter (standard static fallback / damped inertia) */
 @keyframes cardEnter {
     from {
         opacity: 0;
@@ -512,7 +1149,272 @@ textarea::-webkit-scrollbar-thumb,
 }
 
 .card-enter-anim {
-    animation: cardEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: cardEnter var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-decelerate) forwards;
+}
+
+/* 1. New card enters from below, strikes the previous card, and dampens into place */
+@keyframes m3CardElasticIn {
+    0% {
+        opacity: 0;
+        transform: translateY(76px) scale(0.96);
+    }
+    20% {
+        opacity: 0.95;
+    }
+    38% {
+        opacity: 1;
+        /* Kinetic impact overshoot against the card above */
+        transform: translateY(-12px) scale(1.015, 0.985);
+    }
+    64% {
+        /* Rebounds downward due to reaction force */
+        transform: translateY(5px) scale(0.995, 1.005);
+    }
+    82% {
+        /* Damped oscillation settling upward */
+        transform: translateY(-2px) scale(1.002, 0.998);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* 2. Previous card absorbs impact from below, bounces upward, and dampens back into place */
+@keyframes m3CardElasticCollisionHit {
+    0% {
+        transform: translateY(0) scale(1);
+    }
+    22% {
+        /* At rest waiting for incoming card impact */
+        transform: translateY(0) scale(1);
+    }
+    42% {
+        /* Impact shock! Propelled upward by kinetic impulse with slight vertical stretch */
+        transform: translateY(-20px) scale(0.985, 1.025);
+        box-shadow: 0 12px 24px -4px rgba(59, 130, 246, 0.22), 0 4px 8px -2px rgba(0, 0, 0, 0.08);
+    }
+    68% {
+        /* Damped spring rebound downward past equilibrium */
+        transform: translateY(7px) scale(1.015, 0.985);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    }
+    84% {
+        /* Secondary gentle upward oscillation */
+        transform: translateY(-2.5px) scale(1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+}
+
+.m3-card-elastic-in {
+    animation: m3CardElasticIn 540ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    will-change: transform, opacity;
+    z-index: 10;
+}
+
+.m3-card-elastic-collision-hit {
+    animation: m3CardElasticCollisionHit 580ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    will-change: transform, box-shadow;
+    z-index: 11;
+}
+
+/* ==========================================================================
+   M3 OUTLINED SELECT & ANIMATED DROPDOWN MENU
+   Reference: Material 3 Outlined Select (Temp/Menu.png & open dropdown animation.mp4)
+   ========================================================================== */
+#creator-card-type-wrapper {
+    width: 100%;
+}
+
+#creator-card-type-box {
+    position: relative;
+    width: 100%;
+}
+
+/* Floating Notched Label */
+.m3-select-label {
+    position: absolute;
+    top: -9px;
+    left: 12px;
+    padding: 0 6px;
+    background-color: #ffffff;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #4f46e5;
+    z-index: 10;
+    pointer-events: none;
+    border-radius: 4px;
+    transition: color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+/* Outlined Trigger Button */
+.m3-select-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background-color: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    outline: none;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+                box-shadow var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.m3-select-trigger:hover {
+    border-color: #6366f1;
+}
+
+.m3-select-trigger.active,
+.m3-select-trigger:focus-visible {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* Trailing Chevron Animation */
+.m3-select-chevron {
+    transition: transform 240ms cubic-bezier(0.2, 0, 0, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    flex-shrink: 0;
+}
+
+.m3-select-trigger.active .m3-select-chevron {
+    transform: rotate(180deg);
+    color: #4f46e5;
+}
+
+/* Dropdown Menu Container (Elevated M3 Surface, anchored flush to button, overlays hint text) */
+.m3-select-dropdown {
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 0;
+    right: 0;
+    background-color: #ffffff;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(203, 213, 225, 0.95);
+    border-radius: 16px;
+    padding: 0.375rem;
+    box-shadow: 0 14px 36px -4px rgba(15, 23, 42, 0.16), 0 6px 16px -2px rgba(15, 23, 42, 0.08);
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    transform-origin: top center;
+}
+
+/* Opening & Closing Animations (Ref: Temp/open dropdown animation.mp4) */
+@keyframes m3DropdownOpen {
+    0% {
+        opacity: 0;
+        transform: scaleY(0.88) translateY(-6px);
+    }
+    100% {
+        opacity: 1;
+        transform: scaleY(1) translateY(0);
+    }
+}
+
+@keyframes m3DropdownClose {
+    0% {
+        opacity: 1;
+        transform: scaleY(1) translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: scaleY(0.92) translateY(-4px);
+    }
+}
+
+.m3-dropdown-open {
+    animation: m3DropdownOpen 220ms cubic-bezier(0.05, 0.7, 0.1, 1.0) forwards;
+}
+
+.m3-dropdown-close {
+    animation: m3DropdownClose 150ms cubic-bezier(0.3, 0.0, 0.8, 0.15) forwards;
+}
+
+/* Menu Item & Selected Pill State (Ref: Temp/Menu.png) */
+.m3-select-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 0.85rem;
+    border-radius: 12px;
+    cursor: pointer;
+    user-select: none;
+    color: #1e293b;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard),
+                color var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+.m3-select-item:hover:not(.m3-select-item-selected) {
+    background-color: #f1f5f9;
+    color: #1a56db;
+}
+
+/* Selected Item: Soft Expressive Violet/Lavender Container Pill */
+.m3-select-item.m3-select-item-selected {
+    background-color: #f3e8ff; /* Soft M3 Tertiary Container / lavender from Menu.png */
+    color: #581c87;            /* Deep on-tertiary-container purple */
+    font-weight: 700;
+}
+
+.m3-select-item .m3-select-check {
+    display: none;
+    color: #7c3aed;
+    flex-shrink: 0;
+}
+
+.m3-select-item.m3-select-item-selected .m3-select-check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Dark Mode support for M3 Select */
+.dark .m3-select-label {
+    background-color: #1e293b;
+    color: #818cf8;
+}
+.dark .m3-select-trigger {
+    background-color: #1e293b;
+    border-color: #475569;
+    color: #f8fafc;
+}
+.dark .m3-select-dropdown {
+    background-color: #1e293b;
+    border-color: #475569;
+    box-shadow: 0 14px 36px -4px rgba(0, 0, 0, 0.5), 0 6px 16px -2px rgba(0, 0, 0, 0.3);
+}
+.dark .m3-select-item {
+    color: #f1f5f9;
+}
+.dark .m3-select-item:hover:not(.m3-select-item-selected) {
+    background-color: #334155;
+    color: #93c5fd;
+}
+.dark .m3-select-item.m3-select-item-selected {
+    background-color: #3b2d54;
+    color: #e9d5ff;
+}
+.dark .m3-select-item.m3-select-item-selected .m3-select-check {
+    color: #c084fc;
 }
 
 /* Subtle Breathing Glow (tactile light reflection) */
@@ -560,19 +1462,19 @@ textarea::-webkit-scrollbar-thumb,
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
-/* Hamburger Menu Physical Animation - Drop Down */
+/* Hamburger Menu Physical Animation - Drop Down (M3 Emphasized Decelerate) */
 #hamburger-menu:not(.hidden) {
-    animation: menuDropDown 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: menuDropDown var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-decelerate) forwards;
 }
 
 @keyframes menuDropDown {
     from {
         opacity: 0;
-        transform: translateY(-12px);
+        transform: translateY(-10px) scale(0.96);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
     }
 }
 
@@ -1227,7 +2129,20 @@ mark.card-hl-purple {
     .anim-streak-up,
     .anim-streak-down,
     .anim-streak-pop,
-    .card-enter-anim {
+    .card-enter-anim,
+    .m3-card-elastic-in,
+    .m3-card-elastic-collision-hit,
+    .m3-dropdown-open,
+    .m3-dropdown-close,
+    .m3-select-chevron,
+    .m3-tab-panel-enter-forward,
+    .m3-tab-panel-enter-backward,
+    .m3-fade-through-enter,
+    .m3-fade-through-exit,
+    .m3-dialog-enter,
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
         animation: none !important;
         transform: none !important;
     }

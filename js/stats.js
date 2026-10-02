@@ -165,29 +165,61 @@ function showStatsPill(message, isSuccess = true) {
     }, 3000);
 }
 
-// TAB SWITCHING
+// TAB SWITCHING (Material Design 3 Shared Axis X Motion)
+let currentActiveTab = 'current';
+const TAB_INDEX_MAP = {
+    'current': 0,
+    'history': 1,
+    'struggling': 2
+};
+
 function switchTab(tabName) {
-    [tabBtnCurrent, tabBtnHistory, tabBtnStruggling].forEach(btn => {
-        btn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
-        btn.classList.add('text-gray-600');
-    });
+    if (tabName === currentActiveTab) return;
 
-    [tabContentCurrent, tabContentHistory, tabContentStruggling].forEach(content => {
-        content.classList.add('hidden');
-    });
+    const oldIndex = TAB_INDEX_MAP[currentActiveTab] ?? 0;
+    const newIndex = TAB_INDEX_MAP[tabName] ?? 0;
+    const direction = newIndex >= oldIndex ? 'forward' : 'backward';
 
-    if (tabName === 'current') {
-        tabBtnCurrent.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
-        tabBtnCurrent.classList.remove('text-gray-600');
-        tabContentCurrent.classList.remove('hidden');
-    } else if (tabName === 'history') {
-        tabBtnHistory.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
-        tabBtnHistory.classList.remove('text-gray-600');
-        tabContentHistory.classList.remove('hidden');
-    } else if (tabName === 'struggling') {
-        tabBtnStruggling.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
-        tabBtnStruggling.classList.remove('text-gray-600');
-        tabContentStruggling.classList.remove('hidden');
+    const updateDOM = () => {
+        [tabBtnCurrent, tabBtnHistory, tabBtnStruggling].forEach(btn => {
+            btn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm', 'dark:bg-gray-700', 'dark:text-blue-400');
+            btn.classList.add('text-gray-600', 'dark:text-gray-300');
+            btn.removeAttribute('aria-selected');
+        });
+
+        [tabContentCurrent, tabContentHistory, tabContentStruggling].forEach(content => {
+            content.classList.add('hidden');
+            content.classList.remove('m3-tab-panel-enter-forward', 'm3-tab-panel-enter-backward');
+        });
+
+        let targetBtn = tabBtnCurrent;
+        let targetContent = tabContentCurrent;
+
+        if (tabName === 'history') {
+            targetBtn = tabBtnHistory;
+            targetContent = tabContentHistory;
+        } else if (tabName === 'struggling') {
+            targetBtn = tabBtnStruggling;
+            targetContent = tabContentStruggling;
+        }
+
+        targetBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm', 'dark:bg-gray-700', 'dark:text-blue-400');
+        targetBtn.classList.remove('text-gray-600', 'dark:text-gray-300');
+        targetBtn.setAttribute('aria-selected', 'true');
+
+        targetContent.classList.remove('hidden');
+        targetContent.classList.add(direction === 'forward' ? 'm3-tab-panel-enter-forward' : 'm3-tab-panel-enter-backward');
+        
+        currentActiveTab = tabName;
+    };
+
+    if (document.startViewTransition) {
+        document.startViewTransition({
+            update: updateDOM,
+            types: [direction]
+        });
+    } else {
+        updateDOM();
     }
 }
 
@@ -867,13 +899,17 @@ function renderAiSection(gameState, statsData) {
 
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-shrink-0 w-full sm:w-auto">
                         <div class="relative flex-1 sm:w-64">
-                            <input type="password" id="ai-stats-key-input"
-                                placeholder="Insira sua Gemini API Key..."
-                                class="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-inner"
-                                autocomplete="off">
+                            <md-outlined-text-field
+                                id="ai-stats-key-input"
+                                type="password"
+                                label="Gemini API Key"
+                                placeholder="AIzaSy..."
+                                class="w-full"
+                                style="width: 100%;">
+                            </md-outlined-text-field>
                         </div>
                         <button id="btn-generate-ai-stats"
-                            class="px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-gradient-to-b from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 active:scale-[0.98] transition shadow-md flex items-center justify-center gap-1.5 whitespace-nowrap">
+                            class="px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-purple-600 hover:bg-purple-700 active:scale-[0.98] transition shadow-md flex items-center justify-center gap-1.5 whitespace-nowrap">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>

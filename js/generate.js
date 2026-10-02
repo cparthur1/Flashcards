@@ -384,8 +384,7 @@ const deckTools = [
 const toolFunctions = {
     adicionar_card: (args) => {
         const card = normalizeCard(args) || args;
-        deckCards.push(card);
-        renderCardsList(true);
+        appendNewCardWithElasticCollision(card);
         return { success: true, message: "Card adicionado com sucesso." };
     },
     editar_card: (args) => {
@@ -422,8 +421,7 @@ const toolFunctions = {
     },
     adicionar_varios_cards: (args) => {
         const cardsToAdd = (args.cards || []).map(c => normalizeCard(c) || c);
-        deckCards.push(...cardsToAdd);
-        renderCardsList(true);
+        cardsToAdd.forEach(card => appendNewCardWithElasticCollision(card));
         return { success: true, message: `${cardsToAdd.length} cards adicionados ao deck.` };
     }
 };
@@ -1161,32 +1159,76 @@ function parseTxtToJSONWithPlaceholders(text) {
     return cards;
 }
 
-// Transition from Dashboard to Editor
+// Transition from Dashboard to Editor (M3 Fade Through Motion)
 function openEditorView(initialTab = 'creator') {
-    dashboardView.classList.add('hidden');
-    editorView.classList.remove('hidden');
-    editorView.classList.add('flex');
+    const updateDOM = () => {
+        dashboardView.classList.add('hidden');
+        dashboardView.classList.remove('m3-fade-through-enter');
+        editorView.classList.remove('hidden');
+        editorView.classList.add('flex', 'm3-fade-through-enter');
 
-    if (initialTab === 'creator') {
-        switchSidebarTab('creator');
+        switchSidebarTab(initialTab, true);
+        renderCardsList(true);
+    };
+
+    if (document.startViewTransition) {
+        document.startViewTransition({
+            update: updateDOM,
+            types: ['fade-through']
+        });
     } else {
-        switchSidebarTab('ai');
+        updateDOM();
     }
-
-    renderCardsList(true);
 }
 
-function switchSidebarTab(tab) {
-    if (tab === 'creator') {
-        tabCreatorBtn.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition bg-blue-600 text-white shadow-sm";
-        tabAiChatBtn.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition text-gray-600 hover:bg-gray-200";
-        cardCreatorPanel.classList.remove('hidden');
-        aiEditorChatPanel.classList.add('hidden');
+// Sidebar Tab Switching (Material Design 3 Shared Axis X Motion)
+let currentSidebarTab = 'creator';
+
+function switchSidebarTab(tab, force = false) {
+    if (!force && tab === currentSidebarTab && (!cardCreatorPanel.classList.contains('hidden') || !aiEditorChatPanel.classList.contains('hidden'))) {
+        return;
+    }
+
+    const direction = tab === 'ai' ? 'forward' : 'backward';
+
+    const updateDOM = () => {
+        const tabAiChatIcon = tabAiChatBtn ? tabAiChatBtn.querySelector('img') : null;
+        cardCreatorPanel.classList.remove('m3-tab-panel-enter-forward', 'm3-tab-panel-enter-backward');
+        aiEditorChatPanel.classList.remove('m3-tab-panel-enter-forward', 'm3-tab-panel-enter-backward');
+
+        if (tab === 'creator') {
+            tabCreatorBtn.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition bg-blue-600 text-white shadow-sm";
+            tabAiChatBtn.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition text-gray-600 hover:bg-gray-200";
+            tabCreatorBtn.setAttribute('aria-selected', 'true');
+            tabAiChatBtn.setAttribute('aria-selected', 'false');
+            if (tabAiChatIcon) {
+                tabAiChatIcon.classList.add('light-invert');
+            }
+            cardCreatorPanel.classList.remove('hidden');
+            cardCreatorPanel.classList.add(direction === 'forward' ? 'm3-tab-panel-enter-forward' : 'm3-tab-panel-enter-backward');
+            aiEditorChatPanel.classList.add('hidden');
+        } else {
+            tabAiChatBtn.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition bg-purple-600 text-white shadow-sm";
+            tabCreatorBtn.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition text-gray-600 hover:bg-gray-200";
+            tabAiChatBtn.setAttribute('aria-selected', 'true');
+            tabCreatorBtn.setAttribute('aria-selected', 'false');
+            if (tabAiChatIcon) {
+                tabAiChatIcon.classList.remove('light-invert');
+            }
+            cardCreatorPanel.classList.add('hidden');
+            aiEditorChatPanel.classList.remove('hidden');
+            aiEditorChatPanel.classList.add(direction === 'forward' ? 'm3-tab-panel-enter-forward' : 'm3-tab-panel-enter-backward');
+        }
+        currentSidebarTab = tab;
+    };
+
+    if (document.startViewTransition) {
+        document.startViewTransition({
+            update: updateDOM,
+            types: [direction]
+        });
     } else {
-        tabAiChatBtn.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition bg-purple-600 text-white shadow-sm";
-        tabCreatorBtn.className = "flex-1 py-2 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition text-gray-600 hover:bg-gray-200";
-        cardCreatorPanel.classList.add('hidden');
-        aiEditorChatPanel.classList.remove('hidden');
+        updateDOM();
     }
 }
 
@@ -1702,8 +1744,136 @@ const typeHints = {
     fill: "Frase com lacunas marcadas por '_' (ex: 'O KDIGO define A1 como < _ mg/g e A3 como > _ mg/g'). Você digita cada lacuna.",
     anki: "Pergunta é um conceito (curto), ou imagem, e resposta é uma descrição longa, ou imagem. Sem digitação.",
     multiple_choice: "Pergunta é um conceito, você escolhe entre alternativas (2 a 6 opções).",
-    divisor: "Adiciona um divisor na lista para organizar tópicos no editor. Não aparece no jogo."
+    divisor: "Adiciona um comentário na lista para organizar tópicos no editor. Não aparece no jogo."
 };
+
+// --- M3 CUSTOM CARD TYPE SELECT CONTROLLER ---
+function selectCardType(type, triggerChange = true) {
+    const input = document.getElementById('creator-card-type');
+    if (!input) return;
+    input.value = type;
+
+    const items = document.querySelectorAll('.m3-select-item');
+    let matchedItem = null;
+    items.forEach(item => {
+        const isMatch = item.dataset.value === type;
+        if (isMatch) matchedItem = item;
+        item.classList.toggle('m3-select-item-selected', isMatch);
+        item.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+    });
+
+    if (matchedItem) {
+        const labelEl = document.getElementById('creator-type-selected-label');
+        const iconEl = document.getElementById('creator-type-selected-icon');
+        if (labelEl) labelEl.textContent = matchedItem.dataset.label;
+        if (iconEl) {
+            iconEl.src = matchedItem.dataset.icon;
+            iconEl.alt = matchedItem.dataset.label;
+        }
+    }
+
+    if (triggerChange) {
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+}
+
+function toggleCardTypeDropdown(open) {
+    const dropdown = document.getElementById('creator-card-type-dropdown');
+    const btn = document.getElementById('creator-card-type-btn');
+    if (!dropdown || !btn) return;
+
+    const isOpen = open !== undefined ? open : dropdown.classList.contains('hidden');
+    if (isOpen) {
+        dropdown.classList.remove('hidden', 'm3-dropdown-close');
+        dropdown.classList.add('m3-dropdown-open');
+        btn.setAttribute('aria-expanded', 'true');
+        btn.classList.add('active');
+    } else {
+        dropdown.classList.remove('m3-dropdown-open');
+        dropdown.classList.add('m3-dropdown-close');
+        btn.setAttribute('aria-expanded', 'false');
+        btn.classList.remove('active');
+        setTimeout(() => {
+            if (btn.getAttribute('aria-expanded') === 'false') {
+                dropdown.classList.add('hidden');
+                dropdown.classList.remove('m3-dropdown-close');
+            }
+        }, 150);
+    }
+}
+
+function initCardTypeSelect() {
+    const btn = document.getElementById('creator-card-type-btn');
+    const wrapper = document.getElementById('creator-card-type-wrapper');
+    const items = document.querySelectorAll('.m3-select-item');
+
+    if (btn) {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const dropdown = document.getElementById('creator-card-type-dropdown');
+            const isCurrentlyOpen = dropdown && !dropdown.classList.contains('hidden') && !dropdown.classList.contains('m3-dropdown-close');
+            toggleCardTypeDropdown(!isCurrentlyOpen);
+        });
+
+        btn.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleCardTypeDropdown(true);
+                const selected = document.querySelector('.m3-select-item-selected');
+                if (selected) selected.focus();
+            }
+        });
+    }
+
+    items.forEach((item, index) => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const val = item.dataset.value;
+            selectCardType(val);
+            toggleCardTypeDropdown(false);
+            btn?.focus();
+        });
+
+        item.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const val = item.dataset.value;
+                selectCardType(val);
+                toggleCardTypeDropdown(false);
+                btn?.focus();
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const next = items[index + 1] || items[0];
+                next?.focus();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                const prev = items[index - 1] || items[items.length - 1];
+                prev?.focus();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                toggleCardTypeDropdown(false);
+                btn?.focus();
+            }
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (wrapper && !wrapper.contains(e.target)) {
+            toggleCardTypeDropdown(false);
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            toggleCardTypeDropdown(false);
+        }
+    });
+}
+
+// Initialize custom select controller
+initCardTypeSelect();
 
 creatorCardType.addEventListener('change', () => {
     const t = creatorCardType.value;
@@ -1722,7 +1892,7 @@ creatorCardType.addEventListener('change', () => {
     }
 
     if (t === 'divisor') {
-        creatorQuestionLabel.textContent = "Texto do Divisor / Nota (#)";
+        creatorQuestionLabel.textContent = "Texto do Comentário (#)";
         creatorQuestion.placeholder = "Ex: Seção 1 - Fisiologia Renal";
     } else if (t === 'fill') {
         creatorQuestionLabel.textContent = "Frase com lacunas (use '_' para cada lacuna)";
@@ -1839,17 +2009,16 @@ creatorSubmitCardBtn.addEventListener('click', () => {
 
     if (type === 'divisor') {
         if (!desc) {
-            alert("Por favor, digite o texto do divisor/nota.");
+            alert("Por favor, digite o texto do comentário.");
             creatorQuestion.focus();
             return;
         }
-        deckCards.push({
+        appendNewCardWithElasticCollision({
             type: 'divisor',
             text: desc,
             description: desc,
             answer: ''
         });
-        renderCardsList(true);
         creatorQuestion.value = '';
         return;
     }
@@ -1930,8 +2099,7 @@ creatorSubmitCardBtn.addEventListener('click', () => {
         newCard.answer = answers.join('; ');
     }
 
-    deckCards.push(newCard);
-    renderCardsList(true);
+    appendNewCardWithElasticCollision(newCard);
 
     // Reset Form Fields
     creatorQuestion.value = '';
@@ -1950,9 +2118,6 @@ creatorSubmitCardBtn.addEventListener('click', () => {
     creatorFeedback.textContent = "Card adicionado com sucesso!";
     creatorFeedback.classList.remove('hidden');
     setTimeout(() => creatorFeedback.classList.add('hidden'), 2000);
-
-    // Scroll card list to bottom
-    cardsList.scrollTop = cardsList.scrollHeight;
 });
 
 // Initialize default creator MCQ options
@@ -2074,6 +2239,107 @@ function finishGeneratingAnimation(success = true, count = 0) {
     }
 }
 
+// --- DYNAMIC BORDER RADIUS FOR CARDS LIST (M3 CONNECTED DECK) ---
+// Configures first, mid, last, or single shapes based on contiguous card groups
+function updateCardsBorderRadius() {
+    if (!cardsList) return;
+    const children = Array.from(cardsList.children);
+    let currentGroup = [];
+
+    function applyGroupRadii(group) {
+        if (group.length === 0) return;
+        if (group.length === 1) {
+            group[0].classList.remove('m3-card-shape-first', 'm3-card-shape-mid', 'm3-card-shape-last');
+            group[0].classList.add('m3-card-shape-single');
+        } else {
+            group.forEach((cardEl, idx) => {
+                cardEl.classList.remove('m3-card-shape-single', 'm3-card-shape-first', 'm3-card-shape-mid', 'm3-card-shape-last');
+                if (idx === 0) {
+                    cardEl.classList.add('m3-card-shape-first');
+                } else if (idx === group.length - 1) {
+                    cardEl.classList.add('m3-card-shape-last');
+                } else {
+                    cardEl.classList.add('m3-card-shape-mid');
+                }
+            });
+        }
+    }
+
+    children.forEach(child => {
+        if (child.classList && child.classList.contains('flashcard-item')) {
+            currentGroup.push(child);
+        } else if (child.classList && child.classList.contains('deck-divisor-item')) {
+            applyGroupRadii(currentGroup);
+            currentGroup = [];
+        }
+    });
+    applyGroupRadii(currentGroup);
+}
+
+// --- APPEND NEW CARD WITH PHYSICAL ELASTIC COLLISION & AUTO-SCROLL ---
+// Card enters from below, strikes previous card with elastic shock and damping, view scrolls down
+function appendNewCardWithElasticCollision(cardItem) {
+    deckCards.push(cardItem);
+    const playableCount = deckCards.filter(c => c.type !== 'divisor' && c.type !== 'divider' && c.type !== 'note').length;
+    deckSizeBadge.textContent = playableCount;
+
+    // Clean up skeleton or empty state if present
+    const skeleton = document.getElementById('cards-skeleton-loader');
+    if (skeleton) skeleton.remove();
+    const emptyState = cardsList.querySelector('.text-center');
+    if (emptyState) emptyState.remove();
+
+    // Identify previous last card element before appending
+    const prevLastEl = cardsList.lastElementChild;
+
+    const newIndex = deckCards.length - 1;
+    let newEl;
+    if (cardItem.type === 'divisor' || cardItem.type === 'divider' || cardItem.type === 'note') {
+        newEl = createDivisorElement(cardItem, newIndex);
+    } else {
+        newEl = createCardElement(cardItem, newIndex);
+    }
+
+    // Set entrance animation class (entering from bottom with overshoot)
+    newEl.classList.remove('card-enter-anim');
+    newEl.classList.add('m3-card-elastic-in');
+    newEl.addEventListener('animationend', () => {
+        newEl.classList.remove('m3-card-elastic-in');
+    }, { once: true });
+
+    cardsList.appendChild(newEl);
+
+    // If there was an existing card directly above, deliver elastic collision shock!
+    if (prevLastEl) {
+        prevLastEl.classList.remove('m3-card-elastic-collision-hit', 'm3-card-elastic-in');
+        void prevLastEl.offsetWidth; // Force reflow to guarantee CSS keyframe plays
+        prevLastEl.classList.add('m3-card-elastic-collision-hit');
+        prevLastEl.addEventListener('animationend', () => {
+            prevLastEl.classList.remove('m3-card-elastic-collision-hit');
+        }, { once: true });
+    }
+
+    // Recalculate dynamic border radius so first, mid, and last shapes morph seamlessly
+    updateCardsBorderRadius();
+
+    // Smoothly scroll down so the user clearly sees the physical collision and damping unfold
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const scrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
+
+    requestAnimationFrame(() => {
+        cardsList.scrollTo({
+            top: cardsList.scrollHeight,
+            behavior: scrollBehavior
+        });
+        newEl.scrollIntoView({
+            behavior: scrollBehavior,
+            block: 'nearest'
+        });
+    });
+
+    return newEl;
+}
+
 // --- RENDER CARDS LIST IN EDITOR VIEW ---
 function renderCardsList(fullReRender = false) {
     const playableCount = deckCards.filter(c => c.type !== 'divisor' && c.type !== 'divider' && c.type !== 'note').length;
@@ -2153,6 +2419,8 @@ function renderCardsList(fullReRender = false) {
             cardsList.appendChild(cardEl);
         }
     }
+
+    updateCardsBorderRadius();
 }
 
 function createDivisorElement(divisor, index) {
@@ -2172,7 +2440,7 @@ function createDivisorElement(divisor, index) {
 
     const labelSpan = document.createElement('span');
     labelSpan.className = "truncate";
-    labelSpan.textContent = divisor.text || divisor.description || 'Nota / Divisor';
+    labelSpan.textContent = divisor.text || divisor.description || 'Comentário';
     labelSpan.title = divisor.text || divisor.description || '';
 
     textSpan.appendChild(hashTag);
@@ -2187,11 +2455,11 @@ function createDivisorElement(divisor, index) {
 
     const editBtn = document.createElement('button');
     editBtn.className = "p-1.5 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition";
-    editBtn.title = "Editar nota do divisor";
+    editBtn.title = "Editar comentário";
     editBtn.innerHTML = '<img src="../assets/img/edit.svg" class="w-3.5 h-3.5" alt="Editar">';
     editBtn.onclick = () => {
         const currentText = divisor.text || divisor.description || '';
-        const newText = prompt('Editar texto do divisor / nota:', currentText);
+        const newText = prompt('Editar texto do comentário:', currentText);
         if (newText !== null && newText.trim() !== '') {
             divisor.text = newText.trim();
             divisor.description = newText.trim();
@@ -2201,7 +2469,7 @@ function createDivisorElement(divisor, index) {
 
     const delBtn = document.createElement('button');
     delBtn.className = "p-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition";
-    delBtn.title = "Excluir divisor";
+    delBtn.title = "Excluir comentário";
     delBtn.innerHTML = '<img src="../assets/img/delete.svg" class="w-3.5 h-3.5" alt="Excluir">';
     delBtn.onclick = () => {
         deckCards.splice(index, 1);
@@ -2221,7 +2489,7 @@ function createDivisorElement(divisor, index) {
 
 function createCardElement(card, index) {
     const cardEl = document.createElement('div');
-    cardEl.className = "bg-white border border-gray-200 p-4 rounded-xl relative group shadow-sm flex flex-col gap-2 transition flashcard-item card-enter-anim";
+    cardEl.className = "bg-white border border-gray-200 p-4 relative group shadow-sm flex flex-col gap-2 transition flashcard-item card-enter-anim";
     cardEl.dataset.index = index;
 
     const typeBadge = document.createElement('span');
@@ -2229,20 +2497,20 @@ function createCardElement(card, index) {
 
     if (card.type === 'anki') {
         typeBadge.className += " bg-indigo-100 text-indigo-800";
-        typeBadge.textContent = "Anki-like";
+        typeBadge.textContent = "Anki";
     } else if (card.type === 'multiple_choice') {
         typeBadge.className += " bg-purple-100 text-purple-800";
-        typeBadge.textContent = `Múltipla Escolha (${card.options ? card.options.length : 4})`;
+        typeBadge.textContent = "Multipla escolha";
     } else if (card.type === 'open_double') {
         typeBadge.className += " bg-amber-100 text-amber-800";
-        typeBadge.textContent = "Duplo Aberto";
+        typeBadge.textContent = "Escrever duplo";
     } else if (card.type === 'fill') {
         typeBadge.className += " bg-teal-100 text-teal-800";
         const count = Array.isArray(card.answers) && card.answers.length > 0 ? card.answers.length : (card.answer ? card.answer.split(';').length : 1);
         typeBadge.textContent = `Preencher (${count})`;
     } else {
         typeBadge.className += " bg-gray-100 text-gray-700";
-        typeBadge.textContent = "Aberto";
+        typeBadge.textContent = "Escrever";
     }
     cardEl.appendChild(typeBadge);
 

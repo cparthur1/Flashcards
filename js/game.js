@@ -265,23 +265,38 @@ function triggerHaptic(type) {
 }
 
 function updateHapticUI() {
+    const hapticSwitch = document.getElementById('haptic-switch');
     const hapticStatusBadge = document.getElementById('haptic-status-badge');
-    if (!hapticStatusBadge) return;
+    if (!hapticSwitch && !hapticStatusBadge) return;
     const hasVibrationSupport = typeof navigator !== 'undefined' && 'vibrate' in navigator;
     const enabled = isHapticEnabled();
 
-    if (!hasVibrationSupport) {
-        hapticStatusBadge.textContent = 'Indisponível';
-        hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500';
-        return;
+    if (hapticSwitch) {
+        if (!hasVibrationSupport) {
+            hapticSwitch.disabled = true;
+            hapticSwitch.selected = false;
+            hapticSwitch.title = 'Vibração indisponível neste dispositivo';
+        } else {
+            hapticSwitch.disabled = false;
+            hapticSwitch.selected = enabled;
+            hapticSwitch.title = enabled ? 'Vibração ativada' : 'Vibração desativada';
+        }
     }
 
-    if (enabled) {
-        hapticStatusBadge.textContent = 'Ativa';
-        hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700';
-    } else {
-        hapticStatusBadge.textContent = 'Desativada';
-        hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500';
+    if (hapticStatusBadge) {
+        if (!hasVibrationSupport) {
+            hapticStatusBadge.textContent = 'Indisponível';
+            hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500';
+            return;
+        }
+
+        if (enabled) {
+            hapticStatusBadge.textContent = 'Ativa';
+            hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700';
+        } else {
+            hapticStatusBadge.textContent = 'Desativada';
+            hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500';
+        }
     }
 }
 
@@ -2351,7 +2366,34 @@ aiToggleBtn.addEventListener('click', () => {
     setTimeout(() => apiKeyInput.focus(), 50);
 });
 
+const hapticSwitch = document.getElementById('haptic-switch');
+const hapticSettingRow = document.getElementById('haptic-setting-row');
 const hapticToggleBtn = document.getElementById('haptic-toggle-btn');
+
+if (hapticSwitch) {
+    hapticSwitch.selected = isHapticEnabled();
+
+    hapticSwitch.addEventListener('change', () => {
+        const nextState = hapticSwitch.selected;
+        setHapticEnabled(nextState);
+        showNotificationPill(
+            nextState ? "Vibração tátil ativada" : "Vibração tátil desativada",
+            "stats.svg"
+        );
+    });
+}
+
+if (hapticSettingRow && hapticSwitch) {
+    hapticSettingRow.addEventListener('click', (e) => {
+        // If clicking directly on the switch control, let md-switch handle it natively
+        if (e.target.closest('md-switch')) return;
+        e.preventDefault();
+        if (hapticSwitch.disabled) return;
+        hapticSwitch.selected = !hapticSwitch.selected;
+        hapticSwitch.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+}
+
 if (hapticToggleBtn) {
     hapticToggleBtn.addEventListener('click', () => {
         const nextState = !isHapticEnabled();
