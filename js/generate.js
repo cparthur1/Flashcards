@@ -194,7 +194,8 @@ const systemInstruction = "Sua função é gerenciar um baralho de flashcards pa
     "2. RESPOSTAS DIGITADAS NA GAMEPLAY ('open', 'open_double' e lacunas de 'fill'): A ÚNICA coisa que NÃO pode conter Markdown é a resposta que o estudante precisa digitar na gameplay. Os campos 'answer', 'answer2' e itens do array 'answers' DEVEM ser estritamente TEXTO PURO (sem negrito **, sem itálico *, sem crases ` de código).\n" +
     "3. FÓRMULAS NUNCA DEVEM SER RESPOSTAS DIGITADAS: Fórmulas matemáticas, químicas ou expressões em LaTeX ($...$, $$...$$, frações, potências, etc.) JAMAIS devem ser respostas digitadas nos tipos 'open', 'open_double' ou 'fill'. O estudante digita com teclado comum e não pode digitar fórmulas complexas. Se o conteúdo for sobre uma fórmula ou equação, crie OBRIGATORIAMENTE um card do tipo 'anki' (frente com o conceito e verso com a fórmula em LaTeX) ou 'multiple_choice' (onde o estudante seleciona a alternativa).\n" +
     "4. LIBERDADE TOTAL DE MARKDOWN EM 'ANKI' E 'MULTIPLE_CHOICE': Os tipos 'anki' (frente e verso) e 'multiple_choice' (enunciado, opções e resposta) podem e devem usar Markdown rico (tabelas, listas, negrito) e fórmulas LaTeX ($...$ e $$...$$) livremente.\n" +
-    "5. NO TIPO 'FILL': O enunciado ('description') pode conter Markdown e fórmulas LaTeX para contextualização, mas as lacunas '_' devem ser preenchidas apenas com termos simples, números ou parâmetros em texto puro, sem Markdown.\n\n" +
+    "5. NO TIPO 'FILL': O enunciado ('description') pode conter Markdown e fórmulas LaTeX para contextualização, mas as lacunas '_' devem ser preenchidas apenas com termos simples, números ou parâmetros em texto puro, sem Markdown.\n" +
+    "6. RESPOSTAS CONVERSACIONAIS NO CHAT DO AGENTE: Em suas mensagens de resposta ao usuário no chat do assistente, utilize sempre formatação Markdown estruturada e limpa (títulos curtos como ###, listas com marcadores -, destaques em **negrito**, códigos em `...` e tabelas ou fórmulas LaTeX quando aplicável). Mantenha as respostas concisas, bem diagramadas e visualmente organizadas para leitura rápida.\n\n" +
     "Mantenha o tom profissional, analítico e pragmático.";
 
 const generationSystemInstruction = `Você é um especialista em educação e elaboração de flashcards acadêmicos de alto rendimento.
@@ -2785,8 +2786,19 @@ saveInlineEditBtn.addEventListener('click', () => {
 // --- AI CHAT INTEGRATION ---
 function addChatMessage(role, text) {
     const msg = document.createElement('div');
-    msg.className = `py-2 px-4 rounded-xl max-w-[85%] text-sm ${role === 'user' ? 'self-end bg-purple-600 text-white rounded-tr-sm' : 'self-start bg-gray-200 text-gray-800 rounded-tl-sm'}`;
-    msg.textContent = text;
+    const safeText = String(text || '');
+    if (role === 'user') {
+        msg.className = 'py-2 px-4 rounded-xl max-w-[85%] text-sm self-end bg-purple-600 text-white rounded-tr-sm break-words';
+        msg.textContent = safeText;
+    } else {
+        msg.className = 'py-2.5 px-4 rounded-xl max-w-[88%] text-sm self-start bg-gray-200 text-gray-800 rounded-tl-sm chat-markdown-content break-words shadow-sm';
+        try {
+            msg.innerHTML = renderMathAndMarkdown(safeText);
+        } catch (err) {
+            console.error('Error rendering markdown in chat message:', err);
+            msg.textContent = safeText;
+        }
+    }
     chatHistory.appendChild(msg);
     chatHistory.scrollTop = chatHistory.scrollHeight;
 }

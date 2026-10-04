@@ -61,6 +61,7 @@ const questionsLeftDisplay = document.getElementById('questions-left');
 const questionCard = document.getElementById('question-card');
 const deleteCardBtn = document.getElementById('delete-card-btn');
 const questionImageContainer = document.getElementById('question-image-container');
+const questionImagePlaceholder = document.getElementById('question-image-placeholder');
 const questionImage = document.getElementById('question-image');
 
 const correctionOptions = document.getElementById('correction-options');
@@ -106,6 +107,7 @@ let mcOptionBtns = document.querySelectorAll('.mc-option-btn');
 const ankiAnswerContainer = document.getElementById('anki-answer-container');
 const ankiAnswerText = document.getElementById('anki-answer-text');
 const ankiAnswerImageContainer = document.getElementById('anki-answer-image-container');
+const ankiAnswerImagePlaceholder = document.getElementById('anki-answer-image-placeholder');
 const ankiAnswerImage = document.getElementById('anki-answer-image');
 
 const ankiControlsArea = document.getElementById('anki-controls-area');
@@ -187,6 +189,76 @@ let ai503ErrorCount = 0;
 let lastLatencyNotificationTime = 0;
 
 // --- UI UTILITIES ---
+const imageLoadTokens = new WeakMap();
+
+function setupCardImageWithPlaceholder(srcUrl, imgElem, containerElem, placeholderElem) {
+    if (!containerElem || !imgElem) return;
+
+    if (!srcUrl) {
+        containerElem.classList.add('hidden');
+        if (placeholderElem) placeholderElem.classList.add('hidden');
+        imgElem.classList.add('hidden');
+        imgElem.classList.remove('opacity-100');
+        imgElem.classList.add('opacity-0');
+        imgElem.src = '';
+        return;
+    }
+
+    const token = (imageLoadTokens.get(imgElem) || 0) + 1;
+    imageLoadTokens.set(imgElem, token);
+
+    // CRITICAL: Immediately clear src and hide previous card's image to prevent rendering the previous image
+    imgElem.classList.add('hidden');
+    imgElem.classList.remove('opacity-100');
+    imgElem.classList.add('opacity-0');
+    imgElem.src = '';
+
+    // Show container and animated skeleton placeholder
+    containerElem.classList.remove('hidden');
+    if (placeholderElem) {
+        placeholderElem.classList.remove('hidden');
+    }
+
+    const preloader = new Image();
+    preloader.src = srcUrl;
+
+    const revealImage = () => {
+        if (imageLoadTokens.get(imgElem) !== token) return;
+        imgElem.src = srcUrl;
+        if (placeholderElem) {
+            placeholderElem.classList.add('hidden');
+        }
+        imgElem.classList.remove('hidden');
+        requestAnimationFrame(() => {
+            imgElem.classList.remove('opacity-0');
+            imgElem.classList.add('opacity-100');
+        });
+    };
+
+    const handleLoadError = () => {
+        if (imageLoadTokens.get(imgElem) !== token) return;
+        if (placeholderElem) {
+            placeholderElem.classList.add('hidden');
+        }
+        containerElem.classList.add('hidden');
+    };
+
+    if (preloader.complete && preloader.naturalWidth > 0) {
+        revealImage();
+    } else if (typeof preloader.decode === 'function') {
+        preloader.decode().then(revealImage).catch(() => {
+            if (preloader.complete && preloader.naturalWidth > 0) {
+                revealImage();
+            } else {
+                preloader.onload = revealImage;
+                preloader.onerror = handleLoadError;
+            }
+        });
+    } else {
+        preloader.onload = revealImage;
+        preloader.onerror = handleLoadError;
+    }
+}
 function showNotificationPill(message, iconName, isWarning = false) {
     const existing = document.getElementById('notification-pill');
     if (existing) existing.remove();
@@ -1040,13 +1112,7 @@ function loadQuestion() {
         }
     }
 
-    if (currentQuestion.image && questionImage && questionImageContainer) {
-        questionImage.src = currentQuestion.image;
-        questionImageContainer.classList.remove('hidden');
-    } else if (questionImageContainer) {
-        questionImageContainer.classList.add('hidden');
-        questionImage.src = '';
-    }
+    setupCardImageWithPlaceholder(currentQuestion.image, questionImage, questionImageContainer, questionImagePlaceholder);
 
     openAnswerArea.classList.add('hidden');
     openDoubleAnswerArea.classList.add('hidden');
@@ -1160,13 +1226,7 @@ function flipAnkiCard() {
 
     if (ankiAnswerContainer) {
         ankiAnswerText.innerHTML = renderMathAndMarkdown(currentQuestion.answer || '');
-        if (currentQuestion.answerImage && ankiAnswerImage && ankiAnswerImageContainer) {
-            ankiAnswerImage.src = currentQuestion.answerImage;
-            ankiAnswerImageContainer.classList.remove('hidden');
-        } else if (ankiAnswerImageContainer) {
-            ankiAnswerImageContainer.classList.add('hidden');
-            ankiAnswerImage.src = '';
-        }
+        setupCardImageWithPlaceholder(currentQuestion.answerImage, ankiAnswerImage, ankiAnswerImageContainer, ankiAnswerImagePlaceholder);
         ankiAnswerContainer.classList.remove('hidden');
     }
 
@@ -1258,6 +1318,14 @@ function resetUI() {
     }
     isAnkiFlipped = false;
     if (ankiAnswerContainer) ankiAnswerContainer.classList.add('hidden');
+    if (ankiAnswerImageContainer) ankiAnswerImageContainer.classList.add('hidden');
+    if (ankiAnswerImagePlaceholder) ankiAnswerImagePlaceholder.classList.add('hidden');
+    if (ankiAnswerImage) {
+        ankiAnswerImage.classList.add('hidden');
+        ankiAnswerImage.classList.remove('opacity-100');
+        ankiAnswerImage.classList.add('opacity-0');
+        ankiAnswerImage.src = '';
+    }
     if (ankiControlsArea) ankiControlsArea.classList.add('hidden');
 
     submitBtn.disabled = false;
@@ -2619,8 +2687,16 @@ function pollGamepad() {
 // --- IMAGE LIGHTBOX ZOOM ---
 if (questionImage && imageZoomModal && zoomedImage) {
     questionImage.addEventListener('click', () => {
-        if (questionImage.src) {
+        if (questionImage.src && !questionImage.classList.contains('hidden')) {
             zoomedImage.src = questionImage.src;
+            imageZoomModal.classList.remove('hidden');
+        }
+    });
+}
+if (ankiAnswerImage && imageZoomModal && zoomedImage) {
+    ankiAnswerImage.addEventListener('click', () => {
+        if (ankiAnswerImage.src && !ankiAnswerImage.classList.contains('hidden')) {
+            zoomedImage.src = ankiAnswerImage.src;
             imageZoomModal.classList.remove('hidden');
         }
     });

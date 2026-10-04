@@ -1,3 +1,27 @@
+CHANGELOG: EDIT AGENT MARKDOWN ENGINE & FLASHCARD IMAGE SKELETON PLACEHOLDER (v10.1)
+Date: 2026-10-04
+
+OVERVIEW:
+1. Integrated rich Markdown and LaTeX formula rendering engine into the AI editor assistant chat, transforming raw syntax replies into structured, polished UI bubbles with dedicated typographic styles.
+2. Implemented animated skeleton shimmer placeholders for card images during gameplay transitions, preventing the previous card's image from rendering while the new card's image is downloading.
+
+1. AI EDIT AGENT MARKDOWN & MATH ENGINE (js/generate.js, pages/generate.html, css/style.css)
+- Upgraded `addChatMessage()` to render model replies using `renderMathAndMarkdown()` with KaTeX formula parsing and error handling.
+- Added dedicated `.chat-markdown-content` styling in `css/style.css` tailored for chat bubbles: clean typography for headings (h1-h4), bulleted and numbered lists, code blocks, inline code badges, blockquotes, horizontal rules, and scrollable tables.
+- Enhanced editor agent `systemInstruction` with conversational guidelines prompting structured Markdown formatting (headers, bullets, bolding) in replies.
+- Added `.chat-markdown-content` styling to the default assistant welcome message in `pages/generate.html`.
+
+2. FLASHCARD IMAGE SKELETON PLACEHOLDER & PRELOADER (js/game.js, pages/game.html, css/style.css)
+- Introduced `#question-image-placeholder` and `#anki-answer-image-placeholder` with Material Design 3 surface tokens.
+- Implemented `@keyframes imageShimmerWave` skeleton animation in `css/style.css` with graceful fallback for `prefers-reduced-motion`.
+- Implemented `setupCardImageWithPlaceholder()` in `js/game.js` with per-element request tokens to prevent race conditions during rapid card advancement.
+- Immediately unloads and hides the departing card image bitmap (`img.src = ''`), displaying the shimmering skeleton placeholder until the new card image is downloaded and decoded via `Image.decode()` / `onload`.
+- Added smooth opacity fade-in transition when new images finish loading.
+- Extended image zoom lightbox click handling to support `ankiAnswerImage` when visible.
+- Updated Service Worker cache to `flashcards-v6.6`.
+
+--------------------------------------------------------------------------------
+
 CHANGELOG: MATERIAL YOU V3 & EXPRESSIVE MOTION REDESIGN (v10.0)
 Date: 2026-10-02
 

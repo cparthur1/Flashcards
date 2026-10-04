@@ -1,4 +1,4 @@
-const CACHE_NAME = 'flashcards-v6.5-select-flush'; // Increment version to trigger update
+const CACHE_NAME = 'flashcards-v6.6'; // Increment version to trigger update
 
 const BASE_PATH = self.registration && self.registration.scope 
   ? new URL(self.registration.scope).pathname.replace(/\/$/, '') 
