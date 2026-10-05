@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { normalizeString, calculateSimilarity, shuffleArray, callWithRetry, checkAndResetModelFallback, ROUTES, renderMathAndMarkdown } from './utils.js';
 import { initTransfer } from './transfer.js';
 import { initStatsSession, recordStatsAnswer, archiveCurrentSession } from './stats-tracker.js';
+import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
 
 // --- DOM ELEMENTS ---
 const deckTitle = document.getElementById('deck-title');
@@ -145,6 +146,7 @@ const apiModal = document.getElementById('api-modal');
 const apiKeyForm = document.getElementById('api-key-form');
 const closeApiModal = document.getElementById('close-api-modal');
 const apiKeyInput = document.getElementById('api-key-input');
+const apiKeyRemember = document.getElementById('api-key-remember');
 const saveApiKeyBtn = document.getElementById('save-api-key-btn');
 const disableAiBtn = document.getElementById('disable-ai-btn');
 const openAiInstructions = document.getElementById('open-ai-instructions');
@@ -180,7 +182,7 @@ let questionStartTime = Date.now();
 
 // --- AI STATE ---
 let isAiEnabled = false;
-let geminiApiKey = sessionStorage.getItem('gemini_api_key') || '';
+let geminiApiKey = getCachedApiKey();
 let genAI = null;
 let lastUserAnswerForChat = "";
 let currentChatSession = null;
@@ -2427,10 +2429,12 @@ goToEditorBtn.addEventListener('click', () => {
     localStorage.setItem('editing_deck_title', deckTitle.textContent);
     window.location.href = ROUTES.GENERATE;
 });
-aiToggleBtn.addEventListener('click', () => { 
+aiToggleBtn.addEventListener('click', async () => { 
     closeHamburgerMenu();
     apiModal.classList.remove('hidden'); 
+    geminiApiKey = await getApiKeyAsync();
     apiKeyInput.value = geminiApiKey; 
+    if (apiKeyRemember) apiKeyRemember.checked = isKeyRemembered();
     setTimeout(() => apiKeyInput.focus(), 50);
 });
 
@@ -2473,14 +2477,18 @@ if (hapticToggleBtn) {
     });
 }
 
-const handleSaveApiKey = (e) => {
+const handleSaveApiKey = async (e) => {
     if (e) e.preventDefault();
     geminiApiKey = apiKeyInput.value.trim();
     if (geminiApiKey) {
-        sessionStorage.setItem('gemini_api_key', geminiApiKey);
+        const remember = Boolean(apiKeyRemember?.checked);
+        await saveApiKey(geminiApiKey, remember);
         initializeAi(); 
         apiModal.classList.add('hidden');
-        showNotificationPill("IA Ativada com Sucesso!", "enabled_ai.svg");
+        showNotificationPill(
+            remember ? "IA Ativada e Chave Salva com Segurança!" : "IA Ativada com Sucesso!",
+            "enabled_ai.svg"
+        );
     }
 };
 
@@ -2489,11 +2497,12 @@ if (apiKeyForm) {
     apiKeyForm.addEventListener('submit', handleSaveApiKey);
 }
 
-disableAiBtn.addEventListener('click', (e) => {
+disableAiBtn.addEventListener('click', async (e) => {
     if (e) e.preventDefault();
     isAiEnabled = false; 
     geminiApiKey = ''; 
-    sessionStorage.removeItem('gemini_api_key');
+    await clearApiKey();
+    if (apiKeyRemember) apiKeyRemember.checked = false;
     updateAiUI();
     apiModal.classList.add('hidden');
     showNotificationPill("Recursos de IA desativados", "config_ai.svg");
@@ -3341,7 +3350,7 @@ function initMobileFocusHelpers() {
     }
 }
 
-function initGame() {
+async function initGame() {
     checkAndResetModelFallback();
     resizeCanvas(); animate();
     
@@ -3392,6 +3401,10 @@ function initGame() {
     updateScoreDisplay();
     initStatsSession(deckTitle.textContent, activeMode, allQuestions.filter(isPlayableCard).length, score);
     loadQuestion(); 
+    const loadedKey = await getApiKeyAsync();
+    if (loadedKey) {
+        geminiApiKey = loadedKey;
+    }
     initializeAi();
     updateAiUI();
     updateHapticUI();

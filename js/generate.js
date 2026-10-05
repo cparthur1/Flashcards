@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { callWithRetry, checkAndResetModelFallback, sanitizeChatHistory, renderMathAndMarkdown } from './utils.js';
+import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
 
 function compressPDFWithWorker(file) {
     return new Promise((resolve, reject) => {
@@ -33,6 +34,7 @@ const openApiKeyModalBtn = document.getElementById('open-api-key-modal-btn');
 const quickApiModal = document.getElementById('quick-api-modal');
 const quickApiForm = document.getElementById('quick-api-form');
 const quickApiInput = document.getElementById('quick-api-input');
+const quickApiRemember = document.getElementById('quick-api-remember');
 const saveQuickApiBtn = document.getElementById('save-quick-api-btn');
 const closeQuickApiBtn = document.getElementById('close-quick-api-btn');
 const clearQuickApiBtn = document.getElementById('clear-quick-api-btn');
@@ -53,6 +55,7 @@ const closeModal21Btn = document.getElementById('close-modal-2-1-btn');
 const cancelModal21Btn = document.getElementById('cancel-modal-2-1-btn');
 const submitModal21Btn = document.getElementById('submit-modal-2-1-btn');
 const modal21ApiKey = document.getElementById('modal-2-1-api-key');
+const modal21Remember = document.getElementById('modal-2-1-remember');
 const modal21Files = document.getElementById('modal-2-1-files');
 const modal21FilesText = document.getElementById('modal-2-1-files-text');
 const modal21FilesCount = document.getElementById('modal-2-1-files-count');
@@ -68,6 +71,7 @@ const closeModal22Btn = document.getElementById('close-modal-2-2-btn');
 const cancelModal22Btn = document.getElementById('cancel-modal-2-2-btn');
 const submitModal22Btn = document.getElementById('submit-modal-2-2-btn');
 const modal22ApiKey = document.getElementById('modal-2-2-api-key');
+const modal22Remember = document.getElementById('modal-2-2-remember');
 const modal22File = document.getElementById('modal-2-2-file');
 const modal22FileName = document.getElementById('modal-2-2-file-name');
 const modal22Error = document.getElementById('modal-2-2-error');
@@ -429,14 +433,14 @@ const toolFunctions = {
 
 // --- HELPER FUNCTIONS ---
 function getApiKey() {
-    return sessionStorage.getItem('gemini_api_key') || '';
+    return getCachedApiKey();
 }
 
-function setApiKey(key) {
+async function setApiKey(key, remember = false) {
     if (key) {
-        sessionStorage.setItem('gemini_api_key', key);
+        await saveApiKey(key, remember);
     } else {
-        sessionStorage.removeItem('gemini_api_key');
+        await clearApiKey();
     }
     updateApiKeyStatusUI();
 }
@@ -454,6 +458,10 @@ function updateApiKeyStatusUI() {
     if (quickApiInput) quickApiInput.value = key;
     if (modal21ApiKey) modal21ApiKey.value = key;
     if (modal22ApiKey) modal22ApiKey.value = key;
+    const remembered = isKeyRemembered();
+    if (quickApiRemember) quickApiRemember.checked = remembered;
+    if (modal21Remember) modal21Remember.checked = remembered;
+    if (modal22Remember) modal22Remember.checked = remembered;
 }
 
 function getFileExtension(filename) {
@@ -1344,7 +1352,8 @@ submitModal21Btn.addEventListener('click', async () => {
         modal21Error.textContent = 'Por favor, insira sua Gemini API Key.';
         return;
     }
-    setApiKey(apiKey);
+    const remember = Boolean(modal21Remember?.checked);
+    await setApiKey(apiKey, remember);
 
     const files = Array.from(modal21Files.files);
     if (files.length === 0) {
@@ -1544,7 +1553,8 @@ submitModal22Btn.addEventListener('click', async () => {
         modal22Error.textContent = 'Por favor, insira sua Gemini API Key.';
         return;
     }
-    setApiKey(apiKey);
+    const remember = Boolean(modal22Remember?.checked);
+    await setApiKey(apiKey, remember);
 
     if (!modal22File.files || modal22File.files.length === 0) {
         modal22Error.textContent = 'Selecione um arquivo .txt ou Word.';
@@ -1654,8 +1664,9 @@ ${JSON.stringify(localCards, null, 2)}`;
 });
 
 // Quick API Key Modal Listeners
-openApiKeyModalBtn.addEventListener('click', () => {
-    quickApiInput.value = getApiKey();
+openApiKeyModalBtn.addEventListener('click', async () => {
+    quickApiInput.value = await getApiKeyAsync();
+    if (quickApiRemember) quickApiRemember.checked = isKeyRemembered();
     quickApiModal.classList.remove('hidden');
     setTimeout(() => quickApiInput.focus(), 50);
 });
@@ -1668,13 +1679,15 @@ if (quickApiForm) {
     });
 }
 
-saveQuickApiBtn.addEventListener('click', () => {
-    setApiKey(quickApiInput.value.trim());
+saveQuickApiBtn.addEventListener('click', async () => {
+    const remember = Boolean(quickApiRemember?.checked);
+    await setApiKey(quickApiInput.value.trim(), remember);
     quickApiModal.classList.add('hidden');
 });
-clearQuickApiBtn.addEventListener('click', () => {
-    setApiKey('');
+clearQuickApiBtn.addEventListener('click', async () => {
+    await setApiKey('');
     quickApiInput.value = '';
+    if (quickApiRemember) quickApiRemember.checked = false;
     quickApiModal.classList.add('hidden');
 });
 
@@ -2933,8 +2946,9 @@ playDeckBtn.addEventListener('click', () => {
 });
 
 // --- INITIALIZATION ---
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
     checkAndResetModelFallback();
+    await getApiKeyAsync();
     updateApiKeyStatusUI();
 
     // Check if loading an existing deck for editing

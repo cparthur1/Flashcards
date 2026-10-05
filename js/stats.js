@@ -6,6 +6,7 @@ import {
     computeAiStats 
 } from './stats-ai.js';
 import { ROUTES } from './utils.js';
+import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
 
 // DOM Elements
 const backToGameBtn = document.getElementById('back-to-game-btn');
@@ -97,6 +98,7 @@ const aiHistorySubjectsSection = document.getElementById('ai-history-subjects-se
 const aiConfigModal = document.getElementById('ai-config-modal');
 const closeAiModalBtn = document.getElementById('close-ai-modal-btn');
 const modalApiKeyInput = document.getElementById('modal-api-key-input');
+const modalApiKeyRemember = document.getElementById('modal-api-key-remember');
 const statsApiKeyForm = document.getElementById('stats-api-key-form');
 const modalSaveApiKeyBtn = document.getElementById('modal-save-api-key-btn');
 const modalDisableAiBtn = document.getElementById('modal-disable-ai-btn');
@@ -104,22 +106,22 @@ const modalDisableAiBtn = document.getElementById('modal-disable-ai-btn');
 let isAiLoading = false;
 
 function getGeminiApiKey() {
-    return sessionStorage.getItem('gemini_api_key') || localStorage.getItem('gemini_api_key') || '';
+    return getCachedApiKey();
 }
 
-function setGeminiApiKey(key) {
+async function setGeminiApiKey(key, remember = false) {
     if (key) {
-        sessionStorage.setItem('gemini_api_key', key);
-        localStorage.setItem('gemini_api_key', key);
+        await saveApiKey(key, remember);
     } else {
-        sessionStorage.removeItem('gemini_api_key');
-        localStorage.removeItem('gemini_api_key');
+        await clearApiKey();
     }
 }
 
-function openAiModal() {
+async function openAiModal() {
     if (!aiConfigModal) return;
-    if (modalApiKeyInput) modalApiKeyInput.value = getGeminiApiKey();
+    const key = await getApiKeyAsync();
+    if (modalApiKeyInput) modalApiKeyInput.value = key;
+    if (modalApiKeyRemember) modalApiKeyRemember.checked = isKeyRemembered();
     aiConfigModal.classList.remove('hidden');
     setTimeout(() => modalApiKeyInput?.focus(), 50);
 }
@@ -979,7 +981,10 @@ function renderAiSection(gameState, statsData) {
 }
 
 async function triggerAiCategorization(gameState, statsData) {
-    const apiKey = getGeminiApiKey();
+    let apiKey = getGeminiApiKey();
+    if (!apiKey) {
+        apiKey = await getApiKeyAsync();
+    }
     if (!apiKey) return;
 
     isAiLoading = true;
@@ -1349,15 +1354,16 @@ statsApiKeyForm?.addEventListener('submit', (e) => {
     modalSaveApiKeyBtn?.click();
 });
 
-modalSaveApiKeyBtn?.addEventListener('click', () => {
+modalSaveApiKeyBtn?.addEventListener('click', async () => {
     const key = (modalApiKeyInput?.value || '').trim();
     if (!key) {
         alert("Por favor, insira uma chave de API válida.");
         return;
     }
-    setGeminiApiKey(key);
+    const remember = Boolean(modalApiKeyRemember?.checked);
+    await setGeminiApiKey(key, remember);
     closeAiModal();
-    showStatsPill("Chave de API salva!", true);
+    showStatsPill(remember ? "Chave de API salva com segurança no dispositivo!" : "Chave de API salva!", true);
     const activeMode = localStorage.getItem('flashcardsActiveMode') || 'normal';
     const storageKey = activeMode === 'notebook' ? 'flashcardsNotebook' : 'flashcardsSave';
     const gameState = JSON.parse(localStorage.getItem(storageKey)) || {};
@@ -1365,8 +1371,9 @@ modalSaveApiKeyBtn?.addEventListener('click', () => {
     triggerAiCategorization(gameState, statsData);
 });
 
-modalDisableAiBtn?.addEventListener('click', () => {
-    setGeminiApiKey('');
+modalDisableAiBtn?.addEventListener('click', async () => {
+    await setGeminiApiKey('');
+    if (modalApiKeyRemember) modalApiKeyRemember.checked = false;
     closeAiModal();
     showStatsPill("Recursos de IA desativados.", false);
     const activeMode = localStorage.getItem('flashcardsActiveMode') || 'normal';
@@ -1377,6 +1384,7 @@ modalDisableAiBtn?.addEventListener('click', () => {
 });
 
 // INITIALIZATION
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await getApiKeyAsync();
     renderAllStats();
 });

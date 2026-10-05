@@ -1,3 +1,24 @@
+CHANGELOG: SECURE PERSISTENT API KEY (WEB CRYPTO + INDEXEDDB) (v10.2)
+Date: 2026-10-05
+
+OVERVIEW:
+1. Implemented Approach 3 for secure API key persistence across sessions using Web Cryptography API (AES-GCM 256-bit with non-exportable CryptoKey stored in IndexedDB).
+2. Added "Lembrar chave (menos seguro)" checkbox across all API key modals (game, generate, stats). When unchecked, keys reside strictly in ephemeral session storage.
+3. Centralized API key lifecycle in a new dedicated module `js/key-manager.js`, migrating legacy plaintext keys and ensuring unified session state.
+
+1. SECURE KEY MANAGER MODULE (js/key-manager.js)
+- Non-exportable CryptoKey: Generates 256-bit AES-GCM keys with `extractable: false`, stored via structured cloning in an isolated IndexedDB store (`flashcards_vault`).
+- Cryptographic Isolation: Raw key bytes cannot be extracted by JavaScript runtime (`crypto.subtle.exportKey` throws `InvalidAccessError`).
+- Ephemeral vs. Persistent Storage: When "Lembrar chave" is disabled, keys are stored solely in memory/`sessionStorage` and destroyed on tab close. When enabled, the key is encrypted with a 12-byte IV and stored securely.
+- Legacy Auto-Migration: Detects legacy unencrypted keys in `localStorage` from older versions and migrates them into the encrypted vault while scrubbing plaintext residues.
+
+2. USER INTERFACE & MODAL INTEGRATION (pages/game.html, pages/generate.html, pages/stats.html, js/game.js, js/generate.js, js/stats.js)
+- Added "Lembrar chave (menos seguro)" checkboxes to `#api-modal` (game), `#quick-api-modal` and document modals (generate), and `#ai-config-modal` (stats).
+- Fully synchronized async key loading upon `DOMContentLoaded` to activate AI features transparently across sessions without repeated manual input.
+- Added Service Worker asset registration for `js/key-manager.js` and bumped cache version to `flashcards-v6.7`.
+
+--------------------------------------------------------------------------------
+
 CHANGELOG: EDIT AGENT MARKDOWN ENGINE & FLASHCARD IMAGE SKELETON PLACEHOLDER (v10.1)
 Date: 2026-10-04
 
