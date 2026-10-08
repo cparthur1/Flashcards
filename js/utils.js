@@ -5,8 +5,9 @@
  * parenthetical asides, and special characters.
  */
 export function normalizeString(str) {
-    if (!str) return '';
-    return str.replace(/\(.*?\)/g, '')
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/\(.*?\)/g, '')
         .replace(/[*_`$#]/g, '')
         .trim()
         .normalize("NFD")
@@ -20,8 +21,10 @@ export function normalizeString(str) {
  * Returns a value between 0 and 1.
  */
 export function calculateSimilarity(s1, s2) {
-    let longer = s1, shorter = s2;
-    if (s1.length < s2.length) { longer = s2; shorter = s1; }
+    const str1 = String(s1 ?? '');
+    const str2 = String(s2 ?? '');
+    let longer = str1, shorter = str2;
+    if (str1.length < str2.length) { longer = str2; shorter = str1; }
     const longerLength = longer.length;
     if (longerLength === 0) return 1.0;
 
@@ -70,7 +73,7 @@ export async function callWithRetry(fn, retries = 3, delay = 1000) {
  * Centralized routing configuration.
  * Dynamically adjusts paths based on current location (root vs /pages/).
  */
-const isSubpage = window.location.pathname.includes('/pages/');
+const isSubpage = typeof window !== 'undefined' && window.location ? window.location.pathname.includes('/pages/') : false;
 const prefix = isSubpage ? '../' : '';
 
 export const ROUTES = {

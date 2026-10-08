@@ -1020,15 +1020,14 @@ function isPlayableCard(card) {
 function calculateThinkingGap(thinkingTimeSec) {
     const minGap = 5;
     const t = Math.max(0.8, thinkingTimeSec || 1);
-    // Inverse proportion: 15 / t - 1
-    // >= 15s -> bonus 0 -> gap 5
-    // 10s   -> bonus 1 -> gap 6
-    // 5s    -> bonus 2 -> gap 7
-    // 2.5s  -> bonus 5 -> gap 10
-    // 1.5s  -> bonus 9 -> gap 14
-    // <= 0.8s -> bonus 15 -> gap 20
     const bonus = Math.min(15, Math.max(0, Math.round(15 / t - 1)));
-    return minGap + bonus;
+    const gap = minGap + bonus;
+    console.log("[Algorithm] calculateThinkingGap:", {
+        thinkingTime: Math.round(t * 10) / 10 + 's',
+        bonus,
+        finalGap: gap
+    });
+    return gap;
 }
 
 let precomputedNextCard = null;
@@ -1045,6 +1044,7 @@ function precomputeNextCandidate() {
 
     if (questionsPool.length === 1) {
         precomputedNextCard = questionsPool[0];
+        console.log("[Algorithm] Apenas 1 card no pool. Próximo selecionado:", (precomputedNextCard.description || '').slice(0, 30));
         return;
     }
 
@@ -1061,6 +1061,11 @@ function precomputeNextCandidate() {
     const dueCards = candidates.filter(c => c.dueStep !== undefined && c.dueStep <= nextStep);
     if (dueCards.length > 0) {
         precomputedNextCard = dueCards[Math.floor(Math.random() * dueCards.length)];
+        console.log("[Algorithm] Próximo card pré-selecionado (due/vencido):", {
+            desc: (precomputedNextCard.description || '').slice(0, 30),
+            dueStep: precomputedNextCard.dueStep,
+            nextStep
+        });
         return;
     }
 
@@ -1068,6 +1073,9 @@ function precomputeNextCandidate() {
     const newCards = candidates.filter(c => c.dueStep === undefined);
     if (newCards.length > 0) {
         precomputedNextCard = newCards[Math.floor(Math.random() * newCards.length)];
+        console.log("[Algorithm] Próximo card pré-selecionado (novo/não revisado):", {
+            desc: (precomputedNextCard.description || '').slice(0, 30)
+        });
         return;
     }
 
@@ -1080,6 +1088,10 @@ function precomputeNextCandidate() {
     }
     const earliestCards = candidates.filter(c => (c.dueStep || 0) === minDue);
     precomputedNextCard = earliestCards[Math.floor(Math.random() * earliestCards.length)] || candidates[0];
+    console.log("[Algorithm] Próximo card pré-selecionado (fallback mais próximo):", {
+        desc: (precomputedNextCard?.description || '').slice(0, 30),
+        minDue
+    });
 }
 
 function schedulePrecomputeNextCard() {
@@ -1148,6 +1160,14 @@ function loadQuestion() {
         }
         currentQuestionIndexInPool = questionsPool.indexOf(currentQuestion);
     }
+
+    console.log("[Game] Card carregado:", {
+        step: currentStep,
+        type: currentQuestion?.type,
+        dueStep: currentQuestion?.dueStep,
+        poolLeft: questionsPool.length,
+        desc: (currentQuestion?.description || '').slice(0, 40)
+    });
 
     // Clear precomputed slot and immediately queue precomputation for subsequent card in background
     precomputedNextCard = null;
@@ -1320,15 +1340,24 @@ function flipAnkiCard() {
 
 function handleAnkiRating(rating) {
     if (currentQuestion.type !== 'anki' || !isAnkiFlipped) return;
-    if (isAnimating) return;
+    if (isAnimating) {
+        console.warn("[Anki] Avaliação ignorada: animação em andamento.");
+        return;
+    }
 
     const elapsedSeconds = (Date.now() - questionStartTime) / 1000;
-    recordStatsAnswer({
-        card: currentQuestion,
-        isCorrect: (rating === 'good' || rating === 'easy'),
-        rating: rating,
-        timeSpentSeconds: elapsedSeconds
-    });
+    console.log("[Anki] Avaliando card:", { rating, elapsedSeconds: Math.round(elapsedSeconds * 10) / 10 + 's' });
+
+    try {
+        recordStatsAnswer({
+            card: currentQuestion,
+            isCorrect: (rating === 'good' || rating === 'easy'),
+            rating: rating,
+            timeSpentSeconds: elapsedSeconds
+        });
+    } catch (e) {
+        console.error("[Anki] Erro ao gravar stats anki:", e);
+    }
 
     if (rating === 'easy') {
         createBall(true);
@@ -1342,8 +1371,14 @@ function handleAnkiRating(rating) {
 
         if (shouldRemove) {
             score++;
-            questionsPool.splice(currentQuestionIndexInPool, 1);
+            const idx = questionsPool.indexOf(currentQuestion);
+            if (idx !== -1) {
+                questionsPool.splice(idx, 1);
+            } else if (currentQuestionIndexInPool >= 0 && currentQuestionIndexInPool < questionsPool.length) {
+                questionsPool.splice(currentQuestionIndexInPool, 1);
+            }
             saveGameState();
+            console.log("[Anki] Card removido do deck (acerto fácil). Restam:", questionsPool.length);
             setTimeout(() => {
                 animateCardToHeader(() => {
                     updateScoreDisplay();
@@ -1354,6 +1389,7 @@ function handleAnkiRating(rating) {
             // Leech card (>4 errors): maintain in game until guessed right 2x
             currentQuestion.dueStep = currentStep + 8;
             saveGameState();
+            console.log("[Anki] Card leech reagendado para dueStep:", currentQuestion.dueStep);
             setTimeout(() => {
                 animateCardToBack(() => {
                     loadQuestion();
@@ -1365,6 +1401,7 @@ function handleAnkiRating(rating) {
         currentQuestion.correctStreak = (currentQuestion.correctStreak || 0) + 1;
         currentQuestion.dueStep = currentStep + 12;
         saveGameState();
+        console.log("[Anki] Card marcado como bom. Próximo dueStep:", currentQuestion.dueStep);
         animateCardToBack(() => {
             loadQuestion();
         });
@@ -1372,6 +1409,7 @@ function handleAnkiRating(rating) {
         createBall(false);
         currentQuestion.dueStep = currentStep + 7;
         saveGameState();
+        console.log("[Anki] Card marcado como difícil. Próximo dueStep:", currentQuestion.dueStep);
         animateCardToBack(() => {
             loadQuestion();
         });
@@ -1388,6 +1426,7 @@ function handleAnkiRating(rating) {
         // Requirement 2: at least 5 cards gap
         currentQuestion.dueStep = currentStep + 5;
         saveGameState();
+        console.log("[Anki] Card marcado como erro (again). Próximo dueStep:", currentQuestion.dueStep);
         setTimeout(() => {
             animateCardToBack(() => {
                 loadQuestion();
@@ -1400,6 +1439,7 @@ let isOpenSubmitting = false;
 
 function resetUI() {
     isOpenSubmitting = false;
+    isAnimating = false;
     hideHighlightPopup();
     [answerInput, answerInput1, answerInput2].forEach(inp => {
         inp.value = ''; inp.disabled = false;
@@ -1449,15 +1489,36 @@ function resetUI() {
         btn.classList.remove('bg-green-500', 'bg-red-500', 'text-white');
         btn.classList.add('bg-gray-200');
     });
+
+    console.log("[Game] resetUI executado: campos limpos e botões reativados.");
 }
 
 function handleFillSubmit() {
-    if (isOpenSubmitting || submitBtn.disabled || currentQuestion?.isBeingCorrected || isAnimating) return;
+    console.log("[Game] handleFillSubmit chamado.", {
+        isOpenSubmitting,
+        btnDisabled: submitBtn?.disabled,
+        isBeingCorrected: currentQuestion?.isBeingCorrected,
+        isAnimating
+    });
+
+    if (isOpenSubmitting || submitBtn.disabled || currentQuestion?.isBeingCorrected || isAnimating) {
+        console.warn("[Game] Submissão fill bloqueada por flag:", {
+            isOpenSubmitting,
+            btnDisabled: submitBtn?.disabled,
+            isBeingCorrected: currentQuestion?.isBeingCorrected,
+            isAnimating
+        });
+        return;
+    }
     const inputs = Array.from(questionCard.querySelectorAll('.fill-blank-input'));
-    if (inputs.length === 0) return;
+    if (inputs.length === 0) {
+        console.warn("[Game] Nenhuma lacuna .fill-blank-input encontrada no card.");
+        return;
+    }
 
     const userAnswers = inputs.map(inp => inp.value.trim());
     if (userAnswers.every(ans => !ans)) {
+        console.warn("[Game] Submissão fill ignorada: todas as lacunas estão vazias.");
         inputs[0].classList.add('animate-pulse', 'border-red-500');
         setTimeout(() => inputs[0].classList.remove('animate-pulse', 'border-red-500'), 800);
         inputs[0].focus();
@@ -1466,89 +1527,120 @@ function handleFillSubmit() {
 
     isOpenSubmitting = true;
 
-    const rawExpected = currentQuestion.answers && currentQuestion.answers.length > 0
-        ? currentQuestion.answers
-        : (currentQuestion.answer || '').split(';').map(s => s.trim());
+    try {
+        const rawExpected = currentQuestion.answers && currentQuestion.answers.length > 0
+            ? currentQuestion.answers
+            : String(currentQuestion.answer || '').split(';').map(s => s.trim());
 
-    let allCorrect = true;
-    const blankResults = inputs.map((input, i) => {
-        const userVal = userAnswers[i] || '';
-        const expectedVal = rawExpected[i] || '';
-        const synonyms = expectedVal.split('/').map(s => s.trim()).filter(Boolean);
+        let allCorrect = true;
+        const blankResults = inputs.map((input, i) => {
+            const userVal = userAnswers[i] || '';
+            const expectedVal = rawExpected[i] || '';
+            const synonyms = expectedVal.split('/').map(s => s.trim()).filter(Boolean);
 
-        const isCorrect = synonyms.length > 0
-            ? synonyms.some(syn => calculateSimilarity(normalizeString(userVal), normalizeString(syn)) >= 0.8)
-            : false;
+            const maxSim = synonyms.length > 0
+                ? Math.max(...synonyms.map(syn => calculateSimilarity(normalizeString(userVal), normalizeString(syn))))
+                : 0;
+            const isCorrect = maxSim >= 0.8;
 
-        if (!isCorrect) allCorrect = false;
+            if (!isCorrect) allCorrect = false;
 
-        return { input, userVal, expectedVal, synonyms, isCorrect };
-    });
-
-    currentQuestion._lastUserAnswer = userAnswers.join(' ; ');
-
-    if (allCorrect) {
-        inputs.forEach(input => {
-            input.readOnly = true;
-            input.blur();
-            input.classList.remove('border-dashed', 'border-blue-400');
-            input.classList.add('border-solid', 'border-green-500', 'bg-green-50', 'text-green-600');
+            return { input, userVal, expectedVal, synonyms, isCorrect, maxSim };
         });
-        showFeedback(true);
-    } else {
-        isAnimating = true;
 
-        // Phase 1: Correct boxes turn green immediately; wrong boxes turn red and shake side-to-side for ~500ms
-        blankResults.forEach(({ input, isCorrect }) => {
-            input.readOnly = true;
-            input.blur();
-            input.classList.remove('border-dashed', 'border-blue-400', 'border-green-500', 'border-red-500', 'border-amber-400', 'bg-green-50', 'bg-red-50', 'bg-amber-50', 'text-green-600', 'text-red-600', 'text-amber-800', 'fill-box-shake', 'fill-box-pop', 'fill-box-pop-yellow');
+        console.log("[Game] Lacunas avaliadas:", {
+            allCorrect,
+            results: blankResults.map(r => ({
+                user: r.userVal,
+                expected: r.expectedVal,
+                similarity: Math.round(r.maxSim * 100) + '%',
+                isCorrect: r.isCorrect
+            }))
+        });
 
-            if (isCorrect) {
+        currentQuestion._lastUserAnswer = userAnswers.join(' ; ');
+
+        if (allCorrect) {
+            inputs.forEach(input => {
+                input.readOnly = true;
+                input.blur();
+                input.classList.remove('border-dashed', 'border-blue-400');
                 input.classList.add('border-solid', 'border-green-500', 'bg-green-50', 'text-green-600');
-            } else {
-                input.classList.add('border-solid', 'border-red-500', 'bg-red-50', 'text-red-600', 'fill-box-shake');
-            }
-        });
+            });
+            showFeedback(true);
+        } else {
+            isAnimating = true;
 
-        triggerHaptic('shake');
-        showFeedback(false);
+            // Phase 1: Correct boxes turn green immediately; wrong boxes turn red and shake side-to-side for ~500ms
+            blankResults.forEach(({ input, isCorrect }) => {
+                input.readOnly = true;
+                input.blur();
+                input.classList.remove('border-dashed', 'border-blue-400', 'border-green-500', 'border-red-500', 'border-amber-400', 'bg-green-50', 'bg-red-50', 'bg-amber-50', 'text-green-600', 'text-red-600', 'text-amber-800', 'fill-box-shake', 'fill-box-pop', 'fill-box-pop-yellow');
 
-        // Phase 2: At ~550ms, wrong boxes pop yellow with the right answer so user knows where to focus (total duration ~1.2s)
-        setTimeout(() => {
-            let anyPopped = false;
-            blankResults.forEach(({ input, synonyms, expectedVal, isCorrect }) => {
-                if (!isCorrect) {
-                    anyPopped = true;
-                    const primaryExpected = synonyms[0] || expectedVal;
-                    input.classList.remove('border-red-500', 'bg-red-50', 'text-red-600', 'fill-box-shake');
-                    input.classList.add('border-solid', 'border-amber-400', 'bg-amber-50', 'text-amber-800', 'fill-box-pop-yellow');
-                    input.value = primaryExpected;
-                    if (synonyms.length > 1) {
-                        input.title = synonyms.join(' / ');
-                    }
-
-                    // Dynamically adjust box width to fit the correct answer comfortably
-                    const len = primaryExpected.length;
-                    input.style.width = Math.max(64, Math.min(240, (len + 2) * 11)) + 'px';
+                if (isCorrect) {
+                    input.classList.add('border-solid', 'border-green-500', 'bg-green-50', 'text-green-600');
+                } else {
+                    input.classList.add('border-solid', 'border-red-500', 'bg-red-50', 'text-red-600', 'fill-box-shake');
                 }
             });
 
-            if (anyPopped) {
-                triggerHaptic('fillPop');
-            }
+            triggerHaptic('shake');
+            showFeedback(false);
 
-            // Unlock next navigation once the 1.2s correction animation completes
+            // Phase 2: At ~550ms, wrong boxes pop yellow with the right answer so user knows where to focus (total duration ~1.2s)
             setTimeout(() => {
-                isAnimating = false;
-            }, 650);
-        }, 550);
+                let anyPopped = false;
+                blankResults.forEach(({ input, synonyms, expectedVal, isCorrect }) => {
+                    if (!isCorrect) {
+                        anyPopped = true;
+                        const primaryExpected = synonyms[0] || expectedVal;
+                        input.classList.remove('border-red-500', 'bg-red-50', 'text-red-600', 'fill-box-shake');
+                        input.classList.add('border-solid', 'border-amber-400', 'bg-amber-50', 'text-amber-800', 'fill-box-pop-yellow');
+                        input.value = primaryExpected;
+                        if (synonyms.length > 1) {
+                            input.title = synonyms.join(' / ');
+                        }
+
+                        // Dynamically adjust box width to fit the correct answer comfortably
+                        const len = primaryExpected.length;
+                        input.style.width = Math.max(64, Math.min(240, (len + 2) * 11)) + 'px';
+                    }
+                });
+
+                if (anyPopped) {
+                    triggerHaptic('fillPop');
+                }
+
+                // Unlock next navigation once the 1.2s correction animation completes
+                setTimeout(() => {
+                    isAnimating = false;
+                }, 650);
+            }, 550);
+        }
+    } catch (err) {
+        console.error("[Game] Erro durante handleFillSubmit:", err);
+        isOpenSubmitting = false;
+        isAnimating = false;
     }
 }
 
 function handleOpenSubmit() {
-    if (isOpenSubmitting || submitBtn.disabled || currentQuestion?.isBeingCorrected) return;
-    const type = currentQuestion.type;
+    console.log("[Game] handleOpenSubmit acionado.", {
+        type: currentQuestion?.type,
+        isOpenSubmitting,
+        btnDisabled: submitBtn?.disabled,
+        isBeingCorrected: currentQuestion?.isBeingCorrected
+    });
+
+    if (isOpenSubmitting || submitBtn.disabled || currentQuestion?.isBeingCorrected) {
+        console.warn("[Game] handleOpenSubmit bloqueado por flag:", {
+            isOpenSubmitting,
+            btnDisabled: submitBtn?.disabled,
+            isBeingCorrected: currentQuestion?.isBeingCorrected
+        });
+        return;
+    }
+    const type = currentQuestion?.type;
 
     if (type === 'fill') {
         handleFillSubmit();
@@ -1559,154 +1651,235 @@ function handleOpenSubmit() {
     const ans1_d = normalizeString(answerInput1.value);
     const ans2_d = normalizeString(answerInput2.value);
 
-    if (type === 'open_double' && (!ans1_d || !ans2_d)) return;
-    if (type !== 'open_double' && !ans1) return;
+    if (type === 'open_double') {
+        if (!ans1_d || !ans2_d) {
+            console.warn("[Game] Submissão open_double ignorada: campos incompletos.", { ans1_d, ans2_d });
+            if (!ans1_d) {
+                answerInput1.classList.add('animate-pulse', 'border-red-500');
+                setTimeout(() => answerInput1.classList.remove('animate-pulse', 'border-red-500'), 800);
+                answerInput1.focus();
+            } else {
+                answerInput2.classList.add('animate-pulse', 'border-red-500');
+                setTimeout(() => answerInput2.classList.remove('animate-pulse', 'border-red-500'), 800);
+                answerInput2.focus();
+            }
+            return;
+        }
+    } else {
+        if (!ans1) {
+            console.warn("[Game] Submissão ignorada: campo de resposta vazio.");
+            answerInput.classList.add('animate-pulse', 'border-red-500');
+            setTimeout(() => answerInput.classList.remove('animate-pulse', 'border-red-500'), 800);
+            answerInput.focus();
+            return;
+        }
+    }
 
     isOpenSubmitting = true;
 
-    const correct1 = currentQuestion.answer.split('/');
-    const correct2 = (currentQuestion.answer2 || "").split('/');
+    try {
+        const correct1 = String(currentQuestion?.answer || "").split('/').map(s => s.trim()).filter(Boolean);
+        const correct2 = String(currentQuestion?.answer2 || "").split('/').map(s => s.trim()).filter(Boolean);
 
-    const isCorrect1 = type === 'open_double'
-        ? correct1.some(c => calculateSimilarity(ans1_d, normalizeString(c)) >= 0.8)
-        : correct1.some(c => calculateSimilarity(ans1, normalizeString(c)) >= 0.8);
+        const sim1 = type === 'open_double'
+            ? (correct1.length > 0 ? Math.max(...correct1.map(c => calculateSimilarity(ans1_d, normalizeString(c)))) : 0)
+            : (correct1.length > 0 ? Math.max(...correct1.map(c => calculateSimilarity(ans1, normalizeString(c)))) : 0);
 
-    const isCorrect2 = type === 'open_double'
-        ? correct2.some(c => calculateSimilarity(ans2_d, normalizeString(c)) >= 0.8)
-        : true;
+        const sim2 = type === 'open_double'
+            ? (correct2.length > 0 ? Math.max(...correct2.map(c => calculateSimilarity(ans2_d, normalizeString(c)))) : 0)
+            : 1.0;
 
-    showFeedback(isCorrect1 && isCorrect2);
+        const isCorrect1 = sim1 >= 0.8;
+        const isCorrect2 = sim2 >= 0.8;
+        const isCorrect = isCorrect1 && isCorrect2;
+
+        console.log("[Game] Resposta do usuário avaliada:", {
+            type,
+            userAnswer: type === 'open_double' ? `${ans1_d} | ${ans2_d}` : ans1,
+            expected: type === 'open_double' ? `${currentQuestion.answer} | ${currentQuestion.answer2}` : currentQuestion.answer,
+            sim1: Math.round(sim1 * 100) + '%',
+            sim2: Math.round(sim2 * 100) + '%',
+            isCorrect
+        });
+
+        showFeedback(isCorrect);
+    } catch (err) {
+        console.error("[Game] Erro durante handleOpenSubmit:", err);
+        isOpenSubmitting = false;
+    }
 }
 
 function handleMCSubmit(btn) {
     if (btn.disabled) return;
     const isCorrect = normalizeString(btn.textContent) === normalizeString(currentQuestion.answer);
+    console.log("[Game] Opção múltipla escolha clicada:", {
+        chosen: btn.textContent,
+        expected: currentQuestion.answer,
+        isCorrect
+    });
     showFeedback(isCorrect, btn);
 }
 
 function showFeedback(isCorrect, element) {
-    // Capturar a resposta do usuário para o contexto do chat de IA
-    let userAnswer = "";
-    if (currentQuestion.type === 'open_double') {
-        userAnswer = `${answerInput1.value} ; ${answerInput2.value}`;
-    } else if (currentQuestion.type === 'multiple_choice') {
-        userAnswer = element ? element.textContent : "";
-    } else if (currentQuestion.type === 'fill') {
-        const fillInputs = Array.from(questionCard.querySelectorAll('.fill-blank-input'));
-        userAnswer = currentQuestion._lastUserAnswer || fillInputs.map(inp => inp.value.trim()).join(' ; ');
-    } else {
-        userAnswer = answerInput.value;
-    }
-    lastUserAnswerForChat = userAnswer;
+    try {
+        console.log("[Game] showFeedback executado:", {
+            isCorrect,
+            cardType: currentQuestion?.type,
+            step: currentStep,
+            score
+        });
 
-    const elapsedSeconds = (Date.now() - questionStartTime) / 1000;
-    recordStatsAnswer({
-        card: currentQuestion,
-        isCorrect: isCorrect,
-        rating: isCorrect ? 'correct' : 'incorrect',
-        timeSpentSeconds: elapsedSeconds,
-        userAnswer: userAnswer
-    });
-
-    const ballIdx = createBall(isCorrect);
-    questionCard.classList.add(isCorrect ? 'glow-correct' : 'glow-incorrect');
-
-    if (isCorrect) {
-        triggerHaptic('correct');
-    }
-
-    // Update streak counter (Anki cards are handled separately and do NOT touch streak)
-    if (currentQuestion && currentQuestion.type !== 'anki') {
-        if (isCorrect) {
-            incrementStreak();
+        // Capturar a resposta do usuário para o contexto do chat de IA
+        let userAnswer = "";
+        if (currentQuestion.type === 'open_double') {
+            userAnswer = `${answerInput1.value} ; ${answerInput2.value}`;
+        } else if (currentQuestion.type === 'multiple_choice') {
+            userAnswer = element ? element.textContent : "";
+        } else if (currentQuestion.type === 'fill') {
+            const fillInputs = Array.from(questionCard.querySelectorAll('.fill-blank-input'));
+            userAnswer = currentQuestion._lastUserAnswer || fillInputs.map(inp => inp.value.trim()).join(' ; ');
         } else {
-            resetStreak();
+            userAnswer = answerInput.value;
         }
-    }
+        lastUserAnswerForChat = userAnswer;
 
-    if (!isCorrect && isAiEnabled) {
-        askAiBtn.classList.remove('hidden');
-        if (userAnswer) {
-            checkAnswerWithAi(currentQuestion, userAnswer, ballIdx);
-        }
-    } else {
-        askAiBtn.classList.add('hidden');
-    }
-
-    if (element) {
-        const dynamicMcBtns = mcAnswerArea.querySelectorAll('.mc-option-btn');
-        dynamicMcBtns.forEach(b => b.disabled = true);
-        element.classList.add(isCorrect ? 'mc-correct' : 'mc-incorrect');
-        if (!isCorrect) {
-            dynamicMcBtns.forEach(b => {
-                if (normalizeString(b.textContent) === normalizeString(currentQuestion.answer)) b.classList.add('mc-correct');
+        const elapsedSeconds = (Date.now() - questionStartTime) / 1000;
+        try {
+            recordStatsAnswer({
+                card: currentQuestion,
+                isCorrect: isCorrect,
+                rating: isCorrect ? 'correct' : 'incorrect',
+                timeSpentSeconds: elapsedSeconds,
+                userAnswer: userAnswer
             });
-        }
-    }
-
-    if (!isCorrect) {
-        if (currentQuestion.type !== 'fill') {
-            // Card shakes on wrong guess and waits for user to skip/ask/edit/delete
-            questionCard.classList.remove('card-shake');
-            void questionCard.offsetWidth; // Force reflow
-            questionCard.classList.add('card-shake');
-            triggerHaptic('shake');
-            setTimeout(() => questionCard.classList.remove('card-shake'), 450);
+        } catch (statErr) {
+            console.error("[Game] Erro ao registrar estatística (não bloqueante):", statErr);
         }
 
-        currentQuestion.isBeingCorrected = true;
-        isOpenSubmitting = false;
+        const ballIdx = createBall(isCorrect);
+        questionCard.classList.add(isCorrect ? 'glow-correct' : 'glow-incorrect');
 
-        // Spaced repetition & leech tracking
-        currentQuestion.wrongCount = (currentQuestion.wrongCount || 0) + 1;
-        currentQuestion.correctStreak = 0;
-        const gap = calculateThinkingGap(elapsedSeconds);
-        currentQuestion.dueStep = currentStep + gap;
-        saveGameState();
-        precomputeNextCandidate();
+        if (isCorrect) {
+            triggerHaptic('correct');
+        }
 
-        if (!element) {
-            updateFeedbackText();
-            submitBtn.classList.add('hidden');
-            submitBtn.disabled = true;
-            [answerInput, answerInput1, answerInput2].forEach(inp => {
-                if (inp) inp.disabled = true;
-            });
-            if (currentQuestion.type !== 'fill') {
-                const fillInputs = questionCard.querySelectorAll('.fill-blank-input');
-                fillInputs.forEach(inp => inp.disabled = true);
+        // Update streak counter (Anki cards are handled separately and do NOT touch streak)
+        if (currentQuestion && currentQuestion.type !== 'anki') {
+            if (isCorrect) {
+                incrementStreak();
+            } else {
+                resetStreak();
             }
         }
-        nextQuestionBtn.classList.remove('hidden');
-        correctionOptions.classList.add('flex');
-        correctionOptions.classList.remove('hidden');
-    } else {
-        currentQuestion.correctStreak = (currentQuestion.correctStreak || 0) + 1;
-        const totalWrongs = currentQuestion.wrongCount || 0;
-        // Requirement 4: If guessed wrong >4x, keep in game until guessed right 2x
-        const isLeech = totalWrongs > 4;
-        const shouldRemove = !isLeech || currentQuestion.correctStreak >= 2;
 
-        if (shouldRemove) {
-            score++;
-            questionsPool.splice(currentQuestionIndexInPool, 1);
-            saveGameState();
-            setTimeout(() => {
-                animateCardToHeader(() => {
-                    updateScoreDisplay();
-                    loadQuestion();
-                });
-            }, 400);
+        if (!isCorrect && isAiEnabled) {
+            askAiBtn.classList.remove('hidden');
+            if (userAnswer) {
+                checkAnswerWithAi(currentQuestion, userAnswer, ballIdx);
+            }
         } else {
-            // Leech card: maintain in game until guessed right 2x
-            currentQuestion.dueStep = currentStep + 5;
-            saveGameState();
-            setTimeout(() => {
-                animateCardToBack(() => {
-                    loadQuestion();
-                });
-            }, 400);
+            askAiBtn.classList.add('hidden');
         }
+
+        if (element) {
+            const dynamicMcBtns = mcAnswerArea.querySelectorAll('.mc-option-btn');
+            dynamicMcBtns.forEach(b => b.disabled = true);
+            element.classList.add(isCorrect ? 'mc-correct' : 'mc-incorrect');
+            if (!isCorrect) {
+                dynamicMcBtns.forEach(b => {
+                    if (normalizeString(b.textContent) === normalizeString(currentQuestion.answer)) b.classList.add('mc-correct');
+                });
+            }
+        }
+
+        if (!isCorrect) {
+            if (currentQuestion.type !== 'fill') {
+                // Card shakes on wrong guess and waits for user to skip/ask/edit/delete
+                questionCard.classList.remove('card-shake');
+                void questionCard.offsetWidth; // Force reflow
+                questionCard.classList.add('card-shake');
+                triggerHaptic('shake');
+                setTimeout(() => questionCard.classList.remove('card-shake'), 450);
+            }
+
+            currentQuestion.isBeingCorrected = true;
+            isOpenSubmitting = false;
+
+            // Spaced repetition & leech tracking
+            currentQuestion.wrongCount = (currentQuestion.wrongCount || 0) + 1;
+            currentQuestion.correctStreak = 0;
+            const gap = calculateThinkingGap(elapsedSeconds);
+            currentQuestion.dueStep = currentStep + gap;
+            console.log("[Algorithm] Card incorreto reagendado:", {
+                tempoPensamento: Math.round(elapsedSeconds * 10) / 10 + 's',
+                gap,
+                currentStep,
+                dueStep: currentQuestion.dueStep,
+                totalErros: currentQuestion.wrongCount
+            });
+            saveGameState();
+            precomputeNextCandidate();
+
+            if (!element) {
+                updateFeedbackText();
+                submitBtn.classList.add('hidden');
+                submitBtn.disabled = true;
+                [answerInput, answerInput1, answerInput2].forEach(inp => {
+                    if (inp) inp.disabled = true;
+                });
+                if (currentQuestion.type !== 'fill') {
+                    const fillInputs = questionCard.querySelectorAll('.fill-blank-input');
+                    fillInputs.forEach(inp => inp.disabled = true);
+                }
+            }
+            nextQuestionBtn.classList.remove('hidden');
+            correctionOptions.classList.add('flex');
+            correctionOptions.classList.remove('hidden');
+        } else {
+            currentQuestion.correctStreak = (currentQuestion.correctStreak || 0) + 1;
+            const totalWrongs = currentQuestion.wrongCount || 0;
+            // Requirement 4: If guessed wrong >4x, keep in game until guessed right 2x
+            const isLeech = totalWrongs > 4;
+            const shouldRemove = !isLeech || currentQuestion.correctStreak >= 2;
+
+            console.log("[Algorithm] Card correto avaliado:", {
+                totalWrongs,
+                correctStreak: currentQuestion.correctStreak,
+                isLeech,
+                shouldRemove
+            });
+
+            if (shouldRemove) {
+                score++;
+                const idx = questionsPool.indexOf(currentQuestion);
+                if (idx !== -1) {
+                    questionsPool.splice(idx, 1);
+                } else if (currentQuestionIndexInPool >= 0 && currentQuestionIndexInPool < questionsPool.length) {
+                    questionsPool.splice(currentQuestionIndexInPool, 1);
+                }
+                saveGameState();
+                console.log("[Game] Card removido do pool ativo. Restam:", questionsPool.length);
+                setTimeout(() => {
+                    animateCardToHeader(() => {
+                        updateScoreDisplay();
+                        loadQuestion();
+                    });
+                }, 400);
+            } else {
+                // Leech card: maintain in game until guessed right 2x
+                currentQuestion.dueStep = currentStep + 5;
+                saveGameState();
+                console.log("[Game] Card leech mantido no jogo até 2 acertos. dueStep:", currentQuestion.dueStep);
+                setTimeout(() => {
+                    animateCardToBack(() => {
+                        loadQuestion();
+                    });
+                }, 400);
+            }
+        }
+    } catch (err) {
+        console.error("[Game] Erro fatal em showFeedback:", err);
+        isOpenSubmitting = false;
     }
 }
 
@@ -2642,29 +2815,42 @@ askAiBtn.addEventListener('click', () => { aiChatContainer.classList.add('open')
 closeChatBtn.addEventListener('click', () => aiChatContainer.classList.remove('open'));
 sendChatBtn.addEventListener('click', sendChatMessage);
 chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
-submitBtn.addEventListener('click', handleOpenSubmit);
+submitBtn.addEventListener('click', () => {
+    console.log("[Game] Botão #submit-btn ('Verificar Resposta') clicado.");
+    handleOpenSubmit();
+});
 
 if (flashcardAnswerForm) {
     flashcardAnswerForm.addEventListener('submit', (e) => {
         e.preventDefault();
+        console.log("[Game] Form submetido via Enter.");
         handleOpenSubmit();
     });
-} else {
-    [answerInput, answerInput1, answerInput2].forEach(inp => {
-        inp?.addEventListener('keyup', (e) => { if (e.key === 'Enter') handleOpenSubmit(); });
-    });
 }
+[answerInput, answerInput1, answerInput2].forEach(inp => {
+    inp?.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+            console.log("[Game] Enter detectado no input:", inp.id);
+            handleOpenSubmit();
+        }
+    });
+});
 
 if (answerInput1 && answerInput2) {
     answerInput1.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && answerInput1.value.trim() && !answerInput2.value.trim()) {
             e.preventDefault();
+            console.log("[Game] Enter em answerInput1 focando answerInput2.");
             answerInput2.focus();
         }
     });
 }
 nextQuestionBtn.addEventListener('click', () => {
-    if (isAnimating) return;
+    console.log("[Game] #next-question-btn ('Pular / Próxima Questão') clicado.");
+    if (isAnimating) {
+        console.warn("[Game] Transição bloqueada: animação em andamento.");
+        return;
+    }
     animateCardToBack(() => {
         loadQuestion();
     });
@@ -2715,21 +2901,24 @@ if (questionCard) {
 
 // Keyboard shortcuts for study flow
 document.addEventListener('keydown', (e) => {
-    // Ignore when typing in inputs or textareas
-    const activeEl = document.activeElement;
-    if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
-        return;
-    }
     // Ignore when any modal is open
     const isModalOpen = [editModal, apiModal, instructionsModal, imageZoomModal].some(m => m && !m.classList.contains('hidden'));
     if (isModalOpen) return;
 
-    if (!nextQuestionBtn.classList.contains('hidden') && !isAnimating) {
+    // If next / skip question button is visible and active, advance to next question on Enter / Space
+    if (nextQuestionBtn && !nextQuestionBtn.classList.contains('hidden') && !isAnimating) {
         if (e.key === 'Enter' || e.code === 'Space') {
             e.preventDefault();
+            console.log("[Game] Atalho Enter/Espaço para avançar card após correção.");
             nextQuestionBtn.click();
             return;
         }
+    }
+
+    // Ignore when typing in inputs or textareas during active answering
+    const activeEl = document.activeElement;
+    if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+        return;
     }
 
     if (currentQuestion && currentQuestion.type === 'anki') {

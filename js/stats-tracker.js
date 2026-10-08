@@ -119,15 +119,22 @@ export function initStatsSession(deckTitle, mode = 'normal', totalCards = 0, cur
  */
 export function recordStatsAnswer({ card, isCorrect, rating, timeSpentSeconds, userAnswer }) {
     if (!card) return;
-    const data = getStatsStorage();
-    const now = Date.now();
+    try {
+        let data = getStatsStorage();
+        const now = Date.now();
 
-    if (!data.currentSession) {
-        initStatsSession("Flashcards", "normal", 0, 0);
-    }
+        if (!data.currentSession) {
+            console.log("[StatsTracker] Nenhum currentSession ativo encontrado. Inicializando nova sessão...");
+            initStatsSession("Flashcards", "normal", 0, 0);
+            data = getStatsStorage();
+        }
 
-    const sess = data.currentSession;
-    sess.lastActiveTime = now;
+        const sess = data.currentSession;
+        if (!sess) {
+            console.warn("[StatsTracker] Falha ao recuperar currentSession para registrar resposta.");
+            return;
+        }
+        sess.lastActiveTime = now;
 
     // Time clamping: reasonable 1s - 180s range per card
     const validTime = Math.max(1, Math.min(180, Math.round(timeSpentSeconds || 5)));
@@ -235,6 +242,16 @@ export function recordStatsAnswer({ card, isCorrect, rating, timeSpentSeconds, u
     data.allTime.totalTimeSeconds = (data.allTime.totalTimeSeconds || 0) + validTime;
 
     saveStatsStorage(data);
+        console.log("[StatsTracker] Resposta gravada com sucesso:", {
+            card: (card.description || '').slice(0, 35),
+            isCorrect: !!isCorrect,
+            rating: rating || (isCorrect ? 'correct' : 'incorrect'),
+            timeSeconds: validTime,
+            cardsAnswered: sess.cardsAnswered
+        });
+    } catch (err) {
+        console.error("[StatsTracker] Erro ao gravar estatística da resposta:", err);
+    }
 }
 
 function archiveSessionInternal(data, completed = false) {
