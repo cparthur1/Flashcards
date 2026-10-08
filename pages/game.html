@@ -44,7 +44,7 @@
     class="bg-[var(--md-sys-color-background)] text-[var(--md-sys-color-on-background)] flex items-start sm:items-center justify-center min-h-screen p-4">
 
     <canvas id="background-canvas" class="fixed top-0 left-0 w-full h-full" style="z-index: -1;"></canvas>
-    <canvas id="shockwave-canvas" class="fixed top-0 left-0 w-full h-full pointer-events-none" style="z-index: 25;"></canvas>
+    <div id="shockwave-container" class="fixed inset-0 pointer-events-none overflow-hidden" style="z-index: 25;"></div>
 
     <!-- HAMBURGER MENU BACKDROP (click outside dismiss) -->
     <div id="hamburger-backdrop" class="hidden fixed inset-0 z-[60] bg-transparent"></div>
@@ -382,16 +382,12 @@
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-sm">
                     <a href="stats.html" id="completion-stats-btn"
                         class="m3-btn-expressive m3-btn-filled w-full sm:flex-1 py-3 px-4 font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
-                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
+                        <span class="material-symbols-rounded text-xl">bar_chart</span>
                         <span>Ver estatísticas</span>
                     </a>
                     <button type="button" id="completion-restart-btn"
                         class="m3-btn-expressive m3-btn-tonal w-full sm:flex-1 py-3 px-4 font-bold text-sm sm:text-base flex items-center justify-center gap-2 border border-[var(--md-sys-color-outline-variant)] hover:bg-[var(--md-sys-color-surface-container-highest)]">
-                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
+                        <span class="material-symbols-rounded text-xl">restart_alt</span>
                         <span>Restart</span>
                     </button>
                 </div>

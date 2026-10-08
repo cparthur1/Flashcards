@@ -73,7 +73,8 @@ const completionStatTime = document.getElementById('completion-stat-time');
 const completionStatStreak = document.getElementById('completion-stat-streak');
 const completionStatsBtn = document.getElementById('completion-stats-btn');
 const completionRestartBtn = document.getElementById('completion-restart-btn');
-const shockwaveCanvas = document.getElementById('shockwave-canvas');
+const shockwaveContainer = document.getElementById('shockwave-container');
+const actionButtonsArea = document.getElementById('action-buttons-area');
 
 const correctionOptions = document.getElementById('correction-options');
 const editBtn = document.getElementById('edit-btn');
@@ -397,6 +398,10 @@ function getHeaderScoreTarget() {
 }
 
 function animateCardToBack(callback) {
+    if (questionsPool.length === 0) {
+        if (callback) callback();
+        return;
+    }
     if (isAnimating) {
         if (callback) callback();
         return;
@@ -460,6 +465,10 @@ function animateCardToBack(callback) {
 }
 
 function animateCardToHeader(callback) {
+    if (questionsPool.length === 0) {
+        if (callback) callback();
+        return;
+    }
     if (isAnimating) {
         if (callback) callback();
         return;
@@ -697,128 +706,81 @@ function launchCelebrationParticles(count = 140) {
     startCanvasLoop();
 }
 
-let shockwaveAnimationId = null;
+function cleanShockwaveContainer() {
+    if (shockwaveContainer) {
+        shockwaveContainer.innerHTML = '';
+    }
+}
 
 function playCompletionShockwave() {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion || !shockwaveCanvas || !questionCard) return;
+    if (prefersReducedMotion || !shockwaveContainer || !questionCard) return;
 
-    if (shockwaveAnimationId) {
-        cancelAnimationFrame(shockwaveAnimationId);
-        shockwaveAnimationId = null;
-    }
+    // Reset any ongoing ripple elements
+    cleanShockwaveContainer();
 
-    const shockCtx = shockwaveCanvas.getContext('2d');
-    if (!shockCtx) return;
-
-    // Tactile physical pulse on the question card holder
+    // Subtle tactile physical pulse on the question card holder
     questionCard.classList.remove('card-shockwave-pulse');
     void questionCard.offsetWidth;
     questionCard.classList.add('card-shockwave-pulse');
     setTimeout(() => questionCard.classList.remove('card-shockwave-pulse'), 750);
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    shockwaveCanvas.width = width * dpr;
-    shockwaveCanvas.height = height * dpr;
-    shockCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
     const rect = questionCard.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
+    const cx = Math.round(rect.left + rect.width / 2);
+    const cy = Math.round(rect.top + rect.height / 2);
 
-    // Distance to farthest corner of screen
-    const maxRadius = Math.hypot(
-        Math.max(cx, width - cx),
-        Math.max(cy, height - cy)
+    // Distance from center of card to farthest viewport corner + margin
+    const maxDist = Math.hypot(
+        Math.max(cx, window.innerWidth - cx),
+        Math.max(cy, window.innerHeight - cy)
     ) + 60;
 
-    const duration = 1400; // ms
-    const startTime = performance.now();
+    const diameter = Math.round(maxDist * 2);
 
-    function frame(now) {
-        const elapsed = now - startTime;
-        const progress = Math.min(1, elapsed / duration);
+    // Wave 1: Ethereal translucent emerald & cobalt gradient ring (pure gradient, no solid lines)
+    const wave1 = document.createElement('div');
+    wave1.className = 'completion-ripple-wave';
+    wave1.style.left = `${cx}px`;
+    wave1.style.top = `${cy}px`;
+    wave1.style.width = `${diameter}px`;
+    wave1.style.height = `${diameter}px`;
+    wave1.style.background = 'radial-gradient(circle closest-side, rgba(16, 185, 129, 0) 0%, rgba(16, 185, 129, 0.04) 42%, rgba(16, 185, 129, 0.22) 68%, rgba(37, 99, 235, 0.26) 82%, rgba(59, 130, 246, 0.12) 92%, rgba(37, 99, 235, 0) 100%)';
+    shockwaveContainer.appendChild(wave1);
 
-        shockCtx.clearRect(0, 0, width, height);
+    const anim1 = wave1.animate([
+        { transform: 'translate(-50%, -50%) scale(0.04)', opacity: 0.95 },
+        { transform: 'translate(-50%, -50%) scale(0.48)', opacity: 0.85, offset: 0.38 },
+        { transform: 'translate(-50%, -50%) scale(1.02)', opacity: 0 }
+    ], {
+        duration: 1350,
+        easing: 'cubic-bezier(0.12, 0.80, 0.22, 1)',
+        fill: 'forwards'
+    });
+    anim1.onfinish = () => wave1.remove();
 
-        // Leading Blue / Cobalt shockwave front
-        const pBlue = 1 - Math.pow(1 - progress, 3.2);
-        const rBlue = pBlue * maxRadius;
-        const fadeBlue = Math.pow(1 - progress, 1.2);
-        const strokeBlue = Math.max(3, 16 * (1 - progress * 0.6));
+    // Wave 2: Trailing softer blue-emerald gradient (140ms delay, GPU composited)
+    setTimeout(() => {
+        if (!shockwaveContainer) return;
+        const wave2 = document.createElement('div');
+        wave2.className = 'completion-ripple-wave';
+        wave2.style.left = `${cx}px`;
+        wave2.style.top = `${cy}px`;
+        wave2.style.width = `${diameter}px`;
+        wave2.style.height = `${diameter}px`;
+        wave2.style.background = 'radial-gradient(circle closest-side, rgba(37, 99, 235, 0) 0%, rgba(37, 99, 235, 0.04) 48%, rgba(37, 99, 235, 0.18) 72%, rgba(16, 185, 129, 0.22) 85%, rgba(16, 185, 129, 0.08) 93%, rgba(16, 185, 129, 0) 100%)';
+        shockwaveContainer.appendChild(wave2);
 
-        // Trailing Green / Emerald shockwave front (lagging smoothly behind)
-        const tGreen = Math.max(0, (progress - 0.08) / 0.92);
-        const pGreen = 1 - Math.pow(1 - tGreen, 3.2);
-        const rGreen = pGreen * maxRadius;
-        const fadeGreen = Math.pow(1 - tGreen, 1.2);
-        const strokeGreen = Math.max(3, 14 * (1 - tGreen * 0.6));
-
-        // Luminous radial gradient wash between green and blue
-        if (rGreen > 0 && rBlue > rGreen) {
-            const grad = shockCtx.createRadialGradient(cx, cy, Math.max(0, rGreen - 16), cx, cy, rBlue + 16);
-            grad.addColorStop(0, 'rgba(16, 185, 129, 0)');
-            grad.addColorStop(0.35, `rgba(16, 185, 129, ${0.28 * fadeGreen})`);
-            grad.addColorStop(0.65, `rgba(37, 99, 235, ${0.30 * fadeBlue})`);
-            grad.addColorStop(1, 'rgba(37, 99, 235, 0)');
-
-            shockCtx.beginPath();
-            shockCtx.arc(cx, cy, rBlue + 16, 0, Math.PI * 2);
-            shockCtx.fillStyle = grad;
-            shockCtx.fill();
-        }
-
-        // Green Wave Ring
-        if (rGreen > 0 && fadeGreen > 0.01) {
-            shockCtx.save();
-            shockCtx.beginPath();
-            shockCtx.arc(cx, cy, rGreen, 0, Math.PI * 2);
-            shockCtx.lineWidth = strokeGreen;
-            shockCtx.strokeStyle = `rgba(16, 185, 129, ${0.85 * fadeGreen})`;
-            shockCtx.shadowColor = 'rgba(16, 185, 129, 0.7)';
-            shockCtx.shadowBlur = 18 * fadeGreen;
-            shockCtx.stroke();
-            shockCtx.restore();
-        }
-
-        // Blue Wave Ring
-        if (rBlue > 0 && fadeBlue > 0.01) {
-            shockCtx.save();
-            shockCtx.beginPath();
-            shockCtx.arc(cx, cy, rBlue, 0, Math.PI * 2);
-            shockCtx.lineWidth = strokeBlue;
-            shockCtx.strokeStyle = `rgba(37, 99, 235, ${0.85 * fadeBlue})`;
-            shockCtx.shadowColor = 'rgba(59, 130, 246, 0.8)';
-            shockCtx.shadowBlur = 22 * fadeBlue;
-            shockCtx.stroke();
-            shockCtx.restore();
-        }
-
-        // Secondary Cyan wavefront resonance
-        const tCyan = Math.max(0, (progress - 0.14) / 0.86);
-        if (tCyan > 0) {
-            const rCyan = (1 - Math.pow(1 - tCyan, 3.2)) * maxRadius;
-            const fadeCyan = Math.pow(1 - tCyan, 1.3);
-            shockCtx.save();
-            shockCtx.beginPath();
-            shockCtx.arc(cx, cy, rCyan, 0, Math.PI * 2);
-            shockCtx.lineWidth = Math.max(2, 8 * (1 - tCyan));
-            shockCtx.strokeStyle = `rgba(6, 182, 212, ${0.65 * fadeCyan})`;
-            shockCtx.stroke();
-            shockCtx.restore();
-        }
-
-        if (progress < 1) {
-            shockwaveAnimationId = requestAnimationFrame(frame);
-        } else {
-            shockCtx.clearRect(0, 0, width, height);
-            shockwaveAnimationId = null;
-        }
-    }
-
-    shockwaveAnimationId = requestAnimationFrame(frame);
+        const anim2 = wave2.animate([
+            { transform: 'translate(-50%, -50%) scale(0.04)', opacity: 0.9 },
+            { transform: 'translate(-50%, -50%) scale(0.46)', opacity: 0.75, offset: 0.38 },
+            { transform: 'translate(-50%, -50%) scale(1.02)', opacity: 0 }
+        ], {
+            duration: 1300,
+            easing: 'cubic-bezier(0.12, 0.80, 0.22, 1)',
+            fill: 'forwards'
+        });
+        anim2.onfinish = () => wave2.remove();
+    }, 140);
 }
 
 function resizeCanvas() {
@@ -1345,50 +1307,75 @@ function formatTimeDisplay(totalSeconds) {
 }
 
 function showDeckCompletionScreen() {
-    precomputedNextCard = null;
-    const completedSession = completeCurrentSession();
-    showNotificationPill("Sessão concluída! Parabéns!", "stats.svg");
-    playCompletionShockwave();
-    launchCelebrationParticles(150);
+    try {
+        clearBalls();
+        isAnimating = false;
+        document.getElementById('flying-card-to-header')?.remove();
+        document.getElementById('anim-card-back-clone')?.remove();
+        if (questionCard) {
+            questionCard.style.opacity = '1';
+            questionCard.style.transform = '';
+            questionCard.classList.remove('glow-correct', 'glow-incorrect', 'card-shake');
+        }
+        precomputedNextCard = null;
+        const completedSession = completeCurrentSession();
+        showNotificationPill("Sessão concluída! Parabéns!", "stats.svg");
+        
+        // Silky-smooth translucent gradient shockwave (GPU-composited)
+        playCompletionShockwave();
+        
+        // Lightweight victory confetti with small delay to keep framerates locked at 60fps
+        setTimeout(() => {
+            launchCelebrationParticles(60);
+        }, 320);
 
-    // Hide normal card UI elements
-    deleteCardBtn?.classList.add('hidden');
-    bookmarkCardBtn?.classList.add('hidden');
-    questionImageContainer?.classList.add('hidden');
-    if (questionImage) questionImage.src = '';
-    questionText?.classList.add('hidden');
-    ankiAnswerContainer?.classList.add('hidden');
-    ankiControlsArea?.classList.add('hidden');
-    actionButtonsArea?.classList.add('hidden');
-    openAnswerArea?.classList.add('hidden');
-    openDoubleAnswerArea?.classList.add('hidden');
-    mcAnswerArea?.classList.add('hidden');
-    flashcardAnswerForm?.classList.add('hidden');
+        // Hide normal card UI elements
+        deleteCardBtn?.classList.add('hidden');
+        bookmarkCardBtn?.classList.add('hidden');
+        questionImageContainer?.classList.add('hidden');
+        if (questionImage) questionImage.src = '';
+        questionText?.classList.add('hidden');
+        ankiAnswerContainer?.classList.add('hidden');
+        ankiControlsArea?.classList.add('hidden');
+        actionButtonsArea?.classList.add('hidden');
+        openAnswerArea?.classList.add('hidden');
+        openDoubleAnswerArea?.classList.add('hidden');
+        mcAnswerArea?.classList.add('hidden');
+        flashcardAnswerForm?.classList.add('hidden');
+        correctionOptions?.classList.add('hidden');
 
-    // Populate completion stats
-    if (completionStatCards) {
-        const total = completedSession?.cardsAnswered || allQuestions.filter(isPlayableCard).length;
-        completionStatCards.textContent = total;
-    }
-    if (completionStatAcc) {
-        const acc = completedSession?.accuracy !== undefined ? completedSession.accuracy : 100;
-        completionStatAcc.textContent = `${acc}%`;
-    }
-    if (completionStatTime) {
-        completionStatTime.textContent = formatTimeDisplay(completedSession?.durationSeconds || 0);
-    }
-    if (completionStatStreak) {
-        const streakVal = completedSession?.bestStreak || completedSession?.maxStreak || 0;
-        completionStatStreak.textContent = streakVal;
-    }
-    if (deckCompletionSubtitle) {
-        const dTitle = deckTitle?.textContent || 'deste baralho';
-        deckCompletionSubtitle.textContent = `Todos os cards de "${dTitle}" foram concluídos com sucesso nesta rodada!`;
-    }
+        // Populate completion stats
+        const total = completedSession?.cardsAnswered || (allQuestions ? allQuestions.filter(isPlayableCard).length : 0);
+        if (completionStatCards) {
+            completionStatCards.textContent = total;
+        }
+        if (completionStatAcc) {
+            const acc = completedSession?.accuracy !== undefined ? completedSession.accuracy : 
+                (total > 0 && completedSession?.correctCount !== undefined ? Math.round((completedSession.correctCount / total) * 100) : 100);
+            completionStatAcc.textContent = `${acc}%`;
+        }
+        if (completionStatTime) {
+            completionStatTime.textContent = formatTimeDisplay(completedSession?.durationSeconds || 0);
+        }
+        if (completionStatStreak) {
+            const streakVal = completedSession?.bestStreak || completedSession?.maxStreak || currentStreak || 0;
+            completionStatStreak.textContent = streakVal;
+        }
+        if (deckCompletionSubtitle) {
+            const dTitle = (deckTitle?.textContent || '').trim() || 'deste baralho';
+            deckCompletionSubtitle.textContent = `Todos os cards de "${dTitle}" foram concluídos com sucesso nesta rodada!`;
+        }
 
-    // Show completion card view
-    if (deckCompletionView) {
-        deckCompletionView.classList.remove('hidden');
+        // Unhide completion card holder view
+        if (deckCompletionView) {
+            deckCompletionView.classList.remove('hidden');
+        }
+        questionCard?.classList.remove('hidden');
+    } catch (err) {
+        console.error("[Game] Erro em showDeckCompletionScreen:", err);
+        // Fallback: guarantee view is shown no matter what
+        deckCompletionView?.classList.remove('hidden');
+        questionCard?.classList.remove('hidden');
     }
 }
 
@@ -1406,19 +1393,20 @@ function hideDeckCompletionScreen() {
 
 function restartDeckSession() {
     clearBalls();
-    if (shockwaveAnimationId) {
-        cancelAnimationFrame(shockwaveAnimationId);
-        shockwaveAnimationId = null;
-    }
-    if (shockwaveCanvas) {
-        const shockCtx = shockwaveCanvas.getContext('2d');
-        if (shockCtx) shockCtx.clearRect(0, 0, shockwaveCanvas.width, shockwaveCanvas.height);
-    }
+    cleanShockwaveContainer();
     score = 0;
     currentStreak = 0;
     consecutiveDueCardsCount = 0;
     updateStreakUI(false);
     scoreDisplay.textContent = '0';
+    if (allQuestions && allQuestions.length > 0) {
+        allQuestions.forEach(q => {
+            delete q.dueStep;
+            delete q.correctStreak;
+            delete q.wrongCount;
+            delete q.isBeingCorrected;
+        });
+    }
     if (activeMode === 'exam') {
         let examData = {};
         try { examData = JSON.parse(localStorage.getItem('flashcardsExam')) || {}; } catch (e) {}
@@ -1432,11 +1420,15 @@ function restartDeckSession() {
     precomputedNextCard = null;
     saveGameState();
     updateScoreDisplay();
-    initStatsSession(deckTitle.textContent, activeMode, allQuestions.filter(isPlayableCard).length, 0);
+    initStatsSession(deckTitle?.textContent || 'Flashcards', activeMode, allQuestions.filter(isPlayableCard).length, 0);
     hideDeckCompletionScreen();
     loadQuestion();
     showNotificationPill("Baralho reiniciado!", "reset.svg");
 }
+
+// Expose completion testing helpers globally
+window.testDeckCompletion = showDeckCompletionScreen;
+window.restartDeckSession = restartDeckSession;
 
 // --- CORE GAME LOGIC ---
 function loadQuestion() {
@@ -1538,7 +1530,6 @@ function loadQuestion() {
     if (ankiAnswerContainer) ankiAnswerContainer.classList.add('hidden');
     if (ankiControlsArea) ankiControlsArea.classList.add('hidden');
 
-    const actionButtonsArea = document.getElementById('action-buttons-area');
     if (actionButtonsArea) actionButtonsArea.classList.remove('hidden');
     deleteCardBtn.classList.remove('hidden');
 
@@ -1674,9 +1665,12 @@ function handleAnkiRating(rating) {
     }
 
     if (rating === 'easy') {
-        createBall(true);
+        const isLastCard = questionsPool.length === 1 && questionsPool.includes(currentQuestion);
+        if (!isLastCard) {
+            createBall(true);
+            questionCard.classList.add('glow-correct');
+        }
         triggerHaptic('correct');
-        questionCard.classList.add('glow-correct');
 
         currentQuestion.correctStreak = (currentQuestion.correctStreak || 0) + 1;
         const totalWrongs = currentQuestion.wrongCount || 0;
@@ -1693,6 +1687,16 @@ function handleAnkiRating(rating) {
             }
             saveGameState();
             console.log("[Anki] Card removido do deck (acerto fácil). Restam:", questionsPool.length);
+
+            // On the last card of deck, skip normal animations and play end game directly!
+            if (questionsPool.length === 0) {
+                clearBalls();
+                questionCard.classList.remove('glow-correct', 'glow-incorrect', 'card-shake');
+                updateScoreDisplay();
+                showDeckCompletionScreen();
+                return;
+            }
+
             setTimeout(() => {
                 animateCardToHeader(() => {
                     updateScoreDisplay();
@@ -2085,8 +2089,11 @@ function showFeedback(isCorrect, element) {
             console.error("[Game] Erro ao registrar estatística (não bloqueante):", statErr);
         }
 
-        const ballIdx = createBall(isCorrect);
-        questionCard.classList.add(isCorrect ? 'glow-correct' : 'glow-incorrect');
+        const isLastCard = isCorrect && (questionsPool.length === 1 && questionsPool.includes(currentQuestion));
+        const ballIdx = !isLastCard ? createBall(isCorrect) : null;
+        if (!isLastCard) {
+            questionCard.classList.add(isCorrect ? 'glow-correct' : 'glow-incorrect');
+        }
 
         if (isCorrect) {
             triggerHaptic('correct');
@@ -2191,6 +2198,16 @@ function showFeedback(isCorrect, element) {
                 }
                 saveGameState();
                 console.log("[Game] Card removido do pool ativo. Restam:", questionsPool.length);
+
+                // On the last card of deck, skip normal animations and play end game directly!
+                if (questionsPool.length === 0) {
+                    clearBalls();
+                    questionCard.classList.remove('glow-correct', 'glow-incorrect', 'card-shake');
+                    updateScoreDisplay();
+                    showDeckCompletionScreen();
+                    return;
+                }
+
                 setTimeout(() => {
                     animateCardToHeader(() => {
                         updateScoreDisplay();
@@ -2488,6 +2505,16 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
 
                 triggerHaptic('correct');
                 questionCard.classList.remove('glow-incorrect', 'card-shake');
+
+                // On the last card of deck, skip normal animations and play end game directly!
+                if (shouldRemove && questionsPool.length === 0) {
+                    clearBalls();
+                    questionCard.classList.remove('glow-correct', 'glow-incorrect', 'card-shake');
+                    updateScoreDisplay();
+                    showDeckCompletionScreen();
+                    return;
+                }
+
                 questionCard.classList.add('glow-correct');
                 setTimeout(() => {
                     if (shouldRemove) {
@@ -2505,7 +2532,8 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
                 updateScoreDisplay();
                 questionsLeftDisplay.textContent = questionsPool.length;
                 if (questionsPool.length === 0) {
-                    loadQuestion();
+                    clearBalls();
+                    showDeckCompletionScreen();
                 }
             }
         } else if (evalData) {
@@ -3107,7 +3135,8 @@ if (restartGameBtn) {
 }
 
 if (completionRestartBtn) {
-    completionRestartBtn.addEventListener('click', () => {
+    completionRestartBtn.addEventListener('click', (e) => {
+        if (e) e.preventDefault();
         restartDeckSession();
     });
 }
@@ -3266,6 +3295,11 @@ nextQuestionBtn.addEventListener('click', () => {
         console.warn("[Game] Transição bloqueada: animação em andamento.");
         return;
     }
+    if (questionsPool.length === 0) {
+        clearBalls();
+        showDeckCompletionScreen();
+        return;
+    }
     animateCardToBack(() => {
         loadQuestion();
     });
@@ -3275,7 +3309,14 @@ const handleDelete = () => {
     if (!confirm("Excluir?")) return;
     allQuestions = allQuestions.filter(q => q !== currentQuestion);
     questionsPool.splice(currentQuestionIndexInPool, 1);
-    saveGameState(); loadQuestion();
+    saveGameState();
+    if (questionsPool.length === 0) {
+        clearBalls();
+        updateScoreDisplay();
+        showDeckCompletionScreen();
+        return;
+    }
+    loadQuestion();
 };
 deleteCardBtn.addEventListener('click', handleDelete);
 deleteCorrectionBtn.addEventListener('click', handleDelete);

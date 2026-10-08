@@ -2331,6 +2331,7 @@ mark.card-hl-purple {
     .m3-fade-through-exit,
     .m3-dialog-enter,
     .card-shockwave-pulse,
+    .completion-ripple-wave,
     ::view-transition-group(*),
     ::view-transition-old(*),
     ::view-transition-new(*) {
@@ -2349,6 +2350,15 @@ mark.card-hl-purple {
 
 .card-shockwave-pulse {
     animation: cardShockwavePulse 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Deck Completion Translucent GPU-Accelerated Ripple Waves */
+.completion-ripple-wave {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    will-change: transform, opacity;
+    transform-origin: center center;
 }
 
 
