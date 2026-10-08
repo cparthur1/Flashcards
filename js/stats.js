@@ -24,6 +24,17 @@ function getActiveStorageKey() {
     return 'flashcardsSave';
 }
 
+function getStoredGameState() {
+    try {
+        const storageKey = getActiveStorageKey();
+        const raw = localStorage.getItem(storageKey);
+        return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+        console.warn("Erro ao ler gameState do localStorage:", e);
+        return {};
+    }
+}
+
 // Tabs
 const tabBtnCurrent = document.getElementById('tab-btn-current');
 const tabBtnHistory = document.getElementById('tab-btn-history');
@@ -242,8 +253,7 @@ function renderAllStats(options = {}) {
     const isLiveUpdate = Boolean(options.isLiveUpdate);
     const statsData = getStatsStorage();
     const activeMode = localStorage.getItem('flashcardsActiveMode') || 'normal';
-    const storageKey = getActiveStorageKey();
-    const gameState = JSON.parse(localStorage.getItem(storageKey)) || {};
+    const gameState = getStoredGameState();
 
     const deckTitle = gameState.deckTitle || (activeMode === 'notebook' ? 'Caderno' : (activeMode === 'exam' ? 'Semana de Provas' : 'Flashcards'));
     if (deckBadge && deckBadge.textContent !== deckTitle) {
@@ -1063,7 +1073,6 @@ function renderAiSection(gameState, statsData, isLiveUpdate = false) {
             triggerAiCategorization(gameState, statsData);
         });
         return;
-    }
 
     // Case 4: Render Categorized Dashboard (fully persistent, instant from storage)
     const { subjectsStats, topicsStats } = computeAiStats({
@@ -1506,8 +1515,7 @@ modalSaveApiKeyBtn?.addEventListener('click', async () => {
     await setGeminiApiKey(key, remember);
     closeAiModal();
     showStatsPill(remember ? "Chave de API salva com segurança no dispositivo!" : "Chave de API salva!", true);
-    const storageKey = getActiveStorageKey();
-    const gameState = JSON.parse(localStorage.getItem(storageKey)) || {};
+    const gameState = getStoredGameState();
     const statsData = getStatsStorage();
     triggerAiCategorization(gameState, statsData);
 });
@@ -1517,8 +1525,7 @@ modalDisableAiBtn?.addEventListener('click', async () => {
     if (modalApiKeyRemember) modalApiKeyRemember.checked = false;
     closeAiModal();
     showStatsPill("Recursos de IA desativados.", false);
-    const storageKey = getActiveStorageKey();
-    const gameState = JSON.parse(localStorage.getItem(storageKey)) || {};
+    const gameState = getStoredGameState();
     const statsData = getStatsStorage();
     renderAiSection(gameState, statsData);
 });

@@ -45,10 +45,12 @@ export function calculateSimilarity(s1, s2) {
  * Shuffles an array in place.
  */
 export function shuffleArray(array) {
+    if (!Array.isArray(array)) return [];
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
     }
+    return array;
 }
 /**
  * Retries a function with exponential backoff.
