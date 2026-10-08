@@ -193,6 +193,8 @@ Para permitir diagnósticos rápidos de problemas relatados por usuários ou tes
 ### 🔴 Regra 5: Arquitetura Orientada a Eventos
 - Evite criar loops contínuos baseados em `setInterval` ou `requestAnimationFrame` que rodem em segundo plano sem necessidade. Prefira disparadores orientados a eventos (`addEventListener`, `MutationObserver`, `IntersectionObserver`).
 
+### 🔴 Regra 6: 
+- Evite usar emojis. Use os icones do https://fonts.google.com/icons ou crie o vector.
 ---
 
 ## 5. Estrutura de Arquivos Principais
