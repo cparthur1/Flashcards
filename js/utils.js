@@ -23,25 +23,30 @@ export function normalizeString(str) {
 export function calculateSimilarity(s1, s2) {
     const str1 = String(s1 ?? '');
     const str2 = String(s2 ?? '');
-    let longer = str1, shorter = str2;
-    if (str1.length < str2.length) { longer = str2; shorter = str1; }
-    const longerLength = longer.length;
-    if (longerLength === 0) return 1.0;
+    if (str1 === str2) return 1.0;
 
-    const distance = (s1, s2) => {
-        const track = Array(s2.length + 1).fill(null).map(() => Array(s1.length + 1).fill(null));
-        for (let i = 0; i <= s1.length; i++) track[0][i] = i;
-        for (let j = 0; j <= s2.length; j++) track[j][0] = j;
-        for (let j = 1; j <= s2.length; j++) {
-            for (let i = 1; i <= s1.length; i++) {
-                const indicator = s1[i - 1] === s2[j - 1] ? 0 : 1;
-                track[j][i] = Math.min(track[j][i - 1] + 1, track[j - 1][i] + 1, track[j - 1][i - 1] + indicator);
-            }
+    let longer = str1.length >= str2.length ? str1 : str2;
+    let shorter = str1.length < str2.length ? str1 : str2;
+    const lLen = longer.length;
+    const sLen = shorter.length;
+    if (lLen === 0) return 1.0;
+
+    const prev = new Int32Array(sLen + 1);
+    const curr = new Int32Array(sLen + 1);
+
+    for (let j = 0; j <= sLen; j++) prev[j] = j;
+
+    for (let i = 1; i <= lLen; i++) {
+        curr[0] = i;
+        const code1 = longer.charCodeAt(i - 1);
+        for (let j = 1; j <= sLen; j++) {
+            const indicator = code1 === shorter.charCodeAt(j - 1) ? 0 : 1;
+            curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + indicator);
         }
-        return track[s2.length][s1.length];
-    };
+        prev.set(curr);
+    }
 
-    return (longerLength - distance(longer, shorter)) / longerLength;
+    return (lLen - prev[sLen]) / lLen;
 }
 
 /**

@@ -379,6 +379,16 @@ export function computeAiStats({
 
     const cardTopicsBySignature = categories.cardTopicsBySignature || {};
 
+    // Optimization: Pre-normalize answersLog and strugglingCards once (O(M) instead of O(N * M) repetitive regexes)
+    const answersLogNormalized = (currentSession?.answersLog || []).map(e => ({
+        entry: e,
+        key: (e.question || '').replace(/<[^>]*>/g, '').trim().toLowerCase().slice(0, 40)
+    })).filter(item => item.key.length > 0);
+
+    const strugglingKeys = Object.values(currentSession?.strugglingCards || {}).map(sc =>
+        (sc.description || '').replace(/<[^>]*>/g, '').trim().toLowerCase().slice(0, 40)
+    ).filter(k => k.length > 0);
+
     const topicsMap = {};
     (allQuestions || []).forEach((card, idx) => {
         const sig = getCardSignature(card);
@@ -403,25 +413,24 @@ export function computeAiStats({
         }
         topicsMap[topic].cardsCount++;
 
-        // Check if this card was answered in currentSession answersLog
-        const cardDesc = (card.description || '').replace(/<[^>]*>/g, '').trim().toLowerCase();
-        const answersLog = currentSession?.answersLog || [];
-        const logEntry = answersLog.find(e => {
-            const entryQ = (e.question || '').replace(/<[^>]*>/g, '').trim().toLowerCase();
-            return entryQ.includes(cardDesc.slice(0, 40)) || cardDesc.includes(entryQ.slice(0, 40));
-        });
+        // Fast lookup against pre-normalized answersLog
+        const cardDesc = (card.description || '').replace(/<[^>]*>/g, '').trim().toLowerCase().slice(0, 40);
+        let logEntry = null;
+        if (cardDesc) {
+            const found = answersLogNormalized.find(item => item.key === cardDesc || item.key.includes(cardDesc) || cardDesc.includes(item.key));
+            if (found) logEntry = found.entry;
+        }
 
         if (logEntry) {
             topicsMap[topic].answeredCount++;
             if (logEntry.isCorrect) topicsMap[topic].correctCount++;
         }
 
-        // Check strugglingCards
-        const struggling = currentSession?.strugglingCards || {};
-        const isStruggling = Object.values(struggling).some(sc => {
-            const scDesc = (sc.description || '').replace(/<[^>]*>/g, '').trim().toLowerCase();
-            return scDesc.includes(cardDesc.slice(0, 40)) || cardDesc.includes(scDesc.slice(0, 40));
-        });
+        // Fast lookup against pre-normalized strugglingKeys
+        let isStruggling = false;
+        if (cardDesc && strugglingKeys.length > 0) {
+            isStruggling = strugglingKeys.some(sk => sk === cardDesc || sk.includes(cardDesc) || cardDesc.includes(sk));
+        }
 
         if (isStruggling) {
             topicsMap[topic].hasStruggling = true;

@@ -608,12 +608,16 @@ function renderTimelineFlow(sess) {
 
         const dot = document.createElement('div');
         const isOk = entry.isCorrect;
+        const isAiCorrected = entry.rating === 'ai_corrected';
         const isAnkiHard = entry.rating === 'hard';
         const isAnkiEasy = entry.rating === 'easy';
 
         let badgeColor = isOk ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white';
         let label = isOk ? '✓' : '✕';
-        if (isAnkiHard) {
+        if (isAiCorrected) {
+            badgeColor = 'bg-amber-400 text-amber-950';
+            label = '✦';
+        } else if (isAnkiHard) {
             badgeColor = 'bg-orange-500 text-white';
             label = '⚡';
         } else if (isAnkiEasy) {
@@ -630,7 +634,7 @@ function renderTimelineFlow(sess) {
             <span>${label}</span>
             ${isLatest ? `<span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white animate-pulse" title="Mais recente"></span>` : ''}
             <!-- Tooltip -->
-            <div class="hidden group-hover:block absolute bottom-full mb-2 z-30 p-2.5 bg-gray-900/95 text-white text-[11px] rounded-xl shadow-xl w-52 text-left backdrop-blur-sm pointer-events-none -left-20">
+            <div class="hidden group-hover:block absolute bottom-full mb-2 z-30 p-2.5 bg-gray-900/95 text-white text-[11px] rounded-xl shadow-xl w-56 text-left backdrop-blur-sm pointer-events-none -left-20">
                 <div class="flex items-center justify-between mb-1 pb-1 border-b border-gray-700">
                     <span class="font-bold text-gray-200">#${originalCardNum}</span>
                     <span class="text-[10px] font-semibold ${isLatest ? 'text-blue-400' : 'text-gray-400'}">
@@ -640,9 +644,10 @@ function renderTimelineFlow(sess) {
                 <p class="text-gray-200 truncate mb-1" title="${entry.question}">${entry.question}</p>
                 <div class="flex items-center justify-between text-gray-400 text-[10px]">
                     <span>Tempo: <b>${entry.timeSeconds}s</b></span>
-                    <span>Classificação: <b>${entry.rating}</b></span>
+                    <span>Status: <b>${isAiCorrected ? 'Corrigido por IA ✦' : entry.rating}</b></span>
                 </div>
                 ${entry.userAnswer ? `<p class="text-blue-300 text-[10px] truncate mt-1 pt-1 border-t border-gray-800">Digitou: ${entry.userAnswer}</p>` : ''}
+                ${entry.aiExplanation ? `<p class="text-amber-300 text-[10px] line-clamp-2 mt-1 pt-1 border-t border-gray-800" title="${entry.aiExplanation}">IA: ${entry.aiExplanation}</p>` : ''}
             </div>
         `;
         timelineStrip.appendChild(dot);

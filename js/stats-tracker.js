@@ -254,6 +254,107 @@ export function recordStatsAnswer({ card, isCorrect, rating, timeSpentSeconds, u
     }
 }
 
+/**
+ * Updates stats when an answer previously evaluated as incorrect is accepted by the AI.
+ */
+export function recordStatsAiCorrection({ card, explanation, currentStreak }) {
+    if (!card) return;
+    try {
+        const data = getStatsStorage();
+        const sess = data.currentSession;
+        if (!sess) {
+            console.warn("[StatsTracker] Impossível aplicar correção de IA: currentSession inexistente.");
+            return;
+        }
+
+        const now = Date.now();
+        sess.lastActiveTime = now;
+
+        // 1. Inverte a contagem de erro para acerto
+        sess.incorrectCount = Math.max(0, (sess.incorrectCount || 0) - 1);
+        sess.correctCount = (sess.correctCount || 0) + 1;
+
+        // 2. Recalcula acurácia da sessão
+        sess.accuracy = sess.cardsAnswered > 0
+            ? Math.round((sess.correctCount / sess.cardsAnswered) * 100)
+            : 100;
+
+        // 3. Atualiza streak da sessão
+        if (typeof currentStreak === 'number') {
+            sess.currentStreak = currentStreak;
+        } else {
+            sess.currentStreak = (sess.currentStreak || 0) + 1;
+        }
+        if (sess.currentStreak > (sess.bestStreak || 0)) {
+            sess.bestStreak = sess.currentStreak;
+        }
+        if (sess.bestStreak > (data.allTime.bestStreakAllTime || 0)) {
+            data.allTime.bestStreakAllTime = sess.bestStreak;
+        }
+
+        // 4. Atualiza acertos no tipo da questão
+        const typeKey = card.type === 'anki' ? 'anki'
+            : card.type === 'multiple_choice' ? 'multiple_choice'
+            : card.type === 'open_double' ? 'open_double'
+            : card.type === 'fill' ? 'fill'
+            : 'open';
+
+        if (sess.byType && sess.byType[typeKey]) {
+            sess.byType[typeKey].correct = (sess.byType[typeKey].correct || 0) + 1;
+        }
+
+        // 5. Atualiza o registro em answersLog
+        if (sess.answersLog && sess.answersLog.length > 0) {
+            const cardDescShort = (card.description || '').slice(0, 120);
+            let targetLog = null;
+            for (let i = sess.answersLog.length - 1; i >= 0; i--) {
+                const entry = sess.answersLog[i];
+                if (entry.question === cardDescShort || (entry.question && card.description && card.description.includes(entry.question))) {
+                    targetLog = entry;
+                    break;
+                }
+            }
+            if (!targetLog) {
+                targetLog = sess.answersLog[sess.answersLog.length - 1];
+            }
+
+            if (targetLog) {
+                targetLog.isCorrect = true;
+                targetLog.rating = 'ai_corrected';
+                targetLog.aiExplanation = explanation || 'Aceito pela IA como resposta válida';
+            }
+        }
+
+        // 6. Atualiza strugglingCards (remove ou decrementa)
+        if (sess.strugglingCards) {
+            const cardKey = card.description || '';
+            if (sess.strugglingCards[cardKey]) {
+                const sc = sess.strugglingCards[cardKey];
+                sc.incorrectCount = Math.max(0, (sc.incorrectCount || 1) - 1);
+                sc.correctCount = (sc.correctCount || 0) + 1;
+                sc.lastRating = 'ai_corrected';
+                if (sc.incorrectCount === 0) {
+                    delete sess.strugglingCards[cardKey];
+                }
+            }
+        }
+
+        // 7. Atualiza total histórico acumulado
+        data.allTime.totalCorrect = (data.allTime.totalCorrect || 0) + 1;
+
+        saveStatsStorage(data);
+        console.log("[StatsTracker] Correção da IA registrada com sucesso nas estatísticas:", {
+            card: (card.description || '').slice(0, 35),
+            correctCount: sess.correctCount,
+            incorrectCount: sess.incorrectCount,
+            accuracy: sess.accuracy + '%',
+            streak: sess.currentStreak
+        });
+    } catch (err) {
+        console.error("[StatsTracker] Erro ao registrar correção da IA:", err);
+    }
+}
+
 function archiveSessionInternal(data, completed = false) {
     if (!data.currentSession || data.currentSession.cardsAnswered === 0) {
         data.currentSession = null;

@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { normalizeString, calculateSimilarity, shuffleArray, callWithRetry, checkAndResetModelFallback, ROUTES, renderMathAndMarkdown } from './utils.js';
 import { initTransfer } from './transfer.js';
-import { initStatsSession, recordStatsAnswer, archiveCurrentSession } from './stats-tracker.js';
+import { initStatsSession, recordStatsAnswer, recordStatsAiCorrection, archiveCurrentSession } from './stats-tracker.js';
 import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
 
 // --- DOM ELEMENTS ---
@@ -1932,7 +1932,10 @@ function updateFeedbackText() {
     }
 }
 
-function saveGameState() {
+let saveStateTimeout = null;
+
+function executeSaveGameState() {
+    saveStateTimeout = null;
     try {
         if (activeMode === 'notebook') {
             localStorage.setItem('flashcardsNotebook', JSON.stringify({
@@ -1961,6 +1964,36 @@ function saveGameState() {
         console.error("Erro ao salvar estado do jogo no localStorage:", e);
     }
 }
+
+function saveGameState(immediate = false) {
+    if (immediate) {
+        if (saveStateTimeout) {
+            clearTimeout(saveStateTimeout);
+            saveStateTimeout = null;
+        }
+        executeSaveGameState();
+        return;
+    }
+
+    if (!saveStateTimeout) {
+        saveStateTimeout = setTimeout(() => {
+            executeSaveGameState();
+        }, 80);
+    }
+}
+
+window.addEventListener('beforeunload', () => {
+    if (saveStateTimeout) {
+        clearTimeout(saveStateTimeout);
+        executeSaveGameState();
+    }
+});
+window.addEventListener('pagehide', () => {
+    if (saveStateTimeout) {
+        clearTimeout(saveStateTimeout);
+        executeSaveGameState();
+    }
+});
 
 function updateScoreDisplay() {
     const scoreVal = document.getElementById('score');
@@ -2073,32 +2106,68 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
             console.log("Agente corrigiu a resposta (ACEITA):", evalData.justificativa);
 
             // Sucesso! A IA corrigiu o erro.
-            balls[ballIdx].color = 'rgba(250, 204, 21, 0.8)'; // Amarelo/Dourado para correção IA
-            score++;
+            if (balls[ballIdx]) balls[ballIdx].color = 'rgba(250, 204, 21, 0.8)'; // Amarelo/Dourado para correção IA
             restoreStreakAfterAiCorrection();
 
-            // Remove da pool se ainda for a mesma questão e salva
-            const idx = questionsPool.findIndex(card => card.description === questionObj.description);
-            if (idx > -1) {
-                questionsPool.splice(idx, 1);
+            // Reverte a penalização inicial e ajusta métricas do cartão
+            questionObj.wrongCount = Math.max(0, (questionObj.wrongCount || 1) - 1);
+            questionObj.correctStreak = (questionObj.correctStreak || 0) + 1;
+
+            const totalWrongs = questionObj.wrongCount || 0;
+            const isLeech = totalWrongs > 4;
+            const shouldRemove = !isLeech || questionObj.correctStreak >= 2;
+
+            // Registra correção da IA no subsistema de estatísticas
+            recordStatsAiCorrection({
+                card: questionObj,
+                explanation: evalData.justificativa,
+                currentStreak: currentStreak
+            });
+
+            if (shouldRemove) {
+                score++;
+                // Remove da pool se ainda for a mesma questão e salva
+                const idx = questionsPool.findIndex(card => card.description === questionObj.description);
+                if (idx > -1) {
+                    questionsPool.splice(idx, 1);
+                    saveGameState();
+                }
+            } else {
+                // Se for leech card precisando de 2 acertos consecutivos, reagenda com gap
+                questionObj.dueStep = currentStep + 5;
                 saveGameState();
+                console.log("[Algorithm] Card leech corrigido por IA mantido no deck para 2º acerto consecutivo.");
             }
 
             // Somente aplica feedback visual e carrega nova questão se o usuário ainda estiver na mesma questão
             if (questionObj === currentQuestion) {
+                if (correctionOptions) {
+                    correctionOptions.classList.add('hidden');
+                    correctionOptions.classList.remove('flex');
+                }
+                if (nextQuestionBtn) nextQuestionBtn.classList.add('hidden');
+
                 triggerHaptic('correct');
                 questionCard.classList.remove('glow-incorrect', 'card-shake');
                 questionCard.classList.add('glow-correct');
                 setTimeout(() => {
-                    animateCardToHeader(() => {
+                    if (shouldRemove) {
+                        animateCardToHeader(() => {
+                            updateScoreDisplay();
+                            loadQuestion();
+                        });
+                    } else {
                         updateScoreDisplay();
                         loadQuestion();
-                    });
+                    }
                 }, 400);
             } else {
                 // Se o usuário já passou de fase, apenas atualizamos o contador visual
                 updateScoreDisplay();
                 questionsLeftDisplay.textContent = questionsPool.length;
+                if (questionsPool.length === 0) {
+                    loadQuestion();
+                }
             }
         } else if (evalData) {
             console.log("Agente manteve a resposta como incorreta (REJEITADA):", evalData.justificativa);
@@ -2954,13 +3023,17 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Gamepad API controller polling
+// Gamepad API controller polling (Event-driven to preserve battery/CPU)
 let lastGamepadButtonState = {};
+let gamepadRafId = null;
 
 function pollGamepad() {
     const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+    let hasActiveGamepad = false;
+
     for (const gp of gamepads) {
         if (!gp) continue;
+        hasActiveGamepad = true;
         
         const isPressed = (btnIndex) => {
             const b = gp.buttons[btnIndex];
@@ -3006,8 +3079,41 @@ function pollGamepad() {
             }
         }
     }
-    requestAnimationFrame(pollGamepad);
+
+    if (hasActiveGamepad) {
+        gamepadRafId = requestAnimationFrame(pollGamepad);
+    } else {
+        stopGamepadLoop();
+    }
 }
+
+function startGamepadLoop() {
+    if (!gamepadRafId) {
+        console.log("[Gamepad] Controle físico detectado. Polling iniciado.");
+        gamepadRafId = requestAnimationFrame(pollGamepad);
+    }
+}
+
+function stopGamepadLoop() {
+    if (gamepadRafId) {
+        cancelAnimationFrame(gamepadRafId);
+        gamepadRafId = null;
+        console.log("[Gamepad] Nenhum controle físico ativo. Polling pausado para poupar bateria e CPU.");
+    }
+}
+
+window.addEventListener('gamepadconnected', (e) => {
+    console.log("[Gamepad] Conectado:", e.gamepad.id);
+    startGamepadLoop();
+});
+
+window.addEventListener('gamepaddisconnected', (e) => {
+    console.log("[Gamepad] Desconectado:", e.gamepad.id);
+    const active = (navigator.getGamepads ? navigator.getGamepads() : []).filter(Boolean);
+    if (active.length === 0) {
+        stopGamepadLoop();
+    }
+});
 
 // --- IMAGE LIGHTBOX ZOOM ---
 if (questionImage && imageZoomModal && zoomedImage) {
@@ -3735,7 +3841,10 @@ async function initGame() {
     initializeAi();
     updateAiUI();
     updateHapticUI();
-    requestAnimationFrame(pollGamepad);
+    const initialGamepads = (navigator.getGamepads ? navigator.getGamepads() : []).filter(Boolean);
+    if (initialGamepads.length > 0) {
+        startGamepadLoop();
+    }
     initMobileFocusHelpers();
 }
 
