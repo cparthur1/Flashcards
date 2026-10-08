@@ -815,10 +815,17 @@ function renderAiDashboard(currentDeckTitle, subjectsStats, topicsStats, gameSta
                     <div>
                         <div class="flex items-center gap-2">
                             <h2 class="text-sm font-bold text-gray-900">Categorização Inteligente</h2>
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 flex items-center gap-1">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                Flash-Lite Ativo
-                            </span>
+                            ${getGeminiApiKey() ? `
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    Flash-Lite Ativo
+                                </span>
+                            ` : `
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 flex items-center gap-1" title="Categorias carregadas do baralho">
+                                    <span>🏷️</span>
+                                    Categorias Integradas
+                                </span>
+                            `}
                         </div>
                         <p class="text-xs text-gray-500">Classificação semântica em categorias consolidadas</p>
                     </div>
@@ -911,6 +918,28 @@ function renderAiSection(gameState, statsData, isLiveUpdate = false) {
     const currentDeckTitle = gameState.deckTitle || (localStorage.getItem('flashcardsActiveMode') === 'notebook' ? 'Caderno' : (localStorage.getItem('flashcardsActiveMode') === 'exam' ? 'Semana de Provas' : 'Flashcards'));
     const categories = getStoredAiCategories();
 
+    // Check if the deck/cards are already categorized (either in JSON cards or in stored categories)
+    const alreadyCategorized = isDeckCategorized({
+        allQuestions: gameState.allQuestions || [],
+        currentDeckTitle,
+        categories
+    });
+
+    // If ALREADY CATEGORIZED: render the dashboard immediately, even if user has NO API key!
+    if (alreadyCategorized) {
+        const { subjectsStats, topicsStats } = computeAiStats({
+            categories,
+            currentDeckTitle,
+            allQuestions: gameState.allQuestions || [],
+            currentSession: statsData.currentSession,
+            history: statsData.history
+        });
+
+        renderAiDashboard(currentDeckTitle, subjectsStats, topicsStats, gameState, statsData);
+        return;
+    }
+
+    // IF NOT CATEGORIZED YET:
     // Case 1: AI is NOT activated -> Render prompt with API Key input
     if (!apiKey) {
         if (document.getElementById('ai-stats-key-input')) return;
@@ -928,7 +957,7 @@ function renderAiSection(gameState, statsData, isLiveUpdate = false) {
                         </div>
                         <h2 class="text-base sm:text-lg font-bold text-gray-900">Desempenho por Matérias & Assuntos (IA)</h2>
                         <p class="text-xs text-gray-600 max-w-xl leading-relaxed">
-                            Descubra em quais matérias e assuntos você tem maior domínio ou precisa revisar. O Gemini agrupará seus baralhos e temas com o menor número possível de categorias.
+                            Este baralho ainda não possui tópicos salvos. Insira sua Gemini API Key para categorizar os cards com inteligência artificial.
                         </p>
                     </div>
 
@@ -948,7 +977,7 @@ function renderAiSection(gameState, statsData, isLiveUpdate = false) {
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
-                            <span>Gerar estatísticas de IA</span>
+                            <span>Categorizar com IA</span>
                         </button>
                     </div>
                 </div>
@@ -983,16 +1012,8 @@ function renderAiSection(gameState, statsData, isLiveUpdate = false) {
         return;
     }
 
-    // Case 3: Persistent check - verify if current deck/cards are already categorized
-    const alreadyCategorized = isDeckCategorized({
-        allQuestions: gameState.allQuestions || [],
-        currentDeckTitle,
-        categories
-    });
-
-    if (!alreadyCategorized) {
-        // If background live update, never trigger network calls
-        if (isLiveUpdate) return;
+    // Case 3: Deck not yet categorized, but user has API key
+    if (isLiveUpdate) return;
 
         aiStatsSection.innerHTML = `
             <div class="bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-transparent p-5 sm:p-6 rounded-2xl border border-purple-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1081,10 +1102,16 @@ async function triggerAiCategorization(gameState, statsData) {
                 const parsedStored = JSON.parse(rawStored);
                 if (parsedStored.allQuestions) {
                     const sigMap = categorizedResult.updatedCategories?.cardTopicsBySignature || {};
+                    const deckSubj = categorizedResult.updatedCategories?.deckSubjects?.[currentDeckTitle];
                     parsedStored.allQuestions.forEach(q => {
                         const sig = getCardSignature(q);
                         if (sig && sigMap[sig]) {
                             q.aiTopic = sigMap[sig];
+                            q.topic = sigMap[sig];
+                        }
+                        if (deckSubj) {
+                            q.aiSubject = deckSubj;
+                            q.subject = deckSubj;
                         }
                     });
                     localStorage.setItem(storageKey, JSON.stringify(parsedStored));

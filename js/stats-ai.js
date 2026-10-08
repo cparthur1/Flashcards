@@ -82,14 +82,14 @@ export function getCardSignature(card) {
  * Checks if a deck or its cards are already categorized, avoiding redundant AI requests.
  */
 export function isDeckCategorized({ allQuestions, currentDeckTitle, categories }) {
-    if (!categories) return false;
-
     const playable = (allQuestions || []).filter(q => q.type !== 'divisor' && q.type !== 'divider' && q.type !== 'note');
     if (playable.length === 0) return true;
 
-    // 1. Check if any playable card has an aiTopic property
-    const hasCardProp = playable.some(c => Boolean(c.aiTopic));
+    // 1. Check if any playable card has topic, aiTopic, subject, or aiSubject directly in its data
+    const hasCardProp = playable.some(c => Boolean(c.topic || c.aiTopic || c.subject || c.aiSubject));
     if (hasCardProp) return true;
+
+    if (!categories) return false;
 
     // 2. Check if any card signature is mapped in persistent cardTopicsBySignature
     if (categories.cardTopicsBySignature) {
@@ -301,13 +301,14 @@ export function computeAiStats({
     history
 }) {
     if (!categories) {
-        return { subjectsStats: [], topicsStats: [] };
+        categories = { knownSubjects: [], deckSubjectMap: {}, cardTopicsByDeck: {}, cardTopicsBySignature: {} };
     }
 
-    const deckSubjectMap = categories.deckSubjectMap || {};
-    // Fallback if current deck is unmapped
+    const deckSubjectMap = { ...(categories.deckSubjectMap || {}) };
+    // Check if cards have a subject defined directly
     if (currentDeckTitle && !deckSubjectMap[currentDeckTitle]) {
-        deckSubjectMap[currentDeckTitle] = "Geral";
+        const cardWithSubject = (allQuestions || []).find(c => c && (c.subject || c.aiSubject));
+        deckSubjectMap[currentDeckTitle] = cardWithSubject ? (cardWithSubject.subject || cardWithSubject.aiSubject) : "Geral";
     }
 
     // 1. Group Decks into Subjects
@@ -381,9 +382,15 @@ export function computeAiStats({
     const topicsMap = {};
     (allQuestions || []).forEach((card, idx) => {
         const sig = getCardSignature(card);
-        const topic = card.aiTopic || (sig ? cardTopicsBySignature[sig] : null) || cardTopicMap[idx] || "Geral";
+        const topic = card.topic || card.aiTopic || (sig ? cardTopicsBySignature[sig] : null) || cardTopicMap[idx] || "Geral";
         if (!card.aiTopic && topic !== "Geral") {
             card.aiTopic = topic;
+        }
+        if (!card.topic && topic !== "Geral") {
+            card.topic = topic;
+        }
+        if (sig && topic !== "Geral" && !cardTopicsBySignature[sig]) {
+            cardTopicsBySignature[sig] = topic;
         }
         if (!topicsMap[topic]) {
             topicsMap[topic] = {

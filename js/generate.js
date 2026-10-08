@@ -199,7 +199,8 @@ const systemInstruction = "Sua função é gerenciar um baralho de flashcards pa
     "3. FÓRMULAS NUNCA DEVEM SER RESPOSTAS DIGITADAS: Fórmulas matemáticas, químicas ou expressões em LaTeX ($...$, $$...$$, frações, potências, etc.) JAMAIS devem ser respostas digitadas nos tipos 'open', 'open_double' ou 'fill'. O estudante digita com teclado comum e não pode digitar fórmulas complexas. Se o conteúdo for sobre uma fórmula ou equação, crie OBRIGATORIAMENTE um card do tipo 'anki' (frente com o conceito e verso com a fórmula em LaTeX) ou 'multiple_choice' (onde o estudante seleciona a alternativa).\n" +
     "4. LIBERDADE TOTAL DE MARKDOWN EM 'ANKI' E 'MULTIPLE_CHOICE': Os tipos 'anki' (frente e verso) e 'multiple_choice' (enunciado, opções e resposta) podem e devem usar Markdown rico (tabelas, listas, negrito) e fórmulas LaTeX ($...$ e $$...$$) livremente.\n" +
     "5. NO TIPO 'FILL': O enunciado ('description') pode conter Markdown e fórmulas LaTeX para contextualização, mas as lacunas '_' devem ser preenchidas apenas com termos simples, números ou parâmetros em texto puro, sem Markdown.\n" +
-    "6. RESPOSTAS CONVERSACIONAIS NO CHAT DO AGENTE: Em suas mensagens de resposta ao usuário no chat do assistente, utilize sempre formatação Markdown estruturada e limpa (títulos curtos como ###, listas com marcadores -, destaques em **negrito**, códigos em `...` e tabelas ou fórmulas LaTeX quando aplicável). Mantenha as respostas concisas, bem diagramadas e visualmente organizadas para leitura rápida.\n\n" +
+    "6. RESPOSTAS CONVERSACIONAIS NO CHAT DO AGENTE: Em suas mensagens de resposta ao usuário no chat do assistente, utilize sempre formatação Markdown estruturada e limpa (títulos curtos como ###, listas com marcadores -, destaques em **negrito**, códigos em `...` e tabelas ou fórmulas LaTeX quando aplicável). Mantenha as respostas concisas, bem diagramadas e visualmente organizadas para leitura rápida.\n" +
+    "7. CLASSIFICAÇÃO TAXONÔMICA ('subject' e 'topic'): Ao adicionar novos cards ('adicionar_card' ou 'adicionar_varios_cards'), atribua sempre 'subject' (disciplina ampla de alto nível, ex: 'Cardiologia') e 'topic' (assunto específico conciso, ex: 'Valvopatias') para possibilitar estatísticas e métricas de desempenho detalhadas.\n\n" +
     "Mantenha o tom profissional, analítico e pragmático.";
 
 const generationSystemInstruction = `Você é um especialista em educação e elaboração de flashcards acadêmicos de alto rendimento.
@@ -209,6 +210,11 @@ DIRETRIZES DE FORMATO E QUALIDADE:
 1. Retorne EXCLUSIVAMENTE um array JSON ([]) contendo os objetos de flashcards.
 2. PROIBIDO incluir texto explicativo, introduções ou notas fora do array JSON.
 3. Linhas ou anotações iniciadas por "#" nos arquivos de texto/documentos são notas ou títulos e devem ser ignoradas como perguntas diretas.
+
+CLASSIFICAÇÃO TAXONÔMICA OBRIGATÓRIA ("subject" e "topic"):
+Para CADA flashcard gerado, atribua OBRIGATORIAMENTE os seguintes campos de metadados:
+- "subject": Nome da matéria ou disciplina ampla de alto nível (ex: "Cardiologia", "Fisiologia Humana", "Bioquímica", "Direito Constitucional", "Cálculo"). Mantenha a mesma matéria para todos os cards provenientes do mesmo material/disciplina.
+- "topic": Nome do assunto ou subtópico conciso e específico agrupador (ex: "Valvopatias", "Eletrocardiograma", "Ciclo de Krebs", "Controle de Constitucionalidade", "Limites e Derivadas"). Agrupe cards sobre o mesmo conceito sob o mesmo "topic" padronizado para permitir acompanhamento de maestria e fraquezas do estudante por assunto.
 
 REGRAS MANDATÓRIAS DE RESPOSTA E FORMATAÇÃO:
 • PERGUNTAS E ENUNCIADOS PODEM USAR MARKDOWN LIVREMENTE:
@@ -253,7 +259,9 @@ EXEMPLOS DE ESTRUTURA (FEW-SHOT):
   {
     "type": "open",
     "description": "Enzima mitocondrial que catalisa a descarboxilação oxidativa do piruvato em acetil-CoA.",
-    "answer": "Complexo Piruvato Desidrogenase"
+    "answer": "Complexo Piruvato Desidrogenase",
+    "topic": "Ciclo de Krebs e Bioenergética",
+    "subject": "Bioquímica"
   },
   {
     "type": "open_double",
@@ -261,13 +269,17 @@ EXEMPLOS DE ESTRUTURA (FEW-SHOT):
     "answer": "GABA",
     "answer2": "Glicina",
     "placeholder1": "Encéfalo",
-    "placeholder2": "Medula espinhal"
+    "placeholder2": "Medula espinhal",
+    "topic": "Neurotransmissão",
+    "subject": "Neurofisiologia"
   },
   {
     "type": "fill",
     "description": "Quais são as faixas de categorização da albuminúria pela Relação Albumina/Creatinina (RAC) em amostra isolada de urina?\\n\\nEstadiamento da Albuminúria (KDIGO / SBD):\\n• A1 (Normoalbuminúria ou ligeiro aumento): RAC < _ mg/g (< _ mg/mmol)\\n• A2 (Microalbuminúria / Aumento moderado): RAC entre _ e _ mg/g (_ — _ mg/mmol)\\n• A3 (Macroalbuminúria / Aumento grave): RAC > _ mg/g (> _ mg/mmol)",
     "answer": "30; 3; 30; 300; 3; 30; 300; 30",
-    "answers": ["30", "3", "30", "300", "3", "30", "300", "30"]
+    "answers": ["30", "3", "30", "300", "3", "30", "300", "30"],
+    "topic": "Nefropatias e Albuminúria",
+    "subject": "Nefrologia"
   },
   {
     "type": "multiple_choice",
@@ -278,12 +290,16 @@ EXEMPLOS DE ESTRUTURA (FEW-SHOT):
       "Redução da temperatura corpórea",
       "Queda nos níveis intraeritrocitários de 2,3-DPG",
       "Alcalose respiratória aguda"
-    ]
+    ],
+    "topic": "Transporte de Gases",
+    "subject": "Fisiologia Respiratória"
   },
   {
     "type": "anki",
     "description": "Qual é a base biofísica do potencial de equilíbrio de um íon e sua respectiva formulação matemática?",
-    "answer": "O potencial de equilíbrio é a diferença de potencial elétrico transmembrana que contrabalança com exatidão a tendência termodinâmica de difusão de um íon gerada por seu gradiente de concentração.\\n\\n### Equação de Nernst:\\n$$E_{ion} = \\\\frac{RT}{zF} \\\\ln\\\\left(\\\\frac{[ion]_{ext}}{[ion]_{int}}\\\\right)$$\\n\\n**Pontos essenciais:**\\n- Para o íon $K^+$ em temperatura corporal ($37^\\\\circ\\\\text{C}$): $E_K \\\\approx -90\\\\text{ mV}$.\\n- Determina a voltagem em que o fluxo iônico líquido resultante é zero."
+    "answer": "O potencial de equilíbrio é a diferença de potencial elétrico transmembrana que contrabalança com exatidão a tendência termodinâmica de difusão de um íon gerada por seu gradiente de concentração.\\n\\n### Equação de Nernst:\\n$$E_{ion} = \\\\frac{RT}{zF} \\\\ln\\\\left(\\\\frac{[ion]_{ext}}{[ion]_{int}}\\\\right)$$\\n\\n**Pontos essenciais:**\\n- Para o íon $K^+$ em temperatura corporal ($37^\\\\circ\\\\text{C}$): $E_K \\\\approx -90\\\\text{ mV}$.\\n- Determina a voltagem em que o fluxo iônico líquido resultante é zero.",
+    "topic": "Potenciais de Membrana",
+    "subject": "Biofísica Celular"
   }
 ]`;
 
@@ -303,6 +319,8 @@ const deckTools = [
                         answer2: { type: "STRING", description: "Resposta secundária (apenas para open_double). Estritamente texto puro, sem Markdown e sem fórmulas." },
                         answers: { type: "ARRAY", items: { type: "STRING" }, description: "Lista ordenada de respostas para preencher as lacunas '_' no tipo 'fill'. Use estritamente texto puro sem Markdown e sem fórmulas." },
                         options: { type: "ARRAY", items: { type: "STRING" }, description: "Opções (apenas para multiple_choice). Suporta Markdown e fórmulas LaTeX." },
+                        topic: { type: "STRING", description: "Assunto específico conciso agrupador do card (ex: 'Valvopatias', 'Eletrocardiograma', 'Controle Concentrado')." },
+                        subject: { type: "STRING", description: "Matéria ou disciplina ampla à qual o card pertence (ex: 'Cardiologia', 'Direito Constitucional')." },
                         image: { type: "STRING", description: "URL ou Base64 da imagem da pergunta (opcional)" },
                         answerImage: { type: "STRING", description: "URL ou Base64 da imagem da resposta (opcional)" }
                     },
@@ -322,6 +340,8 @@ const deckTools = [
                         answer2: { type: "STRING", description: "Resposta secundária (apenas para open_double). Estritamente texto puro, sem Markdown e sem fórmulas." },
                         answers: { type: "ARRAY", items: { type: "STRING" }, description: "Lista ordenada de respostas das lacunas (tipo 'fill'). Use estritamente texto puro sem Markdown e sem fórmulas." },
                         options: { type: "ARRAY", items: { type: "STRING" } },
+                        topic: { type: "STRING", description: "Assunto específico agrupador do card." },
+                        subject: { type: "STRING", description: "Matéria ampla à qual o card pertence." },
                         image: { type: "STRING" },
                         answerImage: { type: "STRING" }
                     },
@@ -371,6 +391,8 @@ const deckTools = [
                                     answer2: { type: "STRING", description: "Resposta secundária (apenas para open_double). Estritamente texto puro, sem Markdown e sem fórmulas." },
                                     answers: { type: "ARRAY", items: { type: "STRING" }, description: "Lista ordenada de respostas das lacunas (tipo 'fill'). Use estritamente texto puro sem Markdown e sem fórmulas." },
                                     options: { type: "ARRAY", items: { type: "STRING" } },
+                                    topic: { type: "STRING", description: "Assunto específico conciso agrupador do card (ex: 'Valvopatias', 'Eletrocardiograma')." },
+                                    subject: { type: "STRING", description: "Matéria ou disciplina ampla à qual o card pertence (ex: 'Cardiologia', 'Direito Constitucional')." },
                                     image: { type: "STRING" },
                                     answerImage: { type: "STRING" }
                                 },
@@ -618,6 +640,18 @@ function normalizeCard(raw) {
     if (raw.image) card.image = raw.image;
     if (raw.answerImage) card.answerImage = raw.answerImage;
     if (Array.isArray(raw.tags)) card.tags = raw.tags;
+
+    // Pure system metadata (stats, categorization, subject/topic tracking)
+    const topic = (raw.topic || raw.aiTopic || '').toString().trim();
+    if (topic) {
+        card.topic = topic;
+        card.aiTopic = topic;
+    }
+    const subject = (raw.subject || raw.aiSubject || '').toString().trim();
+    if (subject) {
+        card.subject = subject;
+        card.aiSubject = subject;
+    }
 
     return card;
 }
@@ -1042,6 +1076,7 @@ function convertDocumentToCards(text, mode = 'anki') {
 function parseTxtToJSONWithPlaceholders(text) {
     const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
     const cards = [];
+    let currentSectionTopic = "";
 
     for (let line of lines) {
         line = line.trim();
@@ -1050,6 +1085,7 @@ function parseTxtToJSONWithPlaceholders(text) {
         if (line.startsWith('#')) {
             const noteText = line.replace(/^#+\s*/, '').trim();
             if (noteText) {
+                currentSectionTopic = noteText;
                 cards.push({
                     type: "divisor",
                     text: noteText,
@@ -1163,7 +1199,13 @@ function parseTxtToJSONWithPlaceholders(text) {
             }
         }
 
-        if (card) cards.push(card);
+        if (card) {
+            if (currentSectionTopic && !card.topic) {
+                card.topic = currentSectionTopic;
+                card.aiTopic = currentSectionTopic;
+            }
+            cards.push(card);
+        }
     }
     return cards;
 }
@@ -1382,6 +1424,7 @@ submitModal21Btn.addEventListener('click', async () => {
     try {
         let userTaskPrompt = `Com base nos arquivos enviados, o objetivo é processar todo o conteúdo e gerar uma lista extensa de termos técnicos para revisão, incluindo nomes de moléculas, estruturas, etapas de processos e quaisquer conceitos com nomes específicos. Em seguida, usar das informações que classificou na primeira etapa para gerar um arquivo .json baseado em todo o conteúdo que juntou na primeira etapa. A sua resposta vai ser apenas o JSON com os flashcards, a primeira etapa serve apenas para você planejar os flashcards.
 Gere aproximadamente 100 flashcards completos e aprofundados cobrindo todo o material enviado (se necessário para cobrir todo o conteúdo essencial, pode ultrapassar esse valor).
+Atribua obrigatoriamente a matéria de alto nível ('subject') e o assunto específico agrupador ('topic') em cada flashcard para indexação taxonômica.
 Ao final revise se os flashcards criados realmente abordam por extenso tudo que foi enviado.
 Retorne EXCLUSIVAMENTE o array JSON ([]) contendo os flashcards estruturados conforme as diretrizes do sistema.`;
 
