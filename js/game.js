@@ -2669,6 +2669,9 @@ hamburgerBackdrop?.addEventListener('click', closeHamburgerMenu);
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         closeHamburgerMenu();
+        if (aiChatContainer && aiChatContainer.classList.contains('open')) {
+            aiChatContainer.classList.remove('open');
+        }
     }
 });
 
@@ -3261,7 +3264,13 @@ instructionsModal.addEventListener('click', (e) => { if (e.target === instructio
 askAiBtn.addEventListener('click', () => { aiChatContainer.classList.add('open'); chatInput.focus(); });
 closeChatBtn.addEventListener('click', () => aiChatContainer.classList.remove('open'));
 sendChatBtn.addEventListener('click', sendChatMessage);
-chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
+chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (e.isComposing || e.keyCode === 229) return;
+        sendChatMessage();
+    }
+});
 submitBtn.addEventListener('click', () => {
     console.log("[Game] Botão #submit-btn ('Verificar Resposta') clicado.");
     handleOpenSubmit();
@@ -3360,9 +3369,25 @@ if (questionCard) {
 
 // Keyboard shortcuts for study flow
 document.addEventListener('keydown', (e) => {
-    // Ignore when any modal is open
-    const isModalOpen = [editModal, apiModal, instructionsModal, imageZoomModal].some(m => m && !m.classList.contains('hidden'));
-    if (isModalOpen) return;
+    // Ignore when typing in inputs, textareas, contenteditable elements, or inside the tutor chat
+    const activeEl = document.activeElement;
+    const targetEl = e.target;
+    const isTextInput = (el) => el && (
+        el.tagName === 'INPUT' ||
+        el.tagName === 'TEXTAREA' ||
+        el.tagName === 'SELECT' ||
+        el.isContentEditable ||
+        (typeof el.closest === 'function' && el.closest('#ai-chat-container'))
+    );
+    if (isTextInput(activeEl) || isTextInput(targetEl)) {
+        return;
+    }
+
+    // Ignore when any modal, hamburger menu, or tutor chat drawer is open
+    const hasOpenModal = document.querySelector('.modal-overlay:not(.hidden)') !== null;
+    const isChatOpen = aiChatContainer && aiChatContainer.classList.contains('open');
+    const isHamburgerOpen = hamburgerMenu && !hamburgerMenu.classList.contains('hidden');
+    if (hasOpenModal || isChatOpen || isHamburgerOpen) return;
 
     // If next / skip question button is visible and active, advance to next question on Enter / Space
     if (nextQuestionBtn && !nextQuestionBtn.classList.contains('hidden') && !isAnimating) {
@@ -3372,12 +3397,6 @@ document.addEventListener('keydown', (e) => {
             nextQuestionBtn.click();
             return;
         }
-    }
-
-    // Ignore when typing in inputs or textareas during active answering
-    const activeEl = document.activeElement;
-    if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
-        return;
     }
 
     if (currentQuestion && currentQuestion.type === 'anki') {

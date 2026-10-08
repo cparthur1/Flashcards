@@ -1,3 +1,15 @@
+CHANGELOG: FIX TUTOR CHAT SPACEBAR & SHORTCUT ISOLATION (v10.3)
+Date: 2026-10-08
+
+OVERVIEW:
+1. Fixed card skipping bug where pressing Spacebar while typing in the AI tutor chatbot input triggered the global `#next-question-btn` shortcut and skipped the flashcard.
+2. Prioritized active text input and modal/chat drawer checks before evaluating card advancement and rating shortcuts in `js/game.js`.
+3. Upgraded AI chat input Enter key handler to modern `keydown` with IME composition safety (`isComposing` and keyCode 229).
+4. Added Escape key handling to close the AI tutor chat drawer when active.
+5. Bumped service worker cache to `flashcards-v6.9`.
+
+--------------------------------------------------------------------------------
+
 CHANGELOG: SECURE PERSISTENT API KEY (WEB CRYPTO + INDEXEDDB) (v10.2)
 Date: 2026-10-05
 
