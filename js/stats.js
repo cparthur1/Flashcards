@@ -228,11 +228,19 @@ function switchTab(tabName) {
         if (tabName === 'history') {
             targetBtn = tabBtnHistory;
             targetContent = tabContentHistory;
-            renderHistory(getStatsStorage());
+            try {
+                renderHistory(getStatsStorage());
+            } catch (err) {
+                console.error('Error rendering history:', err);
+            }
         } else if (tabName === 'struggling') {
             targetBtn = tabBtnStruggling;
             targetContent = tabContentStruggling;
-            renderStrugglingCards(getStatsStorage().currentSession);
+            try {
+                renderStrugglingCards(getStatsStorage().currentSession);
+            } catch (err) {
+                console.error('Error rendering struggling cards:', err);
+            }
         }
 
         targetBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm', 'dark:bg-gray-700', 'dark:text-blue-400');
@@ -340,7 +348,7 @@ function renderCurrentSession(sess, gameState, history) {
             }
             const maxStreak = sess ? (sess.bestStreak || sess.maxStreak || sess.currentStreak || 0) : 0;
             if (bannerStatStreak) {
-                bannerStatStreak.innerHTML = `<span class="material-symbols-rounded text-sm">local_fire_department</span> <span>${maxStreak} seguidos</span>`;
+                bannerStatStreak.innerHTML = `<span class="text-sm select-none">🔥</span> <span>${maxStreak} seguidos</span>`;
             }
             const aiCount = sess ? (sess.aiCorrectionsCount || (sess.answersLog || []).filter(e => e.rating === 'ai_corrected').length) : 0;
             if (bannerStatAi) {
@@ -1268,12 +1276,16 @@ function renderHistory(statsData) {
         if (valElem) {
             valElem.textContent = bestStreak;
         } else {
-            alltimeBestStreak.innerHTML = `<span class="material-symbols-rounded text-2xl text-amber-500">local_fire_department</span> <span>${bestStreak}</span>`;
+            alltimeBestStreak.innerHTML = `<span class="text-xl select-none">🔥</span> <span>${bestStreak}</span>`;
         }
     }
 
     // Render Accuracy Chart
-    renderAccuracyChart(history);
+    try {
+        renderAccuracyChart(history);
+    } catch (e) {
+        console.error('Error rendering accuracy chart:', e);
+    }
 
     // Render Past Sessions List
     historyList.innerHTML = '';
@@ -1316,7 +1328,7 @@ function renderHistory(statsData) {
             </div>
 
             <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-                ${sess.bestStreak ? `<span class="text-xs text-amber-600 font-semibold flex items-center gap-1"><span class="material-symbols-rounded text-sm">local_fire_department</span> <span>${sess.bestStreak}</span></span>` : ''}
+                ${sess.bestStreak ? `<span class="text-xs text-amber-600 font-semibold flex items-center gap-1"><span class="text-sm select-none">🔥</span> <span>${sess.bestStreak}</span></span>` : ''}
                 <div class="px-3 py-1 rounded-xl border ${accColor} text-sm font-extrabold">
                     ${acc}%
                 </div>
@@ -1340,6 +1352,7 @@ function renderAccuracyChart(history) {
     if (chartData.length >= 2) {
         const first = chartData[0].accuracy || 0;
         const last = chartData[chartData.length - 1].accuracy || 0;
+        const diff = last - first;
         const trendIcon = diff >= 0 ? 'trending_up' : 'trending_down';
         const trendPrefix = diff >= 0 ? '+' : '';
         chartTrendBadge.innerHTML = `<span class="material-symbols-rounded text-sm align-middle">${trendIcon}</span> ${trendPrefix}${diff}%`;
