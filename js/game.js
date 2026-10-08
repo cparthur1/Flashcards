@@ -748,17 +748,17 @@ function playCompletionShockwave() {
     shockwaveContainer.appendChild(wave1);
 
     const anim1 = wave1.animate([
-        { transform: 'translate(-50%, -50%) scale(0.04)', opacity: 0.95 },
-        { transform: 'translate(-50%, -50%) scale(0.48)', opacity: 0.85, offset: 0.38 },
-        { transform: 'translate(-50%, -50%) scale(1.02)', opacity: 0 }
+        { transform: 'translate(-50%, -50%) scale(0.04)', opacity: 0.95, offset: 0, easing: 'cubic-bezier(0.16, 0.92, 0.28, 1.25)' },
+        { transform: 'translate(-50%, -50%) scale(0.32)', opacity: 0.92, offset: 0.22, easing: 'cubic-bezier(0.55, -0.28, 0.72, 0.1)' },
+        { transform: 'translate(-50%, -50%) scale(0.23)', opacity: 0.86, offset: 0.36, easing: 'cubic-bezier(0.12, 0.45, 0.18, 1)' },
+        { transform: 'translate(-50%, -50%) scale(1.08)', opacity: 0, offset: 1.0 }
     ], {
-        duration: 1350,
-        easing: 'cubic-bezier(0.12, 0.80, 0.22, 1)',
+        duration: 1020,
         fill: 'forwards'
     });
     anim1.onfinish = () => wave1.remove();
 
-    // Wave 2: Trailing softer blue-emerald gradient (140ms delay, GPU composited)
+    // Wave 2: Trailing softer blue-emerald gradient (bounces with wave 1, delayed by 90ms)
     setTimeout(() => {
         if (!shockwaveContainer) return;
         const wave2 = document.createElement('div');
@@ -771,16 +771,16 @@ function playCompletionShockwave() {
         shockwaveContainer.appendChild(wave2);
 
         const anim2 = wave2.animate([
-            { transform: 'translate(-50%, -50%) scale(0.04)', opacity: 0.9 },
-            { transform: 'translate(-50%, -50%) scale(0.46)', opacity: 0.75, offset: 0.38 },
-            { transform: 'translate(-50%, -50%) scale(1.02)', opacity: 0 }
+            { transform: 'translate(-50%, -50%) scale(0.04)', opacity: 0.88, offset: 0, easing: 'cubic-bezier(0.16, 0.92, 0.28, 1.25)' },
+            { transform: 'translate(-50%, -50%) scale(0.28)', opacity: 0.84, offset: 0.22, easing: 'cubic-bezier(0.55, -0.28, 0.72, 0.1)' },
+            { transform: 'translate(-50%, -50%) scale(0.20)', opacity: 0.78, offset: 0.36, easing: 'cubic-bezier(0.12, 0.45, 0.18, 1)' },
+            { transform: 'translate(-50%, -50%) scale(1.06)', opacity: 0, offset: 1.0 }
         ], {
-            duration: 1300,
-            easing: 'cubic-bezier(0.12, 0.80, 0.22, 1)',
+            duration: 960,
             fill: 'forwards'
         });
         anim2.onfinish = () => wave2.remove();
-    }, 140);
+    }, 90);
 }
 
 function resizeCanvas() {
@@ -1326,8 +1326,8 @@ function showDeckCompletionScreen() {
         
         // Lightweight victory confetti with small delay to keep framerates locked at 60fps
         setTimeout(() => {
-            launchCelebrationParticles(60);
-        }, 320);
+            launchCelebrationParticles(45);
+        }, 420);
 
         // Hide normal card UI elements
         deleteCardBtn?.classList.add('hidden');

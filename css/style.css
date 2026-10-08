@@ -2342,14 +2342,16 @@ mark.card-hl-purple {
 
 /* Deck Completion Shockwave Card Pulse */
 @keyframes cardShockwavePulse {
-    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
-    20% { transform: scale(1.02); box-shadow: 0 0 25px 4px rgba(16, 185, 129, 0.35); }
-    50% { transform: scale(0.995); box-shadow: 0 0 15px 2px rgba(59, 130, 246, 0.2); }
-    100% { transform: scale(1); box-shadow: none; }
+    0% { transform: scale(1); }
+    18% { transform: scale(1.032); }
+    34% { transform: scale(0.988); }
+    50% { transform: scale(1.006); }
+    100% { transform: scale(1); }
 }
 
 .card-shockwave-pulse {
-    animation: cardShockwavePulse 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+    animation: cardShockwavePulse 0.65s cubic-bezier(0.25, 1, 0.5, 1);
+    will-change: transform;
 }
 
 /* Deck Completion Translucent GPU-Accelerated Ripple Waves */
@@ -2359,6 +2361,22 @@ mark.card-hl-purple {
     pointer-events: none;
     will-change: transform, opacity;
     transform-origin: center center;
+}
+
+#deck-completion-view:not(.hidden) {
+    animation: completionFadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    will-change: transform, opacity;
+}
+
+@keyframes completionFadeUp {
+    0% {
+        opacity: 0;
+        transform: scale(0.97);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 
