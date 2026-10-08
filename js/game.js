@@ -176,6 +176,7 @@ let isFirstQuestion = true;
 let hasChatInteraction = false;
 let isAnimating = false;
 let currentStep = 0;
+let consecutiveDueCardsCount = 0;
 let isAnkiFlipped = false;
 let pendingEditAnsImage = '';
 let questionStartTime = Date.now();
@@ -1033,6 +1034,86 @@ function calculateThinkingGap(thinkingTimeSec) {
 let precomputedNextCard = null;
 
 /**
+ * Selects the next card following adaptive spaced repetition and anti-monotony rules:
+ * 1. Identifies dueCards (dueStep <= step), newCards (unseen), and futureCards (dueStep > step).
+ * 2. When there's too much due (dueCards.length >= 3 or consecutiveDueCardsCount >= 2 with dueCards.length >= 2):
+ *    - Injects a random card from nonDueCards (prioritizing unseen newCards) into the queue.
+ *    - Guarantees at most 2 due cards in a row before a fresh card is interleaved.
+ *    - Injects with ~35% organic probability during heavy due backlogs (dueCards.length >= 3).
+ * 3. Otherwise picks randomly among dueCards (Requirement 5: avoids linear queue).
+ * 4. If no due cards, picks randomly among unreviewed newCards.
+ * 5. Fallback: picks randomly among cards with earliest future dueStep.
+ */
+function selectNextCard(candidateList, step) {
+    if (!candidateList || candidateList.length === 0) return null;
+    if (candidateList.length === 1) return candidateList[0];
+
+    const dueCards = candidateList.filter(c => c.dueStep !== undefined && c.dueStep <= step);
+    const newCards = candidateList.filter(c => c.dueStep === undefined);
+    const futureCards = candidateList.filter(c => c.dueStep !== undefined && c.dueStep > step);
+    const nonDueCards = newCards.length > 0 ? newCards : futureCards;
+
+    if (dueCards.length > 0) {
+        const canInjectRandom = nonDueCards.length > 0;
+        const isTooMuchDue = dueCards.length >= 3;
+
+        // Anti-repetition rule:
+        // When there is too much due, inject a few random cards into the queue
+        // - Guarantees a fresh card if the user has already answered 2 consecutive due cards
+        // - Injects with ~35% probability during heavy backlogs (>= 3 due cards)
+        const shouldInjectRandom = canInjectRandom && (
+            (consecutiveDueCardsCount >= 2 && dueCards.length >= 2) ||
+            (isTooMuchDue && Math.random() < 0.35)
+        );
+
+        if (shouldInjectRandom) {
+            const injectedCard = nonDueCards[Math.floor(Math.random() * nonDueCards.length)];
+            console.log("[Algorithm] Too much due (" + dueCards.length + " cards). Injetando card aleatório fresco na fila:", {
+                desc: (injectedCard.description || '').slice(0, 35),
+                tipo: newCards.length > 0 ? 'novo/não visto' : 'futuro',
+                dueCount: dueCards.length,
+                consecutiveDue: consecutiveDueCardsCount
+            });
+            return injectedCard;
+        }
+
+        // Random pick among due cards (prevents linear queue)
+        const pickedDue = dueCards[Math.floor(Math.random() * dueCards.length)];
+        console.log("[Algorithm] Card due selecionado:", {
+            desc: (pickedDue.description || '').slice(0, 35),
+            dueStep: pickedDue.dueStep,
+            step,
+            dueCount: dueCards.length,
+            consecutiveDue: consecutiveDueCardsCount
+        });
+        return pickedDue;
+    }
+
+    // No cards due: pick randomly among unreviewed new cards
+    if (newCards.length > 0) {
+        const pickedNew = newCards[Math.floor(Math.random() * newCards.length)];
+        console.log("[Algorithm] Card novo selecionado:", {
+            desc: (pickedNew.description || '').slice(0, 35)
+        });
+        return pickedNew;
+    }
+
+    // Fallback: all remaining cards are scheduled in the future (dueStep > step)
+    let minDue = Infinity;
+    for (const c of candidateList) {
+        const d = c.dueStep || 0;
+        if (d < minDue) minDue = d;
+    }
+    const earliestCards = candidateList.filter(c => (c.dueStep || 0) === minDue);
+    const pickedEarliest = earliestCards[Math.floor(Math.random() * earliestCards.length)] || candidateList[0];
+    console.log("[Algorithm] Card futuro mais próximo selecionado:", {
+        desc: (pickedEarliest?.description || '').slice(0, 35),
+        minDue
+    });
+    return pickedEarliest;
+}
+
+/**
  * Precomputes candidate for the next step while the user is thinking on the current card.
  * Offloads algorithm execution from the animated "next card" transition.
  */
@@ -1051,47 +1132,7 @@ function precomputeNextCandidate() {
     const nextStep = currentStep + 1;
     // Exclude current card because any rescheduled card has gap >= 5, so it cannot be next
     const candidates = questionsPool.filter(c => c !== currentQuestion);
-    if (candidates.length === 0) {
-        precomputedNextCard = questionsPool[0];
-        return;
-    }
-
-    // 1. Due cards: dueStep <= nextStep
-    // Requirement 5: "The cards on dueStep = currentStep are randomly picked between them do they dont form a linear queue."
-    const dueCards = candidates.filter(c => c.dueStep !== undefined && c.dueStep <= nextStep);
-    if (dueCards.length > 0) {
-        precomputedNextCard = dueCards[Math.floor(Math.random() * dueCards.length)];
-        console.log("[Algorithm] Próximo card pré-selecionado (due/vencido):", {
-            desc: (precomputedNextCard.description || '').slice(0, 30),
-            dueStep: precomputedNextCard.dueStep,
-            nextStep
-        });
-        return;
-    }
-
-    // 2. New / unreviewed cards (dueStep === undefined)
-    const newCards = candidates.filter(c => c.dueStep === undefined);
-    if (newCards.length > 0) {
-        precomputedNextCard = newCards[Math.floor(Math.random() * newCards.length)];
-        console.log("[Algorithm] Próximo card pré-selecionado (novo/não revisado):", {
-            desc: (precomputedNextCard.description || '').slice(0, 30)
-        });
-        return;
-    }
-
-    // 3. Fallback: all remaining cards are scheduled in the future (dueStep > nextStep)
-    // Pick randomly among cards with the lowest/earliest dueStep
-    let minDue = Infinity;
-    for (const c of candidates) {
-        const d = c.dueStep || 0;
-        if (d < minDue) minDue = d;
-    }
-    const earliestCards = candidates.filter(c => (c.dueStep || 0) === minDue);
-    precomputedNextCard = earliestCards[Math.floor(Math.random() * earliestCards.length)] || candidates[0];
-    console.log("[Algorithm] Próximo card pré-selecionado (fallback mais próximo):", {
-        desc: (precomputedNextCard?.description || '').slice(0, 30),
-        minDue
-    });
+    precomputedNextCard = selectNextCard(candidates.length > 0 ? candidates : questionsPool, nextStep);
 }
 
 function schedulePrecomputeNextCard() {
@@ -1118,6 +1159,7 @@ function loadQuestion() {
             clearBalls();
             score = 0;
             currentStreak = 0;
+            consecutiveDueCardsCount = 0;
             updateStreakUI(false);
             scoreDisplay.textContent = '0';
             // Requirement 1: Make all cards random at start
@@ -1140,25 +1182,22 @@ function loadQuestion() {
         currentQuestion = precomputedNextCard;
         currentQuestionIndexInPool = questionsPool.indexOf(precomputedNextCard);
     } else {
-        // Fallback / Initial pick: random among due cards, or new cards, or earliest future
-        const dueCards = questionsPool.filter(c => c.dueStep !== undefined && c.dueStep <= currentStep);
-        if (dueCards.length > 0) {
-            currentQuestion = dueCards[Math.floor(Math.random() * dueCards.length)];
-        } else {
-            const newCards = questionsPool.filter(c => c.dueStep === undefined);
-            if (newCards.length > 0) {
-                currentQuestion = newCards[Math.floor(Math.random() * newCards.length)];
-            } else {
-                let minDue = Infinity;
-                for (const c of questionsPool) {
-                    const d = c.dueStep || 0;
-                    if (d < minDue) minDue = d;
-                }
-                const earliest = questionsPool.filter(c => (c.dueStep || 0) === minDue);
-                currentQuestion = earliest[Math.floor(Math.random() * earliest.length)] || questionsPool[0];
-            }
-        }
+        // Fallback / Initial pick: use selectNextCard
+        currentQuestion = selectNextCard(questionsPool, currentStep);
         currentQuestionIndexInPool = questionsPool.indexOf(currentQuestion);
+    }
+
+    // Always clear transient correction flags for the newly loaded card
+    if (currentQuestion) {
+        delete currentQuestion.isBeingCorrected;
+    }
+    isBeingCorrected = false;
+
+    // Update consecutive due counter
+    if (currentQuestion && currentQuestion.dueStep !== undefined && currentQuestion.dueStep <= currentStep) {
+        consecutiveDueCardsCount++;
+    } else {
+        consecutiveDueCardsCount = 0;
     }
 
     console.log("[Game] Card carregado:", {
@@ -1436,10 +1475,12 @@ function handleAnkiRating(rating) {
 }
 
 let isOpenSubmitting = false;
+let isBeingCorrected = false;
 
 function resetUI() {
     isOpenSubmitting = false;
     isAnimating = false;
+    isBeingCorrected = false;
     hideHighlightPopup();
     [answerInput, answerInput1, answerInput2].forEach(inp => {
         inp.value = ''; inp.disabled = false;
@@ -1494,18 +1535,24 @@ function resetUI() {
 }
 
 function handleFillSubmit() {
+    // Auto-heal: se o botão de verificar está ativo/habilitado e visível, não estamos em estado de correção
+    if (submitBtn && !submitBtn.disabled && !submitBtn.classList.contains('hidden')) {
+        isBeingCorrected = false;
+        if (currentQuestion) delete currentQuestion.isBeingCorrected;
+    }
+
     console.log("[Game] handleFillSubmit chamado.", {
         isOpenSubmitting,
         btnDisabled: submitBtn?.disabled,
-        isBeingCorrected: currentQuestion?.isBeingCorrected,
+        isBeingCorrected: isBeingCorrected || currentQuestion?.isBeingCorrected,
         isAnimating
     });
 
-    if (isOpenSubmitting || submitBtn.disabled || currentQuestion?.isBeingCorrected || isAnimating) {
+    if (isOpenSubmitting || submitBtn.disabled || isBeingCorrected || currentQuestion?.isBeingCorrected || isAnimating) {
         console.warn("[Game] Submissão fill bloqueada por flag:", {
             isOpenSubmitting,
             btnDisabled: submitBtn?.disabled,
-            isBeingCorrected: currentQuestion?.isBeingCorrected,
+            isBeingCorrected: isBeingCorrected || currentQuestion?.isBeingCorrected,
             isAnimating
         });
         return;
@@ -1625,18 +1672,24 @@ function handleFillSubmit() {
 }
 
 function handleOpenSubmit() {
+    // Auto-heal: se o botão de verificar está ativo/habilitado e visível, não estamos em estado de correção
+    if (submitBtn && !submitBtn.disabled && !submitBtn.classList.contains('hidden')) {
+        isBeingCorrected = false;
+        if (currentQuestion) delete currentQuestion.isBeingCorrected;
+    }
+
     console.log("[Game] handleOpenSubmit acionado.", {
         type: currentQuestion?.type,
         isOpenSubmitting,
         btnDisabled: submitBtn?.disabled,
-        isBeingCorrected: currentQuestion?.isBeingCorrected
+        isBeingCorrected: isBeingCorrected || currentQuestion?.isBeingCorrected
     });
 
-    if (isOpenSubmitting || submitBtn.disabled || currentQuestion?.isBeingCorrected) {
+    if (isOpenSubmitting || submitBtn.disabled || isBeingCorrected || currentQuestion?.isBeingCorrected) {
         console.warn("[Game] handleOpenSubmit bloqueado por flag:", {
             isOpenSubmitting,
             btnDisabled: submitBtn?.disabled,
-            isBeingCorrected: currentQuestion?.isBeingCorrected
+            isBeingCorrected: isBeingCorrected || currentQuestion?.isBeingCorrected
         });
         return;
     }
@@ -1802,6 +1855,7 @@ function showFeedback(isCorrect, element) {
                 setTimeout(() => questionCard.classList.remove('card-shake'), 450);
             }
 
+            isBeingCorrected = true;
             currentQuestion.isBeingCorrected = true;
             isOpenSubmitting = false;
 
@@ -1836,6 +1890,8 @@ function showFeedback(isCorrect, element) {
             correctionOptions.classList.add('flex');
             correctionOptions.classList.remove('hidden');
         } else {
+            isBeingCorrected = false;
+            delete currentQuestion.isBeingCorrected;
             currentQuestion.correctStreak = (currentQuestion.correctStreak || 0) + 1;
             const totalWrongs = currentQuestion.wrongCount || 0;
             // Requirement 4: If guessed wrong >4x, keep in game until guessed right 2x
@@ -1888,7 +1944,7 @@ function updateFeedbackText() {
     const bodyElem = document.getElementById('question-body-text');
     const feedbackElem = document.getElementById('question-feedback-text');
 
-    if (currentQuestion && currentQuestion.isBeingCorrected) {
+    if (currentQuestion && (isBeingCorrected || currentQuestion.isBeingCorrected)) {
         if (bodyElem && currentQuestion.type !== 'fill') {
             bodyElem.innerHTML = renderMathAndMarkdown(currentQuestion.description || '');
         }
@@ -1937,9 +1993,12 @@ let saveStateTimeout = null;
 function executeSaveGameState() {
     saveStateTimeout = null;
     try {
+        if (questionsPool) questionsPool.forEach(q => { if (q) delete q.isBeingCorrected; });
+        if (allQuestions) allQuestions.forEach(q => { if (q) delete q.isBeingCorrected; });
+
         if (activeMode === 'notebook') {
             localStorage.setItem('flashcardsNotebook', JSON.stringify({
-                questionsPool, allQuestions, score, currentStreak, currentStep, deckTitle: "Caderno"
+                questionsPool, allQuestions, score, currentStreak, currentStep, consecutiveDueCardsCount, deckTitle: "Caderno"
             }));
         } else if (activeMode === 'exam') {
             let examData = {};
@@ -1953,11 +2012,12 @@ function executeSaveGameState() {
                 score,
                 currentStreak,
                 currentStep,
+                consecutiveDueCardsCount,
                 deckTitle: "Semana de Provas"
             }));
         } else {
             localStorage.setItem('flashcardsSave', JSON.stringify({
-                questionsPool, allQuestions, score, currentStreak, currentStep, deckTitle: deckTitle.textContent
+                questionsPool, allQuestions, score, currentStreak, currentStep, consecutiveDueCardsCount, deckTitle: deckTitle.textContent
             }));
         }
     } catch (e) {
@@ -2139,8 +2199,11 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
                 console.log("[Algorithm] Card leech corrigido por IA mantido no deck para 2º acerto consecutivo.");
             }
 
+            delete questionObj.isBeingCorrected;
+
             // Somente aplica feedback visual e carrega nova questão se o usuário ainda estiver na mesma questão
             if (questionObj === currentQuestion) {
+                isBeingCorrected = false;
                 if (correctionOptions) {
                     correctionOptions.classList.add('hidden');
                     correctionOptions.classList.remove('flex');
@@ -2755,6 +2818,7 @@ if (restartGameBtn) {
                 questionsPool = shuffleArray(allQuestions.filter(isPlayableCard));
             }
             currentStep = 0;
+            consecutiveDueCardsCount = 0;
             precomputedNextCard = null;
             saveGameState();
             updateScoreDisplay();
@@ -3813,9 +3877,13 @@ async function initGame() {
 
     allQuestions = data.allQuestions || [];
     questionsPool = (data.questionsPool || []).filter(isPlayableCard);
+    allQuestions.forEach(q => { if (q) delete q.isBeingCorrected; });
+    questionsPool.forEach(q => { if (q) delete q.isBeingCorrected; });
+    isBeingCorrected = false;
     score = data.score || 0;
     currentStreak = data.currentStreak || 0;
     currentStep = data.currentStep || 0;
+    consecutiveDueCardsCount = data.consecutiveDueCardsCount || 0;
     precomputedNextCard = null;
     // Requirement 1: Make all cards random at start
     if (score === 0 || !data.questionsPool || data.questionsPool.length === allQuestions.filter(isPlayableCard).length) {

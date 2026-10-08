@@ -101,6 +101,9 @@ O jogo **não utiliza uma fila linear estática**. O algoritmo recalcula o agend
    - Se o usuário errar um cartão **mais de 4 vezes** (`wrongCount > 4`), ele se torna um cartão sanguessuga e **permanece no jogo até ser acertado 2 vezes consecutivas** (`correctStreak >= 2`).
    - Cartões com **3 ou menos erros** são concluídos e removidos do baralho ativo logo no primeiro acerto.
 
+6. **Injeção de Cartões Aleatórios contra Monotonia (Too Much Due)**:  
+   Quando houver acúmulo de cartões vencidos (`dueCards.length >= 3` ou 2 cartões vencidos consecutivos já respondidos), o algoritmo intercala cartões aleatórios frescos (não vistos ou futuros) na proporção de no máximo 2 cartões vencidos para 1 cartão aleatório (além de ~35% de probabilidade orgânica no backlog). Isso impede que o usuário fique preso num loop repetitivo fechado dos mesmos cartões.
+
 ---
 
 ### 2.2 Algoritmo de Similaridade de Texto (Levenshtein Otimizado)
