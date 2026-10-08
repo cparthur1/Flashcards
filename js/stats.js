@@ -45,6 +45,13 @@ const tabContentStruggling = document.getElementById('tab-content-struggling');
 const historyBadgeCount = document.getElementById('history-badge-count');
 const strugglingBadgeCount = document.getElementById('struggling-badge-count');
 
+// Session Completed Celebration Banner
+const sessionCompletedBanner = document.getElementById('session-completed-banner');
+const bannerStatAcc = document.getElementById('banner-stat-acc');
+const bannerStatTime = document.getElementById('banner-stat-time');
+const bannerStatStreak = document.getElementById('banner-stat-streak');
+const bannerStatAi = document.getElementById('banner-stat-ai');
+
 // KPI Elements
 const kpiProgressPercent = document.getElementById('kpi-progress-percent');
 const kpiProgressRatio = document.getElementById('kpi-progress-ratio');
@@ -261,7 +268,8 @@ function renderAllStats(options = {}) {
     }
 
     // --- TAB 1: CURRENT SESSION ---
-    renderCurrentSession(statsData.currentSession, gameState, statsData.history);
+    const currentOrLastSession = statsData.currentSession || (statsData.history && statsData.history[0]) || null;
+    renderCurrentSession(currentOrLastSession, gameState, statsData.history);
 
     // --- AI SECTION: TOPICS & SUBJECTS ---
     renderAiSection(gameState, statsData, isLiveUpdate);
@@ -293,14 +301,15 @@ function renderCurrentSession(sess, gameState, history) {
     const playableAll = gameState.allQuestions ? gameState.allQuestions.filter(q => q.type !== 'divisor' && q.type !== 'divider' && q.type !== 'note') : null;
     const totalCards = playableAll ? playableAll.length : (sess ? sess.totalCardsInDeck : 0);
     const poolRemaining = gameState.questionsPool ? gameState.questionsPool.length : 0;
-    const completedCards = Math.max(0, totalCards - poolRemaining);
+    const isCompleted = Boolean(sess && (sess.completed || (totalCards > 0 && poolRemaining === 0)));
+    const completedCards = isCompleted ? totalCards : Math.max(0, totalCards - poolRemaining);
 
     const answered = sess && sess.cardsAnswered ? sess.cardsAnswered : completedCards;
     const correct = sess && sess.correctCount !== undefined ? sess.correctCount : completedCards;
     const incorrect = sess && sess.incorrectCount !== undefined ? sess.incorrectCount : 0;
     const duration = sess ? sess.durationSeconds || 0 : 0;
 
-    const progressPct = totalCards > 0 ? Math.round((completedCards / totalCards) * 100) : 0;
+    const progressPct = totalCards > 0 ? (isCompleted ? 100 : Math.round((completedCards / totalCards) * 100)) : 0;
     const accuracyPct = answered > 0 ? Math.round((correct / answered) * 100) : 100;
 
     // Disconsider cards taking longer than 90s to be answered (study break / tab left idle)
@@ -317,6 +326,28 @@ function renderCurrentSession(sess, gameState, history) {
         }
     } else if (answered > 0) {
         avgSeconds = (duration / answered).toFixed(1);
+    }
+
+    // Session Completed Celebration Banner
+    if (sessionCompletedBanner) {
+        if (isCompleted) {
+            sessionCompletedBanner.classList.remove('hidden');
+            if (bannerStatAcc) bannerStatAcc.textContent = `🎯 ${accuracyPct}% Precisão`;
+            if (bannerStatTime) bannerStatTime.textContent = `⏱️ ${formatSeconds(duration)}`;
+            const maxStreak = sess ? (sess.bestStreak || sess.maxStreak || sess.currentStreak || 0) : 0;
+            if (bannerStatStreak) bannerStatStreak.textContent = `🔥 ${maxStreak} seguidos`;
+            const aiCount = sess ? (sess.aiCorrectionsCount || (sess.answersLog || []).filter(e => e.rating === 'ai_corrected').length) : 0;
+            if (bannerStatAi) {
+                if (aiCount > 0) {
+                    bannerStatAi.textContent = `✦ ${aiCount} com IA`;
+                    bannerStatAi.classList.remove('hidden');
+                } else {
+                    bannerStatAi.classList.add('hidden');
+                }
+            }
+        } else {
+            sessionCompletedBanner.classList.add('hidden');
+        }
     }
 
     // Update KPIs
@@ -340,7 +371,7 @@ function renderCurrentSession(sess, gameState, history) {
     kpiBestStreak.textContent = sess ? sess.bestStreak || 0 : 0;
 
     // Sub-Card 1: Cognitive Pace & Completion Estimate
-    renderPaceAndEstimate(sess, gameState, parseFloat(avgSeconds), poolRemaining);
+    renderPaceAndEstimate(sess, gameState, parseFloat(avgSeconds), isCompleted ? 0 : poolRemaining);
 
     // Sub-Card 2: Deck Mastery Level
     renderDeckMastery(progressPct, accuracyPct, sess ? sess.currentStreak || 0 : 0, completedCards, totalCards);
@@ -580,6 +611,8 @@ function renderHighlightsStats(gameState) {
     if (hlCountPurple) hlCountPurple.textContent = purpleCount;
 }
 
+let showAllTimelineCards = false;
+
 function renderTimelineFlow(sess) {
     timelineStrip.innerHTML = '';
     const log = sess && sess.answersLog ? sess.answersLog : [];
@@ -593,16 +626,22 @@ function renderTimelineFlow(sess) {
     }
 
     const totalAnswered = log.length;
-    // Show only the last 10 answers, with the most recent on the left (index 0)
-    const recent10 = log.slice(-10).reverse();
+    // Show either all cards or last 10 answers, with the most recent on the left
+    const displayedEntries = showAllTimelineCards ? log.slice().reverse() : log.slice(-10).reverse();
 
     if (timelineCounterBadge) {
-        timelineCounterBadge.innerHTML = totalAnswered > 10
-            ? `<span>&larr; Mais recentes (10 de ${totalAnswered} respondidos)</span>`
-            : `<span>&larr; Mais recentes (${totalAnswered} nesta rodada)</span>`;
+        timelineCounterBadge.style.cursor = 'pointer';
+        timelineCounterBadge.title = showAllTimelineCards ? 'Clique para mostrar apenas os últimos 10 cards' : 'Clique para ver todos os cards respondidos nesta rodada';
+        if (showAllTimelineCards) {
+            timelineCounterBadge.innerHTML = `<span>&larr; Todos os ${totalAnswered} cards <span class="underline font-normal opacity-80 ml-1">(ver 10)</span></span>`;
+        } else {
+            timelineCounterBadge.innerHTML = totalAnswered > 10
+                ? `<span>&larr; 10 de ${totalAnswered} respondidos <span class="underline font-normal opacity-80 ml-1">(ver todos)</span></span>`
+                : `<span>&larr; Mais recentes (${totalAnswered} nesta rodada)</span>`;
+        }
     }
 
-    recent10.forEach((entry, reverseIdx) => {
+    displayedEntries.forEach((entry, reverseIdx) => {
         const originalCardNum = totalAnswered - reverseIdx;
         const isLatest = reverseIdx === 0;
 
@@ -1451,6 +1490,13 @@ function addCardToNotebook(card) {
 tabBtnCurrent?.addEventListener('click', () => switchTab('current'));
 tabBtnHistory?.addEventListener('click', () => switchTab('history'));
 tabBtnStruggling?.addEventListener('click', () => switchTab('struggling'));
+
+timelineCounterBadge?.addEventListener('click', () => {
+    showAllTimelineCards = !showAllTimelineCards;
+    const statsData = getStatsStorage();
+    const currentOrLast = statsData.currentSession || (statsData.history && statsData.history[0]) || null;
+    renderTimelineFlow(currentOrLast);
+});
 
 addAllToNotebookBtn?.addEventListener('click', () => {
     const statsData = getStatsStorage();

@@ -340,6 +340,57 @@
                     <img id="anki-answer-image" src="" alt="Imagem da Resposta" class="hidden max-h-48 sm:max-h-72 w-auto rounded-2xl shadow-md border border-[var(--md-sys-color-outline-variant)] card-img-zoomable object-contain transition-opacity duration-300 opacity-0">
                 </div>
             </div>
+
+            <!-- Deck Completion Celebration View (Placed directly on the card holder) -->
+            <div id="deck-completion-view" class="hidden w-full flex flex-col items-center justify-center text-center py-4 px-2 select-none">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr from-amber-400 to-yellow-300 flex items-center justify-center shadow-lg text-3xl sm:text-4xl mb-3 flex-shrink-0">
+                    🏆
+                </div>
+                <h2 class="text-xl sm:text-2xl font-black text-[var(--md-sys-color-on-surface)] tracking-tight mb-1">
+                    Parabéns! Deck Concluído! 🎉
+                </h2>
+                <p id="deck-completion-subtitle" class="text-xs sm:text-sm text-[var(--md-sys-color-on-surface-variant)] mb-4 max-w-sm">
+                    Todos os cards deste baralho foram respondidos com sucesso nesta rodada!
+                </p>
+
+                <!-- Mini Session Stats Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full max-w-md mb-6">
+                    <div class="p-2.5 rounded-2xl bg-[var(--md-sys-color-surface-container-high)] border border-[var(--md-sys-color-outline-variant)] flex flex-col items-center">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Cards</span>
+                        <span id="completion-stat-cards" class="text-base sm:text-lg font-extrabold text-[var(--md-sys-color-on-surface)]">0</span>
+                    </div>
+                    <div class="p-2.5 rounded-2xl bg-[var(--md-sys-color-surface-container-high)] border border-[var(--md-sys-color-outline-variant)] flex flex-col items-center">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Precisão</span>
+                        <span id="completion-stat-acc" class="text-base sm:text-lg font-extrabold text-emerald-600 dark:text-emerald-400">100%</span>
+                    </div>
+                    <div class="p-2.5 rounded-2xl bg-[var(--md-sys-color-surface-container-high)] border border-[var(--md-sys-color-outline-variant)] flex flex-col items-center">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Tempo</span>
+                        <span id="completion-stat-time" class="text-base sm:text-lg font-extrabold text-purple-600 dark:text-purple-400">00:00</span>
+                    </div>
+                    <div class="p-2.5 rounded-2xl bg-[var(--md-sys-color-surface-container-high)] border border-[var(--md-sys-color-outline-variant)] flex flex-col items-center">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Sequência</span>
+                        <span id="completion-stat-streak" class="text-base sm:text-lg font-extrabold text-amber-500">0 🔥</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons: "Ver estatísticas" & "Restart" -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-sm">
+                    <a href="stats.html" id="completion-stats-btn"
+                        class="m3-btn-expressive m3-btn-filled w-full sm:flex-1 py-3 px-4 font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        <span>Ver estatísticas</span>
+                    </a>
+                    <button type="button" id="completion-restart-btn"
+                        class="m3-btn-expressive m3-btn-tonal w-full sm:flex-1 py-3 px-4 font-bold text-sm sm:text-base flex items-center justify-center gap-2 border border-[var(--md-sys-color-outline-variant)] hover:bg-[var(--md-sys-color-surface-container-highest)]">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span>Restart</span>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Flashcard Answer Form: isolated from password manager -->

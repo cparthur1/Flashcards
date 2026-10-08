@@ -361,13 +361,68 @@ function archiveSessionInternal(data, completed = false) {
         return;
     }
     const sess = data.currentSession;
-    sess.completed = completed;
-    sess.endTime = Date.now();
+    sess.completed = completed || sess.completed || false;
+    sess.endTime = sess.endTime || Date.now();
+    if (!sess.durationSeconds && sess.startTime) {
+        sess.durationSeconds = Math.max(1, Math.round((sess.endTime - sess.startTime) / 1000));
+    }
+    sess.aiCorrectionsCount = (sess.answersLog || []).filter(e => e.rating === 'ai_corrected').length;
 
-    data.history.unshift(sess);
-    if (data.history.length > 50) data.history.pop();
-    data.allTime.totalSessions = (data.allTime.totalSessions || 0) + 1;
+    const existingIdx = (data.history || []).findIndex(h => h.id === sess.id);
+    if (existingIdx >= 0) {
+        data.history[existingIdx] = { ...sess };
+    } else {
+        data.history.unshift({ ...sess });
+        if (data.history.length > 50) data.history.pop();
+        data.allTime.totalSessions = (data.allTime.totalSessions || 0) + 1;
+    }
     data.currentSession = null;
+}
+
+/**
+ * Marks current session as completed and persists summary metrics without setting currentSession to null.
+ * This ensures that when the user finishes a deck and opens the stats page, the completed session
+ * remains fully accessible and rich in details.
+ */
+export function completeCurrentSession() {
+    const data = getStatsStorage();
+    if (!data.currentSession) return null;
+    const sess = data.currentSession;
+    sess.completed = true;
+    sess.endTime = Date.now();
+    sess.durationSeconds = Math.max(1, Math.round((sess.endTime - sess.startTime) / 1000));
+
+    // Calculate active duration excluding study breaks (>90s)
+    if (sess.answersLog && sess.answersLog.length > 0) {
+        const validTimes = sess.answersLog.filter(e => typeof e.timeSeconds === 'number' && e.timeSeconds <= 90);
+        if (validTimes.length > 0) {
+            sess.activeDurationSeconds = validTimes.reduce((acc, e) => acc + e.timeSeconds, 0);
+            sess.activeCardsCount = validTimes.length;
+        }
+    }
+
+    // Count AI corrections
+    sess.aiCorrectionsCount = (sess.answersLog || []).filter(e => e.rating === 'ai_corrected').length;
+
+    // Put / update a copy in history
+    const existingIdx = (data.history || []).findIndex(h => h.id === sess.id);
+    if (existingIdx >= 0) {
+        data.history[existingIdx] = { ...sess };
+    } else {
+        data.history.unshift({ ...sess });
+        if (data.history.length > 50) data.history.pop();
+        data.allTime.totalSessions = (data.allTime.totalSessions || 0) + 1;
+    }
+
+    saveStatsStorage(data);
+    console.log("[StatsTracker] Sessão concluída com sucesso:", {
+        deck: sess.deckTitle,
+        cards: sess.cardsAnswered,
+        accuracy: sess.accuracy + '%',
+        aiCorrections: sess.aiCorrectionsCount,
+        duration: sess.durationSeconds + 's'
+    });
+    return sess;
 }
 
 /**

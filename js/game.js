@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { normalizeString, calculateSimilarity, shuffleArray, callWithRetry, checkAndResetModelFallback, ROUTES, renderMathAndMarkdown } from './utils.js';
 import { initTransfer } from './transfer.js';
-import { initStatsSession, recordStatsAnswer, recordStatsAiCorrection, archiveCurrentSession } from './stats-tracker.js';
+import { initStatsSession, recordStatsAnswer, recordStatsAiCorrection, archiveCurrentSession, completeCurrentSession } from './stats-tracker.js';
 import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
 
 // --- DOM ELEMENTS ---
@@ -64,6 +64,15 @@ const deleteCardBtn = document.getElementById('delete-card-btn');
 const questionImageContainer = document.getElementById('question-image-container');
 const questionImagePlaceholder = document.getElementById('question-image-placeholder');
 const questionImage = document.getElementById('question-image');
+
+const deckCompletionView = document.getElementById('deck-completion-view');
+const deckCompletionSubtitle = document.getElementById('deck-completion-subtitle');
+const completionStatCards = document.getElementById('completion-stat-cards');
+const completionStatAcc = document.getElementById('completion-stat-acc');
+const completionStatTime = document.getElementById('completion-stat-time');
+const completionStatStreak = document.getElementById('completion-stat-streak');
+const completionStatsBtn = document.getElementById('completion-stats-btn');
+const completionRestartBtn = document.getElementById('completion-restart-btn');
 
 const correctionOptions = document.getElementById('correction-options');
 const editBtn = document.getElementById('edit-btn');
@@ -637,6 +646,7 @@ function animateCardsFromHeaderToDeck(callback) {
 // --- CANVAS ANIMATION ---
 let isCanvasLoopRunning = false;
 let canvasAnimationId = null;
+let celebrationParticles = [];
 
 function startCanvasLoop() {
     if (!isCanvasLoopRunning) {
@@ -647,6 +657,7 @@ function startCanvasLoop() {
 
 function clearBalls() {
     balls = [];
+    celebrationParticles = [];
     if (canvasAnimationId) {
         cancelAnimationFrame(canvasAnimationId);
         canvasAnimationId = null;
@@ -655,6 +666,34 @@ function clearBalls() {
     if (ctx && canvas) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
+}
+
+function launchCelebrationParticles(count = 140) {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+    const colors = [
+        '#10B981', '#34D399', '#F59E0B', '#FBBF24', 
+        '#6366F1', '#818CF8', '#EC4899', '#F43F5E', 
+        '#06B6D4', '#3B82F6', '#8B5CF6'
+    ];
+    const w = canvas.width || window.innerWidth;
+    const h = canvas.height || window.innerHeight;
+    for (let i = 0; i < count; i++) {
+        celebrationParticles.push({
+            x: Math.random() * w,
+            y: -15 - Math.random() * (h * 0.4),
+            vx: (Math.random() - 0.5) * 5,
+            vy: Math.random() * 4 + 2,
+            size: Math.random() * 8 + 6,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            rotation: Math.random() * 360,
+            rotationSpeed: (Math.random() - 0.5) * 8,
+            wobble: Math.random() * Math.PI,
+            wobbleSpeed: Math.random() * 0.08 + 0.04,
+            shape: Math.random() > 0.35 ? 'rect' : 'circle'
+        });
+    }
+    startCanvasLoop();
 }
 
 function resizeCanvas() {
@@ -671,7 +710,7 @@ function resizeCanvas() {
         ctx.fill();
         ctx.closePath();
     });
-    if (balls.some(b => !b.isStatic)) {
+    if (balls.some(b => !b.isStatic) || celebrationParticles.length > 0) {
         startCanvasLoop();
     }
 }
@@ -699,6 +738,36 @@ function createBall(isCorrect) {
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     let anyMoving = false;
+
+    // Render and update celebration confetti particles
+    if (celebrationParticles.length > 0) {
+        anyMoving = true;
+        for (let i = celebrationParticles.length - 1; i >= 0; i--) {
+            const p = celebrationParticles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.wobble += p.wobbleSpeed;
+            p.x += Math.sin(p.wobble) * 1.6;
+            p.rotation += p.rotationSpeed;
+            p.vy += 0.05; // gravity
+            if (p.y > canvas.height + 25) {
+                celebrationParticles.splice(i, 1);
+                continue;
+            }
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rotation * Math.PI) / 180);
+            ctx.fillStyle = p.color;
+            if (p.shape === 'rect') {
+                ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+            } else {
+                ctx.beginPath();
+                ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+    }
 
     for (let i = 0; i < balls.length; i++) {
         const ball = balls[i];
@@ -1143,31 +1212,103 @@ function schedulePrecomputeNextCard() {
     }
 }
 
+function formatTimeDisplay(totalSeconds) {
+    const s = Math.max(0, Math.floor(totalSeconds || 0));
+    const mins = Math.floor(s / 60);
+    const secs = s % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
+function showDeckCompletionScreen() {
+    precomputedNextCard = null;
+    const completedSession = completeCurrentSession();
+    showNotificationPill("Sessão concluída! Parabéns!", "stats.svg");
+    launchCelebrationParticles(150);
+
+    // Hide normal card UI elements
+    deleteCardBtn?.classList.add('hidden');
+    bookmarkCardBtn?.classList.add('hidden');
+    questionImageContainer?.classList.add('hidden');
+    if (questionImage) questionImage.src = '';
+    questionText?.classList.add('hidden');
+    ankiAnswerContainer?.classList.add('hidden');
+    ankiControlsArea?.classList.add('hidden');
+    actionButtonsArea?.classList.add('hidden');
+    openAnswerArea?.classList.add('hidden');
+    openDoubleAnswerArea?.classList.add('hidden');
+    mcAnswerArea?.classList.add('hidden');
+    flashcardAnswerForm?.classList.add('hidden');
+
+    // Populate completion stats
+    if (completionStatCards) {
+        const total = completedSession?.cardsAnswered || allQuestions.filter(isPlayableCard).length;
+        completionStatCards.textContent = total;
+    }
+    if (completionStatAcc) {
+        const acc = completedSession?.accuracy !== undefined ? completedSession.accuracy : 100;
+        completionStatAcc.textContent = `${acc}%`;
+    }
+    if (completionStatTime) {
+        completionStatTime.textContent = formatTimeDisplay(completedSession?.durationSeconds || 0);
+    }
+    if (completionStatStreak) {
+        const streakVal = completedSession?.bestStreak || completedSession?.maxStreak || 0;
+        completionStatStreak.textContent = `${streakVal} 🔥`;
+    }
+    if (deckCompletionSubtitle) {
+        const dTitle = deckTitle?.textContent || 'deste baralho';
+        deckCompletionSubtitle.textContent = `Todos os cards de "${dTitle}" foram concluídos com sucesso nesta rodada!`;
+    }
+
+    // Show completion card view
+    if (deckCompletionView) {
+        deckCompletionView.classList.remove('hidden');
+    }
+}
+
+function hideDeckCompletionScreen() {
+    if (deckCompletionView) {
+        deckCompletionView.classList.add('hidden');
+    }
+    if (questionText) {
+        questionText.classList.remove('hidden');
+    }
+    if (flashcardAnswerForm) {
+        flashcardAnswerForm.classList.remove('hidden');
+    }
+}
+
+function restartDeckSession() {
+    clearBalls();
+    score = 0;
+    currentStreak = 0;
+    consecutiveDueCardsCount = 0;
+    updateStreakUI(false);
+    scoreDisplay.textContent = '0';
+    if (activeMode === 'exam') {
+        let examData = {};
+        try { examData = JSON.parse(localStorage.getItem('flashcardsExam')) || {}; } catch (e) {}
+        const enabledDeckIds = new Set((examData.decks || []).filter(d => d.enabled !== false).map(d => d.id));
+        const playable = allQuestions.filter(q => isPlayableCard(q) && (!q.deckId || enabledDeckIds.has(q.deckId)));
+        questionsPool = shuffleArray(playable);
+    } else {
+        questionsPool = shuffleArray(allQuestions.filter(isPlayableCard));
+    }
+    currentStep = 0;
+    precomputedNextCard = null;
+    saveGameState();
+    updateScoreDisplay();
+    initStatsSession(deckTitle.textContent, activeMode, allQuestions.filter(isPlayableCard).length, 0);
+    hideDeckCompletionScreen();
+    loadQuestion();
+    showNotificationPill("Baralho reiniciado!", "reset.svg");
+}
+
 // --- CORE GAME LOGIC ---
 function loadQuestion() {
     questionsPool = questionsPool.filter(isPlayableCard);
     if (questionsPool.length === 0) {
-        precomputedNextCard = null;
-        questionText.textContent = "Parabéns! Você concluiu todas as questões. Reiniciando...";
-        deleteCardBtn.classList.add('hidden');
-        bookmarkCardBtn.classList.add('hidden');
-        if (ankiControlsArea) ankiControlsArea.classList.add('hidden');
-        if (ankiAnswerContainer) ankiAnswerContainer.classList.add('hidden');
-        archiveCurrentSession(true);
-        showNotificationPill("Sessão concluída! Verifique suas estatísticas.", "stats.svg");
-        setTimeout(() => {
-            clearBalls();
-            score = 0;
-            currentStreak = 0;
-            consecutiveDueCardsCount = 0;
-            updateStreakUI(false);
-            scoreDisplay.textContent = '0';
-            // Requirement 1: Make all cards random at start
-            questionsPool = shuffleArray(allQuestions.filter(isPlayableCard));
-            currentStep = 0;
-            initStatsSession(deckTitle.textContent, activeMode, allQuestions.filter(isPlayableCard).length, 0);
-            loadQuestion();
-        }, 3000);
+        showDeckCompletionScreen();
         return;
     }
 
@@ -1482,6 +1623,7 @@ function resetUI() {
     isAnimating = false;
     isBeingCorrected = false;
     hideHighlightPopup();
+    hideDeckCompletionScreen();
     [answerInput, answerInput1, answerInput2].forEach(inp => {
         inp.value = ''; inp.disabled = false;
         inp.classList.remove('animate-pulse', 'border-red-500');
@@ -2827,6 +2969,12 @@ if (restartGameBtn) {
             loadQuestion();
             showNotificationPill("Jogo reiniciado!", "reset.svg");
         });
+    });
+}
+
+if (completionRestartBtn) {
+    completionRestartBtn.addEventListener('click', () => {
+        restartDeckSession();
     });
 }
 exportBtn.addEventListener('click', () => {

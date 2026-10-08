@@ -69,6 +69,23 @@ A aplicação opera em três modos distintos controlados via `activeMode` e sinc
 
 ---
 
+### 1.4 Fluxo de Conclusão do Baralho (Deck Completion)
+
+Quando todos os cartões jogáveis do baralho são memorizados (`questionsPool.length === 0`):
+1. **Animação de Celebração**:
+   - `launchCelebrationParticles(150)` dispara confetes coloridos no canvas de fundo `#background-canvas`.
+2. **Tela de Conclusão no Card Holder**:
+   - O `#question-card` transiciona para `#deck-completion-view` exibindo ícone 🏆, título comemorativo e grid com métricas resumo (Cards Concluídos, Precisão %, Duração e Sequência Máxima).
+   - Disponibiliza dois botões de ação:
+     - **"Ver estatísticas"**: Leva o usuário diretamente à página [`pages/stats.html`](file:///home/chief_arthur/Apps/Flashcards/pages/stats.html).
+     - **"Restart"**: Limpa o canvas, reinicia score/streak, re-embaralha o baralho e inicia nova sessão via `initStatsSession()`.
+   - Remove temporizadores automáticos arbitrários para dar controle total ao usuário.
+3. **Persistência Enriquecida de Sessão**:
+   - `completeCurrentSession()` finaliza a sessão gravando métricas completas (duração ativa, correções de IA, acurácia) tanto no `history` quanto mantendo `currentSession` ativo.
+   - A página de estatísticas exibe o `#session-completed-banner` de 100% zerado e permite ao usuário alternar a visualização de todos os cards da sessão respondida.
+
+---
+
 ## 2. Algoritmos Centrais e Regras Matemáticas
 
 ### 2.1 Algoritmo de Fila Adaptativa e Repetição Espaçada
