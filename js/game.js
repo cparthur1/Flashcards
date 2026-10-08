@@ -1008,10 +1008,93 @@ function isPlayableCard(card) {
     return card && card.type !== 'divisor' && card.type !== 'divider' && card.type !== 'note';
 }
 
+// --- SPACED REPETITION & LEAN ALGORITHM HELPERS ---
+
+/**
+ * Calculates repetition gap for cards based on thinking time.
+ * Inversely proportional to thinking time:
+ * - Hard cards (long thinking time): shorter gap (closer to min 5)
+ * - Quick answers / fast misses: larger waiting line gap
+ * Minimum gap is always 5 cards.
+ */
+function calculateThinkingGap(thinkingTimeSec) {
+    const minGap = 5;
+    const t = Math.max(0.8, thinkingTimeSec || 1);
+    // Inverse proportion: 15 / t - 1
+    // >= 15s -> bonus 0 -> gap 5
+    // 10s   -> bonus 1 -> gap 6
+    // 5s    -> bonus 2 -> gap 7
+    // 2.5s  -> bonus 5 -> gap 10
+    // 1.5s  -> bonus 9 -> gap 14
+    // <= 0.8s -> bonus 15 -> gap 20
+    const bonus = Math.min(15, Math.max(0, Math.round(15 / t - 1)));
+    return minGap + bonus;
+}
+
+let precomputedNextCard = null;
+
+/**
+ * Precomputes candidate for the next step while the user is thinking on the current card.
+ * Offloads algorithm execution from the animated "next card" transition.
+ */
+function precomputeNextCandidate() {
+    if (!questionsPool || questionsPool.length === 0) {
+        precomputedNextCard = null;
+        return;
+    }
+
+    if (questionsPool.length === 1) {
+        precomputedNextCard = questionsPool[0];
+        return;
+    }
+
+    const nextStep = currentStep + 1;
+    // Exclude current card because any rescheduled card has gap >= 5, so it cannot be next
+    const candidates = questionsPool.filter(c => c !== currentQuestion);
+    if (candidates.length === 0) {
+        precomputedNextCard = questionsPool[0];
+        return;
+    }
+
+    // 1. Due cards: dueStep <= nextStep
+    // Requirement 5: "The cards on dueStep = currentStep are randomly picked between them do they dont form a linear queue."
+    const dueCards = candidates.filter(c => c.dueStep !== undefined && c.dueStep <= nextStep);
+    if (dueCards.length > 0) {
+        precomputedNextCard = dueCards[Math.floor(Math.random() * dueCards.length)];
+        return;
+    }
+
+    // 2. New / unreviewed cards (dueStep === undefined)
+    const newCards = candidates.filter(c => c.dueStep === undefined);
+    if (newCards.length > 0) {
+        precomputedNextCard = newCards[Math.floor(Math.random() * newCards.length)];
+        return;
+    }
+
+    // 3. Fallback: all remaining cards are scheduled in the future (dueStep > nextStep)
+    // Pick randomly among cards with the lowest/earliest dueStep
+    let minDue = Infinity;
+    for (const c of candidates) {
+        const d = c.dueStep || 0;
+        if (d < minDue) minDue = d;
+    }
+    const earliestCards = candidates.filter(c => (c.dueStep || 0) === minDue);
+    precomputedNextCard = earliestCards[Math.floor(Math.random() * earliestCards.length)] || candidates[0];
+}
+
+function schedulePrecomputeNextCard() {
+    if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(() => precomputeNextCandidate(), { timeout: 100 });
+    } else {
+        setTimeout(precomputeNextCandidate, 0);
+    }
+}
+
 // --- CORE GAME LOGIC ---
 function loadQuestion() {
     questionsPool = questionsPool.filter(isPlayableCard);
     if (questionsPool.length === 0) {
+        precomputedNextCard = null;
         questionText.textContent = "Parabéns! Você concluiu todas as questões. Reiniciando...";
         deleteCardBtn.classList.add('hidden');
         bookmarkCardBtn.classList.add('hidden');
@@ -1025,7 +1108,8 @@ function loadQuestion() {
             currentStreak = 0;
             updateStreakUI(false);
             scoreDisplay.textContent = '0';
-            questionsPool = allQuestions.filter(isPlayableCard);
+            // Requirement 1: Make all cards random at start
+            questionsPool = shuffleArray(allQuestions.filter(isPlayableCard));
             currentStep = 0;
             initStatsSession(deckTitle.textContent, activeMode, allQuestions.filter(isPlayableCard).length, 0);
             loadQuestion();
@@ -1039,39 +1123,37 @@ function loadQuestion() {
     bookmarkCardBtn.classList.remove('hidden');
     questionsLeftDisplay.textContent = questionsPool.length;
 
-    // Selection algorithm:
-    // 1. Check if there are due Anki cards (dueStep <= currentStep)
-    const dueAnkiCards = questionsPool
-        .map((card, idx) => ({ card, idx }))
-        .filter(item => item.card.type === 'anki' && item.card.dueStep !== undefined && item.card.dueStep <= currentStep);
-
-    if (dueAnkiCards.length > 0) {
-        dueAnkiCards.sort((a, b) => a.card.dueStep - b.card.dueStep);
-        currentQuestionIndexInPool = dueAnkiCards[0].idx;
+    // Fast-path: use precomputed next card if valid and still in pool
+    if (precomputedNextCard && questionsPool.includes(precomputedNextCard)) {
+        currentQuestion = precomputedNextCard;
+        currentQuestionIndexInPool = questionsPool.indexOf(precomputedNextCard);
     } else {
-        // 2. Otherwise pick randomly among available cards (non-Anki cards or ready Anki cards)
-        const availableCards = questionsPool
-            .map((card, idx) => ({ card, idx }))
-            .filter(item => item.card.dueStep === undefined || item.card.dueStep <= currentStep);
-
-        if (availableCards.length > 0) {
-            // Avoid immediately repeating the same card if other cards are available
-            const otherCards = availableCards.filter(item => item.idx !== currentQuestionIndexInPool);
-            const poolToPick = (otherCards.length > 0) ? otherCards : availableCards;
-            const randItem = poolToPick[Math.floor(Math.random() * poolToPick.length)];
-            currentQuestionIndexInPool = randItem.idx;
+        // Fallback / Initial pick: random among due cards, or new cards, or earliest future
+        const dueCards = questionsPool.filter(c => c.dueStep !== undefined && c.dueStep <= currentStep);
+        if (dueCards.length > 0) {
+            currentQuestion = dueCards[Math.floor(Math.random() * dueCards.length)];
         } else {
-            // 3. Fallback: all remaining cards are future Anki cards, pick the closest one
-            const sortedAll = questionsPool
-                .map((card, idx) => ({ card, idx }))
-                .sort((a, b) => (a.card.dueStep || 0) - (b.card.dueStep || 0));
-            currentQuestionIndexInPool = sortedAll[0].idx;
+            const newCards = questionsPool.filter(c => c.dueStep === undefined);
+            if (newCards.length > 0) {
+                currentQuestion = newCards[Math.floor(Math.random() * newCards.length)];
+            } else {
+                let minDue = Infinity;
+                for (const c of questionsPool) {
+                    const d = c.dueStep || 0;
+                    if (d < minDue) minDue = d;
+                }
+                const earliest = questionsPool.filter(c => (c.dueStep || 0) === minDue);
+                currentQuestion = earliest[Math.floor(Math.random() * earliest.length)] || questionsPool[0];
+            }
         }
+        currentQuestionIndexInPool = questionsPool.indexOf(currentQuestion);
     }
 
-    currentQuestion = questionsPool[currentQuestionIndexInPool];
+    // Clear precomputed slot and immediately queue precomputation for subsequent card in background
+    precomputedNextCard = null;
+    schedulePrecomputeNextCard();
+
     renderBookmarkIcon();
-    
     hideHighlightPopup();
 
     ensureQuestionStructure();
@@ -1249,37 +1331,51 @@ function handleAnkiRating(rating) {
     });
 
     if (rating === 'easy') {
-        // "easy": removes card from deck
         createBall(true);
         triggerHaptic('correct');
         questionCard.classList.add('glow-correct');
-        score++;
-        questionsPool.splice(currentQuestionIndexInPool, 1);
-        saveGameState();
-        setTimeout(() => {
-            animateCardToHeader(() => {
-                updateScoreDisplay();
-                loadQuestion();
-            });
-        }, 300);
+
+        currentQuestion.correctStreak = (currentQuestion.correctStreak || 0) + 1;
+        const totalWrongs = currentQuestion.wrongCount || 0;
+        const isLeech = totalWrongs > 4;
+        const shouldRemove = !isLeech || currentQuestion.correctStreak >= 2;
+
+        if (shouldRemove) {
+            score++;
+            questionsPool.splice(currentQuestionIndexInPool, 1);
+            saveGameState();
+            setTimeout(() => {
+                animateCardToHeader(() => {
+                    updateScoreDisplay();
+                    loadQuestion();
+                });
+            }, 300);
+        } else {
+            // Leech card (>4 errors): maintain in game until guessed right 2x
+            currentQuestion.dueStep = currentStep + 8;
+            saveGameState();
+            setTimeout(() => {
+                animateCardToBack(() => {
+                    loadQuestion();
+                });
+            }, 300);
+        }
     } else if (rating === 'good') {
-        // "medium": keeps card in rotation with moderate repetition frequency (+8)
         createBall(true);
-        currentQuestion.dueStep = currentStep + 8;
+        currentQuestion.correctStreak = (currentQuestion.correctStreak || 0) + 1;
+        currentQuestion.dueStep = currentStep + 12;
         saveGameState();
         animateCardToBack(() => {
             loadQuestion();
         });
     } else if (rating === 'hard') {
-        // "hard": keeps card in rotation with medium-high repetition frequency (+4)
         createBall(false);
-        currentQuestion.dueStep = currentStep + 4;
+        currentQuestion.dueStep = currentStep + 7;
         saveGameState();
         animateCardToBack(() => {
             loadQuestion();
         });
     } else if (rating === 'again') {
-        // "errei": keeps card in rotation with high repetition frequency (+2)
         createBall(false);
         questionCard.classList.remove('card-shake');
         void questionCard.offsetWidth;
@@ -1287,7 +1383,10 @@ function handleAnkiRating(rating) {
         triggerHaptic('shake');
         setTimeout(() => questionCard.classList.remove('card-shake'), 450);
 
-        currentQuestion.dueStep = currentStep + 2;
+        currentQuestion.wrongCount = (currentQuestion.wrongCount || 0) + 1;
+        currentQuestion.correctStreak = 0;
+        // Requirement 2: at least 5 cards gap
+        currentQuestion.dueStep = currentStep + 5;
         saveGameState();
         setTimeout(() => {
             animateCardToBack(() => {
@@ -1557,6 +1656,15 @@ function showFeedback(isCorrect, element) {
 
         currentQuestion.isBeingCorrected = true;
         isOpenSubmitting = false;
+
+        // Spaced repetition & leech tracking
+        currentQuestion.wrongCount = (currentQuestion.wrongCount || 0) + 1;
+        currentQuestion.correctStreak = 0;
+        const gap = calculateThinkingGap(elapsedSeconds);
+        currentQuestion.dueStep = currentStep + gap;
+        saveGameState();
+        precomputeNextCandidate();
+
         if (!element) {
             updateFeedbackText();
             submitBtn.classList.add('hidden');
@@ -1573,16 +1681,32 @@ function showFeedback(isCorrect, element) {
         correctionOptions.classList.add('flex');
         correctionOptions.classList.remove('hidden');
     } else {
-        // Card goes upwards toward the points counter in the header shrinking on the way to it
-        score++;
-        questionsPool.splice(currentQuestionIndexInPool, 1);
-        saveGameState();
-        setTimeout(() => {
-            animateCardToHeader(() => {
-                updateScoreDisplay();
-                loadQuestion();
-            });
-        }, 400);
+        currentQuestion.correctStreak = (currentQuestion.correctStreak || 0) + 1;
+        const totalWrongs = currentQuestion.wrongCount || 0;
+        // Requirement 4: If guessed wrong >4x, keep in game until guessed right 2x
+        const isLeech = totalWrongs > 4;
+        const shouldRemove = !isLeech || currentQuestion.correctStreak >= 2;
+
+        if (shouldRemove) {
+            score++;
+            questionsPool.splice(currentQuestionIndexInPool, 1);
+            saveGameState();
+            setTimeout(() => {
+                animateCardToHeader(() => {
+                    updateScoreDisplay();
+                    loadQuestion();
+                });
+            }, 400);
+        } else {
+            // Leech card: maintain in game until guessed right 2x
+            currentQuestion.dueStep = currentStep + 5;
+            saveGameState();
+            setTimeout(() => {
+                animateCardToBack(() => {
+                    loadQuestion();
+                });
+            }, 400);
+        }
     }
 }
 
@@ -1639,7 +1763,7 @@ function saveGameState() {
     try {
         if (activeMode === 'notebook') {
             localStorage.setItem('flashcardsNotebook', JSON.stringify({
-                questionsPool, allQuestions, score, currentStreak, deckTitle: "Caderno"
+                questionsPool, allQuestions, score, currentStreak, currentStep, deckTitle: "Caderno"
             }));
         } else if (activeMode === 'exam') {
             let examData = {};
@@ -1652,11 +1776,12 @@ function saveGameState() {
                 allQuestions,
                 score,
                 currentStreak,
+                currentStep,
                 deckTitle: "Semana de Provas"
             }));
         } else {
             localStorage.setItem('flashcardsSave', JSON.stringify({
-                questionsPool, allQuestions, score, currentStreak, deckTitle: deckTitle.textContent
+                questionsPool, allQuestions, score, currentStreak, currentStep, deckTitle: deckTitle.textContent
             }));
         }
     } catch (e) {
@@ -2385,8 +2510,10 @@ if (restartGameBtn) {
                 const playable = allQuestions.filter(q => isPlayableCard(q) && (!q.deckId || enabledDeckIds.has(q.deckId)));
                 questionsPool = shuffleArray(playable);
             } else {
-                questionsPool = allQuestions.filter(isPlayableCard);
+                questionsPool = shuffleArray(allQuestions.filter(isPlayableCard));
             }
+            currentStep = 0;
+            precomputedNextCard = null;
             saveGameState();
             updateScoreDisplay();
             archiveCurrentSession(false);
@@ -3254,6 +3381,11 @@ function switchActiveMode(newMode) {
     allQuestions = data.allQuestions || [];
     questionsPool = (data.questionsPool || []).filter(isPlayableCard);
     score = data.score || 0;
+    currentStep = data.currentStep || 0;
+    precomputedNextCard = null;
+    if (score === 0) {
+        questionsPool = shuffleArray(questionsPool);
+    }
     deckTitle.textContent = data.deckTitle || (newMode === 'notebook' ? "Caderno" : (newMode === 'exam' ? "Semana de Provas" : "Flashcards"));
     document.title = data.deckTitle ? `${data.deckTitle} | Flashcards` : "Estudando Flashcards";
     
@@ -3388,6 +3520,12 @@ async function initGame() {
     questionsPool = (data.questionsPool || []).filter(isPlayableCard);
     score = data.score || 0;
     currentStreak = data.currentStreak || 0;
+    currentStep = data.currentStep || 0;
+    precomputedNextCard = null;
+    // Requirement 1: Make all cards random at start
+    if (score === 0 || !data.questionsPool || data.questionsPool.length === allQuestions.filter(isPlayableCard).length) {
+        questionsPool = shuffleArray(questionsPool);
+    }
     updateStreakUI(false);
     deckTitle.textContent = data.deckTitle || (activeMode === 'notebook' ? "Caderno" : (activeMode === 'exam' ? "Semana de Provas" : "Flashcards"));
     document.title = data.deckTitle ? `${data.deckTitle} | Flashcards` : "Estudando Flashcards";

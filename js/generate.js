@@ -1076,7 +1076,6 @@ function convertDocumentToCards(text, mode = 'anki') {
 function parseTxtToJSONWithPlaceholders(text) {
     const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
     const cards = [];
-    let currentSectionTopic = "";
 
     for (let line of lines) {
         line = line.trim();
@@ -1085,7 +1084,6 @@ function parseTxtToJSONWithPlaceholders(text) {
         if (line.startsWith('#')) {
             const noteText = line.replace(/^#+\s*/, '').trim();
             if (noteText) {
-                currentSectionTopic = noteText;
                 cards.push({
                     type: "divisor",
                     text: noteText,
@@ -1200,10 +1198,6 @@ function parseTxtToJSONWithPlaceholders(text) {
         }
 
         if (card) {
-            if (currentSectionTopic && !card.topic) {
-                card.topic = currentSectionTopic;
-                card.aiTopic = currentSectionTopic;
-            }
             cards.push(card);
         }
     }

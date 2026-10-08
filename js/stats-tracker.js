@@ -87,6 +87,8 @@ export function initStatsSession(deckTitle, mode = 'normal', totalCards = 0, cur
         startTime: now,
         lastActiveTime: now,
         durationSeconds: 0,
+        activeDurationSeconds: 0,
+        activeCardsCount: 0,
         totalCardsInDeck: totalCards,
         cardsAnswered: currentScore > 0 ? currentScore : 0,
         correctCount: currentScore > 0 ? currentScore : 0,
@@ -130,6 +132,12 @@ export function recordStatsAnswer({ card, isCorrect, rating, timeSpentSeconds, u
     // Time clamping: reasonable 1s - 180s range per card
     const validTime = Math.max(1, Math.min(180, Math.round(timeSpentSeconds || 5)));
     sess.durationSeconds = (sess.durationSeconds || 0) + validTime;
+
+    // Disconsider cards taking longer than 90s (breaks / idle) for average pace calculation
+    if (validTime <= 90) {
+        sess.activeDurationSeconds = (sess.activeDurationSeconds || 0) + validTime;
+        sess.activeCardsCount = (sess.activeCardsCount || 0) + 1;
+    }
 
     // Handle Anki specifics
     if (card.type === 'anki' && rating) {
@@ -276,6 +284,8 @@ export function injectSampleHistory(deckTitle = "Flashcards") {
             startTime: now - 3 * day,
             endTime: now - 3 * day + 600 * 1000,
             durationSeconds: 600,
+            activeDurationSeconds: 600,
+            activeCardsCount: 40,
             totalCardsInDeck: 40,
             cardsAnswered: 40,
             correctCount: 28,
@@ -299,6 +309,8 @@ export function injectSampleHistory(deckTitle = "Flashcards") {
             startTime: now - 2 * day,
             endTime: now - 2 * day + 720 * 1000,
             durationSeconds: 720,
+            activeDurationSeconds: 720,
+            activeCardsCount: 40,
             totalCardsInDeck: 40,
             cardsAnswered: 40,
             correctCount: 32,
@@ -322,6 +334,8 @@ export function injectSampleHistory(deckTitle = "Flashcards") {
             startTime: now - 1 * day,
             endTime: now - 1 * day + 540 * 1000,
             durationSeconds: 540,
+            activeDurationSeconds: 540,
+            activeCardsCount: 40,
             totalCardsInDeck: 40,
             cardsAnswered: 40,
             correctCount: 36,

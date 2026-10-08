@@ -292,7 +292,22 @@ function renderCurrentSession(sess, gameState, history) {
 
     const progressPct = totalCards > 0 ? Math.round((completedCards / totalCards) * 100) : 0;
     const accuracyPct = answered > 0 ? Math.round((correct / answered) * 100) : 100;
-    const avgSeconds = answered > 0 ? (duration / answered).toFixed(1) : '0';
+
+    // Disconsider cards taking longer than 90s to be answered (study break / tab left idle)
+    let avgSeconds = '0';
+    if (sess && sess.activeCardsCount > 0 && typeof sess.activeDurationSeconds === 'number') {
+        avgSeconds = (sess.activeDurationSeconds / sess.activeCardsCount).toFixed(1);
+    } else if (sess && sess.answersLog && sess.answersLog.length > 0) {
+        const validEntries = sess.answersLog.filter(e => typeof e.timeSeconds === 'number' && e.timeSeconds <= 90);
+        if (validEntries.length > 0) {
+            const sumValid = validEntries.reduce((acc, e) => acc + e.timeSeconds, 0);
+            avgSeconds = (sumValid / validEntries.length).toFixed(1);
+        } else if (answered > 0) {
+            avgSeconds = (duration / answered).toFixed(1);
+        }
+    } else if (answered > 0) {
+        avgSeconds = (duration / answered).toFixed(1);
+    }
 
     // Update KPIs
     kpiProgressPercent.textContent = `${progressPct}%`;
@@ -411,14 +426,20 @@ function renderPaceAndEstimate(sess, gameState, avgSeconds, poolRemaining) {
 
     const log = sess && sess.answersLog ? sess.answersLog : [];
 
-    // Fastest and slowest card
+    // Fastest and slowest card (excluding cards taking > 90s as breaks)
     if (log.length > 0) {
         const times = log.map(e => e.timeSeconds).filter(t => typeof t === 'number' && !isNaN(t));
+        const validTimes = times.filter(t => t <= 90);
+        const effectiveTimes = validTimes.length > 0 ? validTimes : times;
+
         const correctEntries = log.filter(e => e.isCorrect && typeof e.timeSeconds === 'number');
-        const minTime = correctEntries.length > 0 
-            ? Math.min(...correctEntries.map(e => e.timeSeconds))
-            : Math.min(...times);
-        const maxTime = Math.max(...times);
+        const validCorrectEntries = correctEntries.filter(e => e.timeSeconds <= 90);
+        const effectiveCorrect = validCorrectEntries.length > 0 ? validCorrectEntries : correctEntries;
+
+        const minTime = effectiveCorrect.length > 0 
+            ? Math.min(...effectiveCorrect.map(e => e.timeSeconds))
+            : Math.min(...effectiveTimes);
+        const maxTime = Math.max(...effectiveTimes);
 
         if (paceFastestCard) paceFastestCard.textContent = `${minTime}s`;
         if (paceSlowestCard) paceSlowestCard.textContent = `${maxTime}s`;
