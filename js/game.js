@@ -1418,12 +1418,13 @@ function restartDeckSession() {
     }
     currentStep = 0;
     precomputedNextCard = null;
-    saveGameState();
+    saveGameState(true);
     updateScoreDisplay();
-    initStatsSession(deckTitle?.textContent || 'Flashcards', activeMode, allQuestions.filter(isPlayableCard).length, 0);
+    initStatsSession(deckTitle?.textContent || 'Flashcards', activeMode, questionsPool.length, 0, true);
     hideDeckCompletionScreen();
     loadQuestion();
     showNotificationPill("Baralho reiniciado!", "reset.svg");
+    console.log("[Game] Baralho reiniciado com sucesso. Nova sessão de estatísticas iniciada.");
 }
 
 // Expose completion testing helpers globally
@@ -3124,12 +3125,14 @@ if (restartGameBtn) {
             currentStep = 0;
             consecutiveDueCardsCount = 0;
             precomputedNextCard = null;
-            saveGameState();
+            saveGameState(true);
             updateScoreDisplay();
             archiveCurrentSession(false);
-            initStatsSession(deckTitle.textContent, activeMode, allQuestions.filter(isPlayableCard).length, 0);
+            initStatsSession(deckTitle.textContent, activeMode, questionsPool.length, 0, true);
+            hideDeckCompletionScreen();
             loadQuestion();
             showNotificationPill("Jogo reiniciado!", "reset.svg");
+            console.log("[Game] Jogo reiniciado via header com sucesso.");
         });
     });
 }

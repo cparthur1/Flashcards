@@ -54,8 +54,13 @@ export function saveStatsStorage(data) {
 
 /**
  * Initializes or restores the active session.
+ * @param {string} deckTitle - Deck title
+ * @param {string} mode - Game mode ('normal', 'notebook', 'exam')
+ * @param {number} totalCards - Total playable cards in deck
+ * @param {number} currentScore - Initial score if restoring
+ * @param {boolean} forceNew - Force starting a new session (e.g. on restart)
  */
-export function initStatsSession(deckTitle, mode = 'normal', totalCards = 0, currentScore = 0) {
+export function initStatsSession(deckTitle, mode = 'normal', totalCards = 0, currentScore = 0, forceNew = false) {
     const data = getStatsStorage();
     const now = Date.now();
     const title = deckTitle || 'Flashcards';
@@ -66,7 +71,8 @@ export function initStatsSession(deckTitle, mode = 'normal', totalCards = 0, cur
         const timeSinceActive = now - (sess.lastActiveTime || sess.startTime);
         const isInactiveOverdue = timeSinceActive > 3600 * 1000; // 1 hour
 
-        if (isSameDeck && !isInactiveOverdue) {
+        // If not forcing a new session, same deck, not overdue, and NOT already completed, continue it
+        if (!forceNew && isSameDeck && !isInactiveOverdue && !sess.completed) {
             sess.totalCardsInDeck = totalCards || sess.totalCardsInDeck || 0;
             sess.lastActiveTime = now;
             saveStatsStorage(data);
@@ -75,7 +81,9 @@ export function initStatsSession(deckTitle, mode = 'normal', totalCards = 0, cur
 
         // Archive previous session if it had answered cards
         if (sess.cardsAnswered > 0) {
-            archiveSessionInternal(data, false);
+            archiveSessionInternal(data, Boolean(sess.completed));
+        } else {
+            data.currentSession = null;
         }
     }
 
@@ -111,6 +119,12 @@ export function initStatsSession(deckTitle, mode = 'normal', totalCards = 0, cur
 
     data.currentSession = newSession;
     saveStatsStorage(data);
+    console.log("[StatsTracker] Nova sessão de estatísticas iniciada:", {
+        id: newSession.id,
+        deck: newSession.deckTitle,
+        mode: newSession.mode,
+        totalCards: newSession.totalCardsInDeck
+    });
     return newSession;
 }
 
@@ -123,9 +137,9 @@ export function recordStatsAnswer({ card, isCorrect, rating, timeSpentSeconds, u
         let data = getStatsStorage();
         const now = Date.now();
 
-        if (!data.currentSession) {
-            console.log("[StatsTracker] Nenhum currentSession ativo encontrado. Inicializando nova sessão...");
-            initStatsSession("Flashcards", "normal", 0, 0);
+        if (!data.currentSession || data.currentSession.completed) {
+            console.log("[StatsTracker] Sessão ausente ou já concluída. Inicializando nova sessão...");
+            initStatsSession(data.currentSession?.deckTitle || "Flashcards", data.currentSession?.mode || "normal", 0, 0, true);
             data = getStatsStorage();
         }
 

@@ -304,9 +304,9 @@ function renderCurrentSession(sess, gameState, history) {
     const isCompleted = Boolean(sess && (sess.completed || (totalCards > 0 && poolRemaining === 0)));
     const completedCards = isCompleted ? totalCards : Math.max(0, totalCards - poolRemaining);
 
-    const answered = sess && sess.cardsAnswered ? sess.cardsAnswered : completedCards;
-    const correct = sess && sess.correctCount !== undefined ? sess.correctCount : completedCards;
-    const incorrect = sess && sess.incorrectCount !== undefined ? sess.incorrectCount : 0;
+    const answered = sess && typeof sess.cardsAnswered === 'number' ? sess.cardsAnswered : completedCards;
+    const correct = sess && typeof sess.correctCount === 'number' ? sess.correctCount : completedCards;
+    const incorrect = sess && typeof sess.incorrectCount === 'number' ? sess.incorrectCount : 0;
     const duration = sess ? sess.durationSeconds || 0 : 0;
 
     const progressPct = totalCards > 0 ? (isCompleted ? 100 : Math.round((completedCards / totalCards) * 100)) : 0;
