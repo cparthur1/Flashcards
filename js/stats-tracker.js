@@ -204,6 +204,8 @@ export function recordStatsAnswer({ card, isCorrect, rating, timeSpentSeconds, u
                     answer: card.answer || '',
                     answer2: card.answer2 || '',
                     type: typeKey,
+                    aiTopic: card.aiTopic || '',
+                    aiSubject: card.aiSubject || '',
                     incorrectCount: 1,
                     correctCount: 0,
                     lastRating: rating || 'incorrect',

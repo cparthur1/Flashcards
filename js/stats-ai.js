@@ -69,6 +69,45 @@ export function saveStoredAiCategories(data) {
 }
 
 /**
+ * Creates a normalized content signature for a card.
+ */
+export function getCardSignature(card) {
+    if (!card) return '';
+    const cleanDesc = (card.description || '').replace(/<[^>]*>/g, '').trim().toLowerCase();
+    const cleanAns = (card.answer || '').replace(/<[^>]*>/g, '').trim().toLowerCase();
+    return `${cleanDesc}:::${cleanAns}`.slice(0, 200);
+}
+
+/**
+ * Checks if a deck or its cards are already categorized, avoiding redundant AI requests.
+ */
+export function isDeckCategorized({ allQuestions, currentDeckTitle, categories }) {
+    if (!categories) return false;
+
+    const playable = (allQuestions || []).filter(q => q.type !== 'divisor' && q.type !== 'divider' && q.type !== 'note');
+    if (playable.length === 0) return true;
+
+    // 1. Check if any playable card has an aiTopic property
+    const hasCardProp = playable.some(c => Boolean(c.aiTopic));
+    if (hasCardProp) return true;
+
+    // 2. Check if any card signature is mapped in persistent cardTopicsBySignature
+    if (categories.cardTopicsBySignature) {
+        const hasSigMatch = playable.some(c => {
+            const sig = getCardSignature(c);
+            return sig && Boolean(categories.cardTopicsBySignature[sig]);
+        });
+        if (hasSigMatch) return true;
+    }
+
+    // 3. Check if deck has registered topics in cardTopicsByDeck
+    const deckTopics = categories.cardTopicsByDeck?.[currentDeckTitle];
+    if (deckTopics && deckTopics.length > 0) return true;
+
+    return false;
+}
+
+/**
  * Calls Gemini Flash-Lite using Function Calling to categorize all decks and current cards at once.
  */
 export async function callGeminiFlashLiteCategorization({
@@ -191,23 +230,46 @@ REGRAS CRÍTICAS E OBRIGATÓRIAS:
 
             // Merge with known categories
             const newSubjects = Array.from(new Set([...knownSubjects, ...deckSubjects.map(ds => ds.subject)])).filter(Boolean);
-            const deckTopics = Array.from(new Set([...knownTopics, ...cardTopics.map(ct => ct.topic)])).filter(Boolean);
+            const deckTopicsList = Array.from(new Set([...knownTopics, ...cardTopics.map(ct => ct.topic)])).filter(Boolean);
+
+            const cardTopicsBySignature = { ...(existingCategories?.cardTopicsBySignature || {}) };
+            const cardSubjectsBySignature = { ...(existingCategories?.cardSubjectsBySignature || {}) };
+
+            const deckSubjectMap = {
+                ...(existingCategories?.deckSubjectMap || {}),
+                ...Object.fromEntries(deckSubjects.map(ds => [ds.deckTitle, ds.subject]))
+            };
+            const currentDeckSubject = deckSubjectMap[currentDeckTitle] || "Geral";
+
+            // Map and persist each classified card
+            cardTopics.forEach(ct => {
+                const idx = Number(ct.cardIndex);
+                const topic = ct.topic;
+                if (!isNaN(idx) && cards && cards[idx] && topic) {
+                    cards[idx].aiTopic = topic;
+                    cards[idx].aiSubject = currentDeckSubject;
+                    const sig = getCardSignature(cards[idx]);
+                    if (sig) {
+                        cardTopicsBySignature[sig] = topic;
+                        cardSubjectsBySignature[sig] = currentDeckSubject;
+                    }
+                }
+            });
 
             const updatedCategories = {
                 ...existingCategories,
                 knownSubjects: newSubjects,
                 knownTopicsByDeck: {
                     ...(existingCategories?.knownTopicsByDeck || {}),
-                    [currentDeckTitle]: deckTopics
+                    [currentDeckTitle]: deckTopicsList
                 },
-                deckSubjectMap: {
-                    ...(existingCategories?.deckSubjectMap || {}),
-                    ...Object.fromEntries(deckSubjects.map(ds => [ds.deckTitle, ds.subject]))
-                },
+                deckSubjectMap,
                 cardTopicsByDeck: {
                     ...(existingCategories?.cardTopicsByDeck || {}),
                     [currentDeckTitle]: cardTopics
                 },
+                cardTopicsBySignature,
+                cardSubjectsBySignature,
                 lastUpdated: Date.now()
             };
 
@@ -311,12 +373,18 @@ export function computeAiStats({
     const cardTopicsList = categories.cardTopicsByDeck?.[currentDeckTitle] || [];
     const cardTopicMap = {};
     cardTopicsList.forEach(ct => {
-        cardTopicMap[ct.cardIndex] = ct.topic;
+        if (ct.cardIndex !== undefined) cardTopicMap[ct.cardIndex] = ct.topic;
     });
+
+    const cardTopicsBySignature = categories.cardTopicsBySignature || {};
 
     const topicsMap = {};
     (allQuestions || []).forEach((card, idx) => {
-        const topic = cardTopicMap[idx] || "Geral";
+        const sig = getCardSignature(card);
+        const topic = card.aiTopic || (sig ? cardTopicsBySignature[sig] : null) || cardTopicMap[idx] || "Geral";
+        if (!card.aiTopic && topic !== "Geral") {
+            card.aiTopic = topic;
+        }
         if (!topicsMap[topic]) {
             topicsMap[topic] = {
                 topic: topic,

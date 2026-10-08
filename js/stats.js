@@ -3,7 +3,9 @@ import {
     callGeminiFlashLiteCategorization, 
     getStoredAiCategories, 
     saveStoredAiCategories, 
-    computeAiStats 
+    computeAiStats,
+    isDeckCategorized,
+    getCardSignature
 } from './stats-ai.js';
 import { ROUTES } from './utils.js';
 import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
@@ -11,8 +13,16 @@ import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemember
 // DOM Elements
 const backToGameBtn = document.getElementById('back-to-game-btn');
 const deckBadge = document.getElementById('deck-badge');
+const liveSyncIndicator = document.getElementById('live-sync-indicator');
 const exportStatsBtn = document.getElementById('export-stats-btn');
 const clearStatsBtn = document.getElementById('clear-stats-btn');
+
+function getActiveStorageKey() {
+    const activeMode = localStorage.getItem('flashcardsActiveMode') || 'normal';
+    if (activeMode === 'notebook') return 'flashcardsNotebook';
+    if (activeMode === 'exam') return 'flashcardsExam';
+    return 'flashcardsSave';
+}
 
 // Tabs
 const tabBtnCurrent = document.getElementById('tab-btn-current');
@@ -200,9 +210,11 @@ function switchTab(tabName) {
         if (tabName === 'history') {
             targetBtn = tabBtnHistory;
             targetContent = tabContentHistory;
+            renderHistory(getStatsStorage());
         } else if (tabName === 'struggling') {
             targetBtn = tabBtnStruggling;
             targetContent = tabContentStruggling;
+            renderStrugglingCards(getStatsStorage().currentSession);
         }
 
         targetBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm', 'dark:bg-gray-700', 'dark:text-blue-400');
@@ -226,26 +238,45 @@ function switchTab(tabName) {
 }
 
 // MAIN RENDER FUNCTION
-function renderAllStats() {
+function renderAllStats(options = {}) {
+    const isLiveUpdate = Boolean(options.isLiveUpdate);
     const statsData = getStatsStorage();
     const activeMode = localStorage.getItem('flashcardsActiveMode') || 'normal';
-    const storageKey = activeMode === 'notebook' ? 'flashcardsNotebook' : 'flashcardsSave';
+    const storageKey = getActiveStorageKey();
     const gameState = JSON.parse(localStorage.getItem(storageKey)) || {};
 
-    const deckTitle = gameState.deckTitle || (activeMode === 'notebook' ? 'Caderno' : 'Flashcards');
-    if (deckBadge) deckBadge.textContent = deckTitle;
+    const deckTitle = gameState.deckTitle || (activeMode === 'notebook' ? 'Caderno' : (activeMode === 'exam' ? 'Semana de Provas' : 'Flashcards'));
+    if (deckBadge && deckBadge.textContent !== deckTitle) {
+        deckBadge.textContent = deckTitle;
+    }
 
     // --- TAB 1: CURRENT SESSION ---
     renderCurrentSession(statsData.currentSession, gameState, statsData.history);
 
     // --- AI SECTION: TOPICS & SUBJECTS ---
-    renderAiSection(gameState, statsData);
+    renderAiSection(gameState, statsData, isLiveUpdate);
 
     // --- TAB 2: HISTORY ---
-    renderHistory(statsData);
+    const history = statsData.history || [];
+    if (historyBadgeCount) historyBadgeCount.textContent = history.length;
+    if (!isLiveUpdate || currentActiveTab === 'history') {
+        renderHistory(statsData);
+    }
 
     // --- TAB 3: STRUGGLING CARDS ---
-    renderStrugglingCards(statsData.currentSession);
+    const strugglingObj = statsData.currentSession && statsData.currentSession.strugglingCards ? statsData.currentSession.strugglingCards : {};
+    const ignored = (statsData.currentSession && statsData.currentSession.ignoredStrugglingKeys) || [];
+    const strugglingCount = Math.min(20, Object.keys(strugglingObj).filter(k => !ignored.includes(k)).length);
+    if (strugglingBadgeCount) {
+        strugglingBadgeCount.textContent = strugglingCount;
+        strugglingBadgeCount.classList.toggle('hidden', strugglingCount === 0);
+    }
+    if (addAllToNotebookBtn) {
+        addAllToNotebookBtn.classList.toggle('hidden', strugglingCount === 0);
+    }
+    if (!isLiveUpdate || currentActiveTab === 'struggling') {
+        renderStrugglingCards(statsData.currentSession);
+    }
 }
 
 function renderCurrentSession(sess, gameState, history) {
@@ -873,15 +904,17 @@ function renderAiDashboard(currentDeckTitle, subjectsStats, topicsStats, gameSta
     }
 }
 
-function renderAiSection(gameState, statsData) {
+function renderAiSection(gameState, statsData, isLiveUpdate = false) {
     if (!aiStatsSection) return;
 
     const apiKey = getGeminiApiKey();
-    const currentDeckTitle = gameState.deckTitle || (localStorage.getItem('flashcardsActiveMode') === 'notebook' ? 'Caderno' : 'Flashcards');
+    const currentDeckTitle = gameState.deckTitle || (localStorage.getItem('flashcardsActiveMode') === 'notebook' ? 'Caderno' : (localStorage.getItem('flashcardsActiveMode') === 'exam' ? 'Semana de Provas' : 'Flashcards'));
     const categories = getStoredAiCategories();
 
-    // Case 1: AI is NOT activated -> Do nothing automatically, render prompt with API Key input
+    // Case 1: AI is NOT activated -> Render prompt with API Key input
     if (!apiKey) {
+        if (document.getElementById('ai-stats-key-input')) return;
+
         aiStatsSection.innerHTML = `
             <div class="bg-gradient-to-b from-purple-500/5 via-blue-500/5 to-transparent p-5 sm:p-6 rounded-2xl border border-purple-200/80 shadow-sm relative overflow-hidden">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -947,28 +980,50 @@ function renderAiSection(gameState, statsData) {
 
     // Case 2: Loading State
     if (isAiLoading) {
+        return;
+    }
+
+    // Case 3: Persistent check - verify if current deck/cards are already categorized
+    const alreadyCategorized = isDeckCategorized({
+        allQuestions: gameState.allQuestions || [],
+        currentDeckTitle,
+        categories
+    });
+
+    if (!alreadyCategorized) {
+        // If background live update, never trigger network calls
+        if (isLiveUpdate) return;
+
         aiStatsSection.innerHTML = `
-            <div class="bg-white p-8 rounded-2xl border border-purple-200 shadow-sm flex flex-col items-center justify-center text-center space-y-3 py-10">
-                <div class="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+            <div class="bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-transparent p-5 sm:p-6 rounded-2xl border border-purple-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="space-y-1">
-                    <h3 class="text-sm font-bold text-gray-900">Analisando Baralhos e Assuntos com Gemini Flash-Lite...</h3>
-                    <p class="text-xs text-gray-500 max-w-md">
-                        Categorizando seus baralhos em matérias amplas e mapeando os tópicos específicos dos cards com o menor número possível de categorias.
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700">
+                            <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
+                            Gemini Flash-Lite
+                        </span>
+                        <span class="text-xs text-gray-500 font-medium">Categorização Semântica</span>
+                    </div>
+                    <h2 class="text-base sm:text-lg font-bold text-gray-900">Categorizar Baralho com IA</h2>
+                    <p class="text-xs text-gray-600 max-w-xl">
+                        Classifique os cards de "<b>${currentDeckTitle}</b>" em tópicos e matérias para análise de retenção. A categorização é permanente e salva no seu navegador.
                     </p>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <button id="btn-categorize-deck-now" class="px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-purple-600 hover:bg-purple-700 active:scale-[0.98] transition shadow-md flex items-center justify-center gap-1.5 whitespace-nowrap">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        <span>Categorizar Baralho</span>
+                    </button>
                 </div>
             </div>
         `;
+        document.getElementById('btn-categorize-deck-now')?.addEventListener('click', () => {
+            triggerAiCategorization(gameState, statsData);
+        });
         return;
     }
 
-    // Case 3: AI is active, check if current deck needs categorization
-    const deckTopics = categories?.cardTopicsByDeck?.[currentDeckTitle];
-    if (!categories || !deckTopics || deckTopics.length === 0) {
-        triggerAiCategorization(gameState, statsData);
-        return;
-    }
-
-    // Case 4: Render Categorized Dashboard
+    // Case 4: Render Categorized Dashboard (fully persistent, instant from storage)
     const { subjectsStats, topicsStats } = computeAiStats({
         categories,
         currentDeckTitle,
@@ -988,16 +1043,29 @@ async function triggerAiCategorization(gameState, statsData) {
     if (!apiKey) return;
 
     isAiLoading = true;
-    renderAiSection(gameState, statsData);
+    if (aiStatsSection) {
+        aiStatsSection.innerHTML = `
+            <div class="bg-white p-8 rounded-2xl border border-purple-200 shadow-sm flex flex-col items-center justify-center text-center space-y-3 py-10">
+                <div class="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+                <div class="space-y-1">
+                    <h3 class="text-sm font-bold text-gray-900">Analisando Baralhos e Assuntos com Gemini Flash-Lite...</h3>
+                    <p class="text-xs text-gray-500 max-w-md">
+                        Categorizando seus baralhos em matérias amplas e mapeando os tópicos específicos dos cards com o menor número possível de categorias.
+                    </p>
+                </div>
+            </div>
+        `;
+    }
 
     try {
-        const currentDeckTitle = gameState.deckTitle || (localStorage.getItem('flashcardsActiveMode') === 'notebook' ? 'Caderno' : 'Flashcards');
+        const activeMode = localStorage.getItem('flashcardsActiveMode') || 'normal';
+        const currentDeckTitle = gameState.deckTitle || (activeMode === 'notebook' ? 'Caderno' : (activeMode === 'exam' ? 'Semana de Provas' : 'Flashcards'));
         const historyDeckTitles = (statsData.history || []).map(s => s.deckTitle).filter(Boolean);
         const deckTitles = Array.from(new Set([currentDeckTitle, ...historyDeckTitles]));
         const cards = (gameState.allQuestions || []).filter(q => q.type !== 'divisor' && q.type !== 'divider' && q.type !== 'note');
         const existingCategories = getStoredAiCategories() || { knownSubjects: [], knownTopicsByDeck: {} };
 
-        await callGeminiFlashLiteCategorization({
+        const categorizedResult = await callGeminiFlashLiteCategorization({
             apiKey,
             currentDeckTitle,
             deckTitles,
@@ -1005,8 +1073,30 @@ async function triggerAiCategorization(gameState, statsData) {
             existingCategories
         });
 
+        // Persist aiTopic directly into the stored allQuestions array
+        try {
+            const storageKey = getActiveStorageKey();
+            const rawStored = localStorage.getItem(storageKey);
+            if (rawStored) {
+                const parsedStored = JSON.parse(rawStored);
+                if (parsedStored.allQuestions) {
+                    const sigMap = categorizedResult.updatedCategories?.cardTopicsBySignature || {};
+                    parsedStored.allQuestions.forEach(q => {
+                        const sig = getCardSignature(q);
+                        if (sig && sigMap[sig]) {
+                            q.aiTopic = sigMap[sig];
+                        }
+                    });
+                    localStorage.setItem(storageKey, JSON.stringify(parsedStored));
+                    gameState.allQuestions = parsedStored.allQuestions;
+                }
+            }
+        } catch (e) {
+            console.warn("Erro ao persistir aiTopic nos cards do jogo:", e);
+        }
+
         isAiLoading = false;
-        showStatsPill("Estatísticas de IA geradas com sucesso!", true);
+        showStatsPill("Estatísticas de IA geradas e salvas com sucesso!", true);
         renderAiSection(gameState, statsData);
 
     } catch (err) {
@@ -1226,7 +1316,7 @@ function renderStrugglingCards(sess) {
             </div>
             <div class="flex flex-col items-center sm:items-end gap-1.5 flex-shrink-0 self-end sm:self-center">
                 <button class="add-single-notebook-btn w-full sm:w-auto px-3.5 py-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 text-xs font-semibold transition shadow-xs flex items-center justify-center gap-1"
-                    data-desc="${encodeURIComponent(item.description)}" data-ans="${encodeURIComponent(item.answer || '')}" data-ans2="${encodeURIComponent(item.answer2 || '')}" data-type="${item.type || 'open'}">
+                    data-desc="${encodeURIComponent(item.description)}" data-ans="${encodeURIComponent(item.answer || '')}" data-ans2="${encodeURIComponent(item.answer2 || '')}" data-type="${item.type || 'open'}" data-topic="${encodeURIComponent(item.aiTopic || '')}" data-subject="${encodeURIComponent(item.aiSubject || '')}">
                     + Caderno
                 </button>
                 <button class="ignore-single-struggling-btn text-[11px] font-medium text-gray-400 hover:text-red-500 transition hover:underline px-1 py-0.5"
@@ -1245,7 +1335,9 @@ function renderStrugglingCards(sess) {
             const ans = decodeURIComponent(btn.dataset.ans);
             const ans2 = decodeURIComponent(btn.dataset.ans2);
             const type = btn.dataset.type;
-            addCardToNotebook({ description: desc, answer: ans, answer2: ans2, type: type });
+            const topic = decodeURIComponent(btn.dataset.topic || '');
+            const subject = decodeURIComponent(btn.dataset.subject || '');
+            addCardToNotebook({ description: desc, answer: ans, answer2: ans2, type: type, aiTopic: topic, aiSubject: subject });
             btn.textContent = 'Adicionado ✓';
             btn.classList.add('bg-emerald-100', 'text-emerald-700');
             btn.disabled = true;
@@ -1308,18 +1400,20 @@ addAllToNotebookBtn?.addEventListener('click', () => {
     validEntries.sort((a, b) => (b[1].incorrectCount || 0) - (a[1].incorrectCount || 0));
     const top20Entries = validEntries.slice(0, 20);
 
+    let notebookState = JSON.parse(localStorage.getItem('flashcardsNotebook')) || {
+        allQuestions: [], questionsPool: [], score: 0, deckTitle: 'Caderno'
+    };
     let addedCount = 0;
     top20Entries.forEach(([key, item]) => {
-        let notebookState = JSON.parse(localStorage.getItem('flashcardsNotebook')) || {
-            allQuestions: [], questionsPool: [], score: 0, deckTitle: 'Caderno'
-        };
         if (!notebookState.allQuestions.some(q => q.description === item.description)) {
-            notebookState.allQuestions.push(item);
-            notebookState.questionsPool.push(item);
-            localStorage.setItem('flashcardsNotebook', JSON.stringify(notebookState));
+            notebookState.allQuestions.push({ ...item });
+            notebookState.questionsPool.push({ ...item });
             addedCount++;
         }
     });
+    if (addedCount > 0) {
+        localStorage.setItem('flashcardsNotebook', JSON.stringify(notebookState));
+    }
 
     showStatsPill(`${addedCount} cards adicionados ao Caderno!`, true);
     renderStrugglingCards(statsData.currentSession);
@@ -1364,8 +1458,7 @@ modalSaveApiKeyBtn?.addEventListener('click', async () => {
     await setGeminiApiKey(key, remember);
     closeAiModal();
     showStatsPill(remember ? "Chave de API salva com segurança no dispositivo!" : "Chave de API salva!", true);
-    const activeMode = localStorage.getItem('flashcardsActiveMode') || 'normal';
-    const storageKey = activeMode === 'notebook' ? 'flashcardsNotebook' : 'flashcardsSave';
+    const storageKey = getActiveStorageKey();
     const gameState = JSON.parse(localStorage.getItem(storageKey)) || {};
     const statsData = getStatsStorage();
     triggerAiCategorization(gameState, statsData);
@@ -1376,8 +1469,7 @@ modalDisableAiBtn?.addEventListener('click', async () => {
     if (modalApiKeyRemember) modalApiKeyRemember.checked = false;
     closeAiModal();
     showStatsPill("Recursos de IA desativados.", false);
-    const activeMode = localStorage.getItem('flashcardsActiveMode') || 'normal';
-    const storageKey = activeMode === 'notebook' ? 'flashcardsNotebook' : 'flashcardsSave';
+    const storageKey = getActiveStorageKey();
     const gameState = JSON.parse(localStorage.getItem(storageKey)) || {};
     const statsData = getStatsStorage();
     renderAiSection(gameState, statsData);
@@ -1387,4 +1479,44 @@ modalDisableAiBtn?.addEventListener('click', async () => {
 document.addEventListener('DOMContentLoaded', async () => {
     await getApiKeyAsync();
     renderAllStats();
+});
+
+// REAL-TIME CROSS-TAB AUTO-SYNC (Ultra-lightweight: 0% CPU idle, RAF debounced, background-tab deferred)
+const SYNC_STORAGE_KEYS = new Set([
+    'flashcards_stats',
+    'flashcardsSave',
+    'flashcardsNotebook',
+    'flashcardsExam',
+    'flashcardsActiveMode'
+]);
+
+let pendingLiveUpdate = false;
+let liveUpdateRafId = null;
+
+function scheduleLiveStatsUpdate() {
+    if (document.hidden) {
+        pendingLiveUpdate = true;
+        return;
+    }
+    if (liveUpdateRafId) {
+        cancelAnimationFrame(liveUpdateRafId);
+    }
+    liveUpdateRafId = requestAnimationFrame(() => {
+        liveUpdateRafId = null;
+        renderAllStats({ isLiveUpdate: true });
+    });
+}
+
+window.addEventListener('storage', (event) => {
+    // If event.key is null (storage clear) or matches one of our monitored game keys
+    if (!event.key || SYNC_STORAGE_KEYS.has(event.key)) {
+        scheduleLiveStatsUpdate();
+    }
+});
+
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && pendingLiveUpdate) {
+        pendingLiveUpdate = false;
+        scheduleLiveStatsUpdate();
+    }
 });
