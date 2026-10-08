@@ -131,22 +131,23 @@
             <div id="session-completed-banner" class="hidden m3-card-expressive p-4 sm:p-6 bg-gradient-to-r from-emerald-50/90 via-teal-50/90 to-blue-50/90 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-blue-950/30 border-2 border-emerald-300 dark:border-emerald-700/60 shadow-md">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div class="flex items-start sm:items-center gap-3.5">
-                        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-300 text-2xl sm:text-3xl flex items-center justify-center shadow-md flex-shrink-0 select-none">
-                            🏆
+                        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-300 text-amber-950 flex items-center justify-center shadow-md flex-shrink-0 select-none">
+                            <span class="material-symbols-rounded text-2xl sm:text-3xl text-amber-950">emoji_events</span>
                         </div>
                         <div>
                             <div class="flex items-center gap-2 flex-wrap">
-                                <h2 class="text-base sm:text-lg font-black text-emerald-950 dark:text-emerald-200">Deck Concluído com Sucesso! 🎉</h2>
+                                <h2 class="text-base sm:text-lg font-black text-emerald-950 dark:text-emerald-200">Deck Concluído com Sucesso!</h2>
+                                <span class="material-symbols-rounded text-lg text-emerald-600 dark:text-emerald-400">celebration</span>
                                 <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-200/80 dark:bg-emerald-800 text-emerald-900 dark:text-emerald-100">100% Zerado</span>
                             </div>
                             <p class="text-xs text-emerald-800 dark:text-emerald-300/90 mt-0.5">Todos os cards deste baralho foram respondidos e memorizados nesta rodada.</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 flex-wrap">
-                        <span id="banner-stat-acc" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-white/80 dark:bg-gray-800/80 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 shadow-xs">🎯 100% Precisão</span>
-                        <span id="banner-stat-time" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-white/80 dark:bg-gray-800/80 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 shadow-xs">⏱️ 00:00</span>
-                        <span id="banner-stat-streak" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-white/80 dark:bg-gray-800/80 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 shadow-xs">🔥 0 seguidos</span>
-                        <span id="banner-stat-ai" class="hidden text-xs font-bold px-3 py-1.5 rounded-xl bg-white/80 dark:bg-gray-800/80 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 shadow-xs">✦ 0 com IA</span>
+                        <span id="banner-stat-acc" class="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-white/80 dark:bg-gray-800/80 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 shadow-xs"><span class="material-symbols-rounded text-sm">track_changes</span><span class="banner-stat-acc-text">100% Precisão</span></span>
+                        <span id="banner-stat-time" class="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-white/80 dark:bg-gray-800/80 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 shadow-xs"><span class="material-symbols-rounded text-sm">timer</span><span class="banner-stat-time-text">00:00</span></span>
+                        <span id="banner-stat-streak" class="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-white/80 dark:bg-gray-800/80 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 shadow-xs"><span class="material-symbols-rounded text-sm">local_fire_department</span><span class="banner-stat-streak-text">0 seguidos</span></span>
+                        <span id="banner-stat-ai" class="hidden flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-white/80 dark:bg-gray-800/80 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 shadow-xs"><span class="material-symbols-rounded text-sm">auto_awesome</span><span class="banner-stat-ai-text">0 com IA</span></span>
                     </div>
                 </div>
             </div>
@@ -207,8 +208,8 @@
                 <div class="m3-card-expressive p-4 sm:p-5 flex flex-col justify-between">
                     <div class="flex items-center justify-between text-gray-500 mb-2">
                         <span class="text-xs font-semibold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Sequência</span>
-                        <div class="p-1.5 bg-amber-50 text-amber-600 rounded-lg">
-                            <span class="text-sm">🔥</span>
+                        <div class="p-1.5 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center">
+                            <span class="material-symbols-rounded text-sm">local_fire_department</span>
                         </div>
                     </div>
                     <div>
@@ -239,11 +240,11 @@
                         </div>
                     </div>
                     <div class="pt-3 mt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                        <div title="Card respondido mais rápido nesta sessão">
-                            ⚡ Mais rápido: <span id="pace-fastest-card" class="font-bold text-emerald-600">--</span>
+                        <div class="flex items-center gap-1" title="Card respondido mais rápido nesta sessão">
+                            <span class="material-symbols-rounded text-xs text-amber-500">bolt</span> Mais rápido: <span id="pace-fastest-card" class="font-bold text-emerald-600">--</span>
                         </div>
-                        <div title="Card mais reflexivo nesta sessão">
-                            ⏳ Mais lento: <span id="pace-slowest-card" class="font-bold text-amber-500">--</span>
+                        <div class="flex items-center gap-1" title="Card mais reflexivo nesta sessão">
+                            <span class="material-symbols-rounded text-xs text-amber-500">hourglass_top</span> Mais lento: <span id="pace-slowest-card" class="font-bold text-amber-500">--</span>
                         </div>
                     </div>
                 </div>
@@ -425,7 +426,10 @@
                 </div>
                 <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm text-center col-span-2 sm:col-span-1">
                     <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Recorde de Sequência</span>
-                    <span id="alltime-best-streak" class="text-2xl font-extrabold text-amber-500">🔥 0</span>
+                    <span id="alltime-best-streak" class="text-2xl font-extrabold text-amber-500 inline-flex items-center justify-center gap-1">
+                        <span class="material-symbols-rounded text-2xl text-amber-500">local_fire_department</span>
+                        <span id="alltime-best-streak-val">0</span>
+                    </span>
                 </div>
             </div>
 
@@ -440,7 +444,7 @@
                         <p class="text-xs text-gray-500">Taxa de acertos registrada ao longo das sessões anteriores</p>
                     </div>
                     <span id="chart-trend-badge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 hidden">
-                        📈 +0%
+                        <span class="material-symbols-rounded text-sm align-middle">trending_up</span> +0%
                     </span>
                 </div>
 
@@ -504,7 +508,7 @@
         <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col border border-gray-200 animate-in fade-in zoom-in-95 duration-200">
             <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
                 <div class="flex items-center gap-2">
-                    <span class="text-base">✨</span>
+                    <span class="material-symbols-rounded text-base text-amber-500">auto_awesome</span>
                     <h3 class="font-bold text-base text-gray-900">Configurar Gemini API Key</h3>
                 </div>
                 <button id="close-ai-modal-btn" class="text-gray-400 hover:text-gray-600 transition">

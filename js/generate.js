@@ -2285,7 +2285,7 @@ function finishGeneratingAnimation(success = true, count = 0) {
         if (statusText) statusText.textContent = "Não foi possível extrair cards automaticamente. Verifique os arquivos enviados ou tente novamente.";
         if (badgeStatus) {
             badgeStatus.className = "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gradient-to-b from-red-50 to-red-100/90 text-red-700 border border-red-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]";
-            badgeStatus.innerHTML = '⚠ ATENÇÃO';
+            badgeStatus.innerHTML = '<span class="material-symbols-rounded text-xs align-middle">warning</span> ATENÇÃO';
         }
     }
 }

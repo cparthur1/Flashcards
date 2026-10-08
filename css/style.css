@@ -2330,12 +2330,25 @@ mark.card-hl-purple {
     .m3-fade-through-enter,
     .m3-fade-through-exit,
     .m3-dialog-enter,
+    .card-shockwave-pulse,
     ::view-transition-group(*),
     ::view-transition-old(*),
     ::view-transition-new(*) {
         animation: none !important;
         transform: none !important;
     }
+}
+
+/* Deck Completion Shockwave Card Pulse */
+@keyframes cardShockwavePulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+    20% { transform: scale(1.02); box-shadow: 0 0 25px 4px rgba(16, 185, 129, 0.35); }
+    50% { transform: scale(0.995); box-shadow: 0 0 15px 2px rgba(59, 130, 246, 0.2); }
+    100% { transform: scale(1); box-shadow: none; }
+}
+
+.card-shockwave-pulse {
+    animation: cardShockwavePulse 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 

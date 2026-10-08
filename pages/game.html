@@ -44,6 +44,7 @@
     class="bg-[var(--md-sys-color-background)] text-[var(--md-sys-color-on-background)] flex items-start sm:items-center justify-center min-h-screen p-4">
 
     <canvas id="background-canvas" class="fixed top-0 left-0 w-full h-full" style="z-index: -1;"></canvas>
+    <canvas id="shockwave-canvas" class="fixed top-0 left-0 w-full h-full pointer-events-none" style="z-index: 25;"></canvas>
 
     <!-- HAMBURGER MENU BACKDROP (click outside dismiss) -->
     <div id="hamburger-backdrop" class="hidden fixed inset-0 z-[60] bg-transparent"></div>
@@ -282,7 +283,7 @@
                 title="Sequência de acertos consecutivos">
                 <div id="streak-bg-color" class="absolute inset-0 transition-opacity duration-300 opacity-0 pointer-events-none"></div>
                 <div id="streak-shimmer-sweep" class="absolute inset-0 pointer-events-none opacity-0"></div>
-                <span id="streak-fire-icon" class="relative z-10 text-xs transition-transform duration-300 grayscale opacity-60">🔥</span>
+                <span id="streak-fire-icon" class="material-symbols-rounded text-sm relative z-10 transition-transform duration-300 grayscale opacity-60 text-amber-500">local_fire_department</span>
                 <span id="streak-count" class="relative z-10 font-black tracking-tight text-xs text-gray-600">0</span>
             </div>
         </div>
@@ -343,11 +344,12 @@
 
             <!-- Deck Completion Celebration View (Placed directly on the card holder) -->
             <div id="deck-completion-view" class="hidden w-full flex flex-col items-center justify-center text-center py-4 px-2 select-none">
-                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr from-amber-400 to-yellow-300 flex items-center justify-center shadow-lg text-3xl sm:text-4xl mb-3 flex-shrink-0">
-                    🏆
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr from-amber-400 to-yellow-300 flex items-center justify-center shadow-lg mb-3 flex-shrink-0 text-amber-950">
+                    <span class="material-symbols-rounded text-4xl sm:text-5xl text-amber-950">emoji_events</span>
                 </div>
-                <h2 class="text-xl sm:text-2xl font-black text-[var(--md-sys-color-on-surface)] tracking-tight mb-1">
-                    Parabéns! Deck Concluído! 🎉
+                <h2 class="text-xl sm:text-2xl font-black text-[var(--md-sys-color-on-surface)] tracking-tight mb-1 flex items-center justify-center gap-1.5">
+                    <span>Parabéns! Deck Concluído!</span>
+                    <span class="material-symbols-rounded text-2xl text-amber-500">celebration</span>
                 </h2>
                 <p id="deck-completion-subtitle" class="text-xs sm:text-sm text-[var(--md-sys-color-on-surface-variant)] mb-4 max-w-sm">
                     Todos os cards deste baralho foram respondidos com sucesso nesta rodada!
@@ -369,7 +371,10 @@
                     </div>
                     <div class="p-2.5 rounded-2xl bg-[var(--md-sys-color-surface-container-high)] border border-[var(--md-sys-color-outline-variant)] flex flex-col items-center">
                         <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Sequência</span>
-                        <span id="completion-stat-streak" class="text-base sm:text-lg font-extrabold text-amber-500">0 🔥</span>
+                        <span class="inline-flex items-center gap-1 text-amber-500">
+                            <span id="completion-stat-streak" class="text-base sm:text-lg font-extrabold">0</span>
+                            <span class="material-symbols-rounded text-base">local_fire_department</span>
+                        </span>
                     </div>
                 </div>
 

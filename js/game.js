@@ -73,6 +73,7 @@ const completionStatTime = document.getElementById('completion-stat-time');
 const completionStatStreak = document.getElementById('completion-stat-streak');
 const completionStatsBtn = document.getElementById('completion-stats-btn');
 const completionRestartBtn = document.getElementById('completion-restart-btn');
+const shockwaveCanvas = document.getElementById('shockwave-canvas');
 
 const correctionOptions = document.getElementById('correction-options');
 const editBtn = document.getElementById('edit-btn');
@@ -696,6 +697,130 @@ function launchCelebrationParticles(count = 140) {
     startCanvasLoop();
 }
 
+let shockwaveAnimationId = null;
+
+function playCompletionShockwave() {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion || !shockwaveCanvas || !questionCard) return;
+
+    if (shockwaveAnimationId) {
+        cancelAnimationFrame(shockwaveAnimationId);
+        shockwaveAnimationId = null;
+    }
+
+    const shockCtx = shockwaveCanvas.getContext('2d');
+    if (!shockCtx) return;
+
+    // Tactile physical pulse on the question card holder
+    questionCard.classList.remove('card-shockwave-pulse');
+    void questionCard.offsetWidth;
+    questionCard.classList.add('card-shockwave-pulse');
+    setTimeout(() => questionCard.classList.remove('card-shockwave-pulse'), 750);
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    shockwaveCanvas.width = width * dpr;
+    shockwaveCanvas.height = height * dpr;
+    shockCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const rect = questionCard.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+
+    // Distance to farthest corner of screen
+    const maxRadius = Math.hypot(
+        Math.max(cx, width - cx),
+        Math.max(cy, height - cy)
+    ) + 60;
+
+    const duration = 1400; // ms
+    const startTime = performance.now();
+
+    function frame(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(1, elapsed / duration);
+
+        shockCtx.clearRect(0, 0, width, height);
+
+        // Leading Blue / Cobalt shockwave front
+        const pBlue = 1 - Math.pow(1 - progress, 3.2);
+        const rBlue = pBlue * maxRadius;
+        const fadeBlue = Math.pow(1 - progress, 1.2);
+        const strokeBlue = Math.max(3, 16 * (1 - progress * 0.6));
+
+        // Trailing Green / Emerald shockwave front (lagging smoothly behind)
+        const tGreen = Math.max(0, (progress - 0.08) / 0.92);
+        const pGreen = 1 - Math.pow(1 - tGreen, 3.2);
+        const rGreen = pGreen * maxRadius;
+        const fadeGreen = Math.pow(1 - tGreen, 1.2);
+        const strokeGreen = Math.max(3, 14 * (1 - tGreen * 0.6));
+
+        // Luminous radial gradient wash between green and blue
+        if (rGreen > 0 && rBlue > rGreen) {
+            const grad = shockCtx.createRadialGradient(cx, cy, Math.max(0, rGreen - 16), cx, cy, rBlue + 16);
+            grad.addColorStop(0, 'rgba(16, 185, 129, 0)');
+            grad.addColorStop(0.35, `rgba(16, 185, 129, ${0.28 * fadeGreen})`);
+            grad.addColorStop(0.65, `rgba(37, 99, 235, ${0.30 * fadeBlue})`);
+            grad.addColorStop(1, 'rgba(37, 99, 235, 0)');
+
+            shockCtx.beginPath();
+            shockCtx.arc(cx, cy, rBlue + 16, 0, Math.PI * 2);
+            shockCtx.fillStyle = grad;
+            shockCtx.fill();
+        }
+
+        // Green Wave Ring
+        if (rGreen > 0 && fadeGreen > 0.01) {
+            shockCtx.save();
+            shockCtx.beginPath();
+            shockCtx.arc(cx, cy, rGreen, 0, Math.PI * 2);
+            shockCtx.lineWidth = strokeGreen;
+            shockCtx.strokeStyle = `rgba(16, 185, 129, ${0.85 * fadeGreen})`;
+            shockCtx.shadowColor = 'rgba(16, 185, 129, 0.7)';
+            shockCtx.shadowBlur = 18 * fadeGreen;
+            shockCtx.stroke();
+            shockCtx.restore();
+        }
+
+        // Blue Wave Ring
+        if (rBlue > 0 && fadeBlue > 0.01) {
+            shockCtx.save();
+            shockCtx.beginPath();
+            shockCtx.arc(cx, cy, rBlue, 0, Math.PI * 2);
+            shockCtx.lineWidth = strokeBlue;
+            shockCtx.strokeStyle = `rgba(37, 99, 235, ${0.85 * fadeBlue})`;
+            shockCtx.shadowColor = 'rgba(59, 130, 246, 0.8)';
+            shockCtx.shadowBlur = 22 * fadeBlue;
+            shockCtx.stroke();
+            shockCtx.restore();
+        }
+
+        // Secondary Cyan wavefront resonance
+        const tCyan = Math.max(0, (progress - 0.14) / 0.86);
+        if (tCyan > 0) {
+            const rCyan = (1 - Math.pow(1 - tCyan, 3.2)) * maxRadius;
+            const fadeCyan = Math.pow(1 - tCyan, 1.3);
+            shockCtx.save();
+            shockCtx.beginPath();
+            shockCtx.arc(cx, cy, rCyan, 0, Math.PI * 2);
+            shockCtx.lineWidth = Math.max(2, 8 * (1 - tCyan));
+            shockCtx.strokeStyle = `rgba(6, 182, 212, ${0.65 * fadeCyan})`;
+            shockCtx.stroke();
+            shockCtx.restore();
+        }
+
+        if (progress < 1) {
+            shockwaveAnimationId = requestAnimationFrame(frame);
+        } else {
+            shockCtx.clearRect(0, 0, width, height);
+            shockwaveAnimationId = null;
+        }
+    }
+
+    shockwaveAnimationId = requestAnimationFrame(frame);
+}
+
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -1223,6 +1348,7 @@ function showDeckCompletionScreen() {
     precomputedNextCard = null;
     const completedSession = completeCurrentSession();
     showNotificationPill("Sessão concluída! Parabéns!", "stats.svg");
+    playCompletionShockwave();
     launchCelebrationParticles(150);
 
     // Hide normal card UI elements
@@ -1253,7 +1379,7 @@ function showDeckCompletionScreen() {
     }
     if (completionStatStreak) {
         const streakVal = completedSession?.bestStreak || completedSession?.maxStreak || 0;
-        completionStatStreak.textContent = `${streakVal} 🔥`;
+        completionStatStreak.textContent = streakVal;
     }
     if (deckCompletionSubtitle) {
         const dTitle = deckTitle?.textContent || 'deste baralho';
@@ -1280,6 +1406,14 @@ function hideDeckCompletionScreen() {
 
 function restartDeckSession() {
     clearBalls();
+    if (shockwaveAnimationId) {
+        cancelAnimationFrame(shockwaveAnimationId);
+        shockwaveAnimationId = null;
+    }
+    if (shockwaveCanvas) {
+        const shockCtx = shockwaveCanvas.getContext('2d');
+        if (shockCtx) shockCtx.clearRect(0, 0, shockwaveCanvas.width, shockwaveCanvas.height);
+    }
     score = 0;
     currentStreak = 0;
     consecutiveDueCardsCount = 0;

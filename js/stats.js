@@ -332,14 +332,20 @@ function renderCurrentSession(sess, gameState, history) {
     if (sessionCompletedBanner) {
         if (isCompleted) {
             sessionCompletedBanner.classList.remove('hidden');
-            if (bannerStatAcc) bannerStatAcc.textContent = `🎯 ${accuracyPct}% Precisão`;
-            if (bannerStatTime) bannerStatTime.textContent = `⏱️ ${formatSeconds(duration)}`;
+            if (bannerStatAcc) {
+                bannerStatAcc.innerHTML = `<span class="material-symbols-rounded text-sm">track_changes</span> <span>${accuracyPct}% Precisão</span>`;
+            }
+            if (bannerStatTime) {
+                bannerStatTime.innerHTML = `<span class="material-symbols-rounded text-sm">timer</span> <span>${formatSeconds(duration)}</span>`;
+            }
             const maxStreak = sess ? (sess.bestStreak || sess.maxStreak || sess.currentStreak || 0) : 0;
-            if (bannerStatStreak) bannerStatStreak.textContent = `🔥 ${maxStreak} seguidos`;
+            if (bannerStatStreak) {
+                bannerStatStreak.innerHTML = `<span class="material-symbols-rounded text-sm">local_fire_department</span> <span>${maxStreak} seguidos</span>`;
+            }
             const aiCount = sess ? (sess.aiCorrectionsCount || (sess.answersLog || []).filter(e => e.rating === 'ai_corrected').length) : 0;
             if (bannerStatAi) {
                 if (aiCount > 0) {
-                    bannerStatAi.textContent = `✦ ${aiCount} com IA`;
+                    bannerStatAi.innerHTML = `<span class="material-symbols-rounded text-sm">auto_awesome</span> <span>${aiCount} com IA</span>`;
                     bannerStatAi.classList.remove('hidden');
                 } else {
                     bannerStatAi.classList.add('hidden');
@@ -419,11 +425,11 @@ function renderPerformanceByType(sess) {
     const byType = sess && sess.byType ? sess.byType : {};
 
     const typeLabels = {
-        'multiple_choice': { name: 'Múltipla Escolha', icon: '📝', color: 'bg-blue-500' },
-        'open': { name: 'Resposta Aberta (Texto)', icon: '⌨️', color: 'bg-emerald-500' },
-        'open_double': { name: 'Resposta Dupla', icon: '⚡', color: 'bg-purple-500' },
-        'fill': { name: 'Preencher Lacunas', icon: '✍️', color: 'bg-teal-500' },
-        'anki': { name: 'Conceito / Anki', icon: '🧠', color: 'bg-indigo-500' }
+        'multiple_choice': { name: 'Múltipla Escolha', icon: 'edit_note', color: 'bg-blue-500' },
+        'open': { name: 'Resposta Aberta (Texto)', icon: 'keyboard', color: 'bg-emerald-500' },
+        'open_double': { name: 'Resposta Dupla', icon: 'bolt', color: 'bg-purple-500' },
+        'fill': { name: 'Preencher Lacunas', icon: 'draw', color: 'bg-teal-500' },
+        'anki': { name: 'Conceito / Anki', icon: 'psychology', color: 'bg-indigo-500' }
     };
 
     let hasAnyData = false;
@@ -439,11 +445,11 @@ function renderPerformanceByType(sess) {
             row.className = 'space-y-1.5';
             row.innerHTML = `
                 <div class="flex items-center justify-between text-xs">
-                    <span class="font-medium text-gray-700 flex items-center gap-1.5">
-                        <span>${info.icon}</span>
+                    <span class="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                        <span class="material-symbols-rounded text-sm">${info.icon}</span>
                         <span>${info.name}</span>
                     </span>
-                    <span class="font-bold text-gray-900">${pct}% <span class="text-gray-400 font-normal">(${item.correct}/${item.total})</span></span>
+                    <span class="font-bold text-gray-900 dark:text-gray-100">${pct}% <span class="text-gray-400 font-normal">(${item.correct}/${item.total})</span></span>
                 </div>
                 <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
                     <div class="${info.color} h-full rounded-full transition-all duration-500" style="width: ${pct}%"></div>
@@ -492,7 +498,7 @@ function renderPaceAndEstimate(sess, gameState, avgSeconds, poolRemaining) {
     // Remaining time estimate
     const allQuestionsCount = gameState.allQuestions ? gameState.allQuestions.length : 0;
     if (poolRemaining === 0 && allQuestionsCount > 0) {
-        if (paceEstimateTime) paceEstimateTime.textContent = 'Concluído! 🎉';
+        if (paceEstimateTime) paceEstimateTime.textContent = 'Concluído!';
         if (paceEstimateSub) paceEstimateSub.textContent = 'Todos os cards foram respondidos';
         if (paceEstimateBadge) {
             paceEstimateBadge.textContent = '100% Zerado';
@@ -542,20 +548,20 @@ function renderDeckMastery(progressPct, accuracyPct, currentStreak, completedCar
     masteryScore.textContent = `${score} pts`;
     if (masteryProgressBar) masteryProgressBar.style.width = `${score}%`;
 
-    let badgeText = 'Iniciando 🥉';
+    let badgeText = 'Iniciando';
     let badgeClass = 'bg-amber-100 text-amber-800';
     let desc = 'Primeiras conexões neurais sendo formadas.';
 
     if (score >= 85) {
-        badgeText = 'Mestre do Baralho 🏆';
+        badgeText = 'Mestre do Baralho';
         badgeClass = 'bg-purple-100 text-purple-700';
         desc = 'Retenção sólida e velocidade de recall no nível máximo!';
     } else if (score >= 65) {
-        badgeText = 'Domínio Avançado 🥇';
+        badgeText = 'Domínio Avançado';
         badgeClass = 'bg-emerald-100 text-emerald-700';
         desc = 'Excelente taxa de acertos e recall consistente.';
     } else if (score >= 40) {
-        badgeText = 'Em Construção 🥈';
+        badgeText = 'Em Construção';
         badgeClass = 'bg-blue-100 text-blue-700';
         desc = 'Fixação ativa em progresso constante.';
     }
@@ -652,16 +658,16 @@ function renderTimelineFlow(sess) {
         const isAnkiEasy = entry.rating === 'easy';
 
         let badgeColor = isOk ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white';
-        let label = isOk ? '✓' : '✕';
+        let label = isOk ? '<span class="material-symbols-rounded text-sm">check</span>' : '<span class="material-symbols-rounded text-sm">close</span>';
         if (isAiCorrected) {
             badgeColor = 'bg-amber-400 text-amber-950';
-            label = '✦';
+            label = '<span class="material-symbols-rounded text-sm">auto_awesome</span>';
         } else if (isAnkiHard) {
             badgeColor = 'bg-orange-500 text-white';
-            label = '⚡';
+            label = '<span class="material-symbols-rounded text-sm">bolt</span>';
         } else if (isAnkiEasy) {
             badgeColor = 'bg-blue-500 text-white';
-            label = '★';
+            label = '<span class="material-symbols-rounded text-sm">star</span>';
         }
 
         const ringEffect = isLatest 
@@ -670,7 +676,7 @@ function renderTimelineFlow(sess) {
 
         dot.className = `flex-shrink-0 w-8 h-8 rounded-xl ${badgeColor} ${ringEffect} flex items-center justify-center font-bold text-xs cursor-pointer shadow-sm hover:scale-110 transition-transform relative group`;
         dot.innerHTML = `
-            <span>${label}</span>
+            ${label}
             ${isLatest ? `<span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white animate-pulse" title="Mais recente"></span>` : ''}
             <!-- Tooltip -->
             <div class="hidden group-hover:block absolute bottom-full mb-2 z-30 p-2.5 bg-gray-900/95 text-white text-[11px] rounded-xl shadow-xl w-56 text-left backdrop-blur-sm pointer-events-none -left-20">
@@ -683,7 +689,7 @@ function renderTimelineFlow(sess) {
                 <p class="text-gray-200 truncate mb-1" title="${entry.question}">${entry.question}</p>
                 <div class="flex items-center justify-between text-gray-400 text-[10px]">
                     <span>Tempo: <b>${entry.timeSeconds}s</b></span>
-                    <span>Status: <b>${isAiCorrected ? 'Corrigido por IA ✦' : entry.rating}</b></span>
+                    <span>Status: <b>${isAiCorrected ? 'Corrigido por IA' : entry.rating}</b></span>
                 </div>
                 ${entry.userAnswer ? `<p class="text-blue-300 text-[10px] truncate mt-1 pt-1 border-t border-gray-800">Digitou: ${entry.userAnswer}</p>` : ''}
                 ${entry.aiExplanation ? `<p class="text-amber-300 text-[10px] line-clamp-2 mt-1 pt-1 border-t border-gray-800" title="${entry.aiExplanation}">IA: ${entry.aiExplanation}</p>` : ''}
@@ -715,13 +721,13 @@ function generatePedagogicalInsight(progressPct, accuracyPct, avgSeconds, anki, 
     }
 
     if (accuracyPct >= 85) {
-        insightTitle.textContent = '🎉 Alta Retenção e Domínio!';
+        insightTitle.textContent = 'Alta Retenção e Domínio!';
         insightText.textContent = `Você está com ${accuracyPct}% de precisão com média de ${avgSeconds}s por cartão. Seu recall ativo está muito afiado!${comparisonText} Recomendamos avançar nos cartões restantes para consolidar o baralho na memória de longo prazo.`;
     } else if (accuracyPct >= 70) {
-        insightTitle.textContent = '📈 Bom Progresso com Margem de Ajuste';
+        insightTitle.textContent = 'Bom Progresso com Margem de Ajuste';
         insightText.textContent = `Sua precisão atual é de ${accuracyPct}%.${comparisonText} Foque nos cards marcados como "Errei" ou "Difícil" para fechar lacunas pontuais de retenção antes de finalizar a rodada.`;
     } else {
-        insightTitle.textContent = '⚠️ Foco Recomendado em Revisão Espaçada';
+        insightTitle.textContent = 'Foco Recomendado em Revisão Espaçada';
         insightText.textContent = `A precisão atual está em ${accuracyPct}%.${comparisonText} Cartões errados continuarão aparecendo em intervalos menores para fortalecer as sinapses neurais desse conteúdo.`;
     }
 }
@@ -733,7 +739,7 @@ function renderTopicItem(t, idx) {
     const acc = t.accuracy;
 
     let badgeClass = 'bg-gray-100 text-gray-600';
-    let badgeText = '⏳ Pendente';
+    let badgeText = 'Pendente';
     let barColor = 'bg-gray-300';
     let barWidth = '0%';
 
@@ -741,15 +747,15 @@ function renderTopicItem(t, idx) {
         barWidth = `${acc}%`;
         if (acc >= 80) {
             badgeClass = 'bg-emerald-100 text-emerald-700 border border-emerald-200';
-            badgeText = idx === 0 ? '🏆 Melhor Assunto' : '🎯 Alta Retenção';
+            badgeText = idx === 0 ? 'Melhor Assunto' : 'Alta Retenção';
             barColor = 'bg-emerald-500';
         } else if (acc >= 60) {
             badgeClass = 'bg-blue-100 text-blue-700 border border-blue-200';
-            badgeText = '📈 Bom Progresso';
+            badgeText = 'Bom Progresso';
             barColor = 'bg-blue-500';
         } else {
             badgeClass = 'bg-red-100 text-red-700 border border-red-200';
-            badgeText = '⚠️ Atenção (Revisar)';
+            badgeText = 'Atenção (Revisar)';
             barColor = 'bg-red-500';
         }
     }
@@ -785,20 +791,20 @@ function renderTopicItem(t, idx) {
 function renderSubjectItem(s, idx, totalSubjects) {
     const acc = s.accuracy;
     let badgeClass = 'bg-blue-100 text-blue-700 border border-blue-200';
-    let badgeText = '📈 Estável';
+    let badgeText = 'Estável';
     let barColor = 'bg-blue-500';
 
     if (idx === 0 && s.totalAnswered > 0) {
         badgeClass = 'bg-purple-100 text-purple-700 border border-purple-200';
-        badgeText = '🏆 Melhor Matéria';
+        badgeText = 'Melhor Matéria';
         barColor = 'bg-purple-600';
     } else if (idx === totalSubjects - 1 && totalSubjects > 1 && acc < 70 && s.totalAnswered > 0) {
         badgeClass = 'bg-amber-100 text-amber-800 border border-amber-200';
-        badgeText = '⚠️ Foco Recomendado';
+        badgeText = 'Foco Recomendado';
         barColor = 'bg-amber-500';
     } else if (acc >= 80) {
         badgeClass = 'bg-emerald-100 text-emerald-700 border border-emerald-200';
-        badgeText = '🥇 Alta Retenção';
+        badgeText = 'Alta Retenção';
         barColor = 'bg-emerald-500';
     }
 
@@ -849,7 +855,7 @@ function renderHistorySubjectsSection(subjectsStats) {
         <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
             <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-100">
                 <div class="flex items-center gap-2">
-                    <span class="text-base">📚</span>
+                    <span class="material-symbols-rounded text-base align-middle text-purple-600">menu_book</span>
                     <div>
                         <h2 class="font-bold text-base text-gray-900">Desempenho por Matérias Globais (IA)</h2>
                         <p class="text-xs text-gray-500">Baralhos agrupados em disciplinas com base no histórico</p>
@@ -897,7 +903,7 @@ function renderAiDashboard(currentDeckTitle, subjectsStats, topicsStats, gameSta
                                 </span>
                             ` : `
                                 <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 flex items-center gap-1" title="Categorias carregadas do baralho">
-                                    <span>🏷️</span>
+                                    <span class="material-symbols-rounded text-xs align-middle">label</span>
                                     Categorias Integradas
                                 </span>
                             `}
@@ -928,7 +934,7 @@ function renderAiDashboard(currentDeckTitle, subjectsStats, topicsStats, gameSta
                         <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-100">
                             <div>
                                 <h3 class="font-bold text-sm text-gray-900 flex items-center gap-1.5">
-                                    <span>🎯</span> Assuntos deste Baralho
+                                    <span class="material-symbols-rounded text-base text-blue-600">topic</span> Assuntos deste Baralho
                                 </h3>
                                 <p class="text-[11px] text-gray-500 truncate max-w-[200px]" title="${currentDeckTitle}">
                                     ${currentDeckTitle}
@@ -951,7 +957,7 @@ function renderAiDashboard(currentDeckTitle, subjectsStats, topicsStats, gameSta
                         <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-100">
                             <div>
                                 <h3 class="font-bold text-sm text-gray-900 flex items-center gap-1.5">
-                                    <span>📚</span> Desempenho por Matéria
+                                    <span class="material-symbols-rounded text-base text-purple-600">menu_book</span> Desempenho por Matéria
                                 </h3>
                                 <p class="text-[11px] text-gray-500">
                                     Visão agregada de todos os baralhos
@@ -1209,7 +1215,7 @@ async function triggerAiCategorization(gameState, statsData) {
             <div class="bg-red-50 border border-red-200 p-5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="space-y-1">
                     <div class="flex items-center gap-2">
-                        <span class="text-sm">⚠️</span>
+                        <span class="material-symbols-rounded text-base text-red-600 align-middle">warning</span>
                         <h3 class="text-sm font-bold text-red-800">Não foi possível gerar as estatísticas com IA</h3>
                     </div>
                     <p class="text-xs text-red-700 max-w-lg">
@@ -1258,7 +1264,12 @@ function renderHistory(statsData) {
 
     if (alltimeBestStreak) {
         const bestStreak = statsData.allTime ? statsData.allTime.bestStreakAllTime || 0 : 0;
-        alltimeBestStreak.textContent = `🔥 ${bestStreak}`;
+        const valElem = document.getElementById('alltime-best-streak-val');
+        if (valElem) {
+            valElem.textContent = bestStreak;
+        } else {
+            alltimeBestStreak.innerHTML = `<span class="material-symbols-rounded text-2xl text-amber-500">local_fire_department</span> <span>${bestStreak}</span>`;
+        }
     }
 
     // Render Accuracy Chart
@@ -1305,7 +1316,7 @@ function renderHistory(statsData) {
             </div>
 
             <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-                ${sess.bestStreak ? `<span class="text-xs text-amber-600 font-semibold flex items-center gap-1">🔥 ${sess.bestStreak}</span>` : ''}
+                ${sess.bestStreak ? `<span class="text-xs text-amber-600 font-semibold flex items-center gap-1"><span class="material-symbols-rounded text-sm">local_fire_department</span> <span>${sess.bestStreak}</span></span>` : ''}
                 <div class="px-3 py-1 rounded-xl border ${accColor} text-sm font-extrabold">
                     ${acc}%
                 </div>
@@ -1329,8 +1340,9 @@ function renderAccuracyChart(history) {
     if (chartData.length >= 2) {
         const first = chartData[0].accuracy || 0;
         const last = chartData[chartData.length - 1].accuracy || 0;
-        const diff = last - first;
-        chartTrendBadge.textContent = diff >= 0 ? `📈 +${diff}%` : `📉 ${diff}%`;
+        const trendIcon = diff >= 0 ? 'trending_up' : 'trending_down';
+        const trendPrefix = diff >= 0 ? '+' : '';
+        chartTrendBadge.innerHTML = `<span class="material-symbols-rounded text-sm align-middle">${trendIcon}</span> ${trendPrefix}${diff}%`;
         chartTrendBadge.className = `text-xs font-bold px-2.5 py-1 rounded-full ${
             diff >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
         }`;
@@ -1389,7 +1401,7 @@ function renderStrugglingCards(sess) {
     if (top20Entries.length === 0) {
         strugglingList.innerHTML = `
             <div class="text-center py-8 text-gray-400">
-                <p class="text-sm font-semibold text-emerald-600">Nenhum card com dificuldade nesta sessão! 👏</p>
+                <p class="text-sm font-semibold text-emerald-600 flex items-center justify-center gap-1.5"><span class="material-symbols-rounded text-base text-emerald-500">celebration</span> Nenhum card com dificuldade nesta sessão!</p>
                 <p class="text-xs mt-1">Quando você errar ou marcar 'Difícil/Errei', os 20 cards com mais erros aparecerão aqui para revisão focada.</p>
             </div>
         `;
@@ -1439,7 +1451,7 @@ function renderStrugglingCards(sess) {
             const topic = decodeURIComponent(btn.dataset.topic || '');
             const subject = decodeURIComponent(btn.dataset.subject || '');
             addCardToNotebook({ description: desc, answer: ans, answer2: ans2, type: type, aiTopic: topic, aiSubject: subject });
-            btn.textContent = 'Adicionado ✓';
+            btn.innerHTML = 'Adicionado <span class="material-symbols-rounded text-sm align-middle">check</span>';
             btn.classList.add('bg-emerald-100', 'text-emerald-700');
             btn.disabled = true;
         });
