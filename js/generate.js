@@ -1788,6 +1788,17 @@ if (retryGeminiBtn) {
     }
 });
 
+// Close open modals on Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const modals = [modal12, modal21, modal22, quickApiModal, instructionsModal, geminiDownModal, inlineEditModal];
+        const openModal = modals.find(m => m && !m.classList.contains('hidden'));
+        if (openModal) {
+            openModal.classList.add('hidden');
+        }
+    }
+});
+
 // --- CARD CREATOR UI LOGIC (LEFT SIDEBAR) ---
 const typeHints = {
     open: "Pergunta é uma descrição e você digita o nome do conceito.",

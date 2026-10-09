@@ -1576,6 +1576,11 @@ closeAiModalBtn?.addEventListener('click', closeAiModal);
 aiConfigModal?.addEventListener('click', (e) => {
     if (e.target === aiConfigModal) closeAiModal();
 });
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && aiConfigModal && !aiConfigModal.classList.contains('hidden')) {
+        closeAiModal();
+    }
+});
 statsApiKeyForm?.addEventListener('submit', (e) => {
     e.preventDefault();
     modalSaveApiKeyBtn?.click();

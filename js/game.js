@@ -2668,6 +2668,59 @@ hamburgerBackdrop?.addEventListener('click', closeHamburgerMenu);
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
+        // 1. Image zoom modal (lightbox popup)
+        if (imageZoomModal && !imageZoomModal.classList.contains('hidden')) {
+            closeImageZoom();
+            return;
+        }
+
+        // 2. Any active modal overlay in game
+        const openModals = Array.from(document.querySelectorAll('.modal-overlay:not(.hidden)'));
+        if (openModals.length > 0) {
+            const scanner = document.getElementById('scanner-modal');
+            const closeScannerBtn = document.getElementById('close-scanner-modal');
+            if (scanner && !scanner.classList.contains('hidden')) {
+                if (closeScannerBtn) closeScannerBtn.click();
+                else scanner.classList.add('hidden');
+                return;
+            }
+
+            const transfer = document.getElementById('transfer-modal');
+            const closeTransferBtn = document.getElementById('close-transfer-modal');
+            if (transfer && !transfer.classList.contains('hidden')) {
+                if (closeTransferBtn) closeTransferBtn.click();
+                else transfer.classList.add('hidden');
+                return;
+            }
+
+            if (editModal && !editModal.classList.contains('hidden')) {
+                editModal.classList.add('hidden');
+                return;
+            }
+
+            if (instructionsModal && !instructionsModal.classList.contains('hidden')) {
+                instructionsModal.classList.add('hidden');
+                return;
+            }
+
+            if (apiModal && !apiModal.classList.contains('hidden')) {
+                apiModal.classList.add('hidden');
+                return;
+            }
+
+            openModals.forEach(m => m.classList.add('hidden'));
+            return;
+        }
+
+        // 3. Highlight popup or text selection
+        if (textHighlightPopup && !textHighlightPopup.classList.contains('hidden')) {
+            hideHighlightPopup();
+            const sel = window.getSelection();
+            if (sel) sel.removeAllRanges();
+            return;
+        }
+
+        // 4. Hamburger menu and AI chat drawer
         closeHamburgerMenu();
         if (aiChatContainer && aiChatContainer.classList.contains('open')) {
             aiChatContainer.classList.remove('open');
@@ -2690,6 +2743,8 @@ let selectionDebounceTimer = null;
 
 function hideHighlightPopup() {
     isInteractingWithPopup = false;
+    activeHighlightRange = null;
+    activeHighlightField = null;
     if (!textHighlightPopup) return;
     textHighlightPopup.classList.add('hidden');
     if (hlPalette) {
@@ -2698,7 +2753,7 @@ function hideHighlightPopup() {
     }
     if (hlTriggerBtn) {
         hlTriggerBtn.classList.remove('is-marked');
-        hlTriggerBtn.title = "Marca-texto";
+        hlTriggerBtn.title = "Marca-texto (1-4)";
     }
 }
 
@@ -2719,7 +2774,7 @@ function showHighlightPopup(range, isMarked) {
             hlTriggerBtn.title = "Tirar marcação";
         } else {
             hlTriggerBtn.classList.remove('is-marked');
-            hlTriggerBtn.title = "Marca-texto";
+            hlTriggerBtn.title = "Marca-texto (1-4)";
         }
     }
 
@@ -2778,8 +2833,41 @@ function isRangeMarked(range, container) {
     return false;
 }
 
+function getActiveTextSelection() {
+    const questionBody = document.getElementById('question-body-text') || questionText;
+    const ankiAnswer = ankiAnswerText;
+
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0 && !sel.isCollapsed && sel.toString().trim().length > 0) {
+        const range = sel.getRangeAt(0);
+        const common = range.commonAncestorContainer;
+
+        const isInside = (container) => {
+            if (!container) return false;
+            return container.contains(common) || (container.contains(range.startContainer) && container.contains(range.endContainer));
+        };
+
+        if (isInside(questionBody)) {
+            return { range: range.cloneRange(), field: 'description', container: questionBody };
+        }
+        if (isInside(ankiAnswer) && !ankiAnswerContainer?.classList.contains('hidden')) {
+            return { range: range.cloneRange(), field: 'answer', container: ankiAnswer };
+        }
+    }
+
+    if (activeHighlightRange && activeHighlightField && textHighlightPopup && !textHighlightPopup.classList.contains('hidden')) {
+        const container = activeHighlightField === 'description' ? questionBody : ankiAnswer;
+        if (container) {
+            return { range: activeHighlightRange, field: activeHighlightField, container };
+        }
+    }
+
+    return null;
+}
+
 function applyHighlight(color) {
     isInteractingWithPopup = false;
+    clearTimeout(selectionDebounceTimer);
     if (!activeHighlightRange || !activeHighlightField) return;
 
     const container = activeHighlightField === 'description' 
@@ -2790,6 +2878,33 @@ function applyHighlight(color) {
     const range = activeHighlightRange;
     const selectedText = range.toString().trim();
     if (!selectedText) return;
+
+    // Check if modifying an already highlighted mark directly
+    let targetMark = null;
+    let node = range.commonAncestorContainer;
+    while (node && node !== container) {
+        if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'MARK' && node.classList.contains('card-hl')) {
+            targetMark = node;
+            break;
+        }
+        node = node.parentNode;
+    }
+    if (!targetMark && range.startContainer === range.endContainer && range.endOffset - range.startOffset === 1) {
+        const child = range.startContainer.childNodes[range.startOffset];
+        if (child && child.nodeType === Node.ELEMENT_NODE && child.tagName === 'MARK' && child.classList.contains('card-hl')) {
+            targetMark = child;
+        }
+    }
+
+    if (targetMark && targetMark.textContent.trim() === selectedText) {
+        targetMark.className = `card-hl card-hl-${color}`;
+        container.normalize();
+        persistHighlightedContent(activeHighlightField);
+        hideHighlightPopup();
+        const sel = window.getSelection();
+        if (sel) sel.removeAllRanges();
+        return;
+    }
 
     // Unmark any existing marks inside this range to avoid nested marks
     const existingMarks = container.querySelectorAll('mark.card-hl');
@@ -2809,9 +2924,9 @@ function applyHighlight(color) {
         mark.appendChild(extracted);
         range.insertNode(mark);
     } catch (e) {
-        const selectedText = range.toString();
-        if (selectedText) {
-            mark.textContent = selectedText;
+        const fallbackText = range.toString();
+        if (fallbackText) {
+            mark.textContent = fallbackText;
             range.deleteContents();
             range.insertNode(mark);
         }
@@ -2959,10 +3074,15 @@ function handleTextSelection(e) {
     let field = null;
     let container = null;
 
-    if (questionBody && questionBody.contains(common)) {
+    const isInside = (c) => {
+        if (!c) return false;
+        return c.contains(common) || (c.contains(range.startContainer) && c.contains(range.endContainer));
+    };
+
+    if (isInside(questionBody)) {
         field = 'description';
         container = questionBody;
-    } else if (ankiAnswer && ankiAnswer.contains(common) && !ankiAnswerContainer?.classList.contains('hidden')) {
+    } else if (isInside(ankiAnswer) && !ankiAnswerContainer?.classList.contains('hidden')) {
         field = 'answer';
         container = ankiAnswer;
     } else {
@@ -3091,12 +3211,6 @@ document.addEventListener('pointerdown', (e) => {
 
 window.addEventListener('resize', hideHighlightPopup);
 window.addEventListener('scroll', hideHighlightPopup, true);
-
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        hideHighlightPopup();
-    }
-});
 
 if (restartGameBtn) {
     restartGameBtn.addEventListener('click', () => {
@@ -3389,6 +3503,27 @@ document.addEventListener('keydown', (e) => {
     const isHamburgerOpen = hamburgerMenu && !hamburgerMenu.classList.contains('hidden');
     if (hasOpenModal || isChatOpen || isHamburgerOpen) return;
 
+    // Fast highlight shortcuts (1: Yellow, 2: Green, 3: Blue, 4: Purple) when text is selected or popup active
+    if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+        let hlColor = null;
+        if (e.key === '1' || e.code === 'Numpad1') hlColor = 'yellow';
+        else if (e.key === '2' || e.code === 'Numpad2') hlColor = 'green';
+        else if (e.key === '3' || e.code === 'Numpad3') hlColor = 'blue';
+        else if (e.key === '4' || e.code === 'Numpad4') hlColor = 'purple';
+
+        if (hlColor) {
+            const target = getActiveTextSelection();
+            if (target) {
+                e.preventDefault();
+                e.stopPropagation();
+                activeHighlightRange = target.range;
+                activeHighlightField = target.field;
+                applyHighlight(hlColor);
+                return;
+            }
+        }
+    }
+
     // If next / skip question button is visible and active, advance to next question on Enter / Space
     if (nextQuestionBtn && !nextQuestionBtn.classList.contains('hidden') && !isAnimating) {
         if (e.key === 'Enter' || e.code === 'Space') {
@@ -3541,15 +3676,20 @@ if (ankiAnswerImage && imageZoomModal && zoomedImage) {
         }
     });
 }
-if (closeImageZoomBtn && imageZoomModal) {
-    closeImageZoomBtn.addEventListener('click', () => {
+function closeImageZoom() {
+    if (imageZoomModal && !imageZoomModal.classList.contains('hidden')) {
         imageZoomModal.classList.add('hidden');
-    });
+        if (zoomedImage) zoomedImage.src = '';
+    }
+}
+
+if (closeImageZoomBtn && imageZoomModal) {
+    closeImageZoomBtn.addEventListener('click', closeImageZoom);
 }
 if (imageZoomModal) {
     imageZoomModal.addEventListener('click', (e) => {
         if (e.target === imageZoomModal) {
-            imageZoomModal.classList.add('hidden');
+            closeImageZoom();
         }
     });
 }

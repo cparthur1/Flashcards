@@ -340,6 +340,12 @@ function init() {
     if (closeExamModalBtn) closeExamModalBtn.addEventListener('click', closeExamModal);
     if (cancelExamModalBtn) cancelExamModalBtn.addEventListener('click', closeExamModal);
 
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && examModal && !examModal.classList.contains('hidden')) {
+            closeExamModal();
+        }
+    });
+
     if (examDropZone && examFileInput) {
         examDropZone.addEventListener('click', () => examFileInput.click());
 

@@ -1,3 +1,16 @@
+CHANGELOG: QUICK TEXT HIGHLIGHTING SHORTCUTS (1-4) & POPUP ESC DISMISSAL (v10.4)
+Date: 2026-10-09
+
+OVERVIEW:
+1. Added keyboard shortcuts (keys 1-4 and Numpad 1-4) to quickly highlight selected card text with the 4 pastel colors (1: Amarelo/Yellow, 2: Verde/Green, 3: Azul/Blue, 4: Roxo/Purple).
+2. Intercepts keys 1-4 prior to card rating or multiple choice selection when text is selected, preventing accidental rating or answering while annotating cards.
+3. Added number indicators (1, 2, 3, 4) and tooltips to the pastel color buttons in `#text-highlight-popup` for clear visual affordance.
+4. Added smooth color re-highlighting when pressing 1-4 on an already highlighted card text or mark.
+5. Popups and lightboxes like image zoom (`#image-zoom-modal`), card editor, API modals, instructions, exam week, and highlighter popup are now all smoothly dismissable by pressing `Escape`.
+6. Bumped service worker cache to `flashcards-v7.0`.
+
+--------------------------------------------------------------------------------
+
 CHANGELOG: FIX TUTOR CHAT SPACEBAR & SHORTCUT ISOLATION (v10.3)
 Date: 2026-10-08
 
