@@ -2942,9 +2942,22 @@ initInputController({
     onFlipAnki: flipAnkiCard,
     onAnkiRating: handleAnkiRating,
     onNextQuestion: () => {
-        if (nextQuestionBtn) nextQuestionBtn.click();
+        if (nextQuestionBtn && !nextQuestionBtn.classList.contains('hidden')) {
+            nextQuestionBtn.click();
+        } else {
+            if (isAnimating) return;
+            if (questionsPool.length === 0) {
+                clearBalls();
+                showDeckCompletionScreen();
+                return;
+            }
+            animateCardToBack(() => {
+                loadQuestion();
+            });
+        }
     },
     isNextQuestionBtnVisible: () => Boolean(nextQuestionBtn && !nextQuestionBtn.classList.contains('hidden')),
+    isChatOpen: () => Boolean(aiChatContainer && aiChatContainer.classList.contains('open')),
     onHighlightShortcut: (hlColor) => {
         const target = getActiveTextSelection();
         if (target) {
@@ -2965,9 +2978,8 @@ initInputController({
     },
     isModalOrDrawerOpen: () => {
         const hasOpenModal = document.querySelector('.modal-overlay:not(.hidden)') !== null;
-        const isChatOpen = aiChatContainer && aiChatContainer.classList.contains('open');
         const isHamburgerOpen = hamburgerMenu && !hamburgerMenu.classList.contains('hidden');
-        return hasOpenModal || isChatOpen || isHamburgerOpen;
+        return hasOpenModal || isHamburgerOpen;
     }
 });
 

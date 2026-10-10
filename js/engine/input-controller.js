@@ -16,8 +16,7 @@ function isTextInputElement(el) {
         el.tagName === 'INPUT' ||
         el.tagName === 'TEXTAREA' ||
         el.tagName === 'SELECT' ||
-        el.isContentEditable ||
-        (typeof el.closest === 'function' && el.closest('#ai-chat-container'))
+        el.isContentEditable
     );
 }
 
@@ -30,8 +29,24 @@ function handleKeyDown(e) {
         return;
     }
 
-    // Ignora quando modais, drawer de chat ou menu hambúrguer estão visíveis
+    // Ignora quando modais ou menu hambúrguer estão visíveis
     if (controllerHandlers.isModalOrDrawerOpen && controllerHandlers.isModalOrDrawerOpen()) {
+        return;
+    }
+
+    const isChatOpen = controllerHandlers.isChatOpen ? controllerHandlers.isChatOpen() : false;
+
+    // Quando o chatbot estiver aberto (e o campo de texto NÃO estiver focado):
+    // permite pular/avançar o card com a barra de espaço (Space)
+    if (isChatOpen) {
+        if (e.code === 'Space' || e.key === ' ' || e.key === 'Spacebar') {
+            e.preventDefault();
+            console.log("[Game] Atalho Espaço com chatbot aberto para pular card.");
+            const isAnimating = controllerHandlers.getIsAnimating ? controllerHandlers.getIsAnimating() : false;
+            if (!isAnimating && controllerHandlers.onNextQuestion) {
+                controllerHandlers.onNextQuestion();
+            }
+        }
         return;
     }
 
@@ -121,7 +136,10 @@ function pollGamepad() {
             return pressed && !wasPressed;
         };
 
-        if (controllerHandlers && controllerHandlers.isModalOrDrawerOpen && controllerHandlers.isModalOrDrawerOpen()) {
+        if (controllerHandlers && (
+            (controllerHandlers.isModalOrDrawerOpen && controllerHandlers.isModalOrDrawerOpen()) ||
+            (controllerHandlers.isChatOpen && controllerHandlers.isChatOpen())
+        )) {
             continue;
         }
 
