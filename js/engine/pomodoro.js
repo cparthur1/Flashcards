@@ -22,7 +22,6 @@ let timerInterval = null;
 // DOM Elements cache
 let pomodoroSwitchEl = null;
 let pomodoroConfigTriggerEl = null;
-let pomodoroStatusBadgeEl = null;
 let pomodoroSubtitleEl = null;
 
 let pomodoroModalEl = null;
@@ -262,7 +261,6 @@ export function closePomodoroSettingsModal() {
 
 export function updatePomodoroUI() {
     if (!pomodoroSwitchEl) pomodoroSwitchEl = document.getElementById('pomodoro-switch');
-    if (!pomodoroStatusBadgeEl) pomodoroStatusBadgeEl = document.getElementById('pomodoro-status-badge');
     if (!pomodoroSubtitleEl) pomodoroSubtitleEl = document.getElementById('pomodoro-subtitle');
 
     const enabled = isPomodoroEnabled();
@@ -270,16 +268,6 @@ export function updatePomodoroUI() {
 
     if (pomodoroSwitchEl) {
         pomodoroSwitchEl.selected = enabled;
-    }
-
-    if (pomodoroStatusBadgeEl) {
-        if (enabled) {
-            pomodoroStatusBadgeEl.textContent = 'Ativo';
-            pomodoroStatusBadgeEl.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300';
-        } else {
-            pomodoroStatusBadgeEl.textContent = 'Desativado';
-            pomodoroStatusBadgeEl.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--md-sys-color-surface-container-high)] text-[var(--md-sys-color-on-surface-variant)]';
-        }
     }
 
     if (pomodoroSubtitleEl) {
@@ -290,7 +278,6 @@ export function updatePomodoroUI() {
 export function initPomodoro() {
     pomodoroSwitchEl = document.getElementById('pomodoro-switch');
     pomodoroConfigTriggerEl = document.getElementById('pomodoro-config-trigger');
-    pomodoroStatusBadgeEl = document.getElementById('pomodoro-status-badge');
     pomodoroSubtitleEl = document.getElementById('pomodoro-subtitle');
 
     pomodoroModalEl = document.getElementById('pomodoro-modal');
