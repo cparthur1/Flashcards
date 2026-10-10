@@ -1,5 +1,8 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { normalizeString, calculateSimilarity, shuffleArray, callWithRetry, checkAndResetModelFallback, ROUTES, renderMathAndMarkdown } from './utils.js';
+import { normalizeString, calculateSimilarity, shuffleArray, checkAndResetModelFallback, ROUTES, renderMathAndMarkdown } from './utils.js';
+import { isPlayableCard, calculateThinkingGap, selectNextCard, isLeechCard, shouldGraduateCard, formatTimeDisplay } from './engine/scheduler.js';
+import { initEffects, createBall, clearBalls, setBallColor, launchCelebrationParticles, playCompletionShockwave, resizeCanvas, triggerHaptic, isHapticEnabled, setHapticEnabled, updateHapticUI } from './engine/effects.js';
+import { initInputController, startGamepadLoop, stopGamepadLoop } from './engine/input-controller.js';
+import { isTutorEnabled, setTutorApiKey, disableTutor, initTutor, updateTutorUI, setLastUserAnswerForChat, getLastUserAnswerForChat, resetTutorChatSession, getHasChatInteraction, setHasChatInteraction, evaluateAnswerSemantic, addMsg, showTyping, hideTyping, sendTutorChatMessage } from './engine/tutor.js';
 import { initTransfer } from './transfer.js';
 import { initStatsSession, recordStatsAnswer, recordStatsAiCorrection, archiveCurrentSession, completeCurrentSession } from './stats-tracker.js';
 import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
@@ -173,7 +176,10 @@ const chatInput = document.getElementById('chat-input');
 const sendChatBtn = document.getElementById('send-chat-btn');
 
 const canvas = document.getElementById('background-canvas');
-const ctx = canvas.getContext('2d');
+const ctx = canvas ? canvas.getContext('2d') : null;
+
+// Inicializa subsistema de efeitos
+initEffects({ canvas, shockwaveContainer, questionCard });
 
 // --- GAME STATE ---
 let activeMode = 'normal'; // 'normal' or 'notebook'
@@ -182,9 +188,7 @@ let questionsPool = [];
 let score = 0;
 let currentQuestion = {};
 let currentQuestionIndexInPool = -1;
-let balls = [];
 let isFirstQuestion = true;
-let hasChatInteraction = false;
 let isAnimating = false;
 let currentStep = 0;
 let consecutiveDueCardsCount = 0;
@@ -193,14 +197,7 @@ let pendingEditAnsImage = '';
 let questionStartTime = Date.now();
 
 // --- AI STATE ---
-let isAiEnabled = false;
 let geminiApiKey = getCachedApiKey();
-let genAI = null;
-let lastUserAnswerForChat = "";
-let currentChatSession = null;
-let currentChatModel = "gemini-flash-lite-latest";
-let ai503ErrorCount = 0;
-let lastLatencyNotificationTime = 0;
 
 // --- UI UTILITIES ---
 const imageLoadTokens = new WeakMap();
@@ -300,91 +297,7 @@ function showNotificationPill(message, iconName, isWarning = false) {
     }, 4000);
 }
 
-// --- HAPTIC FEEDBACK (VIBRATION API) ---
-const HAPTIC_STORAGE_KEY = 'flashcardsHapticEnabled';
-
-const HAPTIC_PATTERNS = {
-    // Subtle crisp tap for mechanical / tactile micro-confirmations
-    tap: [10],
-    correct: [12],
-    scorePulse: [15],
-    cardFlip: [10],
-    // "zzzTZ": vibra leve enquanto sobe (micro-pulsos rápidos ~170ms), pausa na descida e curto mais forte quando some (42ms)
-    // Duração total: 172ms + 210ms + 42ms = 424ms (dentro dos 550ms da animação gráfica)
-    cardToBack: [12, 20, 12, 20, 12, 20, 12, 20, 12, 20, 12, 210, 42],
-    // Rhythmic double flutter synchronized with shake oscillations (450ms - 500ms)
-    wrong: [20, 50, 20],
-    shake: [20, 50, 20],
-    // Soft distinct tactile pop right when fill-the-blank morphs yellow revealing correct answer
-    fillPop: [18],
-    // Rising energetic pulse on streak milestones (>= 3)
-    streakUp: [15, 35, 25],
-    // Subtle damping notch when streak resets
-    streakReset: [25]
-};
-
-function isHapticEnabled() {
-    return localStorage.getItem(HAPTIC_STORAGE_KEY) !== 'false';
-}
-
-function setHapticEnabled(enabled) {
-    localStorage.setItem(HAPTIC_STORAGE_KEY, enabled ? 'true' : 'false');
-    updateHapticUI();
-    if (enabled) {
-        triggerHaptic('tap');
-    }
-}
-
-function triggerHaptic(type) {
-    if (!isHapticEnabled()) return;
-    if (typeof navigator === 'undefined' || !('vibrate' in navigator)) return;
-    try {
-        if (type === 'stop') {
-            navigator.vibrate(0);
-            return;
-        }
-        const pattern = Array.isArray(type) ? type : (HAPTIC_PATTERNS[type] || [12]);
-        navigator.vibrate(pattern);
-    } catch (e) {
-        // Silently catch if blocked by browser policy or platform restrictions
-    }
-}
-
-function updateHapticUI() {
-    const hapticSwitch = document.getElementById('haptic-switch');
-    const hapticStatusBadge = document.getElementById('haptic-status-badge');
-    if (!hapticSwitch && !hapticStatusBadge) return;
-    const hasVibrationSupport = typeof navigator !== 'undefined' && 'vibrate' in navigator;
-    const enabled = isHapticEnabled();
-
-    if (hapticSwitch) {
-        if (!hasVibrationSupport) {
-            hapticSwitch.disabled = true;
-            hapticSwitch.selected = false;
-            hapticSwitch.title = 'Vibração indisponível neste dispositivo';
-        } else {
-            hapticSwitch.disabled = false;
-            hapticSwitch.selected = enabled;
-            hapticSwitch.title = enabled ? 'Vibração ativada' : 'Vibração desativada';
-        }
-    }
-
-    if (hapticStatusBadge) {
-        if (!hasVibrationSupport) {
-            hapticStatusBadge.textContent = 'Indisponível';
-            hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500';
-            return;
-        }
-
-        if (enabled) {
-            hapticStatusBadge.textContent = 'Ativa';
-            hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700';
-        } else {
-            hapticStatusBadge.textContent = 'Desativada';
-            hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500';
-        }
-    }
-}
+// --- HAPTIC FEEDBACK (VIBRATION API) delegado para ./engine/effects.js ---
 
 // --- CARD ANIMATION UTILITIES ---
 function getHeaderScoreTarget() {
@@ -653,263 +566,7 @@ function animateCardsFromHeaderToDeck(callback) {
     }
 }
 
-// --- CANVAS ANIMATION ---
-let isCanvasLoopRunning = false;
-let canvasAnimationId = null;
-let celebrationParticles = [];
-
-function startCanvasLoop() {
-    if (!isCanvasLoopRunning) {
-        isCanvasLoopRunning = true;
-        canvasAnimationId = requestAnimationFrame(animate);
-    }
-}
-
-function clearBalls() {
-    balls = [];
-    celebrationParticles = [];
-    if (canvasAnimationId) {
-        cancelAnimationFrame(canvasAnimationId);
-        canvasAnimationId = null;
-    }
-    isCanvasLoopRunning = false;
-    if (ctx && canvas) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-}
-
-function launchCelebrationParticles(count = 140) {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return;
-    const colors = [
-        '#10B981', '#34D399', '#F59E0B', '#FBBF24', 
-        '#6366F1', '#818CF8', '#EC4899', '#F43F5E', 
-        '#06B6D4', '#3B82F6', '#8B5CF6'
-    ];
-    const w = canvas.width || window.innerWidth;
-    const h = canvas.height || window.innerHeight;
-    for (let i = 0; i < count; i++) {
-        celebrationParticles.push({
-            x: Math.random() * w,
-            y: -15 - Math.random() * (h * 0.4),
-            vx: (Math.random() - 0.5) * 5,
-            vy: Math.random() * 4 + 2,
-            size: Math.random() * 8 + 6,
-            color: colors[Math.floor(Math.random() * colors.length)],
-            rotation: Math.random() * 360,
-            rotationSpeed: (Math.random() - 0.5) * 8,
-            wobble: Math.random() * Math.PI,
-            wobbleSpeed: Math.random() * 0.08 + 0.04,
-            shape: Math.random() > 0.35 ? 'rect' : 'circle'
-        });
-    }
-    startCanvasLoop();
-}
-
-function cleanShockwaveContainer() {
-    if (shockwaveContainer) {
-        shockwaveContainer.innerHTML = '';
-    }
-}
-
-function playCompletionShockwave() {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion || !shockwaveContainer || !questionCard) return;
-
-    // Reset any ongoing ripple elements
-    cleanShockwaveContainer();
-
-    // Subtle tactile physical pulse on the question card holder
-    questionCard.classList.remove('card-shockwave-pulse');
-    void questionCard.offsetWidth;
-    questionCard.classList.add('card-shockwave-pulse');
-    setTimeout(() => questionCard.classList.remove('card-shockwave-pulse'), 750);
-
-    const rect = questionCard.getBoundingClientRect();
-    const cx = Math.round(rect.left + rect.width / 2);
-    const cy = Math.round(rect.top + rect.height / 2);
-
-    // Distance from center of card to farthest viewport corner + margin
-    const maxDist = Math.hypot(
-        Math.max(cx, window.innerWidth - cx),
-        Math.max(cy, window.innerHeight - cy)
-    ) + 60;
-
-    const diameter = Math.round(maxDist * 2);
-
-    // Wave 1: Ethereal translucent emerald & cobalt gradient ring (pure gradient, no solid lines)
-    const wave1 = document.createElement('div');
-    wave1.className = 'completion-ripple-wave';
-    wave1.style.left = `${cx}px`;
-    wave1.style.top = `${cy}px`;
-    wave1.style.width = `${diameter}px`;
-    wave1.style.height = `${diameter}px`;
-    wave1.style.background = 'radial-gradient(circle closest-side, rgba(16, 185, 129, 0) 0%, rgba(16, 185, 129, 0.04) 42%, rgba(16, 185, 129, 0.22) 68%, rgba(37, 99, 235, 0.26) 82%, rgba(59, 130, 246, 0.12) 92%, rgba(37, 99, 235, 0) 100%)';
-    shockwaveContainer.appendChild(wave1);
-
-    const anim1 = wave1.animate([
-        { transform: 'translate(-50%, -50%) scale(0.04)', opacity: 0.95, offset: 0, easing: 'cubic-bezier(0.16, 0.92, 0.28, 1.25)' },
-        { transform: 'translate(-50%, -50%) scale(0.32)', opacity: 0.92, offset: 0.22, easing: 'cubic-bezier(0.55, -0.28, 0.72, 0.1)' },
-        { transform: 'translate(-50%, -50%) scale(0.23)', opacity: 0.86, offset: 0.36, easing: 'cubic-bezier(0.12, 0.45, 0.18, 1)' },
-        { transform: 'translate(-50%, -50%) scale(1.08)', opacity: 0, offset: 1.0 }
-    ], {
-        duration: 1020,
-        fill: 'forwards'
-    });
-    anim1.onfinish = () => wave1.remove();
-
-    // Wave 2: Trailing softer blue-emerald gradient (bounces with wave 1, delayed by 90ms)
-    setTimeout(() => {
-        if (!shockwaveContainer) return;
-        const wave2 = document.createElement('div');
-        wave2.className = 'completion-ripple-wave';
-        wave2.style.left = `${cx}px`;
-        wave2.style.top = `${cy}px`;
-        wave2.style.width = `${diameter}px`;
-        wave2.style.height = `${diameter}px`;
-        wave2.style.background = 'radial-gradient(circle closest-side, rgba(37, 99, 235, 0) 0%, rgba(37, 99, 235, 0.04) 48%, rgba(37, 99, 235, 0.18) 72%, rgba(16, 185, 129, 0.22) 85%, rgba(16, 185, 129, 0.08) 93%, rgba(16, 185, 129, 0) 100%)';
-        shockwaveContainer.appendChild(wave2);
-
-        const anim2 = wave2.animate([
-            { transform: 'translate(-50%, -50%) scale(0.04)', opacity: 0.88, offset: 0, easing: 'cubic-bezier(0.16, 0.92, 0.28, 1.25)' },
-            { transform: 'translate(-50%, -50%) scale(0.28)', opacity: 0.84, offset: 0.22, easing: 'cubic-bezier(0.55, -0.28, 0.72, 0.1)' },
-            { transform: 'translate(-50%, -50%) scale(0.20)', opacity: 0.78, offset: 0.36, easing: 'cubic-bezier(0.12, 0.45, 0.18, 1)' },
-            { transform: 'translate(-50%, -50%) scale(1.06)', opacity: 0, offset: 1.0 }
-        ], {
-            duration: 960,
-            fill: 'forwards'
-        });
-        anim2.onfinish = () => wave2.remove();
-    }, 90);
-}
-
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    balls.forEach(ball => {
-        if (ball.y + ball.radius > canvas.height) {
-            ball.y = canvas.height - ball.radius;
-        }
-        ctx.beginPath();
-        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-        ctx.fillStyle = ball.color;
-        ctx.fill();
-        ctx.closePath();
-    });
-    if (balls.some(b => !b.isStatic) || celebrationParticles.length > 0) {
-        startCanvasLoop();
-    }
-}
-
-function createBall(isCorrect) {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const radius = Math.random() * 5 + 8;
-    const x = Math.random() * (canvas.width - radius * 2) + radius;
-    const y = prefersReducedMotion ? (canvas.height - radius) : -radius;
-    const color = isCorrect ? 'rgba(74, 222, 128, 0.8)' : 'rgba(239, 68, 68, 0.8)';
-    balls.push({ x, y, radius, color, dy: 0, isStatic: prefersReducedMotion });
-
-    if (prefersReducedMotion) {
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.closePath();
-    } else {
-        startCanvasLoop();
-    }
-    return balls.length - 1;
-}
-
-function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    let anyMoving = false;
-
-    // Render and update celebration confetti particles
-    if (celebrationParticles.length > 0) {
-        anyMoving = true;
-        for (let i = celebrationParticles.length - 1; i >= 0; i--) {
-            const p = celebrationParticles[i];
-            p.x += p.vx;
-            p.y += p.vy;
-            p.wobble += p.wobbleSpeed;
-            p.x += Math.sin(p.wobble) * 1.6;
-            p.rotation += p.rotationSpeed;
-            p.vy += 0.05; // gravity
-            if (p.y > canvas.height + 25) {
-                celebrationParticles.splice(i, 1);
-                continue;
-            }
-            ctx.save();
-            ctx.translate(p.x, p.y);
-            ctx.rotate((p.rotation * Math.PI) / 180);
-            ctx.fillStyle = p.color;
-            if (p.shape === 'rect') {
-                ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
-            } else {
-                ctx.beginPath();
-                ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            ctx.restore();
-        }
-    }
-
-    for (let i = 0; i < balls.length; i++) {
-        const ball = balls[i];
-        if (!ball.isStatic) {
-            anyMoving = true;
-            ball.dy += 0.2;
-            ball.y += ball.dy;
-            if (ball.y + ball.radius >= canvas.height) {
-                ball.y = canvas.height - ball.radius;
-                ball.isStatic = true;
-                continue;
-            }
-            let isTouchingStatic = false;
-            for (let j = 0; j < balls.length; j++) {
-                if (i === j || !balls[j].isStatic) continue;
-                const otherBall = balls[j];
-                const dx = ball.x - otherBall.x;
-                const dy = ball.y - otherBall.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                const minDistance = ball.radius + otherBall.radius;
-                if (distance < minDistance && ball.y < otherBall.y) {
-                    isTouchingStatic = true;
-                    if (!ball.firstContactTime) ball.firstContactTime = Date.now();
-                    ball.dy *= -0.3;
-                    const overlap = minDistance - distance;
-                    const angle = Math.atan2(dy, dx);
-                    ball.x += Math.cos(angle) * overlap;
-                    ball.y += Math.sin(angle) * overlap;
-                    ball.x += dx * 0.08; // Rolling force
-                    break;
-                }
-            }
-            if (isTouchingStatic && ball.firstContactTime) {
-                if (Date.now() - ball.firstContactTime > 5000) {
-                    ball.isStatic = true;
-                }
-            }
-        }
-    }
-    balls.forEach(ball => {
-        ctx.beginPath();
-        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-        ctx.fillStyle = ball.color;
-        ctx.fill();
-        ctx.closePath();
-    });
-    if (balls.length > 300) balls.shift();
-
-    if (anyMoving) {
-        canvasAnimationId = requestAnimationFrame(animate);
-    } else {
-        isCanvasLoopRunning = false;
-        canvasAnimationId = null;
-    }
-}
+// --- CANVAS ANIMATION & VISUAL EFFECTS delegado para ./engine/effects.js ---
 
 
 // --- HELPER: RENDER FILL-IN-THE-BLANKS QUESTION WITH INTERACTIVE INPUTS ---
@@ -1160,114 +817,8 @@ function restoreStreakAfterAiCorrection() {
     updateStreakUI(currentStreak >= 3);
 }
 
-// --- HELPER: FILTER PLAYABLE CARDS (EXCLUDE DEVISORS / NOTES) ---
-function isPlayableCard(card) {
-    return card && card.type !== 'divisor' && card.type !== 'divider' && card.type !== 'note';
-}
-
-// --- SPACED REPETITION & LEAN ALGORITHM HELPERS ---
-
-/**
- * Calculates repetition gap for cards based on thinking time.
- * Inversely proportional to thinking time:
- * - Hard cards (long thinking time): shorter gap (closer to min 5)
- * - Quick answers / fast misses: larger waiting line gap
- * Minimum gap is always 5 cards.
- */
-function calculateThinkingGap(thinkingTimeSec) {
-    const minGap = 5;
-    const t = Math.max(0.8, thinkingTimeSec || 1);
-    const bonus = Math.min(15, Math.max(0, Math.round(15 / t - 1)));
-    const gap = minGap + bonus;
-    console.log("[Algorithm] calculateThinkingGap:", {
-        thinkingTime: Math.round(t * 10) / 10 + 's',
-        bonus,
-        finalGap: gap
-    });
-    return gap;
-}
-
+// --- SPACED REPETITION & LEAN ALGORITHM HELPERS delegados para ./engine/scheduler.js ---
 let precomputedNextCard = null;
-
-/**
- * Selects the next card following adaptive spaced repetition and anti-monotony rules:
- * 1. Identifies dueCards (dueStep <= step), newCards (unseen), and futureCards (dueStep > step).
- * 2. When there's too much due (dueCards.length >= 3 or consecutiveDueCardsCount >= 2 with dueCards.length >= 2):
- *    - Injects a random card from nonDueCards (prioritizing unseen newCards) into the queue.
- *    - Guarantees at most 2 due cards in a row before a fresh card is interleaved.
- *    - Injects with ~35% organic probability during heavy due backlogs (dueCards.length >= 3).
- * 3. Otherwise picks randomly among dueCards (Requirement 5: avoids linear queue).
- * 4. If no due cards, picks randomly among unreviewed newCards.
- * 5. Fallback: picks randomly among cards with earliest future dueStep.
- */
-function selectNextCard(candidateList, step) {
-    if (!candidateList || candidateList.length === 0) return null;
-    if (candidateList.length === 1) return candidateList[0];
-
-    const dueCards = candidateList.filter(c => c.dueStep !== undefined && c.dueStep <= step);
-    const newCards = candidateList.filter(c => c.dueStep === undefined);
-    const futureCards = candidateList.filter(c => c.dueStep !== undefined && c.dueStep > step);
-    const nonDueCards = newCards.length > 0 ? newCards : futureCards;
-
-    if (dueCards.length > 0) {
-        const canInjectRandom = nonDueCards.length > 0;
-        const isTooMuchDue = dueCards.length >= 3;
-
-        // Anti-repetition rule:
-        // When there is too much due, inject a few random cards into the queue
-        // - Guarantees a fresh card if the user has already answered 2 consecutive due cards
-        // - Injects with ~35% probability during heavy backlogs (>= 3 due cards)
-        const shouldInjectRandom = canInjectRandom && (
-            (consecutiveDueCardsCount >= 2 && dueCards.length >= 2) ||
-            (isTooMuchDue && Math.random() < 0.35)
-        );
-
-        if (shouldInjectRandom) {
-            const injectedCard = nonDueCards[Math.floor(Math.random() * nonDueCards.length)];
-            console.log("[Algorithm] Too much due (" + dueCards.length + " cards). Injetando card aleatório fresco na fila:", {
-                desc: (injectedCard.description || '').slice(0, 35),
-                tipo: newCards.length > 0 ? 'novo/não visto' : 'futuro',
-                dueCount: dueCards.length,
-                consecutiveDue: consecutiveDueCardsCount
-            });
-            return injectedCard;
-        }
-
-        // Random pick among due cards (prevents linear queue)
-        const pickedDue = dueCards[Math.floor(Math.random() * dueCards.length)];
-        console.log("[Algorithm] Card due selecionado:", {
-            desc: (pickedDue.description || '').slice(0, 35),
-            dueStep: pickedDue.dueStep,
-            step,
-            dueCount: dueCards.length,
-            consecutiveDue: consecutiveDueCardsCount
-        });
-        return pickedDue;
-    }
-
-    // No cards due: pick randomly among unreviewed new cards
-    if (newCards.length > 0) {
-        const pickedNew = newCards[Math.floor(Math.random() * newCards.length)];
-        console.log("[Algorithm] Card novo selecionado:", {
-            desc: (pickedNew.description || '').slice(0, 35)
-        });
-        return pickedNew;
-    }
-
-    // Fallback: all remaining cards are scheduled in the future (dueStep > step)
-    let minDue = Infinity;
-    for (const c of candidateList) {
-        const d = c.dueStep || 0;
-        if (d < minDue) minDue = d;
-    }
-    const earliestCards = candidateList.filter(c => (c.dueStep || 0) === minDue);
-    const pickedEarliest = earliestCards[Math.floor(Math.random() * earliestCards.length)] || candidateList[0];
-    console.log("[Algorithm] Card futuro mais próximo selecionado:", {
-        desc: (pickedEarliest?.description || '').slice(0, 35),
-        minDue
-    });
-    return pickedEarliest;
-}
 
 /**
  * Precomputes candidate for the next step while the user is thinking on the current card.
@@ -1288,7 +839,7 @@ function precomputeNextCandidate() {
     const nextStep = currentStep + 1;
     // Exclude current card because any rescheduled card has gap >= 5, so it cannot be next
     const candidates = questionsPool.filter(c => c !== currentQuestion);
-    precomputedNextCard = selectNextCard(candidates.length > 0 ? candidates : questionsPool, nextStep);
+    precomputedNextCard = selectNextCard(candidates.length > 0 ? candidates : questionsPool, nextStep, consecutiveDueCardsCount);
 }
 
 function schedulePrecomputeNextCard() {
@@ -1297,13 +848,6 @@ function schedulePrecomputeNextCard() {
     } else {
         setTimeout(precomputeNextCandidate, 0);
     }
-}
-
-function formatTimeDisplay(totalSeconds) {
-    const s = Math.max(0, Math.floor(totalSeconds || 0));
-    const mins = Math.floor(s / 60);
-    const secs = s % 60;
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
 function showDeckCompletionScreen() {
@@ -1560,7 +1104,7 @@ function loadQuestion() {
         submitBtn.classList.remove('hidden');
         answerInput.focus();
     }
-    currentChatSession = null;
+    resetTutorChatSession();
 
     if (isFirstQuestion) {
         chatMessages.innerHTML = ''; // Limpa o placeholder inicial do HTML
@@ -1569,7 +1113,7 @@ function loadQuestion() {
         welcomeMsg.textContent = 'Olá! Como posso ajudar você a entender melhor esta questão?';
         chatMessages.appendChild(welcomeMsg);
         isFirstQuestion = false;
-    } else if (hasChatInteraction) {
+    } else if (getHasChatInteraction()) {
         // Adiciona o separador ondulado apenas se houve interação na questão anterior
         const separator = document.createElement('div');
         separator.className = 'chat-separator';
@@ -1589,7 +1133,7 @@ function loadQuestion() {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }, 100);
 
-        hasChatInteraction = false;
+        setHasChatInteraction(false);
     }
 }
 
@@ -2075,7 +1619,7 @@ function showFeedback(isCorrect, element) {
         } else {
             userAnswer = answerInput.value;
         }
-        lastUserAnswerForChat = userAnswer;
+        setLastUserAnswerForChat(userAnswer);
 
         const elapsedSeconds = (Date.now() - questionStartTime) / 1000;
         try {
@@ -2109,7 +1653,7 @@ function showFeedback(isCorrect, element) {
             }
         }
 
-        if (!isCorrect && isAiEnabled) {
+        if (!isCorrect && isTutorEnabled()) {
             askAiBtn.classList.remove('hidden');
             if (userAnswer) {
                 checkAnswerWithAi(currentQuestion, userAnswer, ballIdx);
@@ -2356,111 +1900,37 @@ function updateScoreDisplay() {
     if (scoreContainer) scoreContainer.classList.remove('hidden');
 }
 
-// --- AI LOGIC ---
+// --- AI LOGIC (delegada para ./engine/tutor.js) ---
 function updateAiUI() {
-    if (isAiEnabled) {
-        if (menuAiIcon) menuAiIcon.src = '../assets/img/enabled_ai.svg';
-        if (menuAiStatusBadge) {
-            menuAiStatusBadge.textContent = 'Ativada';
-            menuAiStatusBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700';
-        }
-        if (menuAiSubtitle) menuAiSubtitle.textContent = 'Verificação inteligente ativa';
-        if (aiIconOff) aiIconOff.classList.add('hidden');
-        if (aiIconOn) aiIconOn.classList.remove('hidden');
-    } else {
-        if (menuAiIcon) menuAiIcon.src = '../assets/img/config_ai.svg';
-        if (menuAiStatusBadge) {
-            menuAiStatusBadge.textContent = 'Desativada';
-            menuAiStatusBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500';
-        }
-        if (menuAiSubtitle) menuAiSubtitle.textContent = 'Clique para configurar';
-        if (aiIconOff) aiIconOff.classList.remove('hidden');
-        if (aiIconOn) aiIconOn.classList.add('hidden');
-    }
+    updateTutorUI({ menuAiIcon, menuAiStatusBadge, menuAiSubtitle, aiIconOff, aiIconOn });
 }
 
 function initializeAi() {
     if (geminiApiKey) {
-        genAI = new GoogleGenerativeAI(geminiApiKey);
-        isAiEnabled = true;
+        setTutorApiKey(geminiApiKey);
     }
     updateAiUI();
 }
 
 async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
-    if (!isAiEnabled || !genAI) return;
+    if (!isTutorEnabled()) return;
     try {
-        const model = genAI.getGenerativeModel({
-            model: "gemini-flash-lite-latest",
-            generationConfig: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: "OBJECT",
-                    properties: {
-                        correto: {
-                            type: "BOOLEAN",
-                            description: "true se a resposta do usuário for semanticamente correta ou variação aceitável, false se estiver incorreta ou contiver erros factuais."
-                        },
-                        justificativa: {
-                            type: "STRING",
-                            description: "Breve explicação do porquê a resposta foi considerada correta ou incorreta."
-                        }
-                    },
-                    required: ["correto", "justificativa"]
-                }
+        const evalData = await evaluateAnswerSemantic({
+            questionObj,
+            actualAnswer,
+            onSlowConnection: () => {
+                showNotificationPill("A conexão está lenta", "poor_wifi.svg", true);
+            },
+            onAiDisabledByErrors: () => {
+                updateAiUI();
+                showNotificationPill("IA não quer trabalhar hoje", "cloud_alert.svg");
             }
         });
-
-        const expected = (questionObj.type === 'fill' && questionObj.answers && questionObj.answers.length > 0)
-            ? questionObj.answers.join(' ; ')
-            : [questionObj.answer, questionObj.answer2].filter(Boolean).join(' / ');
-
-        const prompt = `
-            Você é um revisor de flashcards acadêmicos rigoroso. 
-            O sistema automático marcou a resposta do usuário como incorreta. Avalie se a resposta digitada é semanticamente válida ou uma variação aceitável em relação à resposta esperada.
-
-            Pergunta: "${questionObj.description}"
-            Resposta(s) Esperada(s) no Banco: "${expected}"
-            Resposta Digitada pelo Usuário: "${actualAnswer}"
-
-            DIRETRIZES DE AVALIAÇÃO:
-            1. Se o usuário usou um sinônimo exato, termo equivalente aceito pela comunidade acadêmica ou abreviação padrão, considere CORRETO (correto: true).
-            2. Se o usuário digitou uma parte fundamental suficiente para demonstrar conhecimento técnico exato (ex: "Braquial" para "Músculo braquial"), considere CORRETO (correto: true).
-            3. Se a questão pedir múltiplos valores, durações ou sequências (ex: em ordem ou 'respectivamente'), TODOS os valores/sequências devem estar corretos. Se qualquer valor numérico ou duração estiver incorreto (ex: 50 ms em vez de 40 ms, ou números errados na sequência), considere INCORRETO (correto: false).
-            4. Se a resposta contiver erros factuais, dados numéricos incorretos, for vaga ou sobre outra estrutura, considere INCORRETO (correto: false).
-
-            Retorne um JSON com 'correto' (boolean) e 'justificativa' (string).
-        `;
-
-        const startTime = Date.now();
-        const result = await callWithRetry(() => model.generateContent(prompt));
-        const latency = Date.now() - startTime;
-
-        const modelVersion = result.response.modelVersion || "unknown";
-        console.log(`agent API call worked. Model version: ${modelVersion}, Latency ${latency}ms`);
-
-        if (latency > 15000) {
-            const now = Date.now();
-            if (now - lastLatencyNotificationTime > 10 * 60 * 1000) {
-                showNotificationPill("A conexão está lenta", "poor_wifi.svg", true);
-                lastLatencyNotificationTime = now;
-            }
-        }
-
-        const responseText = result.response.text();
-        let evalData = null;
-        try {
-            evalData = JSON.parse(responseText);
-        } catch (parseErr) {
-            console.error("Erro ao analisar JSON da avaliação IA:", parseErr, responseText);
-            return;
-        }
 
         if (evalData && evalData.correto) {
             console.log("Agente corrigiu a resposta (ACEITA):", evalData.justificativa);
 
-            // Sucesso! A IA corrigiu o erro.
-            if (balls[ballIdx]) balls[ballIdx].color = 'rgba(250, 204, 21, 0.8)'; // Amarelo/Dourado para correção IA
+            setBallColor(ballIdx, 'rgba(250, 204, 21, 0.8)'); // Amarelo/Dourado para correção IA
             restoreStreakAfterAiCorrection();
 
             // Reverte a penalização inicial e ajusta métricas do cartão
@@ -2468,8 +1938,8 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
             questionObj.correctStreak = (questionObj.correctStreak || 0) + 1;
 
             const totalWrongs = questionObj.wrongCount || 0;
-            const isLeech = totalWrongs > 4;
-            const shouldRemove = !isLeech || questionObj.correctStreak >= 2;
+            const isLeech = isLeechCard(questionObj);
+            const shouldRemove = shouldGraduateCard(questionObj);
 
             // Registra correção da IA no subsistema de estatísticas
             recordStatsAiCorrection({
@@ -2542,83 +2012,16 @@ async function checkAnswerWithAi(questionObj, actualAnswer, ballIdx) {
         }
     } catch (e) {
         console.error("Erro na correção IA:", e);
-        if (e.message && e.message.includes("503")) {
-            ai503ErrorCount++;
-            if (ai503ErrorCount >= 10) {
-                isAiEnabled = false;
-                showNotificationPill("IA não quer trabalhar hoje", "cloud_alert.svg");
-            }
-        }
     }
 }
 
 async function sendChatMessage() {
-    const msg = chatInput.value.trim();
-    if (!msg || !isAiEnabled || !genAI) return;
-    hasChatInteraction = true;
-    addMsg('user', msg); chatInput.value = '';
-    const tid = showTyping();
-    try {
-        if (!currentChatSession) {
-            const correctAnswers = (currentQuestion.type === 'fill' && currentQuestion.answers && currentQuestion.answers.length > 0)
-                ? [currentQuestion.answers.join(' ; ')]
-                : [currentQuestion.answer];
-            if (currentQuestion.type !== 'fill' && currentQuestion.answer2) correctAnswers.push(currentQuestion.answer2);
-
-            const systemPrompt = `
-                Você é um professor tutor ajudando um estudante com um flashcard.
-                
-                CONTEXTO DA QUESTÃO:
-                Pergunta: "${currentQuestion.description}"
-                Resposta(s) Correta(s) no Banco: "${correctAnswers.join(' / ')}"
-                Resposta que o Usuário deu inicialmente: "${lastUserAnswerForChat}"
-                
-                Responda de forma didática, objetiva e curta. Se o usuário errou, explique o porquê de forma simples. Use Markdown para listas, tabelas, ênfase e fórmulas matemáticas/químicas em LaTeX ($...$ ou $$...$$).
-                Mantenha o contexto desta questão durante toda a conversa.
-            `;
-
-            const model = genAI.getGenerativeModel({ model: currentChatModel, systemInstruction: systemPrompt });
-            currentChatSession = model.startChat();
-        }
-        const result = await callWithRetry(() => currentChatSession.sendMessage(msg));
-        hideTyping(tid); addMsg('ai', result.response.text());
-    } catch (e) {
-        console.error(e);
-        hideTyping(tid);
-        if (e.message.includes("429") || e.message.includes("quota")) {
-            addMsg('ai', "Erro de cota excedida na API do Gemini. Por favor, tente novamente mais tarde.");
-        } else {
-            addMsg('ai', "Erro ao conectar com a IA.");
-        }
-    }
+    await sendTutorChatMessage({
+        currentQuestion,
+        chatInput,
+        chatMessages
+    });
 }
-
-function addMsg(sender, text) {
-    const div = document.createElement('div');
-    div.className = sender === 'ai' ? 'chat-message-ai' : 'chat-message-user';
-
-    if (sender === 'ai' && typeof marked !== 'undefined') {
-        // AI content is parsed as markdown with math rendering
-        div.innerHTML = renderMathAndMarkdown(text);
-    } else {
-        // User content is strictly plain text to prevent XSS
-        div.textContent = text;
-    }
-
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-function showTyping() {
-    const id = 't-' + Date.now();
-    const div = document.createElement('div');
-    div.id = id; div.className = 'typing-indicator';
-    div.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
-    chatMessages.appendChild(div);
-    return id;
-}
-
-function hideTyping(id) { document.getElementById(id)?.remove(); }
 
 // --- EVENT LISTENERS ---
 resetBtn.addEventListener('click', () => { 
@@ -3363,7 +2766,7 @@ if (apiKeyForm) {
 
 disableAiBtn.addEventListener('click', async (e) => {
     if (e) e.preventDefault();
-    isAiEnabled = false; 
+    disableTutor(); 
     geminiApiKey = ''; 
     await clearApiKey();
     if (apiKeyRemember) apiKeyRemember.checked = false;
@@ -3481,181 +2884,40 @@ if (questionCard) {
     });
 }
 
-// Keyboard shortcuts for study flow
-document.addEventListener('keydown', (e) => {
-    // Ignore when typing in inputs, textareas, contenteditable elements, or inside the tutor chat
-    const activeEl = document.activeElement;
-    const targetEl = e.target;
-    const isTextInput = (el) => el && (
-        el.tagName === 'INPUT' ||
-        el.tagName === 'TEXTAREA' ||
-        el.tagName === 'SELECT' ||
-        el.isContentEditable ||
-        (typeof el.closest === 'function' && el.closest('#ai-chat-container'))
-    );
-    if (isTextInput(activeEl) || isTextInput(targetEl)) {
-        return;
-    }
-
-    // Ignore when any modal, hamburger menu, or tutor chat drawer is open
-    const hasOpenModal = document.querySelector('.modal-overlay:not(.hidden)') !== null;
-    const isChatOpen = aiChatContainer && aiChatContainer.classList.contains('open');
-    const isHamburgerOpen = hamburgerMenu && !hamburgerMenu.classList.contains('hidden');
-    if (hasOpenModal || isChatOpen || isHamburgerOpen) return;
-
-    // Fast highlight shortcuts (1: Yellow, 2: Green, 3: Blue, 4: Purple) when text is selected or popup active
-    if (!e.ctrlKey && !e.metaKey && !e.altKey) {
-        let hlColor = null;
-        if (e.key === '1' || e.code === 'Numpad1') hlColor = 'yellow';
-        else if (e.key === '2' || e.code === 'Numpad2') hlColor = 'green';
-        else if (e.key === '3' || e.code === 'Numpad3') hlColor = 'blue';
-        else if (e.key === '4' || e.code === 'Numpad4') hlColor = 'purple';
-
-        if (hlColor) {
-            const target = getActiveTextSelection();
-            if (target) {
-                e.preventDefault();
-                e.stopPropagation();
-                activeHighlightRange = target.range;
-                activeHighlightField = target.field;
-                applyHighlight(hlColor);
-                return;
-            }
+// --- ATALHOS DE TECLADO E GAMEPAD API (delegados para ./engine/input-controller.js) ---
+initInputController({
+    getCurrentQuestion: () => currentQuestion,
+    getIsAnkiFlipped: () => isAnkiFlipped,
+    getIsAnimating: () => isAnimating,
+    onFlipAnki: flipAnkiCard,
+    onAnkiRating: handleAnkiRating,
+    onNextQuestion: () => {
+        if (nextQuestionBtn) nextQuestionBtn.click();
+    },
+    isNextQuestionBtnVisible: () => Boolean(nextQuestionBtn && !nextQuestionBtn.classList.contains('hidden')),
+    onHighlightShortcut: (hlColor) => {
+        const target = getActiveTextSelection();
+        if (target) {
+            activeHighlightRange = target.range;
+            activeHighlightField = target.field;
+            applyHighlight(hlColor);
+            return true;
         }
-    }
-
-    // If next / skip question button is visible and active, advance to next question on Enter / Space
-    if (nextQuestionBtn && !nextQuestionBtn.classList.contains('hidden') && !isAnimating) {
-        if (e.key === 'Enter' || e.code === 'Space') {
-            e.preventDefault();
-            console.log("[Game] Atalho Enter/Espaço para avançar card após correção.");
-            nextQuestionBtn.click();
-            return;
+        return false;
+    },
+    onSelectMcOption: (keyNum) => {
+        const btns = mcAnswerArea?.querySelectorAll('.mc-option-btn') || [];
+        if (btns[keyNum - 1] && !btns[keyNum - 1].disabled) {
+            btns[keyNum - 1].click();
+            return true;
         }
-    }
-
-    if (currentQuestion && currentQuestion.type === 'anki') {
-        if (!isAnkiFlipped) {
-            if (e.code === 'Space' || e.key === 'Enter') {
-                e.preventDefault();
-                flipAnkiCard();
-            }
-        } else {
-            if (e.key === '1' || e.code === 'Numpad1') {
-                e.preventDefault();
-                handleAnkiRating('again');
-            } else if (e.key === '2' || e.code === 'Numpad2') {
-                e.preventDefault();
-                handleAnkiRating('hard');
-            } else if (e.key === '3' || e.code === 'Numpad3' || e.code === 'Space' || e.key === 'Enter') {
-                e.preventDefault();
-                handleAnkiRating('good');
-            } else if (e.key === '4' || e.code === 'Numpad4') {
-                e.preventDefault();
-                handleAnkiRating('easy');
-            }
-        }
-    } else if (currentQuestion && currentQuestion.type === 'multiple_choice') {
-        const keyNum = parseInt(e.key);
-        if (!isNaN(keyNum) && keyNum >= 1 && keyNum <= 6) {
-            const btns = mcAnswerArea.querySelectorAll('.mc-option-btn');
-            if (btns[keyNum - 1] && !btns[keyNum - 1].disabled) {
-                e.preventDefault();
-                btns[keyNum - 1].click();
-            }
-        }
-    }
-});
-
-// Gamepad API controller polling (Event-driven to preserve battery/CPU)
-let lastGamepadButtonState = {};
-let gamepadRafId = null;
-
-function pollGamepad() {
-    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
-    let hasActiveGamepad = false;
-
-    for (const gp of gamepads) {
-        if (!gp) continue;
-        hasActiveGamepad = true;
-        
-        const isPressed = (btnIndex) => {
-            const b = gp.buttons[btnIndex];
-            if (!b) return false;
-            return typeof b === 'object' ? b.pressed : b > 0.5;
-        };
-
-        const justPressed = (btnIndex) => {
-            const pressed = isPressed(btnIndex);
-            const key = `${gp.index}_${btnIndex}`;
-            const wasPressed = !!lastGamepadButtonState[key];
-            lastGamepadButtonState[key] = pressed;
-            return pressed && !wasPressed;
-        };
-
-        const isModalOpen = [editModal, apiModal, instructionsModal, imageZoomModal].some(m => m && !m.classList.contains('hidden'));
-        if (isModalOpen) continue;
-
-        if (currentQuestion && currentQuestion.type === 'anki') {
-            if (!isAnkiFlipped) {
-                // Any face button or shoulder triggers card flip
-                if (justPressed(0) || justPressed(1) || justPressed(2) || justPressed(3) || justPressed(4) || justPressed(5)) {
-                    flipAnkiCard();
-                }
-            } else {
-                // Gamepad layout:
-                // Errei (Left / red): X (button 2), Dpad Left (button 14), L1 (button 4)
-                if (justPressed(2) || justPressed(14) || justPressed(4)) {
-                    handleAnkiRating('again');
-                }
-                // Difícil (Top / orange): Y (button 3), Dpad Up (button 12)
-                else if (justPressed(3) || justPressed(12)) {
-                    handleAnkiRating('hard');
-                }
-                // Médio (Bottom / green): A (button 0), Dpad Down (button 13), R1 (button 5)
-                else if (justPressed(0) || justPressed(13) || justPressed(5)) {
-                    handleAnkiRating('good');
-                }
-                // Fácil (Right / blue): B (button 1), Dpad Right (button 15)
-                else if (justPressed(1) || justPressed(15)) {
-                    handleAnkiRating('easy');
-                }
-            }
-        }
-    }
-
-    if (hasActiveGamepad) {
-        gamepadRafId = requestAnimationFrame(pollGamepad);
-    } else {
-        stopGamepadLoop();
-    }
-}
-
-function startGamepadLoop() {
-    if (!gamepadRafId) {
-        console.log("[Gamepad] Controle físico detectado. Polling iniciado.");
-        gamepadRafId = requestAnimationFrame(pollGamepad);
-    }
-}
-
-function stopGamepadLoop() {
-    if (gamepadRafId) {
-        cancelAnimationFrame(gamepadRafId);
-        gamepadRafId = null;
-        console.log("[Gamepad] Nenhum controle físico ativo. Polling pausado para poupar bateria e CPU.");
-    }
-}
-
-window.addEventListener('gamepadconnected', (e) => {
-    console.log("[Gamepad] Conectado:", e.gamepad.id);
-    startGamepadLoop();
-});
-
-window.addEventListener('gamepaddisconnected', (e) => {
-    console.log("[Gamepad] Desconectado:", e.gamepad.id);
-    const active = (navigator.getGamepads ? navigator.getGamepads() : []).filter(Boolean);
-    if (active.length === 0) {
-        stopGamepadLoop();
+        return false;
+    },
+    isModalOrDrawerOpen: () => {
+        const hasOpenModal = document.querySelector('.modal-overlay:not(.hidden)') !== null;
+        const isChatOpen = aiChatContainer && aiChatContainer.classList.contains('open');
+        const isHamburgerOpen = hamburgerMenu && !hamburgerMenu.classList.contains('hidden');
+        return hasOpenModal || isChatOpen || isHamburgerOpen;
     }
 });
 

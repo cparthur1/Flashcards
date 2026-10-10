@@ -204,7 +204,12 @@ Para permitir diagnósticos rápidos de problemas relatados por usuários ou tes
 │   ├── DESIGN_LANGUAGE.md              # Diretrizes de UI/UX Material 3
 │   └── GAME_ARCHITECTURE_AND_RULES.md  # Este documento (Regras do Jogo e Algoritmos)
 ├── js/
-│   ├── game.js                         # Loop principal, UI do jogo, Gamepad e Fila
+│   ├── game.js                         # Loop principal, UI do jogo e orquestrador
+│   ├── engine/
+│   │   ├── scheduler.js                # Algoritmo de repetição espaçada, fila adaptativa e gaps
+│   │   ├── effects.js                  # Haptics (vibração), Canvas de fundo, partículas e shockwaves
+│   │   ├── input-controller.js         # Teclado e Gamepad API orientada a eventos
+│   │   └── tutor.js                    # IA Gemini, tutor interativo e avaliação semântica
 │   ├── stats-tracker.js                # Gravação de sessões, métricas e histórico local
 │   ├── stats-ai.js                     # Métricas por tópico e agrupamento assistido
 │   ├── utils.js                        # Levenshtein, normalização, KaTeX e rotas
