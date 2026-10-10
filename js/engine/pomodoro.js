@@ -123,13 +123,24 @@ export function showBreakNotification() {
     if (!pomodoroPromptDialogEl) pomodoroPromptDialogEl = document.getElementById('pomodoro-prompt-dialog');
     if (pomodoroPromptDialogEl) {
         pomodoroPromptDialogEl.classList.remove('hidden');
+        requestAnimationFrame(() => {
+            pomodoroPromptDialogEl.classList.remove('-translate-y-24', 'opacity-0');
+            pomodoroPromptDialogEl.classList.add('translate-y-0', 'opacity-100');
+        });
+        triggerHaptic('tap');
     }
 }
 
 export function hideBreakNotification() {
     if (!pomodoroPromptDialogEl) pomodoroPromptDialogEl = document.getElementById('pomodoro-prompt-dialog');
     if (pomodoroPromptDialogEl) {
-        pomodoroPromptDialogEl.classList.add('hidden');
+        pomodoroPromptDialogEl.classList.remove('translate-y-0', 'opacity-100');
+        pomodoroPromptDialogEl.classList.add('-translate-y-24', 'opacity-0');
+        setTimeout(() => {
+            if (pomodoroPromptDialogEl && pomodoroPromptDialogEl.classList.contains('-translate-y-24')) {
+                pomodoroPromptDialogEl.classList.add('hidden');
+            }
+        }, 500);
     }
 }
 
@@ -186,15 +197,69 @@ export function snoozeBreak(minutes = 5) {
     }, 1000);
 }
 
+function playPomodoroChime() {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        if (ctx.state === 'suspended') {
+            ctx.resume();
+        }
+        const now = ctx.currentTime;
+        // Acorde harmônico ascendente suave: C5 (523Hz), E5 (659Hz), G5 (784Hz), C6 (1046Hz)
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+            gain.gain.setValueAtTime(0, now + idx * 0.12);
+            gain.gain.linearRampToValueAtTime(0.2, now + idx * 0.12 + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.12 + 0.6);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + idx * 0.12);
+            osc.stop(now + idx * 0.12 + 0.65);
+        });
+    } catch (e) {
+        // Ignora silenciosamente se autoplay estiver restrito pelo navegador
+    }
+}
+
 function onBreakTimeElapsed() {
     console.log("[Pomodoro] Micro-pausa finalizada. Cérebro pronto para retomar.");
-    triggerHaptic('correct');
-    if (pomodoroBreakCountdownEl) {
-        pomodoroBreakCountdownEl.textContent = "00:00";
-    }
-    const titleEl = document.getElementById('pomodoro-break-title');
-    if (titleEl) {
-        titleEl.textContent = "Pausa concluída! Pronto para continuar?";
+    triggerHaptic('timerDone');
+    playPomodoroChime();
+
+    if (!pomodoroBreakOverlayEl) pomodoroBreakOverlayEl = document.getElementById('pomodoro-break-overlay');
+    if (pomodoroBreakOverlayEl) {
+        pomodoroBreakOverlayEl.classList.remove('pomodoro-state-running');
+        pomodoroBreakOverlayEl.classList.add('pomodoro-state-done');
+
+        const iconEl = document.getElementById('pomodoro-break-icon');
+        if (iconEl) iconEl.textContent = 'rocket_launch';
+
+        const statusTextEl = document.getElementById('pomodoro-break-status-text');
+        if (statusTextEl) statusTextEl.textContent = 'Tempo Esgotado • Foco Pronto';
+
+        const titleEl = document.getElementById('pomodoro-break-title');
+        if (titleEl) titleEl.textContent = 'Pausa Concluída! Hora de Voltar!';
+
+        const descEl = document.getElementById('pomodoro-break-desc');
+        if (descEl) descEl.textContent = 'Sua mente descansou e os neurônios estão com energia máxima renovada para dominar mais cards!';
+
+        const timerLabelEl = document.getElementById('pomodoro-break-timer-label');
+        if (timerLabelEl) timerLabelEl.textContent = 'Foco 100% Recarregado';
+
+        if (pomodoroBreakCountdownEl) {
+            pomodoroBreakCountdownEl.textContent = 'PRONTO!';
+        }
+
+        const resumeIconEl = document.getElementById('pomodoro-resume-icon');
+        if (resumeIconEl) resumeIconEl.textContent = 'play_arrow';
+
+        const resumeTextEl = document.getElementById('pomodoro-resume-text');
+        if (resumeTextEl) resumeTextEl.textContent = 'RETOMAR ESTUDOS AGORA';
     }
 }
 
@@ -208,10 +273,30 @@ export function finishBreak() {
 function showBreakOverlay() {
     if (!pomodoroBreakOverlayEl) pomodoroBreakOverlayEl = document.getElementById('pomodoro-break-overlay');
     if (pomodoroBreakOverlayEl) {
+        pomodoroBreakOverlayEl.classList.remove('pomodoro-state-done');
+        pomodoroBreakOverlayEl.classList.add('pomodoro-state-running');
+
+        const iconEl = document.getElementById('pomodoro-break-icon');
+        if (iconEl) iconEl.textContent = 'self_improvement';
+
+        const statusTextEl = document.getElementById('pomodoro-break-status-text');
+        if (statusTextEl) statusTextEl.textContent = 'Micro-pausa em andamento';
+
         const titleEl = document.getElementById('pomodoro-break-title');
-        if (titleEl) {
-            titleEl.textContent = "Micro-pausa Cognitiva";
-        }
+        if (titleEl) titleEl.textContent = 'Micro-pausa Cognitiva';
+
+        const descEl = document.getElementById('pomodoro-break-desc');
+        if (descEl) descEl.textContent = 'Feche os olhos, beba água ou respire fundo. O cérebro consolida novas conexões durante o descanso.';
+
+        const timerLabelEl = document.getElementById('pomodoro-break-timer-label');
+        if (timerLabelEl) timerLabelEl.textContent = 'Tempo Restante de Pausa';
+
+        const resumeIconEl = document.getElementById('pomodoro-resume-icon');
+        if (resumeIconEl) resumeIconEl.textContent = 'fast_forward';
+
+        const resumeTextEl = document.getElementById('pomodoro-resume-text');
+        if (resumeTextEl) resumeTextEl.textContent = 'Pular Pausa e Voltar';
+
         pomodoroBreakOverlayEl.classList.remove('hidden');
     }
 }
@@ -220,12 +305,13 @@ function hideBreakOverlay() {
     if (!pomodoroBreakOverlayEl) pomodoroBreakOverlayEl = document.getElementById('pomodoro-break-overlay');
     if (pomodoroBreakOverlayEl) {
         pomodoroBreakOverlayEl.classList.add('hidden');
+        pomodoroBreakOverlayEl.classList.remove('pomodoro-state-done', 'pomodoro-state-running');
     }
 }
 
 function updateBreakCountdownDisplay() {
     if (!pomodoroBreakCountdownEl) pomodoroBreakCountdownEl = document.getElementById('pomodoro-break-countdown');
-    if (pomodoroBreakCountdownEl) {
+    if (pomodoroBreakCountdownEl && currentMode === 'break' && remainingSeconds > 0) {
         const mins = Math.floor(Math.max(0, remainingSeconds) / 60);
         const secs = Math.max(0, remainingSeconds) % 60;
         pomodoroBreakCountdownEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;

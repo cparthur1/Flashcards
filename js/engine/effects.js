@@ -17,7 +17,8 @@ const HAPTIC_PATTERNS = {
     shake: [20, 50, 20],
     fillPop: [18],
     streakUp: [15, 35, 25],
-    streakReset: [25]
+    streakReset: [25],
+    timerDone: [120, 80, 120, 80, 260, 120, 400]
 };
 
 export function isHapticEnabled() {
