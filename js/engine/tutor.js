@@ -52,6 +52,7 @@ export function updateTutorUI(elements = {}) {
     const menuAiSubtitle = elements.menuAiSubtitle || document.getElementById('menu-ai-subtitle');
     const aiIconOff = elements.aiIconOff || document.getElementById('ai-icon-off');
     const aiIconOn = elements.aiIconOn || document.getElementById('ai-icon-on');
+    const aiSwitch = elements.aiSwitch || document.getElementById('ai-switch');
 
     if (isAiEnabled) {
         if (menuAiIcon) menuAiIcon.src = '../assets/img/enabled_ai.svg';
@@ -62,6 +63,7 @@ export function updateTutorUI(elements = {}) {
         if (menuAiSubtitle) menuAiSubtitle.textContent = 'Verificação inteligente ativa';
         if (aiIconOff) aiIconOff.classList.add('hidden');
         if (aiIconOn) aiIconOn.classList.remove('hidden');
+        if (aiSwitch) aiSwitch.selected = true;
     } else {
         if (menuAiIcon) menuAiIcon.src = '../assets/img/config_ai.svg';
         if (menuAiStatusBadge) {
@@ -71,6 +73,7 @@ export function updateTutorUI(elements = {}) {
         if (menuAiSubtitle) menuAiSubtitle.textContent = 'Clique para configurar';
         if (aiIconOff) aiIconOff.classList.remove('hidden');
         if (aiIconOn) aiIconOn.classList.add('hidden');
+        if (aiSwitch) aiSwitch.selected = false;
     }
 }
 

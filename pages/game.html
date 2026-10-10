@@ -72,18 +72,20 @@
             </label>
 
             <!-- AI Settings -->
-            <button id="ai-toggle-btn"
-                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-[var(--md-sys-color-surface-container-high)] transition text-left group"
-                title="Ativar ou Desativar Recursos de IA">
-                <img id="menu-ai-icon" src="../assets/img/config_ai.svg" class="w-6 h-6 flex-shrink-0 transition-transform group-hover:scale-110" alt="IA">
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between">
+            <div id="ai-setting-row"
+                class="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-2xl hover:bg-[var(--md-sys-color-surface-container-high)] transition text-left group select-none no-ripple"
+                title="Recursos de IA">
+                <button type="button" id="ai-toggle-btn"
+                    class="flex items-center gap-3 min-w-0 flex-1 text-left cursor-pointer bg-transparent border-0 p-0 m-0 group/trigger"
+                    title="Configurar Recursos de IA">
+                    <img id="menu-ai-icon" src="../assets/img/config_ai.svg" class="w-6 h-6 flex-shrink-0 transition-transform group-hover/trigger:scale-110" alt="IA">
+                    <div class="flex-1 min-w-0">
                         <p id="menu-ai-title" class="text-sm font-semibold text-[var(--md-sys-color-on-surface)]">Recursos de IA</p>
-                        <span id="menu-ai-status-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--md-sys-color-surface-container-high)] text-[var(--md-sys-color-on-surface-variant)]">Desativada</span>
+                        <p id="menu-ai-subtitle" class="text-xs text-[var(--md-sys-color-on-surface-variant)] truncate">Clique para configurar</p>
                     </div>
-                    <p id="menu-ai-subtitle" class="text-xs text-[var(--md-sys-color-on-surface-variant)] truncate">Clique para configurar</p>
-                </div>
-            </button>
+                </button>
+                <md-switch id="ai-switch" aria-label="Alternar recursos de IA"></md-switch>
+            </div>
 
             <!-- Pomodoro Timer Toggle & Settings (Cognitive Rest & Micro-pauses) -->
             <div id="pomodoro-setting-row"
@@ -956,7 +958,7 @@
     </div>
 
     <script src="../js/ripple.js" defer></script>
-    <script src="../js/game.js?v=5.7" type="module" defer></script>
+    <script src="../js/game.js?v=5.8" type="module" defer></script>
 </body>
 
 </html>

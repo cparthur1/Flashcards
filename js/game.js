@@ -37,6 +37,8 @@ const menuAiIcon = document.getElementById('menu-ai-icon');
 const menuAiStatusBadge = document.getElementById('menu-ai-status-badge');
 const menuAiTitle = document.getElementById('menu-ai-title');
 const menuAiSubtitle = document.getElementById('menu-ai-subtitle');
+const aiSettingRow = document.getElementById('ai-setting-row');
+const aiSwitch = document.getElementById('ai-switch');
 
 const resetBtn = document.getElementById('reset-btn');
 const restartGameBtn = document.getElementById('restart-game-btn');
@@ -1911,7 +1913,7 @@ function updateScoreDisplay() {
 
 // --- AI LOGIC (delegada para ./engine/tutor.js) ---
 function updateAiUI() {
-    updateTutorUI({ menuAiIcon, menuAiStatusBadge, menuAiSubtitle, aiIconOff, aiIconOn });
+    updateTutorUI({ menuAiIcon, menuAiStatusBadge, menuAiSubtitle, aiIconOff, aiIconOn, aiSwitch });
 }
 
 function initializeAi() {
@@ -2705,14 +2707,51 @@ goToEditorBtn.addEventListener('click', () => {
     localStorage.setItem('editing_deck_title', deckTitle.textContent);
     window.location.href = ROUTES.GENERATE;
 });
-aiToggleBtn.addEventListener('click', async () => { 
-    closeHamburgerMenu();
-    apiModal.classList.remove('hidden'); 
-    geminiApiKey = await getApiKeyAsync();
-    apiKeyInput.value = geminiApiKey; 
-    if (apiKeyRemember) apiKeyRemember.checked = isKeyRemembered();
-    setTimeout(() => apiKeyInput.focus(), 50);
-});
+if (aiToggleBtn) {
+    aiToggleBtn.addEventListener('click', async () => { 
+        closeHamburgerMenu();
+        apiModal.classList.remove('hidden'); 
+        geminiApiKey = await getApiKeyAsync();
+        apiKeyInput.value = geminiApiKey || ''; 
+        if (apiKeyRemember) apiKeyRemember.checked = isKeyRemembered();
+        setTimeout(() => apiKeyInput.focus(), 50);
+    });
+}
+
+if (aiSwitch) {
+    aiSwitch.addEventListener('change', async () => {
+        const nextState = Boolean(aiSwitch.selected);
+        if (nextState) {
+            geminiApiKey = await getApiKeyAsync();
+            if (geminiApiKey) {
+                localStorage.setItem('flashcards_ai_enabled', 'true');
+                initializeAi();
+                initBackgroundCategorization();
+                showNotificationPill("Recursos de IA ativados", "enabled_ai.svg");
+            } else {
+                aiSwitch.selected = false;
+                closeHamburgerMenu();
+                apiModal.classList.remove('hidden');
+                apiKeyInput.value = '';
+                if (apiKeyRemember) apiKeyRemember.checked = isKeyRemembered();
+                setTimeout(() => apiKeyInput.focus(), 50);
+                showNotificationPill("Insira sua chave de API para ativar a IA", "config_ai.svg");
+            }
+        } else {
+            localStorage.setItem('flashcards_ai_enabled', 'false');
+            disableTutor();
+            updateAiUI();
+            showNotificationPill("Recursos de IA desativados", "config_ai.svg");
+        }
+    });
+}
+
+if (aiSettingRow) {
+    aiSettingRow.addEventListener('click', (e) => {
+        if (e.target.closest('md-switch') || e.target.closest('#ai-toggle-btn')) return;
+        if (aiToggleBtn) aiToggleBtn.click();
+    });
+}
 
 const hapticSwitch = document.getElementById('haptic-switch');
 const hapticSettingRow = document.getElementById('haptic-setting-row');
@@ -2759,6 +2798,7 @@ const handleSaveApiKey = async (e) => {
     if (geminiApiKey) {
         const remember = Boolean(apiKeyRemember?.checked);
         await saveApiKey(geminiApiKey, remember);
+        localStorage.setItem('flashcards_ai_enabled', 'true');
         initializeAi(); 
         apiModal.classList.add('hidden');
         showNotificationPill(
@@ -2778,6 +2818,7 @@ disableAiBtn.addEventListener('click', async (e) => {
     disableTutor(); 
     geminiApiKey = ''; 
     await clearApiKey();
+    localStorage.setItem('flashcards_ai_enabled', 'false');
     if (apiKeyRemember) apiKeyRemember.checked = false;
     updateAiUI();
     apiModal.classList.add('hidden');
@@ -3659,11 +3700,15 @@ async function initGame() {
     initStatsSession(deckTitle.textContent, activeMode, allQuestions.filter(isPlayableCard).length, score);
     loadQuestion(); 
     const loadedKey = await getApiKeyAsync();
-    if (loadedKey) {
+    const aiPreference = localStorage.getItem('flashcards_ai_enabled');
+    const shouldEnableAi = Boolean(loadedKey && aiPreference !== 'false');
+    if (shouldEnableAi) {
         geminiApiKey = loadedKey;
+        initializeAi();
+    } else {
+        disableTutor();
+        updateAiUI();
     }
-    initializeAi();
-    updateAiUI();
     updateHapticUI();
     initPomodoro();
     initBackgroundCategorization();
