@@ -285,7 +285,7 @@ export function createBall(isCorrect) {
     return balls.length - 1;
 }
 
-function animate() {
+export function animate() {
     if (!canvasElement || !canvasCtx) return;
     canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
     let anyMoving = false;

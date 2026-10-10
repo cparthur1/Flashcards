@@ -1,0 +1,108 @@
+[
+  {
+    "type": "divisor",
+    "text": "Seção 1: Ciências Naturais",
+    "description": "Seção 1: Ciências Naturais"
+  },
+  {
+    "type": "open",
+    "description": "Qual é a principal organela celular responsável pela respiração aeróbica e produção de ATP?",
+    "answer": "Mitocôndria / Mitocondria",
+    "subject": "Biologia",
+    "topic": "Citologia"
+  },
+  {
+    "type": "open",
+    "description": "Qual gás é absorvido pelas plantas durante a fotossíntese para a síntese de glicose?",
+    "answer": "Dióxido de carbono / Dióxido de Carbono / CO2 / Gás carbônico",
+    "subject": "Biologia",
+    "topic": "Botânica"
+  },
+  {
+    "type": "open_double",
+    "description": "Quais são as duas principais bases nitrogenadas púricas (com anel duplo) presentes no DNA?",
+    "answer": "Adenina",
+    "answer2": "Guanina",
+    "placeholder1": "Primeira base",
+    "placeholder2": "Segunda base",
+    "subject": "Biologia",
+    "topic": "Genética"
+  },
+  {
+    "type": "open_double",
+    "description": "Quais são os dois principais movimentos astronômicos realizados pelo planeta Terra?",
+    "answer": "Rotação",
+    "answer2": "Translação",
+    "placeholder1": "Em torno do próprio eixo",
+    "placeholder2": "Em torno do Sol",
+    "subject": "Geografia",
+    "topic": "Astronomia"
+  },
+  {
+    "type": "multiple_choice",
+    "description": "Qual dos seguintes elementos químicos possui número atômico 1 e é o mais abundante no universo?",
+    "options": [
+      "Hidrogênio",
+      "Hélio",
+      "Oxigênio",
+      "Carbono"
+    ],
+    "answer": "Hidrogênio",
+    "subject": "Química",
+    "topic": "Tabela Periódica"
+  },
+  {
+    "type": "multiple_choice",
+    "description": "De acordo com a Primeira Lei de Newton (Inércia), um corpo em repouso permanece em repouso a menos que:",
+    "options": [
+      "Uma força resultante externa atue sobre ele",
+      "Sua energia cinética se torne constante",
+      "A gravidade sobre ele seja completamente anulada",
+      "Sua massa varie continuamente"
+    ],
+    "answer": "Uma força resultante externa atue sobre ele",
+    "subject": "Física",
+    "topic": "Mecânica"
+  },
+  {
+    "type": "divisor",
+    "text": "Seção 2: Tecnologia da Informação",
+    "description": "Seção 2: Tecnologia da Informação"
+  },
+  {
+    "type": "fill",
+    "description": "No desenvolvimento web, o _ é utilizado para estruturar o documento, enquanto o _ é responsável pela estilização e apresentação visual.",
+    "answer": "HTML; CSS",
+    "answers": [
+      "HTML",
+      "CSS"
+    ],
+    "subject": "Programação",
+    "topic": "Frontend"
+  },
+  {
+    "type": "fill",
+    "description": "No protocolo HTTP, a resposta de status _ indica uma requisição bem-sucedida, enquanto o código _ indica que o recurso não foi encontrado.",
+    "answer": "200; 404",
+    "answers": [
+      "200",
+      "404"
+    ],
+    "subject": "Redes",
+    "topic": "Protocolos"
+  },
+  {
+    "type": "anki",
+    "description": "O que define o princípio da **Imutabilidade** na programação funcional?",
+    "answer": "Significa que um dado ou estado não pode ser alterado após sua criação. Em vez de modificar o valor original, novas estruturas são geradas contendo as alterações necessárias.",
+    "subject": "Programação",
+    "topic": "Paradigmas"
+  },
+  {
+    "type": "anki",
+    "description": "O que representa o acrônimo **ACID** em sistemas de gerenciamento de banco de dados relacionais?",
+    "answer": "**Atomicidade**, **Consistência**, **Isolamento** e **Durabilidade** — conjunto de propriedades que garantem que transações no banco de dados sejam processadas com confiabilidade e integridade.",
+    "subject": "Banco de Dados",
+    "topic": "Transações"
+  }
+]
