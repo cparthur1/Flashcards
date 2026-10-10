@@ -276,11 +276,14 @@ function renderAllStats(options = {}) {
     }
 
     // --- TAB 1: CURRENT SESSION ---
-    const currentOrLastSession = statsData.currentSession || (statsData.history && statsData.history[0]) || null;
+    const lastHistory = statsData.history && statsData.history[0];
+    const currentOrLastSession = (statsData.currentSession && statsData.currentSession.cardsAnswered > 0)
+        ? statsData.currentSession
+        : (lastHistory || statsData.currentSession || null);
     renderCurrentSession(currentOrLastSession, gameState, statsData.history);
 
     // --- AI SECTION: TOPICS & SUBJECTS ---
-    renderAiSection(gameState, statsData, isLiveUpdate);
+    renderAiSection(gameState, statsData, isLiveUpdate, currentOrLastSession);
 
     // --- TAB 2: HISTORY ---
     const history = statsData.history || [];
@@ -1000,12 +1003,13 @@ function renderAiDashboard(currentDeckTitle, subjectsStats, topicsStats, gameSta
     }
 }
 
-function renderAiSection(gameState, statsData, isLiveUpdate = false) {
+function renderAiSection(gameState, statsData, isLiveUpdate = false, sessionToUse = null) {
     if (!aiStatsSection) return;
 
     const apiKey = getGeminiApiKey();
     const currentDeckTitle = gameState.deckTitle || (localStorage.getItem('flashcardsActiveMode') === 'notebook' ? 'Caderno' : (localStorage.getItem('flashcardsActiveMode') === 'exam' ? 'Semana de Provas' : 'Flashcards'));
     const categories = getStoredAiCategories();
+    const activeSession = sessionToUse || (statsData.currentSession && statsData.currentSession.cardsAnswered > 0 ? statsData.currentSession : (statsData.history && statsData.history[0])) || statsData.currentSession || null;
 
     // Check if the deck/cards are already categorized (either in JSON cards or in stored categories)
     const alreadyCategorized = isDeckCategorized({
@@ -1020,7 +1024,7 @@ function renderAiSection(gameState, statsData, isLiveUpdate = false) {
             categories,
             currentDeckTitle,
             allQuestions: gameState.allQuestions || [],
-            currentSession: statsData.currentSession,
+            currentSession: activeSession,
             history: statsData.history
         });
 
@@ -1137,7 +1141,7 @@ function renderAiSection(gameState, statsData, isLiveUpdate = false) {
         categories,
         currentDeckTitle,
         allQuestions: gameState.allQuestions || [],
-        currentSession: statsData.currentSession,
+        currentSession: activeSession,
         history: statsData.history
     });
 
@@ -1346,13 +1350,15 @@ function renderAccuracyChart(history) {
         return;
     }
 
-    // Sort chronologically for chart (oldest to newest, max last 15)
-    const chartData = [...history].reverse().slice(-12);
+    // Sort from most recent to oldest (newest session first on the left, max 12)
+    const chartData = [...history]
+        .sort((a, b) => (b.startTime || b.endTime || 0) - (a.startTime || a.endTime || 0))
+        .slice(0, 12);
 
     if (chartData.length >= 2) {
-        const first = chartData[0].accuracy || 0;
-        const last = chartData[chartData.length - 1].accuracy || 0;
-        const diff = last - first;
+        const recent = chartData[0].accuracy || 0;
+        const older = chartData[chartData.length - 1].accuracy || 0;
+        const diff = recent - older;
         const trendIcon = diff >= 0 ? 'trending_up' : 'trending_down';
         const trendPrefix = diff >= 0 ? '+' : '';
         chartTrendBadge.innerHTML = `<span class="material-symbols-rounded text-sm align-middle">${trendIcon}</span> ${trendPrefix}${diff}%`;
@@ -1371,6 +1377,8 @@ function renderAccuracyChart(history) {
         const barColor = acc >= 80 ? 'bg-emerald-500 hover:bg-emerald-600' :
             acc >= 65 ? 'bg-amber-500 hover:bg-amber-600' : 'bg-red-500 hover:bg-red-600';
 
+        const label = index === 0 ? 'Atual' : `S${index + 1}`;
+
         const col = document.createElement('div');
         col.className = 'flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer min-w-[28px]';
         col.innerHTML = `
@@ -1381,7 +1389,7 @@ function renderAccuracyChart(history) {
             </div>
             <span class="text-[10px] font-bold text-gray-600 mb-1 opacity-0 group-hover:opacity-100 transition-opacity">${acc}%</span>
             <div class="w-full max-w-[36px] ${barColor} rounded-t-lg transition-all duration-500" style="height: ${heightPct}%"></div>
-            <span class="text-[9px] text-gray-400 mt-1 font-mono">S${index + 1}</span>
+            <span class="text-[9px] text-gray-400 mt-1 font-mono">${label}</span>
         `;
         accuracyChartContainer.appendChild(col);
     });

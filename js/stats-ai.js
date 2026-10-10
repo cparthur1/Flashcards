@@ -379,18 +379,30 @@ export function computeAiStats({
 
     const cardTopicsBySignature = categories.cardTopicsBySignature || {};
 
-    // Optimization: Pre-normalize answersLog and strugglingCards once (O(M) instead of O(N * M) repetitive regexes)
+    const playableCards = (allQuestions || []).filter(c => c && c.type !== 'divisor' && c.type !== 'divider' && c.type !== 'note');
+    const isCompleted = Boolean(
+        currentSession?.completed || 
+        (playableCards.length > 0 && currentSession?.cardsAnswered >= playableCards.length)
+    );
+
+    const cardAnswers = currentSession?.cardAnswers || {};
+    const sessionByTopic = currentSession?.byTopic || {};
+
+    // Pre-normalize answersLog and strugglingCards
     const answersLogNormalized = (currentSession?.answersLog || []).map(e => ({
         entry: e,
-        key: (e.question || '').replace(/<[^>]*>/g, '').trim().toLowerCase().slice(0, 40)
-    })).filter(item => item.key.length > 0);
+        sig: e.sig || '',
+        key: (e.question || '').replace(/<[^>]*>/g, '').trim().toLowerCase()
+    })).filter(item => item.key.length > 0 || item.sig.length > 0);
 
     const strugglingKeys = Object.values(currentSession?.strugglingCards || {}).map(sc =>
-        (sc.description || '').replace(/<[^>]*>/g, '').trim().toLowerCase().slice(0, 40)
+        (sc.description || '').replace(/<[^>]*>/g, '').trim().toLowerCase()
     ).filter(k => k.length > 0);
 
     const topicsMap = {};
     (allQuestions || []).forEach((card, idx) => {
+        if (!card || card.type === 'divisor' || card.type === 'divider' || card.type === 'note') return;
+
         const sig = getCardSignature(card);
         const topic = card.topic || card.aiTopic || (sig ? cardTopicsBySignature[sig] : null) || cardTopicMap[idx] || "Geral";
         if (!card.aiTopic && topic !== "Geral") {
@@ -413,27 +425,54 @@ export function computeAiStats({
         }
         topicsMap[topic].cardsCount++;
 
-        // Fast lookup against pre-normalized answersLog
-        const cardDesc = (card.description || '').replace(/<[^>]*>/g, '').trim().toLowerCase().slice(0, 40);
+        const cardCleanDesc = (card.description || '').replace(/<[^>]*>/g, '').trim().toLowerCase();
+        const shortCardDesc = cardCleanDesc.slice(0, 40);
+
+        // Check if card is struggling
+        const isStruggling = strugglingKeys.length > 0 && strugglingKeys.some(sk => 
+            sk === cardCleanDesc || 
+            (shortCardDesc.length > 10 && (sk.includes(shortCardDesc) || shortCardDesc.includes(sk.slice(0, 40))))
+        );
+        if (isStruggling) {
+            topicsMap[topic].hasStruggling = true;
+        }
+
+        // 1. Precise lookup via cardAnswers[sig]
+        let cardAnswer = sig && cardAnswers[sig] ? cardAnswers[sig] : null;
+
+        // 2. Lookup via answersLog
         let logEntry = null;
-        if (cardDesc) {
-            const found = answersLogNormalized.find(item => item.key === cardDesc || item.key.includes(cardDesc) || cardDesc.includes(item.key));
+        if (!cardAnswer && answersLogNormalized.length > 0) {
+            const found = answersLogNormalized.find(item => 
+                (sig && item.sig && item.sig === sig) ||
+                (cardCleanDesc && item.key === cardCleanDesc) ||
+                (shortCardDesc.length > 15 && (item.key.includes(shortCardDesc) || shortCardDesc.includes(item.key.slice(0, 40))))
+            );
             if (found) logEntry = found.entry;
         }
 
-        if (logEntry) {
+        if (cardAnswer) {
+            topicsMap[topic].answeredCount++;
+            if (cardAnswer.isCorrect) topicsMap[topic].correctCount++;
+        } else if (logEntry) {
             topicsMap[topic].answeredCount++;
             if (logEntry.isCorrect) topicsMap[topic].correctCount++;
+        } else if (isCompleted) {
+            // Deck was completed in this session: every card in the deck was answered!
+            topicsMap[topic].answeredCount++;
+            if (isStruggling || (typeof card.wrongCount === 'number' && card.wrongCount > 0)) {
+                // Answered with error
+            } else {
+                topicsMap[topic].correctCount++;
+            }
         }
+    });
 
-        // Fast lookup against pre-normalized strugglingKeys
-        let isStruggling = false;
-        if (cardDesc && strugglingKeys.length > 0) {
-            isStruggling = strugglingKeys.some(sk => sk === cardDesc || sk.includes(cardDesc) || cardDesc.includes(sk));
-        }
-
-        if (isStruggling) {
-            topicsMap[topic].hasStruggling = true;
+    // If sessionByTopic has recorded counts that are higher/richer, reconcile:
+    Object.keys(sessionByTopic).forEach(topName => {
+        if (topicsMap[topName] && sessionByTopic[topName].total > topicsMap[topName].answeredCount) {
+            topicsMap[topName].answeredCount = sessionByTopic[topName].total;
+            topicsMap[topName].correctCount = Math.min(topicsMap[topName].answeredCount, sessionByTopic[topName].correct);
         }
     });
 

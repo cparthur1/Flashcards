@@ -4,6 +4,8 @@
  * Anki ratings distribution, streaks, and historical study sessions.
  */
 
+import { getCardSignature, getStoredAiCategories } from './stats-ai.js';
+
 const STATS_KEY = 'flashcards_stats';
 
 export function getStatsStorage() {
@@ -112,6 +114,8 @@ export function initStatsSession(deckTitle, mode = 'normal', totalCards = 0, cur
             fill: { total: 0, correct: 0 },
             anki: { total: 0, correct: 0 }
         },
+        byTopic: {},
+        cardAnswers: {},
         answersLog: [],
         strugglingCards: {},
         completed: false
@@ -207,19 +211,61 @@ export function recordStatsAnswer({ card, isCorrect, rating, timeSpentSeconds, u
     sess.byType[typeKey].total++;
     if (isCorrect) sess.byType[typeKey].correct++;
 
+    // Topic & Card Signature Tracking
+    const sig = getCardSignature(card);
+    const cleanCardDesc = (card.description || '').replace(/<[^>]*>/g, '').trim();
+    const cleanCardAns = (card.answer || '').replace(/<[^>]*>/g, '').trim();
+
+    let cardTopic = card.topic || card.aiTopic;
+    if (!cardTopic && sig) {
+        try {
+            const categories = getStoredAiCategories();
+            cardTopic = categories?.cardTopicsBySignature?.[sig] || "Geral";
+        } catch (_) {
+            cardTopic = "Geral";
+        }
+    }
+    if (!cardTopic) cardTopic = "Geral";
+
+    if (!sess.byTopic) sess.byTopic = {};
+    if (!sess.byTopic[cardTopic]) sess.byTopic[cardTopic] = { total: 0, correct: 0 };
+    sess.byTopic[cardTopic].total++;
+    if (isCorrect) sess.byTopic[cardTopic].correct++;
+
+    if (!sess.cardAnswers) sess.cardAnswers = {};
+    if (sig) {
+        if (!sess.cardAnswers[sig]) {
+            sess.cardAnswers[sig] = {
+                answered: 1,
+                correct: isCorrect ? 1 : 0,
+                isCorrect: !!isCorrect,
+                topic: cardTopic,
+                rating: rating || (isCorrect ? 'correct' : 'incorrect')
+            };
+        } else {
+            sess.cardAnswers[sig].answered++;
+            if (isCorrect) sess.cardAnswers[sig].correct++;
+            sess.cardAnswers[sig].isCorrect = !!isCorrect;
+            sess.cardAnswers[sig].topic = cardTopic;
+            sess.cardAnswers[sig].rating = rating || (isCorrect ? 'correct' : 'incorrect');
+        }
+    }
+
     // Answers Log
     if (!sess.answersLog) sess.answersLog = [];
     sess.answersLog.push({
-        question: (card.description || '').slice(0, 120),
+        sig: sig,
+        topic: cardTopic,
+        question: cleanCardDesc.slice(0, 140),
         type: typeKey,
         isCorrect: !!isCorrect,
         rating: rating || (isCorrect ? 'correct' : 'incorrect'),
         timeSeconds: validTime,
         userAnswer: (userAnswer || '').slice(0, 100),
-        expectedAnswer: (card.answer || '').slice(0, 100),
+        expectedAnswer: cleanCardAns.slice(0, 100),
         timestamp: now
     });
-    if (sess.answersLog.length > 80) sess.answersLog.shift();
+    if (sess.answersLog.length > 150) sess.answersLog.shift();
 
     // Struggling cards tracking
     if (!sess.strugglingCards) sess.strugglingCards = {};

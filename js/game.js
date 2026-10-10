@@ -855,6 +855,52 @@ function schedulePrecomputeNextCard() {
     }
 }
 
+export function getDeckCompletionAdviceForHour(hour = new Date().getHours()) {
+    // 05:00 - 11:59: De manhã -> Alongamento
+    if (hour >= 5 && hour < 12) {
+        return {
+            icon: 'self_improvement',
+            text: 'Hora de um alongamento! Movimentar o corpo ativa a circulação e renova o foco ;)'
+        };
+    }
+    // 12:00 - 13:59: De meio-dia -> Almoçar
+    if (hour >= 12 && hour < 14) {
+        return {
+            icon: 'restaurant',
+            text: 'Hora de almoçar! Uma boa refeição repõe as energias e a glicose do cérebro ;)'
+        };
+    }
+    // 14:00 - 17:59: De tarde -> Exercício físico
+    if (hour >= 14 && hour < 18) {
+        return {
+            icon: 'directions_run',
+            text: 'Hora de exercício físico! A atividade física oxigena o cérebro e consolida a memória ;)'
+        };
+    }
+    // 18:00 - 20:59: Final de tarde -> Ler ou relaxar
+    if (hour >= 18 && hour < 21) {
+        return {
+            icon: 'auto_stories',
+            text: 'Final de tarde! Uma leitura leve ou uma pausa para relaxar ajuda a fixar o conteúdo ;)'
+        };
+    }
+    // 21:00 - 04:59: De noite -> Dormir (Sono REM)
+    return {
+        icon: 'bedtime',
+        text: 'Agora durma! Sono REM vai fazer você salvar tudo isso ;)'
+    };
+}
+
+function updateDeckCompletionTip() {
+    const tipIcon = document.getElementById('deck-completion-tip-icon');
+    const tipText = document.getElementById('deck-completion-tip-text');
+    if (!tipIcon && !tipText) return;
+
+    const advice = getDeckCompletionAdviceForHour();
+    if (tipIcon) tipIcon.textContent = advice.icon;
+    if (tipText) tipText.textContent = advice.text;
+}
+
 function showDeckCompletionScreen() {
     try {
         clearBalls();
@@ -913,6 +959,14 @@ function showDeckCompletionScreen() {
         if (deckCompletionSubtitle) {
             const dTitle = (deckTitle?.textContent || '').trim() || 'deste baralho';
             deckCompletionSubtitle.textContent = `Todos os cards de "${dTitle}" foram concluídos com sucesso nesta rodada!`;
+        }
+
+        // Dynamically update time-of-day health and neuro-consolidation advice
+        updateDeckCompletionTip();
+
+        // Ensure remaining counter reflects 0 on full deck completion
+        if (questionsLeftDisplay) {
+            questionsLeftDisplay.textContent = '0';
         }
 
         // Unhide completion card holder view
