@@ -88,38 +88,29 @@ Quando todos os cartões jogáveis do baralho são memorizados (`questionsPool.l
 
 ## 2. Algoritmos Centrais e Regras Matemáticas
 
-### 2.1 Algoritmo de Fila Adaptativa e Repetição Espaçada
+### 2.1 Algoritmo de Fila Adaptativa e Repetição Espaçada com Pilares Neurobiológicos
 
-O jogo **não utiliza uma fila linear estática**. O algoritmo recalcula o agendamento de cada cartão dinamicamente com base no desempenho real:
+O jogo opera em modelo de **estudo intra-sessão e repetição entre sessões** (não utiliza calendário multi-dias). O algoritmo adapta o agendamento de cada cartão dinamicamente combinando quatro pilares da neurociência da aprendizagem:
 
-1. **Embaralhamento Inicial**:  
-   Ao iniciar qualquer sessão ou baralho, todos os cartões jogáveis são embaralhados aleatoriamente via `shuffleArray()`.
+1. **Dificuldades Desejáveis (Desirable Difficulties — Bjork)**:  
+   Garante intervalo mínimo absoluto de **5 cartões** para que o eco fonológico e visual da memória de trabalho decaia (~15 a 30s), impedindo a "fluência ilusória" e forçando esforço cognitivo real de recuperação (retrieval practice).
 
-2. **Cálculo de Gap por Tempo de Pensamento (`calculateThinkingGap`)**:  
-   Quando o usuário erra um cartão, o intervalo (gap de cartões futuros) é **inversamente proporcional ao tempo que ele passou pensando**:
-   - Se o usuário pensou bastante tempo ($\ge 15$s) e errou, significa que a questão é difícil: o cartão reaparece mais cedo (gap mínimo de **5 cartões**).
-   - Se o usuário errou muito rápido (ex: chute ou distração $\le 1$s), o cartão recebe um intervalo maior de espera (gap até **20 cartões**).
-   ```javascript
-   function calculateThinkingGap(thinkingTimeSec) {
-       const minGap = 5; // Mínimo absoluto
-       const t = Math.max(0.8, thinkingTimeSec || 1);
-       const bonus = Math.min(15, Math.max(0, Math.round(15 / t - 1)));
-       return minGap + bonus;
-   }
-   ```
+2. **Erro de Predição e Efeito de Testagem (Prediction Error & Testing Effect)**:  
+   - **Erros rápidos ($t < 2.0$s)**: Indicam falso reconhecimento impulsivo ou chute heurístico (alto erro de predição). Recebem gap dilatado (**8 a 10 cartões**) para quebrar o automatismo incorreto antes do re-teste.
+   - **Erros de esforço prolongado ($t > 12.0$s)**: Indicam busca semântica exaustiva sem sucesso. Recebem gap contido próximo ao mínimo (**5 cartões**) para oportunizar reconsolidação imediata antes da extinção do traço.
+   - **Histórico de erros (`wrongCount`)**: Cartões com muitos erros mantêm intervalos controlados para evitar distanciamento excessivo no deck.
 
-3. **Pré-cálculo em Tempo Ocioso (`precomputeNextCandidate`)**:  
-   Para garantir que as animações de transição de cartões (60 FPS fluidos) não engasguem com processamento de algoritmo, o próximo cartão é pré-selecionado em segundo plano via `requestIdleCallback` enquanto o usuário ainda está lendo/digitando no cartão atual.
+3. **Latência de Resposta e Confirmação de Acerto**:  
+   - Se um cartão já teve erros na sessão e é respondido corretamente com **esforço extremo ($t > 10.0$s)**, o traço ainda está no limiar frágil de esquecimento. O cartão **não gradua prematuramente**, exigindo uma segunda confirmação consecutiva (`correctStreak >= 2`).
+   - Cartões normais respondidos fluentemente são graduados e removidos do pool da sessão.
+   - **Regra Leech**: Cartões com $> 4$ erros exigem estritamente `correctStreak >= 2`.
 
-4. **Desempate Aleatório entre Cartões Vencidos**:  
-   Caso múltiplos cartões tenham `dueStep <= currentStep`, o algoritmo sorteia aleatoriamente entre eles para que não se forme uma fila rígida ou previsível.
+4. **Prática Intercalada (Interleaving Effect)**:  
+   Evita o aprendizado em blocos contínuos do mesmo assunto. Ao selecionar candidatos (sejam vencidos, novos ou aleatórios), o algoritmo prioriza cartões cujo tópico/assunto difere do cartão anterior (`lastCardTopic`).  
+   - Quando o usuário ativa os recursos de IA, a categorização pedagógica de temas roda silenciosamente em segundo plano via Gemini Flash-Lite. Assim que concluída, a prática intercalada entra em ação imediatamente e sem qualquer atrito para o usuário.
 
-5. **Regra de Cartões Sanguessugas (Leech Rule)**:
-   - Se o usuário errar um cartão **mais de 4 vezes** (`wrongCount > 4`), ele se torna um cartão sanguessuga e **permanece no jogo até ser acertado 2 vezes consecutivas** (`correctStreak >= 2`).
-   - Cartões com **3 ou menos erros** são concluídos e removidos do baralho ativo logo no primeiro acerto.
-
-6. **Injeção de Cartões Aleatórios contra Monotonia (Too Much Due)**:  
-   Quando houver acúmulo de cartões vencidos (`dueCards.length >= 3` ou 2 cartões vencidos consecutivos já respondidos), o algoritmo intercala cartões aleatórios frescos (não vistos ou futuros) na proporção de no máximo 2 cartões vencidos para 1 cartão aleatório (além de ~35% de probabilidade orgânica no backlog). Isso impede que o usuário fique preso num loop repetitivo fechado dos mesmos cartões.
+5. **Combate à Fadiga Cognitiva (Pomodoro & Micro-Pausas)**:  
+   Gerenciado por [`js/engine/pomodoro.js`](file:///home/chief_arthur/Apps/Flashcards/js/engine/pomodoro.js). Promove micro-pausas estratégicas para ativar a Default Mode Network (DMN), permitindo que o cérebro processe vias sinápticas em repouso.
 
 ---
 
@@ -195,6 +186,10 @@ Para permitir diagnósticos rápidos de problemas relatados por usuários ou tes
 
 ### 🔴 Regra 6: 
 - Evite usar emojis. Use os icones do https://fonts.google.com/icons ou crie o vector.
+
+### 🔴 Regra 7: 
+- Deixe dicas e regras nesse md para auxiliar os próximos agentes/devs a seguir coerencia
+  
 ---
 
 ## 5. Estrutura de Arquivos Principais
@@ -206,10 +201,11 @@ Para permitir diagnósticos rápidos de problemas relatados por usuários ou tes
 ├── js/
 │   ├── game.js                         # Loop principal, UI do jogo e orquestrador
 │   ├── engine/
-│   │   ├── scheduler.js                # Algoritmo de repetição espaçada, fila adaptativa e gaps
+│   │   ├── scheduler.js                # Algoritmo de repetição espaçada, fila adaptativa, interleaving e gaps
 │   │   ├── effects.js                  # Haptics (vibração), Canvas de fundo, partículas e shockwaves
 │   │   ├── input-controller.js         # Teclado e Gamepad API orientada a eventos
-│   │   └── tutor.js                    # IA Gemini, tutor interativo e avaliação semântica
+│   │   ├── tutor.js                    # IA Gemini, tutor interativo e avaliação semântica
+│   │   └── pomodoro.js                 # Temporizador Pomodoro, fadiga cognitiva e micro-pausas
 │   ├── stats-tracker.js                # Gravação de sessões, métricas e histórico local
 │   ├── stats-ai.js                     # Métricas por tópico e agrupamento assistido
 │   ├── utils.js                        # Levenshtein, normalização, KaTeX e rotas

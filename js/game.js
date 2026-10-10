@@ -1,8 +1,10 @@
 import { normalizeString, calculateSimilarity, shuffleArray, checkAndResetModelFallback, ROUTES, renderMathAndMarkdown } from './utils.js';
-import { isPlayableCard, calculateThinkingGap, selectNextCard, isLeechCard, shouldGraduateCard, formatTimeDisplay } from './engine/scheduler.js';
+import { isPlayableCard, calculateThinkingGap, selectNextCard, isLeechCard, shouldGraduateCard, formatTimeDisplay, getCardTopic } from './engine/scheduler.js';
 import { initEffects, createBall, clearBalls, setBallColor, launchCelebrationParticles, playCompletionShockwave, cleanShockwaveContainer, resizeCanvas, animate, triggerHaptic, isHapticEnabled, setHapticEnabled, updateHapticUI } from './engine/effects.js';
 import { initInputController, startGamepadLoop, stopGamepadLoop } from './engine/input-controller.js';
 import { isTutorEnabled, setTutorApiKey, disableTutor, initTutor, updateTutorUI, setLastUserAnswerForChat, getLastUserAnswerForChat, resetTutorChatSession, getHasChatInteraction, setHasChatInteraction, evaluateAnswerSemantic, addMsg, showTyping, hideTyping, sendTutorChatMessage } from './engine/tutor.js';
+import { initPomodoro, isPomodoroEnabled, setPomodoroEnabled, updatePomodoroUI } from './engine/pomodoro.js';
+import { isDeckCategorized, callGeminiFlashLiteCategorization, getStoredAiCategories, getCardSignature } from './stats-ai.js';
 import { initTransfer } from './transfer.js';
 import { initStatsSession, recordStatsAnswer, recordStatsAiCorrection, archiveCurrentSession, completeCurrentSession } from './stats-tracker.js';
 import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
@@ -192,6 +194,7 @@ let isFirstQuestion = true;
 let isAnimating = false;
 let currentStep = 0;
 let consecutiveDueCardsCount = 0;
+let lastCardTopic = '';
 let isAnkiFlipped = false;
 let pendingEditAnsImage = '';
 let questionStartTime = Date.now();
@@ -839,7 +842,7 @@ function precomputeNextCandidate() {
     const nextStep = currentStep + 1;
     // Exclude current card because any rescheduled card has gap >= 5, so it cannot be next
     const candidates = questionsPool.filter(c => c !== currentQuestion);
-    precomputedNextCard = selectNextCard(candidates.length > 0 ? candidates : questionsPool, nextStep, consecutiveDueCardsCount);
+    precomputedNextCard = selectNextCard(candidates.length > 0 ? candidates : questionsPool, nextStep, consecutiveDueCardsCount, lastCardTopic);
 }
 
 function schedulePrecomputeNextCard() {
@@ -941,6 +944,7 @@ function restartDeckSession() {
     score = 0;
     currentStreak = 0;
     consecutiveDueCardsCount = 0;
+    lastCardTopic = '';
     updateStreakUI(false);
     scoreDisplay.textContent = '0';
     if (allQuestions && allQuestions.length > 0) {
@@ -994,13 +998,14 @@ function loadQuestion() {
         currentQuestion = precomputedNextCard;
         currentQuestionIndexInPool = questionsPool.indexOf(precomputedNextCard);
     } else {
-        // Fallback / Initial pick: use selectNextCard
-        currentQuestion = selectNextCard(questionsPool, currentStep);
+        // Fallback / Initial pick: use selectNextCard with interleaving
+        currentQuestion = selectNextCard(questionsPool, currentStep, consecutiveDueCardsCount, lastCardTopic);
         currentQuestionIndexInPool = questionsPool.indexOf(currentQuestion);
     }
 
-    // Always clear transient correction flags for the newly loaded card
+    // Update lastCardTopic for subsequent interleaved selections
     if (currentQuestion) {
+        lastCardTopic = getCardTopic(currentQuestion);
         delete currentQuestion.isBeingCorrected;
     }
     isBeingCorrected = false;
@@ -1218,9 +1223,9 @@ function handleAnkiRating(rating) {
         triggerHaptic('correct');
 
         currentQuestion.correctStreak = (currentQuestion.correctStreak || 0) + 1;
+        const elapsedSec = (Date.now() - questionStartTime) / 1000;
         const totalWrongs = currentQuestion.wrongCount || 0;
-        const isLeech = totalWrongs > 4;
-        const shouldRemove = !isLeech || currentQuestion.correctStreak >= 2;
+        const shouldRemove = shouldGraduateCard(currentQuestion, elapsedSec);
 
         if (shouldRemove) {
             score++;
@@ -1231,7 +1236,7 @@ function handleAnkiRating(rating) {
                 questionsPool.splice(currentQuestionIndexInPool, 1);
             }
             saveGameState();
-            console.log("[Anki] Card removido do deck (acerto fácil). Restam:", questionsPool.length);
+            console.log("[Anki] Card removido do deck (acerto fácil/graduado). Restam:", questionsPool.length);
 
             // On the last card of deck, skip normal animations and play end game directly!
             if (questionsPool.length === 0) {
@@ -1249,10 +1254,10 @@ function handleAnkiRating(rating) {
                 });
             }, 300);
         } else {
-            // Leech card (>4 errors): maintain in game until guessed right 2x
-            currentQuestion.dueStep = currentStep + 8;
+            // Card mantido para consolidação neural
+            currentQuestion.dueStep = currentStep + 6;
             saveGameState();
-            console.log("[Anki] Card leech reagendado para dueStep:", currentQuestion.dueStep);
+            console.log("[Anki] Card mantido para consolidação. dueStep:", currentQuestion.dueStep);
             setTimeout(() => {
                 animateCardToBack(() => {
                     loadQuestion();
@@ -1262,7 +1267,7 @@ function handleAnkiRating(rating) {
     } else if (rating === 'good') {
         createBall(true);
         currentQuestion.correctStreak = (currentQuestion.correctStreak || 0) + 1;
-        currentQuestion.dueStep = currentStep + 12;
+        currentQuestion.dueStep = currentStep + 10;
         saveGameState();
         console.log("[Anki] Card marcado como bom. Próximo dueStep:", currentQuestion.dueStep);
         animateCardToBack(() => {
@@ -1270,7 +1275,9 @@ function handleAnkiRating(rating) {
         });
     } else if (rating === 'hard') {
         createBall(false);
-        currentQuestion.dueStep = currentStep + 7;
+        const elapsedSec = (Date.now() - questionStartTime) / 1000;
+        const gap = calculateThinkingGap(elapsedSec, currentQuestion);
+        currentQuestion.dueStep = currentStep + gap;
         saveGameState();
         console.log("[Anki] Card marcado como difícil. Próximo dueStep:", currentQuestion.dueStep);
         animateCardToBack(() => {
@@ -1286,10 +1293,11 @@ function handleAnkiRating(rating) {
 
         currentQuestion.wrongCount = (currentQuestion.wrongCount || 0) + 1;
         currentQuestion.correctStreak = 0;
-        // Requirement 2: at least 5 cards gap
-        currentQuestion.dueStep = currentStep + 5;
+        const elapsedSec = (Date.now() - questionStartTime) / 1000;
+        const gap = calculateThinkingGap(elapsedSec, currentQuestion);
+        currentQuestion.dueStep = currentStep + gap;
         saveGameState();
-        console.log("[Anki] Card marcado como erro (again). Próximo dueStep:", currentQuestion.dueStep);
+        console.log("[Anki] Card marcado como erro (again). Próximo dueStep:", currentQuestion.dueStep, "gap:", gap);
         setTimeout(() => {
             animateCardToBack(() => {
                 loadQuestion();
@@ -1690,7 +1698,7 @@ function showFeedback(isCorrect, element) {
             // Spaced repetition & leech tracking
             currentQuestion.wrongCount = (currentQuestion.wrongCount || 0) + 1;
             currentQuestion.correctStreak = 0;
-            const gap = calculateThinkingGap(elapsedSeconds);
+            const gap = calculateThinkingGap(elapsedSeconds, currentQuestion);
             currentQuestion.dueStep = currentStep + gap;
             console.log("[Algorithm] Card incorreto reagendado:", {
                 tempoPensamento: Math.round(elapsedSeconds * 10) / 10 + 's',
@@ -1722,15 +1730,15 @@ function showFeedback(isCorrect, element) {
             delete currentQuestion.isBeingCorrected;
             currentQuestion.correctStreak = (currentQuestion.correctStreak || 0) + 1;
             const totalWrongs = currentQuestion.wrongCount || 0;
-            // Requirement 4: If guessed wrong >4x, keep in game until guessed right 2x
-            const isLeech = totalWrongs > 4;
-            const shouldRemove = !isLeech || currentQuestion.correctStreak >= 2;
+            const isLeech = isLeechCard(currentQuestion);
+            const shouldRemove = shouldGraduateCard(currentQuestion, elapsedSeconds);
 
             console.log("[Algorithm] Card correto avaliado:", {
                 totalWrongs,
                 correctStreak: currentQuestion.correctStreak,
                 isLeech,
-                shouldRemove
+                shouldRemove,
+                latencia: Math.round(elapsedSeconds * 10) / 10 + 's'
             });
 
             if (shouldRemove) {
@@ -1760,10 +1768,11 @@ function showFeedback(isCorrect, element) {
                     });
                 }, 400);
             } else {
-                // Leech card: maintain in game until guessed right 2x
-                currentQuestion.dueStep = currentStep + 5;
+                // Card mantido para consolidação (leech ou esforço extremo de recuperação)
+                const reinforcGap = Math.max(5, Math.min(8, Math.round(questionsPool.length * 0.5)));
+                currentQuestion.dueStep = currentStep + reinforcGap;
                 saveGameState();
-                console.log("[Game] Card leech mantido no jogo até 2 acertos. dueStep:", currentQuestion.dueStep);
+                console.log("[Game] Card mantido no jogo para consolidação neural. dueStep:", currentQuestion.dueStep);
                 setTimeout(() => {
                     animateCardToBack(() => {
                         loadQuestion();
@@ -3656,11 +3665,79 @@ async function initGame() {
     initializeAi();
     updateAiUI();
     updateHapticUI();
+    initPomodoro();
+    initBackgroundCategorization();
     const initialGamepads = (navigator.getGamepads ? navigator.getGamepads() : []).filter(Boolean);
     if (initialGamepads.length > 0) {
         startGamepadLoop();
     }
     initMobileFocusHelpers();
+}
+
+async function initBackgroundCategorization() {
+    try {
+        const existingCategories = getStoredAiCategories();
+        if (existingCategories?.cardTopicsBySignature && allQuestions && allQuestions.length > 0) {
+            const sigMap = existingCategories.cardTopicsBySignature;
+            let appliedCount = 0;
+            allQuestions.forEach(q => {
+                const sig = getCardSignature(q);
+                if (sig && sigMap[sig]) {
+                    q.aiTopic = sigMap[sig];
+                    q.topic = q.topic || sigMap[sig];
+                    appliedCount++;
+                }
+            });
+            if (appliedCount > 0) {
+                console.log(`[Algorithm] ${appliedCount} cartões associados a tópicos em cache. Prática intercalada (Interleaving) pronta.`);
+            }
+        }
+
+        const key = await getApiKeyAsync();
+        if (!key || !isTutorEnabled()) {
+            return;
+        }
+
+        const currentDeckTitle = (deckTitle?.textContent || 'Flashcards').trim();
+        if (isDeckCategorized({ allQuestions, currentDeckTitle, categories: existingCategories })) {
+            console.log("[Algorithm] Baralho já categorizado previamente. Interleaving ativo.");
+            return;
+        }
+
+        setTimeout(async () => {
+            try {
+                console.log("[Algorithm] Iniciando categorização pedagógica de IA em segundo plano...");
+                const deckTitles = [currentDeckTitle];
+                const cards = (allQuestions || []).filter(isPlayableCard);
+                if (cards.length === 0) return;
+
+                const categorizedResult = await callGeminiFlashLiteCategorization({
+                    apiKey: key,
+                    currentDeckTitle,
+                    deckTitles,
+                    cards,
+                    existingCategories: existingCategories || { knownSubjects: [], knownTopicsByDeck: {} }
+                });
+
+                if (categorizedResult?.cardTopics) {
+                    const sigMap = categorizedResult.updatedCategories?.cardTopicsBySignature || {};
+                    allQuestions.forEach(q => {
+                        const sig = getCardSignature(q);
+                        if (sig && sigMap[sig]) {
+                            q.aiTopic = sigMap[sig];
+                            q.topic = q.topic || sigMap[sig];
+                        }
+                    });
+                    saveGameState();
+                    console.log("[Algorithm] Categorização de IA concluída em segundo plano! Prática intercalada (Interleaving Effect) operando.");
+                }
+            } catch (err) {
+                console.warn("[Algorithm] Categorização de IA em segundo plano falhou silenciosamente:", err.message);
+            }
+        }, 1500);
+    } catch (e) {
+        console.warn("[Algorithm] Falha ao verificar categorização em segundo plano:", e);
+    }
 }
 
 if (document.readyState === 'loading') {

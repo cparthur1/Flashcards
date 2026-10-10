@@ -1,4 +1,4 @@
-const CACHE_NAME = 'flashcards-v7.2'; // Increment version to trigger update
+const CACHE_NAME = 'flashcards-v7.3'; // Increment version to trigger update
 
 const BASE_PATH = self.registration && self.registration.scope 
   ? new URL(self.registration.scope).pathname.replace(/\/$/, '') 
@@ -21,6 +21,7 @@ const RAW_ASSETS = [
   '/js/engine/effects.js',
   '/js/engine/input-controller.js',
   '/js/engine/tutor.js',
+  '/js/engine/pomodoro.js',
   '/js/generate.js',
   '/js/stats.js',
   '/js/stats-tracker.js',
