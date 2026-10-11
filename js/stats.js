@@ -711,6 +711,7 @@ function renderTimelineFlow(sess) {
 }
 
 function generatePedagogicalInsight(progressPct, accuracyPct, avgSeconds, anki, answered, history) {
+    if (!insightTitle || !insightText) return;
     if (answered === 0) {
         insightTitle.textContent = 'Sessão em Andamento';
         insightText.textContent = 'Continue estudando seus flashcards para que nosso sistema trace sua curva de retenção e ritmo de aprendizado.';
@@ -907,19 +908,8 @@ function renderAiDashboard(currentDeckTitle, subjectsStats, topicsStats, gameSta
                     <div>
                         <div class="flex items-center gap-2">
                             <h2 class="text-sm font-bold text-gray-900">Categorização Inteligente</h2>
-                            ${getGeminiApiKey() ? `
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 flex items-center gap-1">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                    Flash-Lite Ativo
-                                </span>
-                            ` : `
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 flex items-center gap-1" title="Categorias carregadas do baralho">
-                                    <span class="material-symbols-rounded text-xs align-middle">label</span>
-                                    Categorias Integradas
-                                </span>
-                            `}
                         </div>
-                        <p class="text-xs text-gray-500">Classificação semântica em categorias consolidadas</p>
+                        <p class="text-xs text-gray-500">Classifique os cards para analisar a performance por categoria</p>
                     </div>
                 </div>
 
@@ -970,9 +960,6 @@ function renderAiDashboard(currentDeckTitle, subjectsStats, topicsStats, gameSta
                                 <h3 class="font-bold text-sm text-gray-900 flex items-center gap-1.5">
                                     <span class="material-symbols-rounded text-base text-purple-600">menu_book</span> Desempenho por Matéria
                                 </h3>
-                                <p class="text-[11px] text-gray-500">
-                                    Visão agregada de todos os baralhos
-                                </p>
                             </div>
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
                                 ${subjectsStats.length} matéria${subjectsStats.length !== 1 ? 's' : ''}

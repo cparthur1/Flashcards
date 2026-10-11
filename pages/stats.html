@@ -67,12 +67,7 @@
                     <span id="deck-badge" class="hidden sm:inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 truncate max-w-[180px]">
                         Flashcards
                     </span>
-                    <span id="live-sync-indicator" class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60" title="Sincronização em tempo real ativa com o jogo">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span>Ao vivo</span>
-                    </span>
                 </div>
-                <p class="text-xs text-[var(--md-sys-color-on-surface-variant)] truncate">Acompanhe seu desempenho e retenção</p>
             </div>
         </div>
 
@@ -136,11 +131,10 @@
                         </div>
                         <div>
                             <div class="flex items-center gap-2 flex-wrap">
-                                <h2 class="text-base sm:text-lg font-black text-emerald-950 dark:text-emerald-200">Deck Concluído com Sucesso!</h2>
+                                <h2 class="text-base sm:text-lg font-black text-emerald-950 dark:text-emerald-200">Deck zerado</h2>
                                 <span class="material-symbols-rounded text-lg text-emerald-600 dark:text-emerald-400">celebration</span>
-                                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-200/80 dark:bg-emerald-800 text-emerald-900 dark:text-emerald-100">100% Zerado</span>
                             </div>
-                            <p class="text-xs text-emerald-800 dark:text-emerald-300/90 mt-0.5">Todos os cards deste baralho foram respondidos e memorizados nesta rodada.</p>
+                            <p class="text-xs text-emerald-800 dark:text-emerald-300/90 mt-0.5">Todos os cards deste baralho foram respondidos.</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 flex-wrap">
@@ -388,19 +382,6 @@
                 </div>
             </div>
 
-            <!-- INSIGHTS BANNER -->
-            <div id="session-insight-card" class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 p-4 sm:p-5 rounded-2xl flex items-start gap-3">
-                <div class="p-2 bg-blue-600 text-white rounded-xl flex-shrink-0 mt-0.5">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <h3 class="text-sm font-bold text-blue-950" id="insight-title">Diagnóstico de Aprendizagem</h3>
-                    <p class="text-xs text-blue-800 mt-1 leading-relaxed" id="insight-text">
-                        Comece a responder cards para receber análises inteligentes de retenção, velocidade de resposta e recomendações de estudo.
-                    </p>
-                </div>
-            </div>
-
         </div>
 
         <!-- ==================== TAB 2: HISTÓRICO DE SESSÕES ==================== -->
@@ -495,10 +476,6 @@
         </div>
 
     </main>
-
-    <footer class="w-full max-w-5xl mx-auto pt-8 pb-4 text-center text-xs text-gray-400">
-        Flashcards • Estatísticas & Analítica de Retenção
-    </footer>
 
     <!-- NOTIFICATION PILL CONTAINER -->
     <div id="stats-notification-container"></div>

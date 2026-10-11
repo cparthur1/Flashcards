@@ -707,8 +707,8 @@
                         </select>
                     </div>
                 </div>
-                <div class="bg-purple-50 dark:bg-purple-950/40 p-3.5 rounded-2xl border border-purple-200 dark:border-purple-900/60">
-                    <p class="text-xs text-purple-700 dark:text-purple-300 leading-relaxed">
+                <div class="bg-blue-50 dark:bg-blue-950/40 p-3.5 rounded-2xl border border-blue-200 dark:border-blue-900/60">
+                    <p class="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
                         <strong>Por que funciona?</strong> Micro-pausas permitem que o cérebro ative a rede neural em modo difuso (DMN), reorganizando traços sinápticos e aliviando a memória de trabalho.
                     </p>
                 </div>
@@ -723,29 +723,23 @@
     <!-- POMODORO NOTIFICAÇÃO FLUTUANTE DE DESCANSO (SAMSUNG ONE UI STYLE) -->
     <div id="pomodoro-prompt-dialog"
         class="hidden fixed top-5 sm:top-6 left-1/2 -translate-x-1/2 z-[100] w-[calc(100vw-1.5rem)] sm:w-auto sm:min-w-[420px] max-w-lg transition-all duration-500 ease-out transform -translate-y-24 opacity-0 pointer-events-auto">
-        <div class="flex items-center gap-3 p-2 sm:p-2.5 pl-3 sm:pl-3.5 pr-2.5 sm:pr-3 rounded-[28px] sm:rounded-full bg-white/90 dark:bg-[#1e1b2e]/90 backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.18),0_2px_8px_rgba(0,0,0,0.06)] border border-purple-200/60 dark:border-purple-500/20">
+        <div class="flex items-center gap-3 p-2 sm:p-2.5 pl-3 sm:pl-3.5 pr-2.5 sm:pr-3 rounded-[28px] sm:rounded-full bg-white/90 dark:bg-[#1a2234]/90 backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.18),0_2px_8px_rgba(0,0,0,0.06)] border border-blue-200/60 dark:border-blue-500/20">
             <!-- Icon squircle -->
-            <div class="w-10 h-10 rounded-full sm:rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+            <div class="w-10 h-10 rounded-full sm:rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
                 <span class="material-symbols-rounded text-xl">self_improvement</span>
             </div>
             <!-- Text info -->
             <div class="flex-1 min-w-0 pr-1">
-                <div class="flex items-center gap-2">
-                    <h4 class="text-xs sm:text-sm font-black text-[var(--md-sys-color-on-surface)] tracking-tight truncate">Hora da Micro-Pausa!</h4>
-                    <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300">Foco Concluído</span>
-                </div>
-                <p class="text-[11px] sm:text-xs text-[var(--md-sys-color-on-surface-variant)] truncate leading-tight mt-0.5">
-                    Descanse 5 min para consolidar a memória
-                </p>
+                <h4 class="text-xs sm:text-sm font-black text-[var(--md-sys-color-on-surface)] tracking-tight truncate">Pausa do pomodoro</h4>
             </div>
             <!-- Actions -->
             <div class="flex items-center gap-1.5 flex-shrink-0">
                 <button type="button" id="pomodoro-accept-break-btn"
-                    class="m3-btn-expressive py-2 px-3 sm:px-4 text-xs font-bold rounded-full bg-purple-600 hover:bg-purple-700 active:scale-95 text-white shadow-xs flex items-center gap-1 cursor-pointer transition-all">
+                    class="m3-btn-expressive py-2 px-3 sm:px-4 text-xs font-bold rounded-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white shadow-xs flex items-center gap-1 cursor-pointer transition-all">
                     <span>Aceitar</span>
                 </button>
                 <button type="button" id="pomodoro-snooze-break-btn"
-                    class="m3-btn-expressive py-2 px-2.5 sm:px-3 text-xs font-semibold rounded-full bg-purple-100/80 dark:bg-purple-900/40 hover:bg-purple-200/80 active:scale-95 text-purple-700 dark:text-purple-300 cursor-pointer transition-all">
+                    class="m3-btn-expressive py-2 px-2.5 sm:px-3 text-xs font-semibold rounded-full bg-blue-100/80 dark:bg-blue-900/40 hover:bg-blue-200/80 active:scale-95 text-blue-700 dark:text-blue-300 cursor-pointer transition-all">
                     <span>+5 min</span>
                 </button>
             </div>

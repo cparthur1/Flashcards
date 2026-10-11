@@ -2390,25 +2390,25 @@ mark.card-hl-purple {
 
 /* --- Pomodoro Break Overlay: Running State --- */
 #pomodoro-break-overlay.pomodoro-state-running #pomodoro-break-card {
-    border-color: rgba(168, 85, 247, 0.25);
+    border-color: rgba(59, 130, 246, 0.25);
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
 }
 
 #pomodoro-break-overlay.pomodoro-state-running #pomodoro-break-icon-box {
-    background: rgba(168, 85, 247, 0.15);
-    color: #a855f7;
+    background: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
     animation: pomodoroCalmBreathing 4s infinite ease-in-out;
 }
 
 #pomodoro-break-overlay.pomodoro-state-running #pomodoro-break-status-badge {
-    background: rgba(168, 85, 247, 0.12);
-    color: #9333ea;
+    background: rgba(59, 130, 246, 0.12);
+    color: #2563eb;
 }
 
 @media (prefers-color-scheme: dark) {
     #pomodoro-break-overlay.pomodoro-state-running #pomodoro-break-status-badge {
-        color: #c084fc;
-        background: rgba(168, 85, 247, 0.2);
+        color: #60a5fa;
+        background: rgba(59, 130, 246, 0.2);
     }
 }
 
@@ -2418,12 +2418,12 @@ mark.card-hl-purple {
 }
 
 #pomodoro-break-overlay.pomodoro-state-running #pomodoro-break-countdown {
-    color: #9333ea;
+    color: #2563eb;
 }
 
 @media (prefers-color-scheme: dark) {
     #pomodoro-break-overlay.pomodoro-state-running #pomodoro-break-countdown {
-        color: #c084fc;
+        color: #60a5fa;
     }
 }
 
@@ -2559,11 +2559,11 @@ mark.card-hl-purple {
 @keyframes pomodoroCalmBreathing {
     0%, 100% {
         transform: scale(1);
-        box-shadow: 0 4px 14px rgba(168, 85, 247, 0.15);
+        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.15);
     }
     50% {
         transform: scale(1.04);
-        box-shadow: 0 6px 22px rgba(168, 85, 247, 0.3);
+        box-shadow: 0 6px 22px rgba(59, 130, 246, 0.3);
     }
 }
 
