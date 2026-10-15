@@ -1,0 +1,61 @@
+name: "DCO Check"
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+
+jobs:
+  dco-check:
+    name: "Validate Developer Certificate of Origin (DCO)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check DCO Sign-off in Commits
+        run: |
+          echo "Verifying commits against Developer Certificate of Origin (DCO)..."
+          FAILED=0
+          
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+            COMMITS=$(git rev-list "${BASE_SHA}..${HEAD_SHA}")
+          else
+            # On direct pushes, check recent commits
+            COMMITS=$(git rev-list -n 5 HEAD)
+          fi
+
+          if [ -z "$COMMITS" ]; then
+            echo "No commits found to verify."
+            exit 0
+          fi
+
+          for commit in $COMMITS; do
+            MSG=$(git log -1 --format=%B "$commit")
+            AUTHOR_NAME=$(git log -1 --format=%an "$commit")
+            AUTHOR_EMAIL=$(git log -1 --format=%ae "$commit")
+            
+            if ! echo "$MSG" | grep -qEi "^Signed-off-by: .+ <.+@.+>"; then
+              echo "::error::Commit $commit by $AUTHOR_NAME <$AUTHOR_EMAIL> is missing a valid 'Signed-off-by:' line."
+              echo "Commit message:"
+              echo "$MSG"
+              echo "Fix this commit using: git commit --amend -s"
+              FAILED=1
+            else
+              echo "OK: Commit $commit has valid sign-off."
+            fi
+          done
+
+          if [ $FAILED -ne 0 ]; then
+            echo ""
+            echo "ERROR: One or more commits lack the DCO Signed-off-by line."
+            echo "Please read CONTRIBUTING.md and DCO.txt to learn how to sign off commits."
+            exit 1
+          fi
+          
+          echo "Success: All commits comply with the Developer Certificate of Origin."

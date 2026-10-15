@@ -1,3 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright (C) 2026 Arthur <arthur.paludo.c@gmail.com>
+ */
+
 const CACHE_NAME = 'flashcards-v8.0'; // Increment version to trigger update
 
 const BASE_PATH = self.registration && self.registration.scope 
