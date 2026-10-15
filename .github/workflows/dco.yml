@@ -3,8 +3,6 @@ name: "DCO Check"
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-  push:
-    branches: [main]
 
 jobs:
   dco-check:
@@ -16,22 +14,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check DCO Sign-off in Commits
+      - name: Check DCO Sign-off in Pull Request Commits
         run: |
-          echo "Verifying commits against Developer Certificate of Origin (DCO)..."
+          echo "Verifying Pull Request commits against Developer Certificate of Origin (DCO)..."
           FAILED=0
           
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            BASE_SHA="${{ github.event.pull_request.base.sha }}"
-            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
-            COMMITS=$(git rev-list "${BASE_SHA}..${HEAD_SHA}")
-          else
-            # On direct pushes, check recent commits
-            COMMITS=$(git rev-list -n 5 HEAD)
-          fi
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          COMMITS=$(git rev-list "${BASE_SHA}..${HEAD_SHA}")
 
           if [ -z "$COMMITS" ]; then
-            echo "No commits found to verify."
+            echo "No new commits found to verify."
             exit 0
           fi
 
@@ -53,9 +46,9 @@ jobs:
 
           if [ $FAILED -ne 0 ]; then
             echo ""
-            echo "ERROR: One or more commits lack the DCO Signed-off-by line."
-            echo "Please read CONTRIBUTING.md and DCO.txt to learn how to sign off commits."
+            echo "ERROR: One or more commits in this PR lack the required DCO Signed-off-by line."
+            echo "Please read CONTRIBUTING.md and DCO.txt to learn how to sign off commits with 'git commit -s'."
             exit 1
           fi
           
-          echo "Success: All commits comply with the Developer Certificate of Origin."
+          echo "Success: All commits in this PR comply with the Developer Certificate of Origin."
