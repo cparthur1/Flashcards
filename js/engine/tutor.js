@@ -200,7 +200,16 @@ export function addMsg(sender, text, chatMessages) {
     div.className = sender === 'ai' ? 'chat-message-ai' : 'chat-message-user';
 
     if (sender === 'ai' && typeof marked !== 'undefined') {
-        div.innerHTML = renderMathAndMarkdown(text);
+        const rendered = renderMathAndMarkdown(text);
+        if (typeof DOMPurify !== 'undefined' && typeof DOMPurify.sanitize === 'function') {
+            div.innerHTML = DOMPurify.sanitize(rendered, {
+                USE_PROFILES: { html: true, mathMl: true, svg: true },
+                ADD_TAGS: ['semantics', 'annotation', 'mark'],
+                ADD_ATTR: ['target', 'class', 'style', 'aria-hidden', 'columnspacing', 'columnalign', 'rowspacing']
+            });
+        } else {
+            div.innerHTML = rendered;
+        }
     } else {
         div.textContent = text;
     }

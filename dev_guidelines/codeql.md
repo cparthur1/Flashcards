@@ -181,13 +181,21 @@ export function escapeHtml(str) {
 
 ---
 
-### 🔒 Fase 3: Eliminação Sistemática de DOM XSS (28 Alertas)
+### 🔒 Fase 3: Eliminação Sistemática de DOM XSS (30 Alertas: 28 DOM XSS + 2 Exception XSS) — ✅ Concluído
 1. **Tratamento de Exceções**:
-   - Em `js/generate.js:2857` e `js/stats.js:1213`, substituir qualquer interpolação direta de `err.message` por `.textContent = err.message` ou `escapeHtml(err.message)`.
+   - Em `js/generate.js:2857` e `js/stats.js:1213`, substituída a interpolação direta de `err.message` por `.textContent = err.message` e tratamento de mensagens via role `'error'`.
 2. **Nomes de Arquivos e Inputs do Usuário**:
-   - Em `js/index.js:150`, construir os nós do botão de upload via elementos nativos do DOM (`document.createElement`) ou sanitizar o nome com `escapeHtml(selectedFiles[0].name)`.
-3. **Renderização de Perguntas e Respostas**:
-   - Em `js/game.js` e `js/stats.js`, auditar os pontos de injeção em containers de feedback, títulos de baralhos e tabelas estatísticas, garantindo que textos livres de cartões não parseados como Markdown usem `.textContent`.
+   - Em `js/index.js:141`, botões de upload construídos via elementos nativos do DOM (`document.createElement`, `replaceChildren`).
+   - Em `js/game.js` e `js/generate.js`, opções de múltipla escolha (`renderEditMcOptions`, `renderCreatorMcOptions`, `renderInlineEditMcOptions`) refatoradas para construção nativa via DOM API, atribuindo valores diretamente a `.value` em vez de interpolação em atributo HTML.
+3. **Validação e Sanitização de URLs de Imagens**:
+   - Criada e exportada a função `sanitizeImageUrl(url)` em `js/utils.js` para validar esquemas permitidos (`http`, `https`, `blob`, `data:image/`) e rejeitar esquemas perigosos (`javascript:`, `data:text/html`).
+   - Aplicada em todos os previews e nós de imagem em `js/game.js` e `js/generate.js`.
+4. **Sanitização de Markdown & KaTeX com DOMPurify**:
+   - Adicionada biblioteca de sanitização `assets/vendor/purify.min.js` e integrada centralizadamente ao final de `renderMathAndMarkdown()` em `js/utils.js` (com preservação de tags `<mark>` de marcação de texto).
+   - Sanitização de nós de chat de IA em `js/engine/tutor.js` (`addMsg`) e `js/generate.js` (`addChatMessage`).
+5. **Renderização de Perguntas, Respostas e Estatísticas**:
+   - Em `js/game.js`, containers de feedback (`updateFeedbackText`) refatorados para nós nativos de DOM (`replaceChildren`, `textContent`).
+   - Em `js/stats.js`, banner de celebração, tooltips e colunas do gráfico de precisão (`renderAccuracyChart`) refatorados para manipulação direta de nós DOM com `textContent` e escape de títulos de baralhos com `escapeHtml`.
 
 ---
 

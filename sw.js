@@ -3,7 +3,7 @@
  * Copyright (C) 2026 Arthur <arthur.paludo.c@gmail.com>
  */
 
-const CACHE_NAME = 'flashcards-v8.6'; // Increment version to trigger update
+const CACHE_NAME = 'flashcards-v8.8'; // Increment version to trigger update
 
 const BASE_PATH = self.registration && self.registration.scope 
   ? new URL(self.registration.scope).pathname.replace(/\/$/, '') 
@@ -20,6 +20,7 @@ const RAW_ASSETS = [
   '/assets/fonts/material-symbols-rounded.woff2',
   '/assets/fonts/roboto-flex.woff2',
   '/assets/vendor/material-web.bundle.js',
+  '/assets/vendor/purify.min.js',
   '/js/index.js',
   '/js/game.js',
   '/js/engine/scheduler.js',

@@ -1,4 +1,4 @@
-import { normalizeString, calculateSimilarity, shuffleArray, checkAndResetModelFallback, ROUTES, renderMathAndMarkdown, generateSecureId, stripHtml } from './utils.js';
+import { normalizeString, calculateSimilarity, shuffleArray, checkAndResetModelFallback, ROUTES, renderMathAndMarkdown, generateSecureId, stripHtml, escapeHtml, sanitizeImageUrl } from './utils.js';
 import { isPlayableCard, calculateThinkingGap, selectNextCard, isLeechCard, shouldGraduateCard, formatTimeDisplay, getCardTopic } from './engine/scheduler.js';
 import { initEffects, createBall, clearBalls, setBallColor, launchCelebrationParticles, playCompletionShockwave, cleanShockwaveContainer, resizeCanvas, animate, triggerHaptic, isHapticEnabled, setHapticEnabled, updateHapticUI } from './engine/effects.js';
 import { initInputController, startGamepadLoop, stopGamepadLoop } from './engine/input-controller.js';
@@ -218,7 +218,8 @@ const imageLoadTokens = new WeakMap();
 function setupCardImageWithPlaceholder(srcUrl, imgElem, containerElem, placeholderElem) {
     if (!containerElem || !imgElem) return;
 
-    if (!srcUrl) {
+    const safeUrl = sanitizeImageUrl(srcUrl);
+    if (!safeUrl) {
         containerElem.classList.add('hidden');
         if (placeholderElem) placeholderElem.classList.add('hidden');
         imgElem.classList.add('hidden');
@@ -244,11 +245,11 @@ function setupCardImageWithPlaceholder(srcUrl, imgElem, containerElem, placehold
     }
 
     const preloader = new Image();
-    preloader.src = srcUrl;
+    preloader.src = safeUrl;
 
     const revealImage = () => {
         if (imageLoadTokens.get(imgElem) !== token) return;
-        imgElem.src = srcUrl;
+        imgElem.src = safeUrl;
         if (placeholderElem) {
             placeholderElem.classList.add('hidden');
         }
@@ -291,10 +292,17 @@ function showNotificationPill(message, iconName, isWarning = false) {
     pill.id = 'notification-pill';
     // Samsung One UI style: pill-shaped, superior, blurred, centered
     pill.className = `fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-2.5 rounded-full shadow-2xl backdrop-blur-xl border border-white/20 transition-all duration-500 transform -translate-y-20 opacity-0 ${isWarning ? 'bg-yellow-100/90' : 'bg-white/90'}`;
-    pill.innerHTML = `
-        <img src="../assets/img/${iconName}" class="w-5 h-5" alt="icon">
-        <span class="text-[13px] font-medium text-gray-800 whitespace-nowrap">${message}</span>
-    `;
+
+    const iconImg = document.createElement('img');
+    iconImg.src = `../assets/img/${encodeURIComponent(iconName)}`;
+    iconImg.className = 'w-5 h-5';
+    iconImg.alt = 'icon';
+
+    const msgSpan = document.createElement('span');
+    msgSpan.className = 'text-[13px] font-medium text-gray-800 whitespace-nowrap';
+    msgSpan.textContent = message;
+
+    pill.append(iconImg, msgSpan);
 
     document.body.appendChild(pill);
 
@@ -1123,7 +1131,7 @@ function loadQuestion() {
             bodyElem.innerHTML = formatQuestionText(currentQuestion);
         } else {
             const desc = formatQuestionText(currentQuestion);
-            questionText.innerHTML = `<span class="text-xs uppercase tracking-wider text-blue-500 font-bold mb-1.5 block">${currentQuestion.sourceDeck}</span>${desc}`;
+            questionText.innerHTML = `<span class="text-xs uppercase tracking-wider text-blue-500 font-bold mb-1.5 block">${escapeHtml(currentQuestion.sourceDeck)}</span>${desc}`;
         }
     } else {
         if (sourceTagElem) {
@@ -1877,41 +1885,47 @@ function updateFeedbackText() {
         if (bodyElem && currentQuestion.type !== 'fill') {
             bodyElem.innerHTML = renderMathAndMarkdown(currentQuestion.description || '');
         }
-        let feedbackHtml = '';
-        if (currentQuestion.type === 'open_double') {
-            const label1 = currentQuestion.placeholder1 || 'Resposta 1';
-            const label2 = currentQuestion.placeholder2 || 'Resposta 2';
-            const a1 = (currentQuestion.answer || '').replace('/', ' ou ');
-            const a2 = (currentQuestion.answer2 || '').replace('/', ' ou ');
-            feedbackHtml = `
-                <span class="text-green-500 font-semibold mt-2 block">${label1}: ${a1}</span>
-                <span class="text-green-500 font-semibold mt-2 block">${label2}: ${a2}</span>
-            `;
-        } else if (currentQuestion.type === 'fill') {
-            feedbackHtml = '';
-        } else if (currentQuestion.type === 'anki') {
-            feedbackHtml = `<span class="text-indigo-500 font-semibold mt-2 block">Resposta: ${currentQuestion.answer || ''}</span>`;
-        } else {
-            const a1 = (currentQuestion.answer || '').replace('/', ' ou ');
-            feedbackHtml = `<span class="text-green-500 font-semibold mt-2 block">Resposta: ${a1}</span>`;
-        }
-
         if (feedbackElem) {
-            feedbackElem.innerHTML = feedbackHtml;
-            if (feedbackHtml) {
+            feedbackElem.replaceChildren();
+            if (currentQuestion.type === 'open_double') {
+                const label1 = currentQuestion.placeholder1 || 'Resposta 1';
+                const label2 = currentQuestion.placeholder2 || 'Resposta 2';
+                const a1 = (currentQuestion.answer || '').replace('/', ' ou ');
+                const a2 = (currentQuestion.answer2 || '').replace('/', ' ou ');
+
+                const span1 = document.createElement('span');
+                span1.className = 'text-green-500 font-semibold mt-2 block';
+                span1.textContent = `${label1}: ${a1}`;
+
+                const span2 = document.createElement('span');
+                span2.className = 'text-green-500 font-semibold mt-2 block';
+                span2.textContent = `${label2}: ${a2}`;
+
+                feedbackElem.append(span1, span2);
+                feedbackElem.classList.remove('hidden');
+            } else if (currentQuestion.type === 'fill') {
+                feedbackElem.classList.add('hidden');
+            } else if (currentQuestion.type === 'anki') {
+                const span = document.createElement('span');
+                span.className = 'text-indigo-500 font-semibold mt-2 block';
+                span.textContent = `Resposta: ${currentQuestion.answer || ''}`;
+                feedbackElem.append(span);
                 feedbackElem.classList.remove('hidden');
             } else {
-                feedbackElem.classList.add('hidden');
+                const a1 = (currentQuestion.answer || '').replace('/', ' ou ');
+                const span = document.createElement('span');
+                span.className = 'text-green-500 font-semibold mt-2 block';
+                span.textContent = `Resposta: ${a1}`;
+                feedbackElem.append(span);
+                feedbackElem.classList.remove('hidden');
             }
-        } else if (feedbackHtml) {
-            questionText.innerHTML = `${renderMathAndMarkdown(currentQuestion.description || '')}<br>${feedbackHtml}`;
         }
     } else {
         if (bodyElem && currentQuestion && currentQuestion.type !== 'fill') {
             bodyElem.innerHTML = renderMathAndMarkdown(currentQuestion.description || '');
         }
         if (feedbackElem) {
-            feedbackElem.innerHTML = '';
+            feedbackElem.replaceChildren();
             feedbackElem.classList.add('hidden');
         }
     }
@@ -3452,8 +3466,9 @@ if (imageZoomModal) {
 let pendingEditImage = '';
 
 function updateEditImagePreviewUI(imgSrc) {
-    if (imgSrc && editImagePreview && editImagePreviewContainer) {
-        editImagePreview.src = imgSrc;
+    const cleanSrc = sanitizeImageUrl(imgSrc);
+    if (cleanSrc && editImagePreview && editImagePreviewContainer) {
+        editImagePreview.src = cleanSrc;
         editImagePreviewContainer.classList.remove('hidden');
     } else if (editImagePreviewContainer) {
         if (editImagePreview) editImagePreview.src = '';
@@ -3462,8 +3477,9 @@ function updateEditImagePreviewUI(imgSrc) {
 }
 
 function updateEditAnsImagePreviewUI(imgSrc) {
-    if (imgSrc && editAnsImagePreview && editAnsImagePreviewContainer) {
-        editAnsImagePreview.src = imgSrc;
+    const cleanSrc = sanitizeImageUrl(imgSrc);
+    if (cleanSrc && editAnsImagePreview && editAnsImagePreviewContainer) {
+        editAnsImagePreview.src = cleanSrc;
         editAnsImagePreviewContainer.classList.remove('hidden');
     } else if (editAnsImagePreviewContainer) {
         if (editAnsImagePreview) editAnsImagePreview.src = '';
@@ -3474,7 +3490,7 @@ function updateEditAnsImagePreviewUI(imgSrc) {
 if (editImageUrlInput) {
     editImageUrlInput.addEventListener('input', (e) => {
         const url = e.target.value.trim();
-        pendingEditImage = url;
+        pendingEditImage = sanitizeImageUrl(url);
         updateEditImagePreviewUI(pendingEditImage);
     });
 }
@@ -3490,7 +3506,7 @@ if (editRemoveImageBtn) {
 if (editAnsImageUrlInput) {
     editAnsImageUrlInput.addEventListener('input', (e) => {
         const url = e.target.value.trim();
-        pendingEditAnsImage = url;
+        pendingEditAnsImage = sanitizeImageUrl(url);
         updateEditAnsImagePreviewUI(pendingEditAnsImage);
     });
 }
@@ -3511,14 +3527,26 @@ function renderEditMcOptions(options = ["", "", "", ""], correctAnswer = "") {
         const isCorrect = optText === correctAnswer;
         const row = document.createElement('div');
         row.className = "flex items-center gap-2";
-        row.innerHTML = `
-            <input type="radio" name="edit-mc-correct" value="${i}" ${isCorrect ? 'checked' : ''} class="w-4 h-4 text-blue-600 focus:ring-blue-500 cursor-pointer" title="Marcar como correta">
-            <input type="text" class="edit-mc-opt-val flex-1 p-2 bg-gray-50 border border-gray-300 rounded-lg text-sm" value="${optText}">
-            <button type="button" class="edit-mc-remove-opt-btn p-1 text-gray-400 hover:text-red-500 transition" title="Remover alternativa">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-            </button>
-        `;
-        const removeBtn = row.querySelector('.edit-mc-remove-opt-btn');
+
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'edit-mc-correct';
+        radio.value = String(i);
+        if (isCorrect) radio.checked = true;
+        radio.className = 'w-4 h-4 text-blue-600 focus:ring-blue-500 cursor-pointer';
+        radio.title = 'Marcar como correta';
+
+        const textInput = document.createElement('input');
+        textInput.type = 'text';
+        textInput.className = 'edit-mc-opt-val flex-1 p-2 bg-gray-50 border border-gray-300 rounded-lg text-sm';
+        textInput.value = optText || '';
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'edit-mc-remove-opt-btn p-1 text-gray-400 hover:text-red-500 transition';
+        removeBtn.title = 'Remover alternativa';
+        removeBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>';
+
         removeBtn.addEventListener('click', () => {
             const currentVals = Array.from(document.querySelectorAll('.edit-mc-opt-val')).map(inp => inp.value);
             if (currentVals.length <= 2) {
@@ -3528,6 +3556,8 @@ function renderEditMcOptions(options = ["", "", "", ""], correctAnswer = "") {
             currentVals.splice(i, 1);
             renderEditMcOptions(currentVals, correctAnswer);
         });
+
+        row.append(radio, textInput, removeBtn);
         editMcOptionsList.appendChild(row);
     });
 

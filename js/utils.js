@@ -116,6 +116,26 @@ export function escapeHtml(str) {
 }
 
 /**
+ * Valida e sanitiza URLs de imagens contra esquemas maliciosos (javascript:, etc.).
+ * Permite apenas http, https, blob e data:image/ seguros.
+ * @param {string} url - URL ou URI da imagem
+ * @returns {string} - URL sanitizada ou string vazia se insegura
+ */
+export function sanitizeImageUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    const trimmed = url.trim();
+    const lower = trimmed.toLowerCase();
+    if (lower.startsWith('javascript:') || lower.startsWith('vbscript:') || lower.startsWith('data:text') || lower.startsWith('data:application')) {
+        return '';
+    }
+    if (lower.startsWith('http://') || lower.startsWith('https://') || lower.startsWith('blob:') || lower.startsWith('data:image/')) {
+        return trimmed;
+    }
+    return '';
+}
+
+
+/**
  * Retries a function with exponential backoff.
  */
 export async function callWithRetry(fn, retries = 3, delay = 1000) {
@@ -368,6 +388,15 @@ export function renderMathAndMarkdown(text) {
         if (!mathItem) return match;
         return type === 'BLOCK' ? `$$${mathItem.text}$$` : `$${mathItem.text}$`;
     });
+
+    // 8. Sanitize HTML via DOMPurify to prevent XSS (preserving KaTeX MathML, SVG, and <mark> elements)
+    if (typeof DOMPurify !== 'undefined' && typeof DOMPurify.sanitize === 'function') {
+        html = DOMPurify.sanitize(html, {
+            USE_PROFILES: { html: true, mathMl: true, svg: true },
+            ADD_TAGS: ['semantics', 'annotation', 'mark'],
+            ADD_ATTR: ['target', 'class', 'style', 'aria-hidden', 'columnspacing', 'columnalign', 'rowspacing']
+        });
+    }
 
     return html;
 }

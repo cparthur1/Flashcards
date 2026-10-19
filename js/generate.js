@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { callWithRetry, checkAndResetModelFallback, sanitizeChatHistory, renderMathAndMarkdown, stripHtml, escapeHtml } from './utils.js';
+import { callWithRetry, checkAndResetModelFallback, sanitizeChatHistory, renderMathAndMarkdown, stripHtml, escapeHtml, sanitizeImageUrl } from './utils.js';
 import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
 
 function compressPDFWithWorker(file) {
@@ -1556,7 +1556,7 @@ Retorne EXCLUSIVAMENTE o array JSON ([]) contendo os flashcards estruturados con
         console.error("Erro na geração 2.1:", err);
         finishGeneratingAnimation(false, 0);
         removeAiChatGeneratingBubble();
-        addChatMessage('model', `Erro durante a geração: ${err.message}`);
+        addChatMessage('error', `Erro durante a geração: ${err.message}`);
         showGeminiDownModal(err.message, 'files');
     } finally {
         submitModal21Btn.disabled = false;
@@ -1691,7 +1691,7 @@ ${JSON.stringify(localCards, null, 2)}`;
         console.error("Erro na aprimoração 2.2:", err);
         finishGeneratingAnimation(false, 0);
         removeAiChatGeneratingBubble();
-        addChatMessage('model', `Erro ao aprimorar os cartões: ${err.message}`);
+        addChatMessage('error', `Erro ao aprimorar os cartões: ${err.message}`);
         showGeminiDownModal(err.message, 'txt', localCards);
     } finally {
         submitModal22Btn.disabled = false;
@@ -1978,15 +1978,27 @@ function renderCreatorMcOptions(options = ["", "", "", ""], selectedIdx = 0) {
     options.forEach((optText, i) => {
         const row = document.createElement('div');
         row.className = "flex items-center gap-2";
-        row.innerHTML = `
-            <input type="radio" name="creator-mc-correct" value="${i}" ${i === selectedIdx ? 'checked' : ''} class="w-4 h-4 text-blue-600 focus:ring-blue-500 cursor-pointer" title="Marcar como alternativa correta">
-            <input type="text" class="creator-mc-opt-val flex-1 p-2 bg-gray-50 border border-gray-300 rounded-lg text-sm" placeholder="Opção ${i + 1}" value="${optText}">
-            <button type="button" class="creator-mc-remove-opt-btn p-1 text-gray-400 hover:text-red-500 transition" title="Remover alternativa">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-            </button>
-        `;
 
-        const removeBtn = row.querySelector('.creator-mc-remove-opt-btn');
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'creator-mc-correct';
+        radio.value = String(i);
+        if (i === selectedIdx) radio.checked = true;
+        radio.className = 'w-4 h-4 text-blue-600 focus:ring-blue-500 cursor-pointer';
+        radio.title = 'Marcar como alternativa correta';
+
+        const textInput = document.createElement('input');
+        textInput.type = 'text';
+        textInput.className = 'creator-mc-opt-val flex-1 p-2 bg-gray-50 border border-gray-300 rounded-lg text-sm';
+        textInput.placeholder = `Opção ${i + 1}`;
+        textInput.value = optText || '';
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'creator-mc-remove-opt-btn p-1 text-gray-400 hover:text-red-500 transition';
+        removeBtn.title = 'Remover alternativa';
+        removeBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>';
+
         removeBtn.addEventListener('click', () => {
             const currentVals = Array.from(document.querySelectorAll('.creator-mc-opt-val')).map(inp => inp.value);
             if (currentVals.length <= 2) {
@@ -1997,7 +2009,7 @@ function renderCreatorMcOptions(options = ["", "", "", ""], selectedIdx = 0) {
             let nextSelected = 0;
             const checkedRadio = document.querySelector('input[name="creator-mc-correct"]:checked');
             if (checkedRadio) {
-                const oldCheckedIdx = parseInt(checkedRadio.value);
+                const oldCheckedIdx = parseInt(checkedRadio.value, 10);
                 if (oldCheckedIdx === i) nextSelected = 0;
                 else if (oldCheckedIdx > i) nextSelected = oldCheckedIdx - 1;
                 else nextSelected = oldCheckedIdx;
@@ -2005,6 +2017,7 @@ function renderCreatorMcOptions(options = ["", "", "", ""], selectedIdx = 0) {
             renderCreatorMcOptions(currentVals, nextSelected);
         });
 
+        row.append(radio, textInput, removeBtn);
         creatorMcOptionsList.appendChild(row);
     });
 
@@ -2015,7 +2028,7 @@ creatorAddMcOptBtn.addEventListener('click', () => {
     const currentVals = Array.from(document.querySelectorAll('.creator-mc-opt-val')).map(inp => inp.value);
     if (currentVals.length >= 6) return;
     const checkedRadio = document.querySelector('input[name="creator-mc-correct"]:checked');
-    const checkedIdx = checkedRadio ? parseInt(checkedRadio.value) : 0;
+    const checkedIdx = checkedRadio ? parseInt(checkedRadio.value, 10) : 0;
     currentVals.push("");
     renderCreatorMcOptions(currentVals, checkedIdx);
 });
@@ -2023,9 +2036,10 @@ creatorAddMcOptBtn.addEventListener('click', () => {
 // Creator Image Handling
 creatorQImgUrl.addEventListener('input', (e) => {
     const url = e.target.value.trim();
-    pendingCreatorQImage = url;
-    if (url) {
-        creatorQImgPreview.src = url;
+    const cleanUrl = sanitizeImageUrl(url);
+    pendingCreatorQImage = cleanUrl;
+    if (cleanUrl) {
+        creatorQImgPreview.src = cleanUrl;
         creatorQImgPreviewContainer.classList.remove('hidden');
         creatorRemoveQImg.classList.remove('hidden');
     } else {
@@ -2044,9 +2058,10 @@ creatorRemoveQImg.addEventListener('click', () => {
 
 creatorAnsImgUrl.addEventListener('input', (e) => {
     const url = e.target.value.trim();
-    pendingCreatorAnsImage = url;
-    if (url) {
-        creatorAnsImgPreview.src = url;
+    const cleanUrl = sanitizeImageUrl(url);
+    pendingCreatorAnsImage = cleanUrl;
+    if (cleanUrl) {
+        creatorAnsImgPreview.src = cleanUrl;
         creatorAnsImgPreviewContainer.classList.remove('hidden');
         creatorRemoveAnsImg.classList.remove('hidden');
     } else {
@@ -2593,14 +2608,14 @@ function createCardElement(card, index) {
         descContent = `<span class="text-gray-800">${renderMathAndMarkdown(descContent)}</span>`;
     }
     const descStr = `<strong>${descLabel}</strong> ${descContent}`;
-    let ansStr = `<strong>R:</strong> <span class="text-green-600">${card.answer || ''}</span>`;
+    let ansStr = `<strong>R:</strong> <span class="text-green-600">${escapeHtml(card.answer || '')}</span>`;
 
     if (card.type === 'open_double') {
-        ansStr += `<br><strong>R2:</strong> <span class="text-green-600">${card.answer2 || ''}</span>`;
+        ansStr += `<br><strong>R2:</strong> <span class="text-green-600">${escapeHtml(card.answer2 || '')}</span>`;
     } else if (card.type === 'multiple_choice') {
         const optsList = (card.options || []).map(opt => {
             const isCorrect = opt === card.answer;
-            return isCorrect ? `<strong class="text-green-600">✓ ${opt}</strong>` : opt;
+            return isCorrect ? `<strong class="text-green-600">✓ ${escapeHtml(opt)}</strong>` : escapeHtml(opt);
         }).join(' | ');
         ansStr = `<span class="text-xs text-gray-500">Opções: ${optsList}</span>`;
     } else if (card.type === 'anki') {
@@ -2611,7 +2626,7 @@ function createCardElement(card, index) {
             ? card.answers 
             : (card.answer ? card.answer.split(';').map(a => a.trim()).filter(Boolean) : []);
         if (answers.length > 0) {
-            const badges = answers.map((a, i) => `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-50 border border-teal-200 text-teal-700 text-xs font-semibold"><span class="text-teal-500 font-mono text-[10px]">${i + 1}:</span> ${a}</span>`).join(' ');
+            const badges = answers.map((a, i) => `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-50 border border-teal-200 text-teal-700 text-xs font-semibold"><span class="text-teal-500 font-mono text-[10px]">${i + 1}:</span> ${escapeHtml(a)}</span>`).join(' ');
             ansStr = `<strong>Lacunas:</strong> <div class="inline-flex flex-wrap gap-1 mt-1">${badges}</div>`;
         } else {
             ansStr = `<strong>Lacunas:</strong> <span class="text-yellow-600 text-xs">Nenhuma resposta definida</span>`;
@@ -2623,18 +2638,28 @@ function createCardElement(card, index) {
     cardEl.appendChild(textCont);
 
     // Question Image
-    if (card.image) {
+    const safeCardImg = sanitizeImageUrl(card.image);
+    if (safeCardImg) {
         const imgDiv = document.createElement('div');
         imgDiv.className = "w-full max-h-32 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center p-1 mt-1";
-        imgDiv.innerHTML = `<img src="${card.image}" alt="Imagem" class="max-h-28 w-auto object-contain rounded">`;
+        const imgTag = document.createElement('img');
+        imgTag.src = safeCardImg;
+        imgTag.alt = "Imagem";
+        imgTag.className = "max-h-28 w-auto object-contain rounded";
+        imgDiv.appendChild(imgTag);
         cardEl.appendChild(imgDiv);
     }
 
     // Answer Image (Anki)
-    if (card.answerImage) {
+    const safeAnsImg = sanitizeImageUrl(card.answerImage);
+    if (safeAnsImg) {
         const ansImgDiv = document.createElement('div');
         ansImgDiv.className = "w-full max-h-32 overflow-hidden rounded-lg border border-indigo-200 bg-indigo-50/50 flex items-center justify-center p-1 mt-1";
-        ansImgDiv.innerHTML = `<img src="${card.answerImage}" alt="Imagem Resposta" class="max-h-28 w-auto object-contain rounded">`;
+        const ansImgTag = document.createElement('img');
+        ansImgTag.src = safeAnsImg;
+        ansImgTag.alt = "Imagem Resposta";
+        ansImgTag.className = "max-h-28 w-auto object-contain rounded";
+        ansImgDiv.appendChild(ansImgTag);
         cardEl.appendChild(ansImgDiv);
     }
 
@@ -2707,21 +2732,23 @@ function openInlineEditModal(index) {
         }
     }
 
-    pendingInlineEditQImage = card.image || '';
+    pendingInlineEditQImage = sanitizeImageUrl(card.image || '');
     inlineEditImageUrl.value = pendingInlineEditQImage;
     if (pendingInlineEditQImage) {
         inlineEditImagePreview.src = pendingInlineEditQImage;
         inlineEditImagePreviewContainer.classList.remove('hidden');
     } else {
+        inlineEditImagePreview.src = '';
         inlineEditImagePreviewContainer.classList.add('hidden');
     }
 
-    pendingInlineEditAnsImage = card.answerImage || '';
+    pendingInlineEditAnsImage = sanitizeImageUrl(card.answerImage || '');
     inlineEditAnsImageUrl.value = pendingInlineEditAnsImage;
     if (pendingInlineEditAnsImage) {
         inlineEditAnsImagePreview.src = pendingInlineEditAnsImage;
         inlineEditAnsImagePreviewContainer.classList.remove('hidden');
     } else {
+        inlineEditAnsImagePreview.src = '';
         inlineEditAnsImagePreviewContainer.classList.add('hidden');
     }
 
@@ -2734,14 +2761,24 @@ function renderInlineEditMcOptions(options, correctAnswer) {
         const isCorrect = optText === correctAnswer;
         const row = document.createElement('div');
         row.className = "flex items-center gap-2";
-        row.innerHTML = `
-            <input type="radio" name="inline-edit-mc-correct" value="${i}" ${isCorrect ? 'checked' : ''} class="w-4 h-4 text-blue-600 focus:ring-blue-500 cursor-pointer">
-            <input type="text" class="inline-edit-mc-opt-val flex-1 p-2 bg-gray-50 border border-gray-300 rounded-lg text-sm" value="${optText}">
-            <button type="button" class="inline-edit-remove-opt-btn p-1 text-gray-400 hover:text-red-500 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-            </button>
-        `;
-        const removeBtn = row.querySelector('.inline-edit-remove-opt-btn');
+
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'inline-edit-mc-correct';
+        radio.value = String(i);
+        if (isCorrect) radio.checked = true;
+        radio.className = 'w-4 h-4 text-blue-600 focus:ring-blue-500 cursor-pointer';
+
+        const textInput = document.createElement('input');
+        textInput.type = 'text';
+        textInput.className = 'inline-edit-mc-opt-val flex-1 p-2 bg-gray-50 border border-gray-300 rounded-lg text-sm';
+        textInput.value = optText || '';
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'inline-edit-remove-opt-btn p-1 text-gray-400 hover:text-red-500 transition';
+        removeBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>';
+
         removeBtn.addEventListener('click', () => {
             const currentVals = Array.from(document.querySelectorAll('.inline-edit-mc-opt-val')).map(inp => inp.value);
             if (currentVals.length <= 2) {
@@ -2751,6 +2788,8 @@ function renderInlineEditMcOptions(options, correctAnswer) {
             currentVals.splice(i, 1);
             renderInlineEditMcOptions(currentVals, correctAnswer);
         });
+
+        row.append(radio, textInput, removeBtn);
         editCardMcList.appendChild(row);
     });
 
@@ -2760,9 +2799,8 @@ function renderInlineEditMcOptions(options, correctAnswer) {
 editCardAddMcOptBtn.addEventListener('click', () => {
     const currentVals = Array.from(document.querySelectorAll('.inline-edit-mc-opt-val')).map(inp => inp.value);
     if (currentVals.length >= 6) return;
-    currentVals.push("");
     const checkedRadio = document.querySelector('input[name="inline-edit-mc-correct"]:checked');
-    const correctIdx = checkedRadio ? parseInt(checkedRadio.value) : 0;
+    const correctIdx = checkedRadio ? parseInt(checkedRadio.value, 10) : 0;
     const curCorrect = currentVals[correctIdx] || "";
     renderInlineEditMcOptions(currentVals, curCorrect);
 });
@@ -2770,9 +2808,10 @@ editCardAddMcOptBtn.addEventListener('click', () => {
 // Inline Edit Image Listeners
 inlineEditImageUrl.addEventListener('input', (e) => {
     const url = e.target.value.trim();
-    pendingInlineEditQImage = url;
-    if (url) {
-        inlineEditImagePreview.src = url;
+    const cleanUrl = sanitizeImageUrl(url);
+    pendingInlineEditQImage = cleanUrl;
+    if (cleanUrl) {
+        inlineEditImagePreview.src = cleanUrl;
         inlineEditImagePreviewContainer.classList.remove('hidden');
     } else {
         inlineEditImagePreview.src = '';
@@ -2788,9 +2827,10 @@ inlineEditRemoveImageBtn.addEventListener('click', () => {
 
 inlineEditAnsImageUrl.addEventListener('input', (e) => {
     const url = e.target.value.trim();
-    pendingInlineEditAnsImage = url;
-    if (url) {
-        inlineEditAnsImagePreview.src = url;
+    const cleanUrl = sanitizeImageUrl(url);
+    pendingInlineEditAnsImage = cleanUrl;
+    if (cleanUrl) {
+        inlineEditAnsImagePreview.src = cleanUrl;
         inlineEditAnsImagePreviewContainer.classList.remove('hidden');
     } else {
         inlineEditAnsImagePreview.src = '';
@@ -2850,6 +2890,9 @@ function addChatMessage(role, text) {
     const safeText = String(text || '');
     if (role === 'user') {
         msg.className = 'py-2 px-4 rounded-xl max-w-[85%] text-sm self-end bg-purple-600 text-white rounded-tr-sm break-words';
+        msg.textContent = safeText;
+    } else if (role === 'error') {
+        msg.className = 'py-2.5 px-4 rounded-xl max-w-[88%] text-sm self-start bg-red-100 text-red-800 rounded-tl-sm break-words shadow-sm';
         msg.textContent = safeText;
     } else {
         msg.className = 'py-2.5 px-4 rounded-xl max-w-[88%] text-sm self-start bg-gray-200 text-gray-800 rounded-tl-sm chat-markdown-content break-words shadow-sm';
@@ -2931,7 +2974,7 @@ chatSendBtn.addEventListener('click', async () => {
     } catch (e) {
         console.error(e);
         hideChatTypingIndicator();
-        addChatMessage('model', `Erro ao processar: ${e.message}`);
+        addChatMessage('error', `Erro ao processar: ${e.message}`);
     } finally {
         hideChatTypingIndicator();
         chatInput.disabled = false;

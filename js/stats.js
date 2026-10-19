@@ -7,7 +7,7 @@ import {
     isDeckCategorized,
     getCardSignature
 } from './stats-ai.js';
-import { ROUTES } from './utils.js';
+import { ROUTES, escapeHtml } from './utils.js';
 import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
 
 // DOM Elements
@@ -344,19 +344,43 @@ function renderCurrentSession(sess, gameState, history) {
         if (isCompleted) {
             sessionCompletedBanner.classList.remove('hidden');
             if (bannerStatAcc) {
-                bannerStatAcc.innerHTML = `<span class="material-symbols-rounded text-sm">track_changes</span> <span>${accuracyPct}% Precisão</span>`;
+                bannerStatAcc.replaceChildren();
+                const icon = document.createElement('span');
+                icon.className = 'material-symbols-rounded text-sm';
+                icon.textContent = 'track_changes';
+                const text = document.createElement('span');
+                text.textContent = ` ${Number(accuracyPct) || 0}% Precisão`;
+                bannerStatAcc.append(icon, text);
             }
             if (bannerStatTime) {
-                bannerStatTime.innerHTML = `<span class="material-symbols-rounded text-sm">timer</span> <span>${formatSeconds(duration)}</span>`;
+                bannerStatTime.replaceChildren();
+                const icon = document.createElement('span');
+                icon.className = 'material-symbols-rounded text-sm';
+                icon.textContent = 'timer';
+                const text = document.createElement('span');
+                text.textContent = ` ${formatSeconds(duration)}`;
+                bannerStatTime.append(icon, text);
             }
-            const maxStreak = sess ? (sess.bestStreak || sess.maxStreak || sess.currentStreak || 0) : 0;
+            const maxStreak = Number(sess ? (sess.bestStreak || sess.maxStreak || sess.currentStreak || 0) : 0) || 0;
             if (bannerStatStreak) {
-                bannerStatStreak.innerHTML = `<span class="text-sm select-none">🔥</span> <span>${maxStreak} seguidos</span>`;
+                bannerStatStreak.replaceChildren();
+                const fire = document.createElement('span');
+                fire.className = 'text-sm select-none';
+                fire.textContent = '🔥';
+                const text = document.createElement('span');
+                text.textContent = ` ${maxStreak} seguidos`;
+                bannerStatStreak.append(fire, text);
             }
-            const aiCount = sess ? (sess.aiCorrectionsCount || (sess.answersLog || []).filter(e => e.rating === 'ai_corrected').length) : 0;
+            const aiCount = Number(sess ? (sess.aiCorrectionsCount || (sess.answersLog || []).filter(e => e.rating === 'ai_corrected').length) : 0) || 0;
             if (bannerStatAi) {
                 if (aiCount > 0) {
-                    bannerStatAi.innerHTML = `<span class="material-symbols-rounded text-sm">auto_awesome</span> <span>${aiCount} com IA</span>`;
+                    bannerStatAi.replaceChildren();
+                    const icon = document.createElement('span');
+                    icon.className = 'material-symbols-rounded text-sm';
+                    icon.textContent = 'auto_awesome';
+                    const text = document.createElement('span');
+                    text.textContent = ` ${aiCount} com IA`;
+                    bannerStatAi.append(icon, text);
                     bannerStatAi.classList.remove('hidden');
                 } else {
                     bannerStatAi.classList.add('hidden');
@@ -1217,9 +1241,7 @@ async function triggerAiCategorization(gameState, statsData) {
                         <span class="material-symbols-rounded text-base text-red-600 align-middle">warning</span>
                         <h3 class="text-sm font-bold text-red-800">Não foi possível gerar as estatísticas com IA</h3>
                     </div>
-                    <p class="text-xs text-red-700 max-w-lg">
-                        ${err.message || 'Verifique sua conexão ou se sua Gemini API Key tem cotas disponíveis.'}
-                    </p>
+                    <p id="ai-stats-error-text" class="text-xs text-red-700 max-w-lg"></p>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
                     <button id="btn-retry-ai" class="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-red-600 hover:bg-red-700 transition shadow-sm">
@@ -1231,6 +1253,10 @@ async function triggerAiCategorization(gameState, statsData) {
                 </div>
             </div>
         `;
+        const errTextEl = document.getElementById('ai-stats-error-text');
+        if (errTextEl) {
+            errTextEl.textContent = (err && err.message) ? err.message : 'Verifique sua conexão ou se sua Gemini API Key tem cotas disponíveis.';
+        }
 
         document.getElementById('btn-retry-ai')?.addEventListener('click', () => {
             triggerAiCategorization(gameState, statsData);
@@ -1300,28 +1326,36 @@ function renderHistory(statsData) {
             acc >= 65 ? 'text-amber-600 bg-amber-50 border-amber-200' :
             'text-red-600 bg-red-50 border-red-200';
 
+        const safeCards = Number(sess.cardsAnswered) || 0;
+        const safeDuration = escapeHtml(formatSeconds(sess.durationSeconds));
+        const safeStreak = Number(sess.bestStreak) || 0;
+        const safeAcc = Number(acc) || 0;
+        const safeIdx = Number(history.length - idx) || 0;
+        const safeTitle = escapeHtml(sess.deckTitle || 'Flashcards');
+        const safeDate = escapeHtml(dateStr);
+
         const card = document.createElement('div');
         card.className = 'p-3 sm:p-4 rounded-xl border border-gray-200 hover:border-blue-400 transition bg-gray-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3';
         card.innerHTML = `
             <div class="flex items-center gap-3 min-w-0">
                 <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                    #${history.length - idx}
+                    #${safeIdx}
                 </div>
                 <div class="min-w-0">
                     <div class="flex items-center gap-2">
-                        <h3 class="font-bold text-sm text-gray-900 truncate">${sess.deckTitle || 'Flashcards'}</h3>
+                        <h3 class="font-bold text-sm text-gray-900 truncate">${safeTitle}</h3>
                         <span class="text-[10px] px-2 py-0.5 rounded-full font-medium ${sess.completed ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-200 text-gray-700'}">
                             ${sess.completed ? 'Concluída' : 'Parcial'}
                         </span>
                     </div>
-                    <p class="text-xs text-gray-500 mt-0.5">${dateStr} • Duração: ${formatSeconds(sess.durationSeconds)} • ${sess.cardsAnswered || 0} cards</p>
+                    <p class="text-xs text-gray-500 mt-0.5">${safeDate} • Duração: ${safeDuration} • ${safeCards} cards</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-                ${sess.bestStreak ? `<span class="text-xs text-amber-600 font-semibold flex items-center gap-1"><span class="text-sm select-none">🔥</span> <span>${sess.bestStreak}</span></span>` : ''}
+                ${safeStreak > 0 ? `<span class="text-xs text-amber-600 font-semibold flex items-center gap-1"><span class="text-sm select-none">🔥</span> <span>${safeStreak}</span></span>` : ''}
                 <div class="px-3 py-1 rounded-xl border ${accColor} text-sm font-extrabold">
-                    ${acc}%
+                    ${safeAcc}%
                 </div>
             </div>
         `;
@@ -1366,18 +1400,36 @@ function renderAccuracyChart(history) {
 
         const label = index === 0 ? 'Atual' : `S${index + 1}`;
 
+        const safeAcc = Number(acc) || 0;
+        const safeCards = Number(item.cardsAnswered) || 0;
+        const safeDuration = escapeHtml(formatSeconds(item.durationSeconds));
+        const safeLabel = escapeHtml(label);
+
         const col = document.createElement('div');
         col.className = 'flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer min-w-[28px]';
-        col.innerHTML = `
-            <!-- Tooltip -->
-            <div class="hidden group-hover:block absolute bottom-full mb-2 z-30 p-2 bg-gray-900 text-white text-[10px] rounded-lg shadow-xl whitespace-nowrap">
-                <span class="font-bold">${acc}% de acerto</span><br>
-                <span>${item.cardsAnswered || 0} cards • ${formatSeconds(item.durationSeconds)}</span>
-            </div>
-            <span class="text-[10px] font-bold text-gray-600 mb-1 opacity-0 group-hover:opacity-100 transition-opacity">${acc}%</span>
-            <div class="w-full max-w-[36px] ${barColor} rounded-t-lg transition-all duration-500" style="height: ${heightPct}%"></div>
-            <span class="text-[9px] text-gray-400 mt-1 font-mono">${label}</span>
-        `;
+
+        const tooltip = document.createElement('div');
+        tooltip.className = 'hidden group-hover:block absolute bottom-full mb-2 z-30 p-2 bg-gray-900 text-white text-[10px] rounded-lg shadow-xl whitespace-nowrap';
+        const tSpan1 = document.createElement('span');
+        tSpan1.className = 'font-bold';
+        tSpan1.textContent = `${safeAcc}% de acerto`;
+        const tSpan2 = document.createElement('span');
+        tSpan2.textContent = `${safeCards} cards • ${safeDuration}`;
+        tooltip.append(tSpan1, document.createElement('br'), tSpan2);
+
+        const accSpan = document.createElement('span');
+        accSpan.className = 'text-[10px] font-bold text-gray-600 mb-1 opacity-0 group-hover:opacity-100 transition-opacity';
+        accSpan.textContent = `${safeAcc}%`;
+
+        const bar = document.createElement('div');
+        bar.className = `w-full max-w-[36px] ${barColor} rounded-t-lg transition-all duration-500`;
+        bar.style.height = `${heightPct}%`;
+
+        const lblSpan = document.createElement('span');
+        lblSpan.className = 'text-[9px] text-gray-400 mt-1 font-mono';
+        lblSpan.textContent = safeLabel;
+
+        col.append(tooltip, accSpan, bar, lblSpan);
         accuracyChartContainer.appendChild(col);
     });
 }

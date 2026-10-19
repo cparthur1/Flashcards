@@ -2214,11 +2214,10 @@ mark.card-hl-purple {
     font-size: 10px;
     font-weight: 700;
     line-height: 1;
-    padding: 2px 5px;
-    border-radius: 4px;
-    background: rgba(0, 0, 0, 0.05);
-    color: #6b7280;
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 0;
+    background: transparent;
+    color: #9ca3af;
+    border: none;
     pointer-events: none;
     user-select: none;
     transition: all 0.15s ease;
@@ -2231,16 +2230,16 @@ mark.card-hl-purple {
 }
 
 .mc-option-btn:hover:not(:disabled) .mc-key-badge {
-    background: #dbeafe;
-    color: #1d4ed8;
-    border-color: #93c5fd;
+    background: transparent;
+    color: #2563eb;
+    border: none;
 }
 
 .mc-option-btn.mc-correct .mc-key-badge,
 .mc-option-btn.mc-incorrect .mc-key-badge {
-    background: rgba(255, 255, 255, 0.25);
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.4);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.85);
+    border: none;
 }
 
 /* Anki Gamepad Rating Buttons (Soft Pastel Aesthetic with Tactile Depth) */
