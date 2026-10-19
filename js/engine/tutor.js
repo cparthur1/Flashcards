@@ -315,3 +315,78 @@ Termo selecionado para definir: "${selectedText}"`;
     }
 }
 
+/**
+ * Registra a definição do popup no histórico de chat do tutor como se o usuário
+ * tivesse perguntado "Defina [termo]" e o agente tivesse respondido com a definição.
+ * Atualiza o histórico da sessão de chat da IA e deixa o usuário livre para digitar a próxima dúvida.
+ */
+export async function logDefinitionToChat({ term, definition, currentQuestion, chatMessages, chatInput }) {
+    if (!term || !definition) return;
+
+    const messagesContainer = chatMessages || document.getElementById('chat-messages');
+    const inputElem = chatInput || document.getElementById('chat-input');
+
+    hasChatInteraction = true;
+
+    const userText = `Defina ${term}`;
+
+    // 1. Registra as mensagens na UI do chat
+    addMsg('user', userText, messagesContainer);
+    addMsg('ai', definition, messagesContainer);
+
+    // 2. Limpa o input e foca para a próxima pergunta
+    if (inputElem) {
+        inputElem.value = '';
+        inputElem.focus();
+    }
+
+    // 3. Atualiza ou inicia a sessão de chat no Gemini com esse histórico prévio
+    if (genAI && currentQuestion) {
+        try {
+            const correctAnswers = (currentQuestion.type === 'fill' && currentQuestion.answers && currentQuestion.answers.length > 0)
+                ? [currentQuestion.answers.join(' ; ')]
+                : [currentQuestion.answer];
+            if (currentQuestion.type !== 'fill' && currentQuestion.answer2) correctAnswers.push(currentQuestion.answer2);
+
+            const systemPrompt = `
+                Você é um professor tutor ajudando um estudante com um flashcard.
+                
+                CONTEXTO DA QUESTÃO:
+                Pergunta: "${currentQuestion.description}"
+                Resposta(s) Correta(s) no Banco: "${correctAnswers.join(' / ')}"
+                Resposta que o Usuário deu inicialmente: "${lastUserAnswerForChat}"
+                
+                Responda de forma didática, objetiva e curta. Se o usuário errou, explique o porquê de forma simples. Use Markdown para listas, tabelas, ênfase e fórmulas matemáticas/químicas em LaTeX ($...$ ou $$...$$).
+                Mantenha o contexto desta questão durante toda a conversa.
+            `;
+
+            let prevHistory = [];
+            if (currentChatSession) {
+                try {
+                    prevHistory = await currentChatSession.getHistory();
+                } catch (e) {
+                    prevHistory = [];
+                }
+            }
+
+            const newHistory = [
+                ...prevHistory,
+                {
+                    role: 'user',
+                    parts: [{ text: userText }]
+                },
+                {
+                    role: 'model',
+                    parts: [{ text: definition }]
+                }
+            ];
+
+            const model = genAI.getGenerativeModel({ model: currentChatModel, systemInstruction: systemPrompt });
+            currentChatSession = model.startChat({ history: newHistory });
+        } catch (sessionErr) {
+            console.warn("[Tutor] Aviso ao sincronizar histórico da sessão de chat:", sessionErr);
+        }
+    }
+}
+
+

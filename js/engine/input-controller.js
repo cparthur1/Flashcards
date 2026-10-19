@@ -53,12 +53,61 @@ function handleKeyDown(e) {
         return;
     }
 
+    const isSpaceKey = (evt) => Boolean(
+        evt.code === 'Space' ||
+        evt.key === ' ' ||
+        evt.key === 'Spacebar' ||
+        evt.keyCode === 32 ||
+        evt.which === 32
+    );
+
+    const isEnterKey = (evt) => Boolean(
+        evt.key === 'Enter' ||
+        evt.code === 'Enter' ||
+        evt.code === 'NumpadEnter' ||
+        evt.keyCode === 13 ||
+        evt.which === 13
+    );
+
+    const currentQuestion = controllerHandlers.getCurrentQuestion ? controllerHandlers.getCurrentQuestion() : null;
+    const isAnkiFlipped = controllerHandlers.getIsAnkiFlipped ? controllerHandlers.getIsAnkiFlipped() : false;
+
+    // Prioridade máxima para cards Anki: espaço ou enter NUNCA devem pular card não-virado
+    if (currentQuestion && currentQuestion.type === 'anki') {
+        if (!isAnkiFlipped) {
+            if (isSpaceKey(e) || isEnterKey(e)) {
+                e.preventDefault();
+                console.log("[Game] Atalho Espaço/Enter para virar card Anki.");
+                if (controllerHandlers.onFlipAnki) controllerHandlers.onFlipAnki();
+                return;
+            }
+        } else {
+            if (e.key === '1' || e.code === 'Numpad1') {
+                e.preventDefault();
+                if (controllerHandlers.onAnkiRating) controllerHandlers.onAnkiRating('again');
+                return;
+            } else if (e.key === '2' || e.code === 'Numpad2') {
+                e.preventDefault();
+                if (controllerHandlers.onAnkiRating) controllerHandlers.onAnkiRating('hard');
+                return;
+            } else if (e.key === '3' || e.code === 'Numpad3' || isSpaceKey(e) || isEnterKey(e)) {
+                e.preventDefault();
+                if (controllerHandlers.onAnkiRating) controllerHandlers.onAnkiRating('good');
+                return;
+            } else if (e.key === '4' || e.code === 'Numpad4') {
+                e.preventDefault();
+                if (controllerHandlers.onAnkiRating) controllerHandlers.onAnkiRating('easy');
+                return;
+            }
+        }
+    }
+
     const isChatOpen = controllerHandlers.isChatOpen ? controllerHandlers.isChatOpen() : false;
 
     // Quando o chatbot estiver aberto (e o campo de texto NÃO estiver focado):
-    // permite pular/avançar o card com a barra de espaço (Space)
+    // permite pular/avançar o card com a barra de espaço (Space) para cards não-Anki
     if (isChatOpen) {
-        if (e.code === 'Space' || e.key === ' ' || e.key === 'Spacebar') {
+        if (isSpaceKey(e)) {
             e.preventDefault();
             console.log("[Game] Atalho Espaço com chatbot aberto para pular card.");
             const isAnimating = controllerHandlers.getIsAnimating ? controllerHandlers.getIsAnimating() : false;
@@ -72,7 +121,7 @@ function handleKeyDown(e) {
     // Se o botão de próxima questão estiver visível (após erro/correção), avança com Enter/Espaço
     const isAnimating = controllerHandlers.getIsAnimating ? controllerHandlers.getIsAnimating() : false;
     if (controllerHandlers.isNextQuestionBtnVisible && controllerHandlers.isNextQuestionBtnVisible() && !isAnimating) {
-        if (e.key === 'Enter' || e.code === 'Space') {
+        if (isEnterKey(e) || isSpaceKey(e)) {
             e.preventDefault();
             console.log("[Game] Atalho Enter/Espaço para avançar card após correção.");
             if (controllerHandlers.onNextQuestion) controllerHandlers.onNextQuestion();
@@ -80,32 +129,11 @@ function handleKeyDown(e) {
         }
     }
 
-    const currentQuestion = controllerHandlers.getCurrentQuestion ? controllerHandlers.getCurrentQuestion() : null;
-    const isAnkiFlipped = controllerHandlers.getIsAnkiFlipped ? controllerHandlers.getIsAnkiFlipped() : false;
-
-    if (currentQuestion && currentQuestion.type === 'anki') {
-        if (!isAnkiFlipped) {
-            if (e.code === 'Space' || e.key === 'Enter') {
-                e.preventDefault();
-                if (controllerHandlers.onFlipAnki) controllerHandlers.onFlipAnki();
-            }
-        } else {
-            if (e.key === '1' || e.code === 'Numpad1') {
-                e.preventDefault();
-                if (controllerHandlers.onAnkiRating) controllerHandlers.onAnkiRating('again');
-            } else if (e.key === '2' || e.code === 'Numpad2') {
-                e.preventDefault();
-                if (controllerHandlers.onAnkiRating) controllerHandlers.onAnkiRating('hard');
-            } else if (e.key === '3' || e.code === 'Numpad3' || e.code === 'Space' || e.key === 'Enter') {
-                e.preventDefault();
-                if (controllerHandlers.onAnkiRating) controllerHandlers.onAnkiRating('good');
-            } else if (e.key === '4' || e.code === 'Numpad4') {
-                e.preventDefault();
-                if (controllerHandlers.onAnkiRating) controllerHandlers.onAnkiRating('easy');
-            }
+    if (currentQuestion && currentQuestion.type === 'multiple_choice') {
+        let keyNum = parseInt(e.key);
+        if (isNaN(keyNum) && e.code && e.code.startsWith('Numpad')) {
+            keyNum = parseInt(e.code.replace('Numpad', ''));
         }
-    } else if (currentQuestion && currentQuestion.type === 'multiple_choice') {
-        const keyNum = parseInt(e.key);
         if (!isNaN(keyNum) && keyNum >= 1 && keyNum <= 6) {
             if (controllerHandlers.onSelectMcOption) {
                 const handled = controllerHandlers.onSelectMcOption(keyNum);

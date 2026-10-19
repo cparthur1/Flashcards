@@ -114,8 +114,16 @@ if (typeof window !== 'undefined' && window.fetch) {
     const originalFetch = window.fetch;
     window.fetch = async function (resource, options) {
         if (options && options.body && typeof options.body === 'string') {
-            const url = typeof resource === 'string' ? resource : (resource && resource.url) ? resource.url : '';
-            if (url.includes('generativelanguage.googleapis.com')) {
+            const urlStr = typeof resource === 'string' ? resource : (resource && resource.url) ? resource.url : '';
+            let isGeminiUrl = false;
+            try {
+                const parsedUrl = new URL(urlStr, window.location.origin);
+                isGeminiUrl = (parsedUrl.hostname === 'generativelanguage.googleapis.com');
+            } catch (urlErr) {
+                isGeminiUrl = false;
+            }
+
+            if (isGeminiUrl) {
                 try {
                     const body = JSON.parse(options.body);
                     if (body.contents && Array.isArray(body.contents)) {

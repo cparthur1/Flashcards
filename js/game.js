@@ -2,7 +2,7 @@ import { normalizeString, calculateSimilarity, shuffleArray, checkAndResetModelF
 import { isPlayableCard, calculateThinkingGap, selectNextCard, isLeechCard, shouldGraduateCard, formatTimeDisplay, getCardTopic } from './engine/scheduler.js';
 import { initEffects, createBall, clearBalls, setBallColor, launchCelebrationParticles, playCompletionShockwave, cleanShockwaveContainer, resizeCanvas, animate, triggerHaptic, isHapticEnabled, setHapticEnabled, updateHapticUI } from './engine/effects.js';
 import { initInputController, startGamepadLoop, stopGamepadLoop } from './engine/input-controller.js';
-import { isTutorEnabled, setTutorApiKey, disableTutor, initTutor, updateTutorUI, setLastUserAnswerForChat, getLastUserAnswerForChat, resetTutorChatSession, getHasChatInteraction, setHasChatInteraction, evaluateAnswerSemantic, addMsg, showTyping, hideTyping, sendTutorChatMessage, getTermDefinition } from './engine/tutor.js';
+import { isTutorEnabled, setTutorApiKey, disableTutor, initTutor, updateTutorUI, setLastUserAnswerForChat, getLastUserAnswerForChat, resetTutorChatSession, getHasChatInteraction, setHasChatInteraction, evaluateAnswerSemantic, addMsg, showTyping, hideTyping, sendTutorChatMessage, getTermDefinition, logDefinitionToChat } from './engine/tutor.js';
 import { initPomodoro, isPomodoroEnabled, setPomodoroEnabled, updatePomodoroUI } from './engine/pomodoro.js';
 import { isDeckCategorized, callGeminiFlashLiteCategorization, getStoredAiCategories, getCardSignature } from './stats-ai.js';
 import { initTransfer } from './transfer.js';
@@ -1155,6 +1155,9 @@ function loadQuestion() {
             ankiFlippedControls.classList.add('hidden');
         }
         isAnkiFlipped = false;
+        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+            document.activeElement.blur();
+        }
     } else if (currentQuestion.type === 'multiple_choice' && currentQuestion.options) {
         mcAnswerArea.classList.remove('hidden');
         submitBtn.classList.add('hidden'); // MCQ submits on click
@@ -1222,10 +1225,23 @@ function renderDynamicMcOptions(rawOptions) {
         mcAnswerArea.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 relative z-10";
     }
 
-    options.forEach(optText => {
+    options.forEach((optText, index) => {
         const btn = document.createElement('button');
+        btn.type = 'button';
         btn.className = "mc-option-btn w-full";
-        btn.textContent = optText;
+        btn.dataset.optionText = optText;
+
+        const textSpan = document.createElement('span');
+        textSpan.className = "mc-option-label";
+        textSpan.textContent = optText;
+        btn.appendChild(textSpan);
+
+        const keyBadge = document.createElement('span');
+        keyBadge.className = "mc-key-badge";
+        keyBadge.textContent = String(index + 1);
+        keyBadge.title = `Tecla ${index + 1}`;
+        btn.appendChild(keyBadge);
+
         btn.onclick = () => handleMCSubmit(btn);
         mcAnswerArea.appendChild(btn);
     });
@@ -1661,9 +1677,10 @@ function handleOpenSubmit() {
 
 function handleMCSubmit(btn) {
     if (btn.disabled) return;
-    const isCorrect = normalizeString(btn.textContent) === normalizeString(currentQuestion.answer);
+    const chosenText = btn.dataset.optionText || btn.querySelector('.mc-option-label')?.textContent || btn.textContent;
+    const isCorrect = normalizeString(chosenText) === normalizeString(currentQuestion.answer);
     console.log("[Game] Opção múltipla escolha clicada:", {
-        chosen: btn.textContent,
+        chosen: chosenText,
         expected: currentQuestion.answer,
         isCorrect
     });
@@ -1684,7 +1701,7 @@ function showFeedback(isCorrect, element) {
         if (currentQuestion.type === 'open_double') {
             userAnswer = `${answerInput1.value} ; ${answerInput2.value}`;
         } else if (currentQuestion.type === 'multiple_choice') {
-            userAnswer = element ? element.textContent : "";
+            userAnswer = element ? (element.dataset.optionText || element.querySelector('.mc-option-label')?.textContent || element.textContent) : "";
         } else if (currentQuestion.type === 'fill') {
             const fillInputs = Array.from(questionCard.querySelectorAll('.fill-blank-input'));
             userAnswer = currentQuestion._lastUserAnswer || fillInputs.map(inp => inp.value.trim()).join(' ; ');
@@ -1740,7 +1757,8 @@ function showFeedback(isCorrect, element) {
             element.classList.add(isCorrect ? 'mc-correct' : 'mc-incorrect');
             if (!isCorrect) {
                 dynamicMcBtns.forEach(b => {
-                    if (normalizeString(b.textContent) === normalizeString(currentQuestion.answer)) b.classList.add('mc-correct');
+                    const bText = b.dataset.optionText || b.querySelector('.mc-option-label')?.textContent || b.textContent;
+                    if (normalizeString(bText) === normalizeString(currentQuestion.answer)) b.classList.add('mc-correct');
                 });
             }
         }
@@ -2227,6 +2245,7 @@ let isInteractingWithPopup = false;
 let selectionDebounceTimer = null;
 
 let lastAiDefinitionTerm = '';
+let lastAiDefinitionText = '';
 let isFetchingDefinition = false;
 
 function hideHighlightPopup() {
@@ -2234,6 +2253,7 @@ function hideHighlightPopup() {
     activeHighlightRange = null;
     activeHighlightField = null;
     lastAiDefinitionTerm = '';
+    lastAiDefinitionText = '';
     if (!textHighlightPopup) return;
 
     try {
@@ -2733,6 +2753,8 @@ if (hlAiBtn) {
                 currentQuestion
             });
 
+            lastAiDefinitionText = definition || '';
+
             if (hlAiLoading) hlAiLoading.classList.add('hidden');
             if (hlAiContent) {
                 hlAiContent.classList.remove('hidden');
@@ -2771,6 +2793,7 @@ if (hlAiOpenChatBtn) {
         if (isHandoffAnimating) return;
 
         const term = lastAiDefinitionTerm || (activeHighlightRange ? activeHighlightRange.toString().trim() : '');
+        const definition = lastAiDefinitionText || (hlAiContent ? hlAiContent.innerText.trim() : '');
 
         // Respect prefers-reduced-motion or missing popup elements
         const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2778,15 +2801,26 @@ if (hlAiOpenChatBtn) {
             hideHighlightPopup();
             if (aiChatContainer) {
                 aiChatContainer.classList.add('open');
-                if (chatInput) chatInput.focus();
             }
-            if (term) {
-                sendTutorChatMessage({
-                    msg: `Pode me explicar com mais detalhes o que significa "${term}" no contexto deste cartão?`,
+            if (term && definition) {
+                await logDefinitionToChat({
+                    term,
+                    definition,
                     currentQuestion,
                     chatInput,
                     chatMessages: document.getElementById('chat-messages')
                 });
+            } else if (term) {
+                await sendTutorChatMessage({
+                    msg: `Defina ${term}`,
+                    currentQuestion,
+                    chatInput,
+                    chatMessages: document.getElementById('chat-messages')
+                });
+            }
+            if (chatInput) {
+                chatInput.value = '';
+                chatInput.focus();
             }
             return;
         }
@@ -2831,18 +2865,18 @@ if (hlAiOpenChatBtn) {
             // Arc peak offset (arcs upward before swooping down/across)
             const arcPeakY = isMobile ? -35 : (deltaY < 0 ? -25 : -65);
 
-            // 4. Play throw animation
+            // 4. Play throw animation with subtle, lighter pastel glow
             const throwAnim = textHighlightPopup.animate([
                 {
                     transform: 'translate(-50%, 0) scale(1) rotate(0deg)',
                     opacity: 1,
-                    filter: 'drop-shadow(0 4px 15px rgba(126, 34, 206, 0.6))',
+                    filter: 'drop-shadow(0 3px 10px rgba(168, 85, 247, 0.22))',
                     offset: 0
                 },
                 {
                     transform: `translate(calc(-50% + ${deltaX * 0.45}px), ${deltaY * 0.35 + arcPeakY}px) scale(1.15) rotate(${deltaX >= 0 ? 18 : -18}deg)`,
                     opacity: 1,
-                    filter: 'drop-shadow(0 8px 25px rgba(126, 34, 206, 0.8))',
+                    filter: 'drop-shadow(0 5px 14px rgba(168, 85, 247, 0.3))',
                     offset: 0.45
                 },
                 {
@@ -2885,13 +2919,26 @@ if (hlAiOpenChatBtn) {
 
             hideHighlightPopup();
 
-            if (term) {
-                sendTutorChatMessage({
-                    msg: `Pode me explicar com mais detalhes o que significa "${term}" no contexto deste cartão?`,
+            if (term && definition) {
+                await logDefinitionToChat({
+                    term,
+                    definition,
                     currentQuestion,
                     chatInput,
                     chatMessages: document.getElementById('chat-messages')
                 });
+            } else if (term) {
+                await sendTutorChatMessage({
+                    msg: `Defina ${term}`,
+                    currentQuestion,
+                    chatInput,
+                    chatMessages: document.getElementById('chat-messages')
+                });
+            }
+
+            if (chatInput) {
+                chatInput.value = '';
+                chatInput.focus();
             }
         } catch (err) {
             console.error("[Tutor] Erro na animação de handoff do chat:", err);
