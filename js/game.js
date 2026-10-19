@@ -62,6 +62,7 @@ function ensureQuestionStructure() {
     }
 }
 const textHighlightPopup = document.getElementById('text-highlight-popup');
+const hlActionsBar = document.getElementById('hl-actions-bar');
 const hlTriggerBtn = document.getElementById('hl-trigger-btn');
 const hlPalette = document.getElementById('hl-palette');
 const hlAiBtn = document.getElementById('hl-ai-btn');
@@ -70,6 +71,7 @@ const hlAiTermTitle = document.getElementById('hl-ai-term-title');
 const hlAiOpenChatBtn = document.getElementById('hl-ai-open-chat-btn');
 const hlAiLoading = document.getElementById('hl-ai-loading');
 const hlAiContent = document.getElementById('hl-ai-content');
+let isHandoffAnimating = false;
 const scoreDisplay = document.getElementById('score');
 const questionsLeftDisplay = document.getElementById('questions-left');
 const questionCard = document.getElementById('question-card');
@@ -2233,7 +2235,23 @@ function hideHighlightPopup() {
     activeHighlightField = null;
     lastAiDefinitionTerm = '';
     if (!textHighlightPopup) return;
-    textHighlightPopup.classList.add('hidden');
+
+    try {
+        textHighlightPopup.getAnimations().forEach(a => a.cancel());
+    } catch (e) {}
+    textHighlightPopup.style.transform = '';
+
+    if (hlActionsBar) {
+        hlActionsBar.classList.remove('hidden');
+    }
+    if (hlAiCard) {
+        hlAiCard.classList.remove('hl-card-collapse-circle');
+        hlAiCard.classList.remove('hl-card-bounce');
+        hlAiCard.classList.add('hidden');
+    }
+    if (hlAiBtn) {
+        hlAiBtn.classList.remove('hl-ai-shimmering');
+    }
     if (hlPalette) {
         hlPalette.classList.add('hidden');
         hlPalette.classList.remove('flex');
@@ -2242,12 +2260,7 @@ function hideHighlightPopup() {
         hlTriggerBtn.classList.remove('is-marked');
         hlTriggerBtn.title = "Marca-texto (1-4)";
     }
-    if (hlAiCard) {
-        hlAiCard.classList.add('hidden');
-    }
-    if (hlAiBtn) {
-        hlAiBtn.classList.remove('hl-ai-shimmering');
-    }
+    textHighlightPopup.classList.add('hidden');
 }
 
 function showHighlightPopup(range, isMarked) {
@@ -2256,12 +2269,23 @@ function showHighlightPopup(range, isMarked) {
     const rect = range.getBoundingClientRect();
     if (rect.width === 0 && rect.height === 0) return;
 
+    try {
+        textHighlightPopup.getAnimations().forEach(a => a.cancel());
+    } catch (e) {}
+    textHighlightPopup.style.transform = '';
+
+    if (hlActionsBar) {
+        hlActionsBar.classList.remove('hidden');
+    }
+
     if (hlPalette) {
         hlPalette.classList.add('hidden');
         hlPalette.classList.remove('flex');
     }
 
     if (hlAiCard) {
+        hlAiCard.classList.remove('hl-card-collapse-circle');
+        hlAiCard.classList.remove('hl-card-bounce');
         hlAiCard.classList.add('hidden');
     }
     if (hlAiBtn) {
@@ -2740,25 +2764,144 @@ if (hlAiBtn) {
 }
 
 if (hlAiOpenChatBtn) {
-    hlAiOpenChatBtn.addEventListener('click', (e) => {
+    hlAiOpenChatBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         e.preventDefault();
 
-        const term = lastAiDefinitionTerm || (activeHighlightRange ? activeHighlightRange.toString().trim() : '');
-        hideHighlightPopup();
+        if (isHandoffAnimating) return;
 
-        if (aiChatContainer) {
-            aiChatContainer.classList.add('open');
-            if (chatInput) chatInput.focus();
+        const term = lastAiDefinitionTerm || (activeHighlightRange ? activeHighlightRange.toString().trim() : '');
+
+        // Respect prefers-reduced-motion or missing popup elements
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReducedMotion || !textHighlightPopup || !hlAiCard) {
+            hideHighlightPopup();
+            if (aiChatContainer) {
+                aiChatContainer.classList.add('open');
+                if (chatInput) chatInput.focus();
+            }
+            if (term) {
+                sendTutorChatMessage({
+                    msg: `Pode me explicar com mais detalhes o que significa "${term}" no contexto deste cartão?`,
+                    currentQuestion,
+                    chatInput,
+                    chatMessages: document.getElementById('chat-messages')
+                });
+            }
+            return;
         }
 
-        if (term) {
-            sendTutorChatMessage({
-                msg: `Pode me explicar com mais detalhes o que significa "${term}" no contexto deste cartão?`,
-                currentQuestion,
-                chatInput,
-                chatMessages: document.getElementById('chat-messages')
+        isHandoffAnimating = true;
+
+        try {
+            // 1. Hide the top action bar so only the AI definition card is visible
+            if (hlActionsBar) {
+                hlActionsBar.classList.add('hidden');
+            }
+
+            // Adjust vertical position so the 48px circle centers around the card's original center
+            const initialHeight = hlAiCard.offsetHeight;
+            const curTop = parseFloat(textHighlightPopup.style.top || 0);
+            const targetCenterY = curTop + initialHeight / 2;
+            textHighlightPopup.style.top = `${targetCenterY - 24}px`;
+
+            // 2. Collapse into circle with bounce
+            hlAiCard.classList.remove('hl-card-bounce');
+            void hlAiCard.offsetWidth; // Force reflow
+            hlAiCard.classList.add('hl-card-collapse-circle');
+            hlAiCard.classList.add('hl-card-bounce');
+
+            // Wait for collapse + bounce to settle (~260ms)
+            await new Promise(r => setTimeout(r, 260));
+
+            // 3. Compute throw trajectory coordinates towards chat bot UI
+            const currentRect = textHighlightPopup.getBoundingClientRect();
+            const startX = currentRect.left + currentRect.width / 2;
+            const startY = currentRect.top + currentRect.height / 2;
+
+            const isMobile = window.innerWidth < 768;
+            // On desktop: chat container docks on the right edge (top ~25vh)
+            // On mobile: chat container slides up from the bottom edge
+            const targetX = isMobile ? window.innerWidth * 0.5 : window.innerWidth - 60;
+            const targetY = isMobile ? window.innerHeight - 30 : Math.max(120, window.innerHeight * 0.35);
+
+            const deltaX = targetX - startX;
+            const deltaY = targetY - startY;
+
+            // Arc peak offset (arcs upward before swooping down/across)
+            const arcPeakY = isMobile ? -35 : (deltaY < 0 ? -25 : -65);
+
+            // 4. Play throw animation
+            const throwAnim = textHighlightPopup.animate([
+                {
+                    transform: 'translate(-50%, 0) scale(1) rotate(0deg)',
+                    opacity: 1,
+                    filter: 'drop-shadow(0 4px 15px rgba(126, 34, 206, 0.6))',
+                    offset: 0
+                },
+                {
+                    transform: `translate(calc(-50% + ${deltaX * 0.45}px), ${deltaY * 0.35 + arcPeakY}px) scale(1.15) rotate(${deltaX >= 0 ? 18 : -18}deg)`,
+                    opacity: 1,
+                    filter: 'drop-shadow(0 8px 25px rgba(126, 34, 206, 0.8))',
+                    offset: 0.45
+                },
+                {
+                    transform: `translate(calc(-50% + ${deltaX * 0.82}px), ${deltaY * 0.82}px) scale(0.8) rotate(${deltaX >= 0 ? 32 : -32}deg)`,
+                    opacity: 0.9,
+                    offset: 0.82
+                },
+                {
+                    transform: `translate(calc(-50% + ${deltaX}px), ${deltaY}px) scale(0.05) rotate(${deltaX >= 0 ? 45 : -45}deg)`,
+                    opacity: 0,
+                    filter: 'drop-shadow(0 0 0 rgba(0,0,0,0))',
+                    offset: 1
+                }
+            ], {
+                duration: 360,
+                easing: 'cubic-bezier(0.2, 0.8, 0.25, 1)',
+                fill: 'forwards'
             });
+
+            // Trigger chat container opening animation as the thrown circle closes into the chat UI
+            let chatTriggered = false;
+            const triggerChatOpening = () => {
+                if (chatTriggered) return;
+                chatTriggered = true;
+                if (aiChatContainer) {
+                    aiChatContainer.classList.add('open');
+                    aiChatContainer.classList.remove('hl-chat-pulse');
+                    void aiChatContainer.offsetWidth; // Force reflow
+                    aiChatContainer.classList.add('hl-chat-pulse');
+                    if (chatInput) chatInput.focus();
+                }
+            };
+
+            // Trigger opening right as the circle closes into the chat UI (~300ms into the 360ms throw)
+            const chatTimer = setTimeout(triggerChatOpening, 300);
+
+            await throwAnim.finished;
+            clearTimeout(chatTimer);
+            triggerChatOpening();
+
+            hideHighlightPopup();
+
+            if (term) {
+                sendTutorChatMessage({
+                    msg: `Pode me explicar com mais detalhes o que significa "${term}" no contexto deste cartão?`,
+                    currentQuestion,
+                    chatInput,
+                    chatMessages: document.getElementById('chat-messages')
+                });
+            }
+        } catch (err) {
+            console.error("[Tutor] Erro na animação de handoff do chat:", err);
+            hideHighlightPopup();
+            if (aiChatContainer) {
+                aiChatContainer.classList.add('open');
+                if (chatInput) chatInput.focus();
+            }
+        } finally {
+            isHandoffAnimating = false;
         }
     });
 }

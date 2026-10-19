@@ -1621,8 +1621,85 @@ mark.card-hl-purple {
 }
 
 /* Definition card enter animation */
-#hl-ai-card:not(.hidden) {
+#hl-ai-card:not(.hidden):not(.hl-card-collapse-circle) {
     animation: popupEnter 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* AI Definition Card: Collapse into Bouncing Circle */
+#hl-ai-card.hl-card-collapse-circle {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    max-width: 48px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #7e22ce, #6366f1) !important;
+    border-color: #a855f7 !important;
+    box-shadow: 0 4px 20px rgba(126, 34, 206, 0.6), 0 0 15px rgba(147, 197, 253, 0.5) !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: width 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+                height 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+                border-radius 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+                padding 0.22s ease,
+                background 0.22s ease !important;
+}
+
+#hl-ai-card.hl-card-collapse-circle > :not(#hl-ai-collapsed-icon) {
+    display: none !important;
+}
+
+#hl-ai-card.hl-card-collapse-circle #hl-ai-collapsed-icon {
+    display: flex !important;
+}
+
+@keyframes hlCardBounce {
+    0% {
+        transform: scale(0.65);
+        opacity: 0.85;
+    }
+    45% {
+        transform: scale(1.25);
+        opacity: 1;
+    }
+    75% {
+        transform: scale(0.92);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+#hl-ai-card.hl-card-bounce {
+    animation: hlCardBounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+}
+
+/* AI Chat Container Incoming Pulse */
+@keyframes hlChatIncomingPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 30px 10px rgba(147, 51, 234, 0.45);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(147, 51, 234, 0);
+    }
+}
+
+.hl-chat-pulse {
+    animation: hlChatIncomingPulse 0.6s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #hl-ai-card.hl-card-bounce {
+        animation: none !important;
+    }
+    .hl-chat-pulse {
+        animation: none !important;
+    }
 }
 
 /* ==========================================================================
