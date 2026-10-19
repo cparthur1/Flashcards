@@ -2563,6 +2563,10 @@ function handleTextSelection(e) {
     activeHighlightRange = range.cloneRange();
     activeHighlightField = field;
 
+    if (chatInput && document.activeElement === chatInput) {
+        chatInput.blur();
+    }
+
     const isMarked = isRangeMarked(range, container);
     showHighlightPopup(range, isMarked);
 }
@@ -2622,11 +2626,17 @@ document.addEventListener('touchend', (e) => {
 if (textHighlightPopup) {
     const handlePopupTouch = () => {
         isInteractingWithPopup = true;
+        if (chatInput && document.activeElement === chatInput) {
+            chatInput.blur();
+        }
     };
     textHighlightPopup.addEventListener('pointerdown', handlePopupTouch);
     textHighlightPopup.addEventListener('touchstart', handlePopupTouch, { passive: true });
     textHighlightPopup.addEventListener('mousedown', (e) => {
         isInteractingWithPopup = true;
+        if (chatInput && document.activeElement === chatInput) {
+            chatInput.blur();
+        }
         // Prevent default so text selection in card is not cleared on click
         e.preventDefault();
     });
@@ -2638,6 +2648,10 @@ document.addEventListener('click', (e) => {
     if (mark) {
         e.stopPropagation();
         e.preventDefault();
+
+        if (chatInput && document.activeElement === chatInput) {
+            chatInput.blur();
+        }
 
         const questionBody = document.getElementById('question-body-text') || questionText;
         const ankiAnswer = ankiAnswerText;

@@ -23,6 +23,25 @@ function isTextInputElement(el) {
 function handleKeyDown(e) {
     if (!controllerHandlers) return;
 
+    // Atalhos rápidos de marca-texto (1: Amarelo, 2: Verde, 3: Azul, 4: Roxo)
+    // Tenta aplicar o marca-texto com prioridade quando há texto do cartão selecionado ou popup de marca-texto ativo
+    if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+        let hlColor = null;
+        if (e.key === '1' || e.code === 'Numpad1') hlColor = 'yellow';
+        else if (e.key === '2' || e.code === 'Numpad2') hlColor = 'green';
+        else if (e.key === '3' || e.code === 'Numpad3') hlColor = 'blue';
+        else if (e.key === '4' || e.code === 'Numpad4') hlColor = 'purple';
+
+        if (hlColor && controllerHandlers.onHighlightShortcut) {
+            const handled = controllerHandlers.onHighlightShortcut(hlColor);
+            if (handled) {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
+        }
+    }
+
     const activeEl = document.activeElement;
     const targetEl = e.target;
     if (isTextInputElement(activeEl) || isTextInputElement(targetEl)) {
@@ -48,24 +67,6 @@ function handleKeyDown(e) {
             }
         }
         return;
-    }
-
-    // Atalhos rápidos de marca-texto (1: Amarelo, 2: Verde, 3: Azul, 4: Roxo)
-    if (!e.ctrlKey && !e.metaKey && !e.altKey) {
-        let hlColor = null;
-        if (e.key === '1' || e.code === 'Numpad1') hlColor = 'yellow';
-        else if (e.key === '2' || e.code === 'Numpad2') hlColor = 'green';
-        else if (e.key === '3' || e.code === 'Numpad3') hlColor = 'blue';
-        else if (e.key === '4' || e.code === 'Numpad4') hlColor = 'purple';
-
-        if (hlColor && controllerHandlers.onHighlightShortcut) {
-            const handled = controllerHandlers.onHighlightShortcut(hlColor);
-            if (handled) {
-                e.preventDefault();
-                e.stopPropagation();
-                return;
-            }
-        }
     }
 
     // Se o botão de próxima questão estiver visível (após erro/correção), avança com Enter/Espaço
