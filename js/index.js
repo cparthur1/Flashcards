@@ -1,5 +1,5 @@
 // Handles landing page functionality: redirects, single deck and Semana de Provas multi-deck uploads.
-import { ROUTES } from './utils.js';
+import { ROUTES, shuffleArray, generateSecureId } from './utils.js';
 
 function init() {
     // Redirect to game if active deck session exists
@@ -71,15 +71,6 @@ function init() {
     const uploadError = document.getElementById('upload-error');
     let selectedFiles = [];
 
-    // Helper: Fisher-Yates shuffle
-    function shuffleArray(array) {
-        const arr = [...array];
-        for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-    }
 
     // Helper: Read single file as text
     function readFileAsText(file) {
@@ -203,7 +194,7 @@ function init() {
 
                         if (cards.length > 0) {
                             loadedDecks.push({
-                                id: 'deck_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                                id: generateSecureId('deck'),
                                 name: name,
                                 cards: cards
                             });
@@ -397,7 +388,7 @@ function init() {
                         parsed.decks.forEach(d => {
                             const dCards = (parsed.cards || []).filter(c => c.deckId === d.id || c.sourceDeck === d.name);
                             modalDecks.push({
-                                id: d.id || ('deck_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5)),
+                                id: d.id || generateSecureId('deck'),
                                 name: d.name,
                                 cards: dCards.length > 0 ? dCards : (parsed.cards || [])
                             });
@@ -411,7 +402,7 @@ function init() {
 
                 if (cards.length > 0) {
                     modalDecks.push({
-                        id: 'deck_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                        id: generateSecureId('deck'),
                         name: name,
                         cards: cards
                     });

@@ -6,6 +6,8 @@
  * Módulo puro: não possui acoplamento direto com o DOM ou UI gráfica.
  */
 
+import { secureRandom } from '../utils.js';
+
 /**
  * Filtra se um cartão é jogável (exclui divisores de seção e notas).
  * @param {Object} card 
@@ -105,12 +107,12 @@ export function selectNextCard(candidateList, step, consecutiveDueCardsCount = 0
 
         const shouldInjectRandom = canInjectRandom && (
             (consecutiveDueCardsCount >= 2 && dueCards.length >= 2) ||
-            (isTooMuchDue && Math.random() < 0.35)
+            (isTooMuchDue && secureRandom() < 0.35)
         );
 
         if (shouldInjectRandom) {
             const candidatePool = filterInterleaved(nonDueCards);
-            const injectedCard = candidatePool[Math.floor(Math.random() * candidatePool.length)];
+            const injectedCard = candidatePool[Math.floor(secureRandom() * candidatePool.length)];
             console.log("[Algorithm] Intercalando card aleatório fresco (Interleaving Effect):", {
                 desc: (injectedCard.description || '').slice(0, 35),
                 tipo: newCards.length > 0 ? 'novo/não visto' : 'futuro',
@@ -121,7 +123,7 @@ export function selectNextCard(candidateList, step, consecutiveDueCardsCount = 0
         }
 
         const interleavedDue = filterInterleaved(dueCards);
-        const pickedDue = interleavedDue[Math.floor(Math.random() * interleavedDue.length)];
+        const pickedDue = interleavedDue[Math.floor(secureRandom() * interleavedDue.length)];
         console.log("[Algorithm] Card due selecionado (Interleaving):", {
             desc: (pickedDue.description || '').slice(0, 35),
             topic: getCardTopic(pickedDue) || 'Geral',
@@ -134,7 +136,7 @@ export function selectNextCard(candidateList, step, consecutiveDueCardsCount = 0
 
     if (newCards.length > 0) {
         const interleavedNew = filterInterleaved(newCards);
-        const pickedNew = interleavedNew[Math.floor(Math.random() * interleavedNew.length)];
+        const pickedNew = interleavedNew[Math.floor(secureRandom() * interleavedNew.length)];
         console.log("[Algorithm] Card novo selecionado (Interleaving):", {
             desc: (pickedNew.description || '').slice(0, 35),
             topic: getCardTopic(pickedNew) || 'Geral',
@@ -150,7 +152,7 @@ export function selectNextCard(candidateList, step, consecutiveDueCardsCount = 0
     }
     const earliestCards = candidateList.filter(c => (c.dueStep || 0) === minDue);
     const interleavedEarliest = filterInterleaved(earliestCards);
-    const pickedEarliest = interleavedEarliest[Math.floor(Math.random() * interleavedEarliest.length)] || candidateList[0];
+    const pickedEarliest = interleavedEarliest[Math.floor(secureRandom() * interleavedEarliest.length)] || candidateList[0];
     console.log("[Algorithm] Card futuro mais próximo selecionado (Interleaving):", {
         desc: (pickedEarliest?.description || '').slice(0, 35),
         topic: getCardTopic(pickedEarliest) || 'Geral',

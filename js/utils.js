@@ -50,12 +50,35 @@ export function calculateSimilarity(s1, s2) {
 }
 
 /**
- * Shuffles an array in place.
+ * Retorna um número pseudo-aleatório no intervalo [0, 1) criptograficamente seguro.
+ */
+export function secureRandom() {
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+        const arr = new Uint32Array(1);
+        crypto.getRandomValues(arr);
+        return arr[0] / (0xffffffff + 1);
+    }
+    return Math.random();
+}
+
+/**
+ * Gera um identificador único seguro com prefixo opcional.
+ */
+export function generateSecureId(prefix = 'id') {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return `${prefix}_${crypto.randomUUID()}`;
+    }
+    const rand = Math.floor(secureRandom() * 0xffffffff).toString(36);
+    return `${prefix}_${Date.now()}_${rand}`;
+}
+
+/**
+ * Shuffles an array in place using cryptographically secure randomness.
  */
 export function shuffleArray(array) {
     if (!Array.isArray(array)) return [];
     for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = Math.floor(secureRandom() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
     }
     return array;
