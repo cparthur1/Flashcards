@@ -1,0 +1,161 @@
+[
+  {
+    "type": "divisor",
+    "text": "Seção 1: Ciências Biológicas & Saúde",
+    "description": "Seção 1: Ciências Biológicas & Saúde"
+  },
+  {
+    "type": "open",
+    "description": "Qual é a principal organela celular responsável pela respiração aeróbica e produção de ATP?",
+    "answer": "Mitocôndria / Mitocondria",
+    "subject": "Biologia",
+    "topic": "Citologia"
+  },
+  {
+    "type": "open_double",
+    "description": "Quais são as duas principais bases nitrogenadas púricas (com anel aromático duplo) que compõem o DNA?",
+    "answer": "Adenina",
+    "answer2": "Guanina",
+    "placeholder1": "Primeira base púrica",
+    "placeholder2": "Segunda base púrica",
+    "subject": "Biologia",
+    "topic": "Genética"
+  },
+  {
+    "type": "multiple_choice",
+    "description": "Qual dos seguintes vasos sanguíneos transporta sangue oxigenado dos pulmões diretamente para o átrio esquerdo do coração?",
+    "options": [
+      "Veias pulmonares",
+      "Artéria pulmonar",
+      "Veia cava superior",
+      "Artéria aorta"
+    ],
+    "answer": "Veias pulmonares",
+    "subject": "Biologia",
+    "topic": "Fisiologia Humana"
+  },
+  {
+    "type": "fill",
+    "description": "Na divisão celular eucariótica, a _ resulta em duas células-filhas geneticamente idênticas, enquanto a _ gera quatro células haploides com variabilidade genética.",
+    "answer": "Mitose; Meiose",
+    "answers": [
+      "Mitose",
+      "Meiose"
+    ],
+    "subject": "Biologia",
+    "topic": "Divisão Celular"
+  },
+  {
+    "type": "anki",
+    "description": "O que é o mecanismo de **Feedback Negativo (Retroalimentação Negativa)** na homeostase biológica?",
+    "answer": "É uma resposta regulatória fisiológica em que o organismo atua no sentido **oposto** à alteração inicial, trazendo a variável (ex: temperatura corporal, glicemia) de volta ao ponto de equilíbrio estável.",
+    "subject": "Biologia",
+    "topic": "Fisiologia"
+  },
+  {
+    "type": "divisor",
+    "text": "Seção 2: Engenharia de Software & Computação",
+    "description": "Seção 2: Engenharia de Software & Computação"
+  },
+  {
+    "type": "open",
+    "description": "Qual estrutura de dados linear opera estritamente sob o princípio LIFO (Last In, First Out)?",
+    "answer": "Pilha / Stack",
+    "subject": "Computação",
+    "topic": "Estruturas de Dados"
+  },
+  {
+    "type": "open_double",
+    "description": "No protocolo TCP, quais são os dois pacotes enviados após o SYN inicial para completar o handshake de três vias (three-way handshake)?",
+    "answer": "SYN-ACK",
+    "answer2": "ACK",
+    "placeholder1": "Resposta do servidor",
+    "placeholder2": "Confirmação do cliente",
+    "subject": "Computação",
+    "topic": "Redes de Computadores"
+  },
+  {
+    "type": "multiple_choice",
+    "description": "Qual é a complexidade de tempo de pior caso do algoritmo de ordenação QuickSort quando o pivô escolhido é sempre o menor ou maior elemento?",
+    "options": [
+      "O(n²)",
+      "O(n log n)",
+      "O(n)",
+      "O(log n)"
+    ],
+    "answer": "O(n²)",
+    "subject": "Computação",
+    "topic": "Algoritmos"
+  },
+  {
+    "type": "fill",
+    "description": "No padrão arquitetural MVC, o _ gerencia os dados e regras de negócio, enquanto o _ processa as requisições e faz a ponte entre a interface e os dados.",
+    "answer": "Model; Controller",
+    "answers": [
+      "Model",
+      "Controller"
+    ],
+    "subject": "Computação",
+    "topic": "Arquitetura de Software"
+  },
+  {
+    "type": "anki",
+    "description": "O que preconiza o **Princípio da Responsabilidade Única (SRP)** da metodologia SOLID?",
+    "answer": "Afirma que uma classe ou módulo deve possuir **apenas um motivo para ser alterado**, ou seja, deve ser responsável por uma única função ou responsabilidade bem delimitada dentro do sistema.",
+    "subject": "Computação",
+    "topic": "Engenharia de Software"
+  },
+  {
+    "type": "divisor",
+    "text": "Seção 3: História, Geografia & Astronomia",
+    "description": "Seção 3: História, Geografia & Astronomia"
+  },
+  {
+    "type": "open",
+    "description": "Em qual cidade foi assinada a Lei Áurea em 1888, então capital do Império do Brasil?",
+    "answer": "Rio de Janeiro",
+    "subject": "História",
+    "topic": "Brasil Império"
+  },
+  {
+    "type": "open_double",
+    "description": "Quais são os dois movimentos periódicos fundamentais da Terra responsáveis, respectivamente, pelo ciclo dia/noite e pelas estações do ano?",
+    "answer": "Rotação",
+    "answer2": "Translação",
+    "placeholder1": "Giro no próprio eixo",
+    "placeholder2": "Órbita em torno do Sol",
+    "subject": "Geografia",
+    "topic": "Astronomia"
+  },
+  {
+    "type": "multiple_choice",
+    "description": "Qual planeta do Sistema Solar possui a maior massa, o campo magnético mais potente e a Grande Mancha Vermelha?",
+    "options": [
+      "Júpiter",
+      "Saturno",
+      "Netuno",
+      "Marte"
+    ],
+    "answer": "Júpiter",
+    "subject": "Astronomia",
+    "topic": "Sistema Solar"
+  },
+  {
+    "type": "fill",
+    "description": "Na teoria da tripartição dos poderes de Montesquieu, o Estado é constituído por três poderes harmônicos: o Poder Executivo, o Poder _ e o Poder _.",
+    "answer": "Legislativo; Judiciário",
+    "answers": [
+      "Legislativo",
+      "Judiciário"
+    ],
+    "subject": "Filosofia Política",
+    "topic": "Iluminismo"
+  },
+  {
+    "type": "anki",
+    "description": "O que foi a **Conferência de Berlim (1884-1885)** e qual foi seu principal impacto geopolítico?",
+    "answer": "Foi a conferência internacional entre potências europeias que organizou a **Partilha da África**, impondo fronteiras artificiais sem considerar as populações locais e acelerando o neocolonialismo e a exploração imperialista no continente.",
+    "subject": "História",
+    "topic": "Neocolonialismo"
+  }
+]

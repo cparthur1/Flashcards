@@ -277,3 +277,41 @@ export async function sendTutorChatMessage({ msg, currentQuestion, chatInput, ch
         }
     }
 }
+
+/**
+ * Obtém uma definição extremamente resumida do texto selecionado no contexto do flashcard.
+ * @param {string} selectedText Termo selecionado
+ * @param {object} currentQuestion Objeto do cartão atual
+ * @returns {Promise<string>} Definição resumida gerada pelo gemini-flash-lite-latest
+ */
+export async function getTermDefinition({ selectedText, currentQuestion }) {
+    if (!isAiEnabled || !genAI || !selectedText) return null;
+
+    try {
+        const cleanQuestion = currentQuestion?.description ? currentQuestion.description.replace(/<[^>]*>/g, '').trim() : '';
+        const cleanAnswer = (currentQuestion?.type === 'fill' && currentQuestion?.answers && currentQuestion.answers.length > 0)
+            ? currentQuestion.answers.join(' ; ')
+            : [currentQuestion?.answer, currentQuestion?.answer2].filter(Boolean).map(a => String(a).replace(/<[^>]*>/g, '').trim()).join(' / ');
+
+        const systemPrompt = `Você é um tutor acadêmico de flashcards. Sua tarefa é fornecer uma definição EXTREMAMENTE resumida (no máximo 1 ou 2 frases curtas, direta ao ponto) do termo ou trecho selecionado pelo estudante, considerando estritamente o contexto da pergunta e resposta deste flashcard.
+Não inclua preâmbulos, saudações, nem repita "o termo significa...". Seja direto e conciso.`;
+
+        const model = genAI.getGenerativeModel({
+            model: "gemini-flash-lite-latest",
+            systemInstruction: systemPrompt
+        });
+
+        const prompt = `Flashcard:
+Pergunta: "${cleanQuestion}"
+Resposta: "${cleanAnswer}"
+
+Termo selecionado para definir: "${selectedText}"`;
+
+        const result = await callWithRetry(() => model.generateContent(prompt));
+        return result.response.text().trim();
+    } catch (e) {
+        console.error("[Tutor] Erro ao obter definição do termo:", e);
+        throw e;
+    }
+}
+

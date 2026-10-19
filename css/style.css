@@ -1563,6 +1563,68 @@ mark.card-hl-purple {
     filter: invert(28%) sepia(91%) saturate(3421%) hue-rotate(345deg) brightness(96%) contrast(92%);
 }
 
+/* Peça ajuda AI Button Shimmer (Light Blue & Purple) */
+.hl-ai-shimmering {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #eff6ff 0%, #faf5ff 50%, #eff6ff 100%) !important;
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.35), 0 0 3px rgba(59, 130, 246, 0.3) !important;
+}
+
+.hl-ai-shimmering::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -150%;
+    width: 250%;
+    height: 200%;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(147, 197, 253, 0.6) 30%,
+        rgba(216, 180, 254, 0.8) 60%,
+        transparent 100%
+    );
+    transform: rotate(25deg);
+    animation: hlShimmerOnce 1.0s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    pointer-events: none;
+}
+
+@keyframes hlShimmerOnce {
+    0% {
+        transform: translateX(0) rotate(25deg);
+        opacity: 0;
+    }
+    30% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(160%) rotate(25deg);
+        opacity: 0;
+    }
+}
+
+/* Light Blue & Purple Shimmer Skeleton for AI Definition Card */
+.hl-shimmer-bg {
+    background: linear-gradient(90deg, #f1f5f9 0%, #dbeafe 35%, #f3e8ff 65%, #f1f5f9 100%);
+    background-size: 250% 100%;
+    animation: hlShimmerSkeleton 1.4s ease-in-out infinite;
+}
+
+@keyframes hlShimmerSkeleton {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Definition card enter animation */
+#hl-ai-card:not(.hidden) {
+    animation: popupEnter 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* ==========================================================================
    ANKI CARDS MARKDOWN & MATH (KATEX) ENGINE
    ========================================================================== */

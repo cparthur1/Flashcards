@@ -2,7 +2,7 @@ import { normalizeString, calculateSimilarity, shuffleArray, checkAndResetModelF
 import { isPlayableCard, calculateThinkingGap, selectNextCard, isLeechCard, shouldGraduateCard, formatTimeDisplay, getCardTopic } from './engine/scheduler.js';
 import { initEffects, createBall, clearBalls, setBallColor, launchCelebrationParticles, playCompletionShockwave, cleanShockwaveContainer, resizeCanvas, animate, triggerHaptic, isHapticEnabled, setHapticEnabled, updateHapticUI } from './engine/effects.js';
 import { initInputController, startGamepadLoop, stopGamepadLoop } from './engine/input-controller.js';
-import { isTutorEnabled, setTutorApiKey, disableTutor, initTutor, updateTutorUI, setLastUserAnswerForChat, getLastUserAnswerForChat, resetTutorChatSession, getHasChatInteraction, setHasChatInteraction, evaluateAnswerSemantic, addMsg, showTyping, hideTyping, sendTutorChatMessage } from './engine/tutor.js';
+import { isTutorEnabled, setTutorApiKey, disableTutor, initTutor, updateTutorUI, setLastUserAnswerForChat, getLastUserAnswerForChat, resetTutorChatSession, getHasChatInteraction, setHasChatInteraction, evaluateAnswerSemantic, addMsg, showTyping, hideTyping, sendTutorChatMessage, getTermDefinition } from './engine/tutor.js';
 import { initPomodoro, isPomodoroEnabled, setPomodoroEnabled, updatePomodoroUI } from './engine/pomodoro.js';
 import { isDeckCategorized, callGeminiFlashLiteCategorization, getStoredAiCategories, getCardSignature } from './stats-ai.js';
 import { initTransfer } from './transfer.js';
@@ -64,6 +64,12 @@ function ensureQuestionStructure() {
 const textHighlightPopup = document.getElementById('text-highlight-popup');
 const hlTriggerBtn = document.getElementById('hl-trigger-btn');
 const hlPalette = document.getElementById('hl-palette');
+const hlAiBtn = document.getElementById('hl-ai-btn');
+const hlAiCard = document.getElementById('hl-ai-card');
+const hlAiTermTitle = document.getElementById('hl-ai-term-title');
+const hlAiOpenChatBtn = document.getElementById('hl-ai-open-chat-btn');
+const hlAiLoading = document.getElementById('hl-ai-loading');
+const hlAiContent = document.getElementById('hl-ai-content');
 const scoreDisplay = document.getElementById('score');
 const questionsLeftDisplay = document.getElementById('questions-left');
 const questionCard = document.getElementById('question-card');
@@ -1968,6 +1974,15 @@ function updateScoreDisplay() {
 // --- AI LOGIC (delegada para ./engine/tutor.js) ---
 function updateAiUI() {
     updateTutorUI({ menuAiIcon, menuAiStatusBadge, menuAiSubtitle, aiIconOff, aiIconOn, aiSwitch });
+    if (hlAiBtn) {
+        if (isTutorEnabled()) {
+            hlAiBtn.classList.remove('hidden');
+        } else {
+            hlAiBtn.classList.add('hidden');
+            if (hlAiCard) hlAiCard.classList.add('hidden');
+            hlAiBtn.classList.remove('hl-ai-shimmering');
+        }
+    }
 }
 
 function initializeAi() {
@@ -2209,10 +2224,14 @@ let activeHighlightField = null; // 'description' or 'answer'
 let isInteractingWithPopup = false;
 let selectionDebounceTimer = null;
 
+let lastAiDefinitionTerm = '';
+let isFetchingDefinition = false;
+
 function hideHighlightPopup() {
     isInteractingWithPopup = false;
     activeHighlightRange = null;
     activeHighlightField = null;
+    lastAiDefinitionTerm = '';
     if (!textHighlightPopup) return;
     textHighlightPopup.classList.add('hidden');
     if (hlPalette) {
@@ -2222,6 +2241,12 @@ function hideHighlightPopup() {
     if (hlTriggerBtn) {
         hlTriggerBtn.classList.remove('is-marked');
         hlTriggerBtn.title = "Marca-texto (1-4)";
+    }
+    if (hlAiCard) {
+        hlAiCard.classList.add('hidden');
+    }
+    if (hlAiBtn) {
+        hlAiBtn.classList.remove('hl-ai-shimmering');
     }
 }
 
@@ -2234,6 +2259,18 @@ function showHighlightPopup(range, isMarked) {
     if (hlPalette) {
         hlPalette.classList.add('hidden');
         hlPalette.classList.remove('flex');
+    }
+
+    if (hlAiCard) {
+        hlAiCard.classList.add('hidden');
+    }
+    if (hlAiBtn) {
+        hlAiBtn.classList.remove('hl-ai-shimmering');
+        if (isTutorEnabled()) {
+            hlAiBtn.classList.remove('hidden');
+        } else {
+            hlAiBtn.classList.add('hidden');
+        }
     }
 
     if (hlTriggerBtn) {
@@ -2249,16 +2286,12 @@ function showHighlightPopup(range, isMarked) {
     textHighlightPopup.classList.remove('hidden');
 
     const popupHeight = 44;
-    // Account for potential open palette width (~190px) so popup never cuts off on mobile edges
-    const estimatedPopupWidth = 190;
+    // Account for potential open palette or action buttons width (~220px) so popup never cuts off on mobile edges
+    const estimatedPopupWidth = 220;
 
     let left = rect.left + rect.width / 2;
-    let top = rect.top - popupHeight - 10;
-
-    // Header offset: ensure it stays below fixed header (~64px) on mobile
-    if (top < 70) {
-        top = rect.bottom + 10;
-    }
+    // Move both circle buttons (highlight and ai) to the bottom of the selected text
+    let top = rect.bottom + 8;
 
     // Keep within horizontal screen bounds accounting for full palette width
     const minLeft = estimatedPopupWidth / 2 + 10;
@@ -2271,7 +2304,7 @@ function showHighlightPopup(range, isMarked) {
 
     // Ensure it doesn't overflow bottom of viewport
     if (top + popupHeight > window.innerHeight - 12) {
-        top = Math.max(70, rect.top - popupHeight - 10);
+        top = Math.max(70, window.innerHeight - popupHeight - 12);
     }
 
     textHighlightPopup.style.top = `${top}px`;
@@ -2576,6 +2609,13 @@ if (hlTriggerBtn) {
         e.stopPropagation();
         e.preventDefault();
 
+        if (hlAiCard) {
+            hlAiCard.classList.add('hidden');
+        }
+        if (hlAiBtn) {
+            hlAiBtn.classList.remove('hl-ai-shimmering');
+        }
+
         if (hlTriggerBtn.classList.contains('is-marked')) {
             removeHighlight();
         } else {
@@ -2589,6 +2629,136 @@ if (hlTriggerBtn) {
                     hlPalette.classList.remove('flex');
                 }
             }
+        }
+    });
+}
+
+if (hlAiBtn) {
+    hlAiBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        // Close color palette if open
+        if (hlPalette) {
+            hlPalette.classList.add('hidden');
+            hlPalette.classList.remove('flex');
+        }
+
+        const sel = window.getSelection();
+        let selectedText = '';
+        if (sel && !sel.isCollapsed && sel.toString().trim()) {
+            selectedText = sel.toString().trim();
+        } else if (activeHighlightRange && activeHighlightRange.toString().trim()) {
+            selectedText = activeHighlightRange.toString().trim();
+        }
+
+        if (!selectedText) return;
+
+        lastAiDefinitionTerm = selectedText;
+        isInteractingWithPopup = true;
+
+        if (chatInput && document.activeElement === chatInput) {
+            chatInput.blur();
+        }
+
+        // Toggle off if already showing same term
+        if (hlAiCard && !hlAiCard.classList.contains('hidden') && hlAiTermTitle?.dataset.term === selectedText) {
+            hlAiCard.classList.add('hidden');
+            hlAiBtn.classList.remove('hl-ai-shimmering');
+            return;
+        }
+
+        // Trigger light blue & purple shimmer animation on the button once
+        hlAiBtn.classList.remove('hl-ai-shimmering');
+        void hlAiBtn.offsetWidth; // force reflow
+        hlAiBtn.classList.add('hl-ai-shimmering');
+
+        // Pop up the small definition box
+        if (hlAiCard) {
+            hlAiCard.classList.remove('hidden');
+            if (hlAiTermTitle) {
+                hlAiTermTitle.dataset.term = selectedText;
+                const displayTerm = selectedText.length > 25 ? `${selectedText.slice(0, 22)}...` : selectedText;
+                hlAiTermTitle.textContent = `Ajuda: "${displayTerm}"`;
+            }
+            if (hlAiLoading) hlAiLoading.classList.remove('hidden');
+            if (hlAiContent) {
+                hlAiContent.classList.add('hidden');
+                hlAiContent.innerHTML = '';
+            }
+
+            // Adjust vertical position if card overflows screen bottom
+            requestAnimationFrame(() => {
+                if (textHighlightPopup) {
+                    const popupRect = textHighlightPopup.getBoundingClientRect();
+                    if (popupRect.bottom > window.innerHeight - 12) {
+                        const overflow = popupRect.bottom - (window.innerHeight - 12);
+                        const curTop = parseFloat(textHighlightPopup.style.top || 0);
+                        textHighlightPopup.style.top = `${Math.max(70, curTop - overflow)}px`;
+                    }
+                }
+            });
+        }
+
+        if (isFetchingDefinition) return;
+        isFetchingDefinition = true;
+
+        try {
+            const definition = await getTermDefinition({
+                selectedText,
+                currentQuestion
+            });
+
+            if (hlAiLoading) hlAiLoading.classList.add('hidden');
+            if (hlAiContent) {
+                hlAiContent.classList.remove('hidden');
+                hlAiContent.innerHTML = renderMathAndMarkdown(definition || 'Nenhuma definição encontrada.');
+            }
+        } catch (err) {
+            console.error("[Tutor] Erro ao buscar definição resumida:", err);
+            if (hlAiLoading) hlAiLoading.classList.add('hidden');
+            if (hlAiContent) {
+                hlAiContent.classList.remove('hidden');
+                hlAiContent.innerHTML = '<span class="text-red-500 font-medium">Erro ao conectar à IA. Verifique sua chave ou cota da API.</span>';
+            }
+        } finally {
+            isFetchingDefinition = false;
+            hlAiBtn.classList.remove('hl-ai-shimmering');
+            // Adjust position again in case card content height changed
+            requestAnimationFrame(() => {
+                if (textHighlightPopup) {
+                    const popupRect = textHighlightPopup.getBoundingClientRect();
+                    if (popupRect.bottom > window.innerHeight - 12) {
+                        const overflow = popupRect.bottom - (window.innerHeight - 12);
+                        const curTop = parseFloat(textHighlightPopup.style.top || 0);
+                        textHighlightPopup.style.top = `${Math.max(70, curTop - overflow)}px`;
+                    }
+                }
+            });
+        }
+    });
+}
+
+if (hlAiOpenChatBtn) {
+    hlAiOpenChatBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const term = lastAiDefinitionTerm || (activeHighlightRange ? activeHighlightRange.toString().trim() : '');
+        hideHighlightPopup();
+
+        if (aiChatContainer) {
+            aiChatContainer.classList.add('open');
+            if (chatInput) chatInput.focus();
+        }
+
+        if (term) {
+            sendTutorChatMessage({
+                msg: `Pode me explicar com mais detalhes o que significa "${term}" no contexto deste cartão?`,
+                currentQuestion,
+                chatInput,
+                chatMessages: document.getElementById('chat-messages')
+            });
         }
     });
 }
@@ -2637,8 +2807,10 @@ if (textHighlightPopup) {
         if (chatInput && document.activeElement === chatInput) {
             chatInput.blur();
         }
-        // Prevent default so text selection in card is not cleared on click
-        e.preventDefault();
+        // Allow text selection inside the definition content box for copying
+        if (!e.target.closest('#hl-ai-content')) {
+            e.preventDefault();
+        }
     });
 }
 
