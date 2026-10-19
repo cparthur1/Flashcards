@@ -1,4 +1,4 @@
-import { normalizeString, calculateSimilarity, shuffleArray, checkAndResetModelFallback, ROUTES, renderMathAndMarkdown, generateSecureId } from './utils.js';
+import { normalizeString, calculateSimilarity, shuffleArray, checkAndResetModelFallback, ROUTES, renderMathAndMarkdown, generateSecureId, stripHtml } from './utils.js';
 import { isPlayableCard, calculateThinkingGap, selectNextCard, isLeechCard, shouldGraduateCard, formatTimeDisplay, getCardTopic } from './engine/scheduler.js';
 import { initEffects, createBall, clearBalls, setBallColor, launchCelebrationParticles, playCompletionShockwave, cleanShockwaveContainer, resizeCanvas, animate, triggerHaptic, isHapticEnabled, setHapticEnabled, updateHapticUI } from './engine/effects.js';
 import { initInputController, startGamepadLoop, stopGamepadLoop } from './engine/input-controller.js';
@@ -2541,7 +2541,7 @@ function persistHighlightedContent(targetField) {
     }
 
     // Update reference in allQuestions
-    const cardInAll = allQuestions.find(q => q === currentQuestion || (q.description && q.description.replace(/<[^>]*>/g, '').trim() === currentQuestion.description.replace(/<[^>]*>/g, '').trim()));
+    const cardInAll = allQuestions.find(q => q === currentQuestion || (q.description && stripHtml(q.description) === stripHtml(currentQuestion.description)));
     if (cardInAll) {
         cardInAll.description = currentQuestion.description;
         if (currentQuestion.answer) cardInAll.answer = currentQuestion.answer;
@@ -2554,7 +2554,7 @@ function persistHighlightedContent(targetField) {
             const syncArray = (arr) => {
                 if (!arr) return;
                 arr.forEach(q => {
-                    if (q.description && q.description.replace(/<[^>]*>/g, '').trim() === currentQuestion.description.replace(/<[^>]*>/g, '').trim()) {
+                    if (q.description && stripHtml(q.description) === stripHtml(currentQuestion.description)) {
                         q.description = currentQuestion.description;
                         if (currentQuestion.answer) q.answer = currentQuestion.answer;
                     }
@@ -2571,7 +2571,7 @@ function persistHighlightedContent(targetField) {
             const syncArray = (arr) => {
                 if (!arr) return;
                 arr.forEach(q => {
-                    if (q.description && q.description.replace(/<[^>]*>/g, '').trim() === currentQuestion.description.replace(/<[^>]*>/g, '').trim()) {
+                    if (q.description && stripHtml(q.description) === stripHtml(currentQuestion.description)) {
                         q.description = currentQuestion.description;
                         if (currentQuestion.answer) q.answer = currentQuestion.answer;
                     }
@@ -3630,7 +3630,7 @@ saveEditBtn.addEventListener('click', () => {
 
 // --- BOOKMARK & DROPDOWN SELECTOR LOGIC ---
 function toggleBookmark() {
-    const isMatchingDesc = (d1, d2) => d1 === d2 || (d1 && d2 && d1.replace(/<[^>]*>/g, '').trim() === d2.replace(/<[^>]*>/g, '').trim());
+    const isMatchingDesc = (d1, d2) => d1 === d2 || (d1 && d2 && stripHtml(d1) === stripHtml(d2));
     const isBookmarked = isCardBookmarked(currentQuestion);
     
     // Load notebook state
@@ -3715,7 +3715,7 @@ function isCardBookmarked(question) {
     if (!question || !question.description) return false;
     let notebookState = JSON.parse(localStorage.getItem('flashcardsNotebook'));
     if (!notebookState || !notebookState.allQuestions) return false;
-    return notebookState.allQuestions.some(q => q.description === question.description || (q.description && q.description.replace(/<[^>]*>/g, '').trim() === question.description.replace(/<[^>]*>/g, '').trim()));
+    return notebookState.allQuestions.some(q => q.description === question.description || (q.description && stripHtml(q.description) === stripHtml(question.description)));
 }
 
 function renderBookmarkIcon() {

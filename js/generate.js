@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { callWithRetry, checkAndResetModelFallback, sanitizeChatHistory, renderMathAndMarkdown } from './utils.js';
+import { callWithRetry, checkAndResetModelFallback, sanitizeChatHistory, renderMathAndMarkdown, stripHtml, escapeHtml } from './utils.js';
 import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
 
 function compressPDFWithWorker(file) {
@@ -910,7 +910,7 @@ async function extractTextFromPPTX(file) {
                 const xml = await zip.files[path].async('text');
                 const matches = xml.match(/<a:t[^>]*>(.*?)<\/a:t>/g);
                 if (matches) {
-                    const slideStr = matches.map(m => m.replace(/<[^>]+>/g, '')).join(' ');
+                    const slideStr = matches.map(m => stripHtml(m)).join(' ');
                     if (slideStr.trim()) slideTexts.push(slideStr.trim());
                 }
             }
@@ -2583,7 +2583,7 @@ function createCardElement(card, index) {
     } else if (card.type === 'fill') {
         const blankRegex = /(?:\[\s*_{1,}\s*\]|(?<![a-zA-Z0-9\u00C0-\u017F])_{1,}(?![a-zA-Z0-9\u00C0-\u017F]))/g;
         let blankIndex = 0;
-        const escaped = descContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const escaped = escapeHtml(descContent);
         const highlighted = escaped.replace(blankRegex, () => {
             blankIndex++;
             return `<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-teal-100 text-teal-800 font-mono text-xs font-bold border border-teal-300">[${blankIndex}]</span>`;

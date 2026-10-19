@@ -83,6 +83,38 @@ export function shuffleArray(array) {
     }
     return array;
 }
+
+/**
+ * Remove recursivamente todas as tags HTML prevenindo bypass por aninhamento.
+ * @param {string} input - Texto contendo tags HTML
+ * @returns {string} - Texto limpo sem tags HTML
+ */
+export function stripHtml(input) {
+    if (!input || typeof input !== 'string') return '';
+    let sanitized = input;
+    let prev;
+    do {
+        prev = sanitized;
+        sanitized = sanitized.replace(/<[^>]*>/g, '');
+    } while (sanitized !== prev);
+    return sanitized.trim();
+}
+
+/**
+ * Escapa meta-caracteres HTML para inserção segura em nós de texto.
+ * @param {string} str - Texto a ser escapado
+ * @returns {string} - Texto seguro com entidades HTML
+ */
+export function escapeHtml(str) {
+    if (!str || typeof str !== 'string') return '';
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 /**
  * Retries a function with exponential backoff.
  */

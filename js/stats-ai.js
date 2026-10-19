@@ -5,6 +5,8 @@
  * with the minimal possible number of categories for clear, aggregated analytics.
  */
 
+import { stripHtml } from './utils.js';
+
 const AI_CATEGORIES_KEY = 'flashcards_ai_categories';
 const DEFAULT_MODEL = 'gemini-flash-lite-latest';
 const FALLBACK_MODEL = 'gemini-flash-latest';
@@ -73,8 +75,8 @@ export function saveStoredAiCategories(data) {
  */
 export function getCardSignature(card) {
     if (!card) return '';
-    const cleanDesc = (card.description || '').replace(/<[^>]*>/g, '').trim().toLowerCase();
-    const cleanAns = (card.answer || '').replace(/<[^>]*>/g, '').trim().toLowerCase();
+    const cleanDesc = stripHtml(card.description || '').toLowerCase();
+    const cleanAns = stripHtml(card.answer || '').toLowerCase();
     return `${cleanDesc}:::${cleanAns}`.slice(0, 200);
 }
 
@@ -123,8 +125,8 @@ export async function callGeminiFlashLiteCategorization({
 
     // Clean and truncate cards for prompt efficiency
     const formattedCards = (cards || []).map((c, idx) => {
-        const cleanDesc = (c.description || '').replace(/<[^>]*>/g, '').trim().slice(0, 120);
-        const cleanAns = (c.answer || '').replace(/<[^>]*>/g, '').trim().slice(0, 80);
+        const cleanDesc = stripHtml(c.description || '').slice(0, 120);
+        const cleanAns = stripHtml(c.answer || '').slice(0, 80);
         return {
             index: idx,
             text: `${cleanDesc}${cleanAns ? ` | R: ${cleanAns}` : ''}`
@@ -392,11 +394,11 @@ export function computeAiStats({
     const answersLogNormalized = (currentSession?.answersLog || []).map(e => ({
         entry: e,
         sig: e.sig || '',
-        key: (e.question || '').replace(/<[^>]*>/g, '').trim().toLowerCase()
+        key: stripHtml(e.question || '').toLowerCase()
     })).filter(item => item.key.length > 0 || item.sig.length > 0);
 
     const strugglingKeys = Object.values(currentSession?.strugglingCards || {}).map(sc =>
-        (sc.description || '').replace(/<[^>]*>/g, '').trim().toLowerCase()
+        stripHtml(sc.description || '').toLowerCase()
     ).filter(k => k.length > 0);
 
     const topicsMap = {};
@@ -425,7 +427,7 @@ export function computeAiStats({
         }
         topicsMap[topic].cardsCount++;
 
-        const cardCleanDesc = (card.description || '').replace(/<[^>]*>/g, '').trim().toLowerCase();
+        const cardCleanDesc = stripHtml(card.description || '').toLowerCase();
         const shortCardDesc = cardCleanDesc.slice(0, 40);
 
         // Check if card is struggling

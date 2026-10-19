@@ -5,6 +5,7 @@
  */
 
 import { getCardSignature, getStoredAiCategories } from './stats-ai.js';
+import { stripHtml } from './utils.js';
 
 const STATS_KEY = 'flashcards_stats';
 
@@ -213,8 +214,8 @@ export function recordStatsAnswer({ card, isCorrect, rating, timeSpentSeconds, u
 
     // Topic & Card Signature Tracking
     const sig = getCardSignature(card);
-    const cleanCardDesc = (card.description || '').replace(/<[^>]*>/g, '').trim();
-    const cleanCardAns = (card.answer || '').replace(/<[^>]*>/g, '').trim();
+    const cleanCardDesc = stripHtml(card.description || '');
+    const cleanCardAns = stripHtml(card.answer || '');
 
     let cardTopic = card.topic || card.aiTopic;
     if (!cardTopic && sig) {

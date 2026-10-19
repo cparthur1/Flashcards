@@ -6,7 +6,7 @@
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { callWithRetry, renderMathAndMarkdown } from '../utils.js';
+import { callWithRetry, renderMathAndMarkdown, stripHtml } from '../utils.js';
 
 let isAiEnabled = false;
 let geminiApiKey = null;
@@ -288,10 +288,10 @@ export async function getTermDefinition({ selectedText, currentQuestion }) {
     if (!isAiEnabled || !genAI || !selectedText) return null;
 
     try {
-        const cleanQuestion = currentQuestion?.description ? currentQuestion.description.replace(/<[^>]*>/g, '').trim() : '';
+        const cleanQuestion = currentQuestion?.description ? stripHtml(currentQuestion.description) : '';
         const cleanAnswer = (currentQuestion?.type === 'fill' && currentQuestion?.answers && currentQuestion.answers.length > 0)
             ? currentQuestion.answers.join(' ; ')
-            : [currentQuestion?.answer, currentQuestion?.answer2].filter(Boolean).map(a => String(a).replace(/<[^>]*>/g, '').trim()).join(' / ');
+            : [currentQuestion?.answer, currentQuestion?.answer2].filter(Boolean).map(a => stripHtml(String(a))).join(' / ');
 
         const systemPrompt = `Você é um tutor acadêmico de flashcards. Sua tarefa é fornecer uma definição EXTREMAMENTE resumida (no máximo 1 ou 2 frases curtas, direta ao ponto) do termo ou trecho selecionado pelo estudante, considerando estritamente o contexto da pergunta e resposta deste flashcard.
 Não inclua preâmbulos, saudações, nem repita "o termo significa...". Seja direto e conciso.`;
