@@ -3010,10 +3010,24 @@ playDeckBtn.addEventListener('click', () => {
         return;
     }
 
+    const sanitizeCard = (card) => {
+        if (!card || typeof card !== 'object') return card;
+        const copy = { ...card };
+        delete copy.isBeingCorrected;
+        delete copy._lastUserAnswer;
+        delete copy.apiKey;
+        delete copy.api_key;
+        delete copy.key;
+        delete copy.token;
+        delete copy.secret;
+        delete copy.credential;
+        return copy;
+    };
+
     const title = deckTitleDisplay.value;
     const gameState = {
-        questionsPool: [...playableCards],
-        allQuestions: [...deckCards],
+        questionsPool: playableCards.map(sanitizeCard),
+        allQuestions: deckCards.map(sanitizeCard),
         score: 0,
         deckTitle: title
     };

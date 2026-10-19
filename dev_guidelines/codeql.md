@@ -199,12 +199,13 @@ export function escapeHtml(str) {
 
 ---
 
-### 🔑 Fase 4: Blindagem de Chaves e Armazenamento
-1. **Auditoria de `localStorage`**:
-   - Revisar as funções `saveGameState()` em `js/game.js` para garantir que objetos de cartas não carreguem propriedades espúrias como credenciais de API.
-2. **Isolamento de Segredos no `js/key-manager.js`**:
-   - Assegurar que a chave nunca seja gravada em chaves legadas de `localStorage` em texto plano.
-   - Utilizar cifragem AES-GCM via Web Crypto API (já estruturada no módulo) como único mecanismo de persistência local da chave.
+### 🔑 Fase 4: Blindagem de Chaves e Armazenamento — ✅ Concluído
+1. **Auditoria e Sanitização de `localStorage`**:
+   - Em `js/game.js`, `js/generate.js` e `js/stats.js`, implementada sanitização defensiva dos objetos de cartas antes da serialização (`sanitizeCardForStorage`), assegurando que propriedades sensíveis ou espúrias (`apiKey`, `key`, `token`, `secret`, `credential`, etc.) nunca sejam persistidas em `flashcardsSave`, `flashcardsNotebook` ou `flashcardsExam`.
+2. **Isolamento de Segredos e Cofre Criptográfico no `js/key-manager.js`**:
+   - Criptografia AES-GCM (256 bits) com chaves não-exportáveis (`extractable: false`) mantidas em cofre isolado no IndexedDB.
+   - Eliminação total de chaves em texto puro em `sessionStorage` e `localStorage`. Quando "Lembrar chave" estiver desmarcado, o payload é cifrado em cofre de sessão efêmero (`flashcards_session_vault`), destruído automaticamente ao fechar a aba.
+   - Purga automática de quaisquer chaves legadas em texto plano (`gemini_api_key`, `gemini_api_key_checker`) em todas as camadas de armazenamento do navegador.
 
 ---
 

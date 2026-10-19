@@ -1931,17 +1931,37 @@ function updateFeedbackText() {
     }
 }
 
+function sanitizeCardForStorage(card) {
+    if (!card || typeof card !== 'object') return card;
+    const sanitized = { ...card };
+    delete sanitized.isBeingCorrected;
+    delete sanitized._lastUserAnswer;
+    delete sanitized.apiKey;
+    delete sanitized.api_key;
+    delete sanitized.key;
+    delete sanitized.token;
+    delete sanitized.secret;
+    delete sanitized.credential;
+    return sanitized;
+}
+
 let saveStateTimeout = null;
 
 function executeSaveGameState() {
     saveStateTimeout = null;
     try {
-        if (questionsPool) questionsPool.forEach(q => { if (q) delete q.isBeingCorrected; });
-        if (allQuestions) allQuestions.forEach(q => { if (q) delete q.isBeingCorrected; });
+        const cleanPool = (questionsPool || []).map(sanitizeCardForStorage);
+        const cleanAll = (allQuestions || []).map(sanitizeCardForStorage);
 
         if (activeMode === 'notebook') {
             localStorage.setItem('flashcardsNotebook', JSON.stringify({
-                questionsPool, allQuestions, score, currentStreak, currentStep, consecutiveDueCardsCount, deckTitle: "Caderno"
+                questionsPool: cleanPool,
+                allQuestions: cleanAll,
+                score,
+                currentStreak,
+                currentStep,
+                consecutiveDueCardsCount,
+                deckTitle: "Caderno"
             }));
         } else if (activeMode === 'exam') {
             let examData = {};
@@ -1950,8 +1970,8 @@ function executeSaveGameState() {
             } catch (err) {}
             localStorage.setItem('flashcardsExam', JSON.stringify({
                 ...examData,
-                questionsPool,
-                allQuestions,
+                questionsPool: cleanPool,
+                allQuestions: cleanAll,
                 score,
                 currentStreak,
                 currentStep,
@@ -1960,7 +1980,13 @@ function executeSaveGameState() {
             }));
         } else {
             localStorage.setItem('flashcardsSave', JSON.stringify({
-                questionsPool, allQuestions, score, currentStreak, currentStep, consecutiveDueCardsCount, deckTitle: deckTitle.textContent
+                questionsPool: cleanPool,
+                allQuestions: cleanAll,
+                score,
+                currentStreak,
+                currentStep,
+                consecutiveDueCardsCount,
+                deckTitle: deckTitle.textContent
             }));
         }
     } catch (e) {
@@ -2576,6 +2602,8 @@ function persistHighlightedContent(targetField) {
             };
             syncArray(normalData.allQuestions);
             syncArray(normalData.questionsPool);
+            normalData.allQuestions = (normalData.allQuestions || []).map(sanitizeCardForStorage);
+            normalData.questionsPool = (normalData.questionsPool || []).map(sanitizeCardForStorage);
             localStorage.setItem('flashcardsSave', JSON.stringify(normalData));
         }
     } else {
@@ -2593,6 +2621,8 @@ function persistHighlightedContent(targetField) {
             };
             syncArray(notebookData.allQuestions);
             syncArray(notebookData.questionsPool);
+            notebookData.allQuestions = (notebookData.allQuestions || []).map(sanitizeCardForStorage);
+            notebookData.questionsPool = (notebookData.questionsPool || []).map(sanitizeCardForStorage);
             localStorage.setItem('flashcardsNotebook', JSON.stringify(notebookData));
         }
     }
@@ -3147,7 +3177,8 @@ exportBtn.addEventListener('click', () => {
     const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
 });
 goToEditorBtn.addEventListener('click', () => {
-    localStorage.setItem('editing_deck', JSON.stringify(allQuestions));
+    const cleanCards = (allQuestions || []).map(sanitizeCardForStorage);
+    localStorage.setItem('editing_deck', JSON.stringify(cleanCards));
     localStorage.setItem('editing_deck_title', deckTitle.textContent);
     window.location.href = ROUTES.GENERATE;
 });
@@ -3681,6 +3712,8 @@ function toggleBookmark() {
             });
             findAndUnbookmark(normalData.allQuestions);
             findAndUnbookmark(normalData.questionsPool);
+            normalData.allQuestions = (normalData.allQuestions || []).map(sanitizeCardForStorage);
+            normalData.questionsPool = (normalData.questionsPool || []).map(sanitizeCardForStorage);
             localStorage.setItem('flashcardsSave', JSON.stringify(normalData));
         }
 
@@ -3691,6 +3724,8 @@ function toggleBookmark() {
             if (cardInAll) cardInAll.bookmarked = false;
         }
 
+        notebookState.allQuestions = (notebookState.allQuestions || []).map(sanitizeCardForStorage);
+        notebookState.questionsPool = (notebookState.questionsPool || []).map(sanitizeCardForStorage);
         localStorage.setItem('flashcardsNotebook', JSON.stringify(notebookState));
         showNotificationPill("Card removido do Caderno", "add_bookmark.svg");
 
@@ -3721,6 +3756,8 @@ function toggleBookmark() {
             });
             findAndBookmark(normalData.allQuestions);
             findAndBookmark(normalData.questionsPool);
+            normalData.allQuestions = (normalData.allQuestions || []).map(sanitizeCardForStorage);
+            normalData.questionsPool = (normalData.questionsPool || []).map(sanitizeCardForStorage);
             localStorage.setItem('flashcardsSave', JSON.stringify(normalData));
         }
 
@@ -3731,8 +3768,10 @@ function toggleBookmark() {
             cardInAll.sourceDeck = sourceDeckTitle;
         }
 
-        notebookState.allQuestions.push({ ...currentQuestion });
-        notebookState.questionsPool.push({ ...currentQuestion });
+        notebookState.allQuestions.push(sanitizeCardForStorage(currentQuestion));
+        notebookState.questionsPool.push(sanitizeCardForStorage(currentQuestion));
+        notebookState.allQuestions = (notebookState.allQuestions || []).map(sanitizeCardForStorage);
+        notebookState.questionsPool = (notebookState.questionsPool || []).map(sanitizeCardForStorage);
 
         localStorage.setItem('flashcardsNotebook', JSON.stringify(notebookState));
         showNotificationPill("Card adicionado ao Caderno", "bookmark_check.svg");

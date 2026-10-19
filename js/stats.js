@@ -1520,8 +1520,8 @@ function renderStrugglingCards(sess) {
     // Add listener to "Ignorar" buttons
     document.querySelectorAll('.ignore-single-struggling-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            const key = decodeURIComponent(btn.dataset.key);
-            ignoreCardFromStruggling(key);
+            const cardSig = decodeURIComponent(btn.dataset.key || btn.dataset.cardSig || '');
+            ignoreCardFromStruggling(cardSig);
         });
     });
 }
@@ -1543,14 +1543,31 @@ function ignoreCardFromStruggling(cardKey) {
 }
 
 function addCardToNotebook(card) {
+    const sanitizeCard = (c) => {
+        if (!c || typeof c !== 'object') return c;
+        const copy = { ...c };
+        delete copy.isBeingCorrected;
+        delete copy._lastUserAnswer;
+        delete copy.apiKey;
+        delete copy.api_key;
+        delete copy.key;
+        delete copy.token;
+        delete copy.secret;
+        delete copy.credential;
+        return copy;
+    };
+
     let notebookState = JSON.parse(localStorage.getItem('flashcardsNotebook')) || {
         allQuestions: [], questionsPool: [], score: 0, deckTitle: 'Caderno'
     };
 
-    const alreadyExists = notebookState.allQuestions.some(q => q.description === card.description);
+    const cleanCard = sanitizeCard(card);
+    const alreadyExists = (notebookState.allQuestions || []).some(q => q.description === cleanCard.description);
     if (!alreadyExists) {
-        notebookState.allQuestions.push(card);
-        notebookState.questionsPool.push(card);
+        notebookState.allQuestions.push(cleanCard);
+        notebookState.questionsPool.push(cleanCard);
+        notebookState.allQuestions = (notebookState.allQuestions || []).map(sanitizeCard);
+        notebookState.questionsPool = (notebookState.questionsPool || []).map(sanitizeCard);
         localStorage.setItem('flashcardsNotebook', JSON.stringify(notebookState));
         showStatsPill("Card adicionado ao Caderno de Estudos!", true);
     } else {
