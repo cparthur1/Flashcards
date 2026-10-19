@@ -2287,6 +2287,70 @@ let selectionDebounceTimer = null;
 let lastAiDefinitionTerm = '';
 let lastAiDefinitionText = '';
 let isFetchingDefinition = false;
+let hlPaletteCollapseTimer = null;
+
+function openHighlightPalette() {
+    if (!hlPalette || !hlTriggerBtn) return;
+    clearTimeout(hlPaletteCollapseTimer);
+    hlPaletteCollapseTimer = null;
+
+    triggerHaptic('cardFlip');
+
+    hlTriggerBtn.classList.remove('is-bouncing');
+    void hlTriggerBtn.offsetWidth; // Force reflow to re-trigger M3 bounce animation
+    hlTriggerBtn.classList.add('is-bouncing', 'is-active');
+
+    hlPalette.classList.remove('hidden', 'is-collapsing');
+    hlPalette.classList.add('flex', 'is-expanded');
+    hlPalette.style.maxWidth = '';
+    hlPalette.style.overflow = '';
+
+    setTimeout(() => {
+        if (hlTriggerBtn) hlTriggerBtn.classList.remove('is-bouncing');
+    }, 450);
+}
+
+function closeHighlightPalette(instant = false) {
+    if (!hlPalette || !hlTriggerBtn) return;
+    clearTimeout(hlPaletteCollapseTimer);
+    hlPaletteCollapseTimer = null;
+
+    hlTriggerBtn.classList.remove('is-active', 'is-bouncing');
+
+    if (instant) {
+        hlPalette.classList.add('hidden');
+        hlPalette.classList.remove('flex', 'is-expanded', 'is-collapsing');
+        hlPalette.style.maxWidth = '';
+        hlPalette.style.overflow = '';
+        return;
+    }
+
+    if (hlPalette.classList.contains('hidden')) return;
+
+    triggerHaptic('tap');
+    hlPalette.classList.remove('is-expanded');
+    hlPalette.classList.add('is-collapsing');
+
+    hlPaletteCollapseTimer = setTimeout(() => {
+        if (hlPalette && hlPalette.classList.contains('is-collapsing')) {
+            hlPalette.classList.add('hidden');
+            hlPalette.classList.remove('flex', 'is-collapsing');
+            hlPalette.style.maxWidth = '';
+            hlPalette.style.overflow = '';
+        }
+        hlPaletteCollapseTimer = null;
+    }, 180);
+}
+
+function toggleHighlightPalette() {
+    if (!hlPalette) return;
+    const isVisible = !hlPalette.classList.contains('hidden') && !hlPalette.classList.contains('is-collapsing');
+    if (isVisible) {
+        closeHighlightPalette(false);
+    } else {
+        openHighlightPalette();
+    }
+}
 
 function hideHighlightPopup() {
     isInteractingWithPopup = false;
@@ -2312,10 +2376,7 @@ function hideHighlightPopup() {
     if (hlAiBtn) {
         hlAiBtn.classList.remove('hl-ai-shimmering');
     }
-    if (hlPalette) {
-        hlPalette.classList.add('hidden');
-        hlPalette.classList.remove('flex');
-    }
+    closeHighlightPalette(true);
     if (hlTriggerBtn) {
         hlTriggerBtn.classList.remove('is-marked');
         hlTriggerBtn.title = "Marca-texto (1-4)";
@@ -2338,10 +2399,7 @@ function showHighlightPopup(range, isMarked) {
         hlActionsBar.classList.remove('hidden');
     }
 
-    if (hlPalette) {
-        hlPalette.classList.add('hidden');
-        hlPalette.classList.remove('flex');
-    }
+    closeHighlightPalette(true);
 
     if (hlAiCard) {
         hlAiCard.classList.remove('hl-card-collapse-circle');
@@ -2707,16 +2765,16 @@ if (hlTriggerBtn) {
         if (hlTriggerBtn.classList.contains('is-marked')) {
             removeHighlight();
         } else {
-            if (hlPalette) {
-                const isHidden = hlPalette.classList.contains('hidden');
-                if (isHidden) {
-                    hlPalette.classList.remove('hidden');
-                    hlPalette.classList.add('flex');
-                } else {
-                    hlPalette.classList.add('hidden');
-                    hlPalette.classList.remove('flex');
-                }
-            }
+            toggleHighlightPalette();
+        }
+    });
+}
+
+if (hlPalette) {
+    hlPalette.addEventListener('animationend', (e) => {
+        if (e.target === hlPalette && hlPalette.classList.contains('is-expanded')) {
+            hlPalette.style.maxWidth = 'none';
+            hlPalette.style.overflow = 'visible';
         }
     });
 }
@@ -2727,10 +2785,7 @@ if (hlAiBtn) {
         e.preventDefault();
 
         // Close color palette if open
-        if (hlPalette) {
-            hlPalette.classList.add('hidden');
-            hlPalette.classList.remove('flex');
-        }
+        closeHighlightPalette(true);
 
         const sel = window.getSelection();
         let selectedText = '';

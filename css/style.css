@@ -1563,6 +1563,170 @@ mark.card-hl-purple {
     filter: invert(28%) sepia(91%) saturate(3421%) hue-rotate(345deg) brightness(96%) contrast(92%);
 }
 
+/* ==========================================================================
+   Material Design 3 Expressive Highlighter Palette & Bounce Animation
+   ========================================================================== */
+
+/* The actions bar smooth morphing */
+#hl-actions-bar {
+    transition: box-shadow 0.25s var(--md-sys-motion-easing-standard),
+                background-color 0.25s var(--md-sys-motion-easing-standard);
+}
+
+/* Highlighter Trigger Button: Expressive Bounce on Click / Expand */
+#hl-trigger-btn {
+    transition: transform 0.2s var(--md-sys-motion-easing-spring),
+                background-color 0.2s ease,
+                color 0.2s ease;
+    transform-origin: center center;
+}
+
+#hl-trigger-btn.is-active {
+    background-color: #fef08a !important;
+    color: #713f12 !important;
+    box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.45);
+}
+
+#hl-trigger-btn.is-bouncing {
+    animation: hlTriggerBounce 0.44s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes hlTriggerBounce {
+    0% {
+        transform: scale(0.82);
+    }
+    38% {
+        transform: scale(1.26) rotate(-14deg);
+    }
+    68% {
+        transform: scale(0.92) rotate(4deg);
+    }
+    85% {
+        transform: scale(1.06) rotate(-1deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+/* Palette Container: Spring & Bounce Horizontal Expansion */
+#hl-palette {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+#hl-palette.is-expanded {
+    display: flex !important;
+    animation: hlPaletteExpand 0.36s cubic-bezier(0.34, 1.45, 0.64, 1) forwards;
+    transform-origin: left center;
+}
+
+@keyframes hlPaletteExpand {
+    0% {
+        max-width: 0;
+        opacity: 0;
+        transform: scaleX(0.35) scaleY(0.85);
+        overflow: hidden;
+    }
+    55% {
+        max-width: 175px;
+        opacity: 1;
+        transform: scaleX(1.08) scaleY(1.04);
+        overflow: hidden;
+    }
+    78% {
+        transform: scaleX(0.97) scaleY(0.98);
+        overflow: hidden;
+    }
+    100% {
+        max-width: 175px;
+        opacity: 1;
+        transform: scaleX(1) scaleY(1);
+        overflow: visible;
+    }
+}
+
+/* Palette Collapse Animation */
+#hl-palette.is-collapsing {
+    display: flex !important;
+    animation: hlPaletteCollapse 0.18s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    transform-origin: left center;
+    overflow: hidden !important;
+    pointer-events: none;
+}
+
+@keyframes hlPaletteCollapse {
+    0% {
+        max-width: 175px;
+        opacity: 1;
+        transform: scaleX(1);
+    }
+    100% {
+        max-width: 0;
+        opacity: 0;
+        transform: scaleX(0.2);
+    }
+}
+
+/* Vertical Divider pop entrance */
+#hl-palette.is-expanded > div:first-child {
+    animation: hlDividerPop 0.25s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+@keyframes hlDividerPop {
+    0% {
+        opacity: 0;
+        transform: scaleY(0);
+    }
+    100% {
+        opacity: 1;
+        transform: scaleY(1);
+    }
+}
+
+/* Color Circles: Staggered Spring Bounce */
+#hl-palette.is-expanded .hl-color-btn {
+    animation: hlColorPopBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+    transform-origin: center center;
+}
+
+#hl-palette.is-expanded .hl-color-btn[data-color="yellow"] {
+    animation-delay: 0.03s;
+}
+
+#hl-palette.is-expanded .hl-color-btn[data-color="green"] {
+    animation-delay: 0.08s;
+}
+
+#hl-palette.is-expanded .hl-color-btn[data-color="blue"] {
+    animation-delay: 0.13s;
+}
+
+#hl-palette.is-expanded .hl-color-btn[data-color="purple"] {
+    animation-delay: 0.18s;
+}
+
+@keyframes hlColorPopBounce {
+    0% {
+        opacity: 0;
+        transform: scale(0.15) translateY(6px);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.28) translateY(-2px);
+    }
+    75% {
+        transform: scale(0.9) translateY(1px);
+    }
+    88% {
+        transform: scale(1.06) translateY(-0.5px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
 /* Peça ajuda AI Button Shimmer (Light Blue & Purple) */
 .hl-ai-shimmering {
     position: relative;
@@ -1694,8 +1858,17 @@ mark.card-hl-purple {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    #hl-ai-card.hl-card-bounce {
+    #hl-ai-card.hl-card-bounce,
+    #hl-trigger-btn.is-bouncing,
+    #hl-palette.is-expanded,
+    #hl-palette.is-collapsing,
+    #hl-palette.is-expanded .hl-color-btn,
+    #hl-palette.is-expanded > div:first-child {
         animation: none !important;
+        transition: none !important;
+        transform: none !important;
+        max-width: none !important;
+        opacity: 1 !important;
     }
     .hl-chat-pulse {
         animation: none !important;
