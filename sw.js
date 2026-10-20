@@ -3,7 +3,7 @@
  * Copyright (C) 2026 Arthur <arthur.paludo.c@gmail.com>
  */
 
-const CACHE_NAME = 'flashcards-v9.2'; // Increment version to trigger update
+const CACHE_NAME = 'flashcards-v9.3'; // Increment version to trigger update
 
 const BASE_PATH = self.registration && self.registration.scope 
   ? new URL(self.registration.scope).pathname.replace(/\/$/, '') 
@@ -31,6 +31,7 @@ const RAW_ASSETS = [
   '/js/generate.js',
   '/js/stats.js',
   '/js/stats-tracker.js',
+  '/js/stats-ai.js',
   '/js/key-manager.js',
   '/js/ripple.js',
   '/js/utils.js',

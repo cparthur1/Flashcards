@@ -489,7 +489,25 @@ export function computeAiStats({
             hasStruggling: t.hasStruggling
         };
     }).sort((a, b) => {
-        if (a.accuracy !== null && b.accuracy !== null) return b.accuracy - a.accuracy;
+        // Ordenação do PIOR para o MELHOR desempenho:
+        // Tópicos com dados de acurácia vêm primeiro, em ordem crescente (menor acurácia = pior primeiro)
+        if (a.accuracy !== null && b.accuracy !== null) {
+            if (a.accuracy !== b.accuracy) {
+                return a.accuracy - b.accuracy;
+            }
+            // Critério de desempate 1: maior número absoluto de erros primeiro
+            const aErrors = a.answeredCount - a.correctCount;
+            const bErrors = b.answeredCount - b.correctCount;
+            if (bErrors !== aErrors) {
+                return bErrors - aErrors;
+            }
+            // Critério de desempate 2: tópicos com cards marcados como struggling vêm primeiro
+            if (a.hasStruggling !== b.hasStruggling) {
+                return a.hasStruggling ? -1 : 1;
+            }
+            return b.cardsCount - a.cardsCount;
+        }
+        // Tópicos já respondidos vêm antes de tópicos ainda pendentes (null)
         if (a.accuracy !== null) return -1;
         if (b.accuracy !== null) return 1;
         return b.cardsCount - a.cardsCount;

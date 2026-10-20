@@ -322,6 +322,7 @@ function renderCurrentSession(sess, gameState, history) {
 
     const progressPct = totalCards > 0 ? (isCompleted ? 100 : Math.round((completedCards / totalCards) * 100)) : 0;
     const accuracyPct = answered > 0 ? Math.round((correct / answered) * 100) : 100;
+    const accuracyRate = answered > 0 ? (correct / answered) : 1;
 
     // Disconsider cards taking longer than 90s to be answered (study break / tab left idle)
     let avgSeconds = '0';
@@ -412,7 +413,7 @@ function renderCurrentSession(sess, gameState, history) {
     kpiBestStreak.textContent = sess ? sess.bestStreak || 0 : 0;
 
     // Sub-Card 1: Cognitive Pace & Completion Estimate
-    renderPaceAndEstimate(sess, gameState, parseFloat(avgSeconds), isCompleted ? 0 : poolRemaining);
+    renderPaceAndEstimate(sess, gameState, parseFloat(avgSeconds), isCompleted ? 0 : poolRemaining, accuracyRate);
 
     // Sub-Card 2: Deck Mastery Level
     renderDeckMastery(progressPct, accuracyPct, sess ? sess.currentStreak || 0 : 0, completedCards, totalCards);
@@ -503,7 +504,7 @@ function renderPerformanceByType(sess) {
     }
 }
 
-function renderPaceAndEstimate(sess, gameState, avgSeconds, poolRemaining) {
+function renderPaceAndEstimate(sess, gameState, avgSeconds, poolRemaining, accuracyRate = 1) {
     if (!paceEstimateTime) return;
 
     const log = sess && sess.answersLog ? sess.answersLog : [];
@@ -533,30 +534,81 @@ function renderPaceAndEstimate(sess, gameState, avgSeconds, poolRemaining) {
     // Remaining time estimate
     const allQuestionsCount = gameState.allQuestions ? gameState.allQuestions.length : 0;
     if (poolRemaining === 0 && allQuestionsCount > 0) {
-        if (paceEstimateTime) paceEstimateTime.textContent = 'Concluído!';
-        if (paceEstimateSub) paceEstimateSub.textContent = 'Todos os cards foram respondidos';
+        if (paceEstimateTime) {
+            paceEstimateTime.textContent = 'Concluído!';
+            paceEstimateTime.removeAttribute('title');
+        }
+        if (paceEstimateSub) {
+            paceEstimateSub.textContent = 'Todos os cards foram respondidos';
+            paceEstimateSub.removeAttribute('title');
+        }
         if (paceEstimateBadge) {
             paceEstimateBadge.textContent = '100% Zerado';
             paceEstimateBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700';
+            paceEstimateBadge.removeAttribute('title');
         }
     } else if (poolRemaining > 0 && avgSeconds > 0) {
-        const estSeconds = Math.round(poolRemaining * avgSeconds);
-        const mins = Math.floor(estSeconds / 60);
-        const secs = estSeconds % 60;
-        const timeStr = mins > 0 ? `~${mins} min ${secs > 0 ? `${secs}s` : ''}` : `~${secs}s`;
+        let accRate = typeof accuracyRate === 'number' && !isNaN(accuracyRate) ? accuracyRate : 1;
+        if (accuracyRate === undefined && sess) {
+            const a = sess.cardsAnswered || 0;
+            const c = sess.correctCount || 0;
+            accRate = a > 0 ? c / a : 1;
+        }
 
-        if (paceEstimateTime) paceEstimateTime.textContent = timeStr;
-        if (paceEstimateSub) paceEstimateSub.textContent = `para ${poolRemaining} card${poolRemaining > 1 ? 's' : ''} restante${poolRemaining > 1 ? 's' : ''}`;
+        // Mantém a taxa de erro constante: cada tentativa tem probabilidade accRate de concluir/graduar o card.
+        // O piso de 0.15 (15%) evita divisões por zero ou estimativas infinitas caso o usuário tenha errado os primeiros cards.
+        const effectiveAccuracy = Math.max(0.15, Math.min(1.0, accRate));
+        const expectedAttempts = poolRemaining / effectiveAccuracy;
+        const estSeconds = Math.round(expectedAttempts * avgSeconds);
+
+        const hours = Math.floor(estSeconds / 3600);
+        const mins = Math.floor((estSeconds % 3600) / 60);
+        const secs = estSeconds % 60;
+        let timeStr = '';
+        if (hours > 0) {
+            timeStr = `~${hours}h ${mins > 0 ? `${mins}m` : ''}`.trim();
+        } else if (mins > 0) {
+            timeStr = `~${mins} min ${secs > 0 ? `${secs}s` : ''}`.trim();
+        } else {
+            timeStr = `~${secs}s`;
+        }
+
+        const totalAttempts = Math.round(expectedAttempts);
+        const errPercent = Math.round((1 - effectiveAccuracy) * 100);
+        const tooltip = errPercent > 0
+            ? `Previsão considerando taxa de erro de ${errPercent}% (~${totalAttempts} tentativas a ${avgSeconds}s/card)`
+            : `Previsão considerando 100% de acerto a ${avgSeconds}s/card`;
+
+        if (paceEstimateTime) {
+            paceEstimateTime.textContent = timeStr;
+            paceEstimateTime.title = tooltip;
+        }
+        if (paceEstimateSub) {
+            if (totalAttempts > poolRemaining) {
+                paceEstimateSub.textContent = `para ${poolRemaining} card${poolRemaining > 1 ? 's' : ''} restante${poolRemaining > 1 ? 's' : ''} (~${totalAttempts} tentativas)`;
+            } else {
+                paceEstimateSub.textContent = `para ${poolRemaining} card${poolRemaining > 1 ? 's' : ''} restante${poolRemaining > 1 ? 's' : ''}`;
+            }
+            paceEstimateSub.title = tooltip;
+        }
         if (paceEstimateBadge) {
             paceEstimateBadge.textContent = `Ritmo: ${avgSeconds}s/card`;
             paceEstimateBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700';
+            paceEstimateBadge.title = tooltip;
         }
     } else {
-        if (paceEstimateTime) paceEstimateTime.textContent = '--';
-        if (paceEstimateSub) paceEstimateSub.textContent = 'Inicie o estudo para calcular a previsão';
+        if (paceEstimateTime) {
+            paceEstimateTime.textContent = '--';
+            paceEstimateTime.removeAttribute('title');
+        }
+        if (paceEstimateSub) {
+            paceEstimateSub.textContent = 'Inicie o estudo para calcular a previsão';
+            paceEstimateSub.removeAttribute('title');
+        }
         if (paceEstimateBadge) {
             paceEstimateBadge.textContent = 'Aguardando dados';
             paceEstimateBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600';
+            paceEstimateBadge.removeAttribute('title');
         }
     }
 }
@@ -770,7 +822,7 @@ function generatePedagogicalInsight(progressPct, accuracyPct, avgSeconds, anki, 
 
 // ==================== SEÇÃO DE INTELIGÊNCIA ARTIFICIAL ====================
 
-function renderTopicItem(t, idx) {
+function renderTopicItem(t, idx, topicsList = []) {
     const isAnswered = t.answeredCount > 0;
     const acc = t.accuracy;
 
@@ -781,17 +833,21 @@ function renderTopicItem(t, idx) {
 
     if (isAnswered) {
         barWidth = `${acc}%`;
+        const answeredTopics = Array.isArray(topicsList) ? topicsList.filter(item => item.answeredCount > 0) : [];
+        const isBestAnswered = answeredTopics.length > 0 && answeredTopics[answeredTopics.length - 1] === t;
+        const isWorstAnswered = answeredTopics.length > 0 && answeredTopics[0] === t;
+
         if (acc >= 80) {
             badgeClass = 'bg-emerald-100 text-emerald-700 border border-emerald-200';
-            badgeText = idx === 0 ? 'Melhor Assunto' : 'Alta Retenção';
+            badgeText = isBestAnswered ? 'Melhor Assunto' : 'Alta Retenção';
             barColor = 'bg-emerald-500';
         } else if (acc >= 60) {
             badgeClass = 'bg-blue-100 text-blue-700 border border-blue-200';
-            badgeText = 'Bom Progresso';
+            badgeText = (isWorstAnswered && answeredTopics.length > 1) ? 'Atenção (Revisar)' : 'Bom Progresso';
             barColor = 'bg-blue-500';
         } else {
             badgeClass = 'bg-red-100 text-red-700 border border-red-200';
-            badgeText = 'Atenção (Revisar)';
+            badgeText = isWorstAnswered ? 'Maior Dificuldade' : 'Atenção (Revisar)';
             barColor = 'bg-red-500';
         }
     }
@@ -912,7 +968,7 @@ function renderAiDashboard(currentDeckTitle, subjectsStats, topicsStats, gameSta
     if (!aiStatsSection) return;
 
     const topicsHtml = topicsStats.length > 0
-        ? topicsStats.map((t, idx) => renderTopicItem(t, idx)).join('')
+        ? topicsStats.map((t, idx) => renderTopicItem(t, idx, topicsStats)).join('')
         : '<p class="text-xs text-gray-400 italic py-4 text-center">Nenhum assunto classificado ainda.</p>';
 
     const subjectsHtml = subjectsStats.length > 0
@@ -965,9 +1021,14 @@ function renderAiDashboard(currentDeckTitle, subjectsStats, topicsStats, gameSta
                                     ${currentDeckTitle}
                                 </p>
                             </div>
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
-                                ${topicsStats.length} assunto${topicsStats.length !== 1 ? 's' : ''}
-                            </span>
+                            <div class="flex items-center gap-1.5 flex-shrink-0">
+                                <span class="text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200/60 px-1.5 py-0.5 rounded-md" title="Lista ordenada do menor para o maior desempenho">
+                                    Pior → Melhor
+                                </span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                                    ${topicsStats.length} assunto${topicsStats.length !== 1 ? 's' : ''}
+                                </span>
+                            </div>
                         </div>
 
                         <div class="space-y-2.5 max-h-[360px] overflow-y-auto custom-scrollbar pr-1" id="ai-topics-list">
