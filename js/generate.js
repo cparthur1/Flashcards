@@ -131,6 +131,7 @@ const creatorSubmitCardBtn = document.getElementById('creator-submit-card-btn');
 
 // AI Chat Elements
 const chatHistory = document.getElementById('chat-history');
+const chatPromptQueue = document.getElementById('chat-prompt-queue');
 const chatInput = document.getElementById('chat-input');
 const chatSendBtn = document.getElementById('chat-send-btn');
 const chatSpinner = document.getElementById('chat-spinner');
@@ -179,7 +180,9 @@ const inlineEditAnsImageUrl = document.getElementById('inline-edit-ans-image-url
 let deckCards = [];
 let geminiChatSession = null;
 let currentGenModel = null;
-let currentEditorModel = localStorage.getItem('model_fallback_active') === 'true' ? "gemini-flash-lite-latest" : "gemini-flash-latest";
+let currentEditorModel = "gemini-flash-lite-latest";
+let promptQueue = [];
+let isProcessingPromptQueue = false;
 
 let pendingCreatorQImage = '';
 let pendingCreatorAnsImage = '';
@@ -407,8 +410,43 @@ const deckTools = [
     }
 ];
 
+// Gemini Tool Declaration for Task Handoff from Lite to Advanced Model
+const handoffToolDeclaration = {
+    name: "handoff_to_gemini_flash",
+    description: "Transfere a execução do prompt para o modelo avançado (gemini-flash-latest) quando a tarefa for complexa demais para suas capacidades como modelo leve (ex.: raciocínio avançado de múltiplos passos, síntese profunda de temas complexos, reorganização pedagógica global ou análise conceitual densa). Se a tarefa for simples ou padrão, NÃO chame esta ferramenta.",
+    parameters: {
+        type: "OBJECT",
+        properties: {
+            reason: {
+                type: "STRING",
+                description: "Justificativa técnica detalhada do motivo para transferir a tarefa para o gemini-flash-latest."
+            }
+        },
+        required: ["reason"]
+    }
+};
+
+const handoffTools = [
+    {
+        functionDeclarations: [handoffToolDeclaration]
+    }
+];
+
+const deckToolsWithHandoff = [
+    {
+        functionDeclarations: [
+            ...deckTools[0].functionDeclarations,
+            handoffToolDeclaration
+        ]
+    }
+];
+
 // Local implementations for Gemini to call
 const toolFunctions = {
+    handoff_to_gemini_flash: (args) => {
+        console.log('[AI Agent] [Tool Call] handoff_to_gemini_flash acionada:', args?.reason);
+        return { success: true, message: "Handoff registrado para execução pelo modelo avançado." };
+    },
     adicionar_card: (args) => {
         const card = normalizeCard(args) || args;
         appendNewCardWithElasticCollision(card);
@@ -1545,9 +1583,9 @@ Retorne EXCLUSIVAMENTE o array JSON ([]) contendo os flashcards estruturados con
 
         // Initialize chat session for subsequent agentic edits in the sidebar
         const chatModel = genAI.getGenerativeModel({
-            model: currentEditorModel || "gemini-flash-latest",
+            model: currentEditorModel || "gemini-flash-lite-latest",
             systemInstruction,
-            tools: deckTools
+            tools: deckToolsWithHandoff
         });
         currentGenModel = chatModel;
         geminiChatSession = chatModel.startChat({ history: [] });
@@ -1685,7 +1723,14 @@ ${JSON.stringify(localCards, null, 2)}`;
         finishGeneratingAnimation(true, deckCards.length);
         removeAiChatGeneratingBubble();
         addChatMessage('model', `✓ Flashcards aprimorados com sucesso! ${deckCards.length} cartões foram enriquecidos com alternativas e detalhes.`);
-        geminiChatSession = model.startChat({ history: [] });
+        const editModel = genAI.getGenerativeModel({
+            model: "gemini-flash-lite-latest",
+            systemInstruction,
+            tools: deckToolsWithHandoff
+        });
+        currentGenModel = editModel;
+        currentEditorModel = "gemini-flash-lite-latest";
+        geminiChatSession = editModel.startChat({ history: [] });
 
     } catch (err) {
         console.error("Erro na aprimoração 2.2:", err);
@@ -2907,55 +2952,147 @@ function addChatMessage(role, text) {
     chatHistory.scrollTop = chatHistory.scrollHeight;
 }
 
-chatSendBtn.addEventListener('click', async () => {
-    const text = chatInput.value.trim();
-    if (!text) return;
+// --- AI CHAT QUEUE & AGENT ROUTING ---
 
-    const apiKey = getApiKey();
-    if (!apiKey) {
-        addChatMessage('model', 'Por favor, insira sua API Key para usar o assistente.');
-        openApiKeyModalBtn.click();
+function renderPromptQueue() {
+    if (!chatPromptQueue) return;
+    if (promptQueue.length === 0) {
+        chatPromptQueue.innerHTML = '';
+        chatPromptQueue.classList.add('hidden');
         return;
     }
 
-    if (!geminiChatSession) {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({
-            model: currentEditorModel,
-            systemInstruction,
-            tools: deckTools
-        });
-        currentGenModel = model;
-        geminiChatSession = model.startChat({ history: [] });
+    chatPromptQueue.classList.remove('hidden');
+    chatPromptQueue.innerHTML = `
+        <div class="flex items-center justify-between text-[11px] font-semibold text-gray-500 select-none px-1 mb-0.5">
+            <span class="flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                Fila de Prompts (${promptQueue.length})
+            </span>
+        </div>
+        <div class="flex flex-col gap-1.5">
+            ${promptQueue.map(item => {
+                const isExecuting = item.status === 'executing';
+                return `
+                    <div class="flex items-center justify-between gap-2.5 px-3 py-1.5 rounded-xl bg-white border ${isExecuting ? 'border-purple-300 shadow-xs ring-1 ring-purple-100' : 'border-gray-200'} text-xs text-gray-700 transition">
+                        <span class="truncate flex-1 font-medium text-gray-800" title="${escapeHtml(item.text)}">${escapeHtml(item.text)}</span>
+                        <div class="flex items-center justify-center w-5 h-5 flex-shrink-0" title="${isExecuting ? 'Executando...' : 'Aguardando na fila'}">
+                            ${isExecuting 
+                                ? '<md-circular-progress four-color indeterminate style="--md-circular-progress-size: 16px; width: 16px; height: 16px;"></md-circular-progress>' 
+                                : '<span class="w-3 h-3 rounded-full bg-gray-400 inline-block flex-shrink-0"></span>'}
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+    if (chatHistory) {
+        chatHistory.scrollTop = chatHistory.scrollHeight;
     }
+}
 
-    chatInput.value = '';
-    addChatMessage('user', text);
+const triageSystemInstruction = "Você é o analisador de capacidade do agente de flashcards. Sua missão é decidir se você (modelo leve gemini-flash-lite-latest) é plenamente capaz de executar o comando do usuário ou se deve transferi-lo para o modelo avançado (gemini-flash-latest) através da ferramenta 'handoff_to_gemini_flash'.\n\n" +
+    "- Se a tarefa for comum ou direta (adicionar cartões normais, editar enunciados ou respostas, remover cartões, reordenar, dúvidas conceituais, formatações simples): Você É CAPAZ. NÃO chame a ferramenta de handoff e responda apenas 'CAPABLE'.\n" +
+    "- Se a tarefa exigir raciocínio avançado, reestruturação profunda de grande escala do baralho ou elaboração pedagógica densa e complexa: Chame 'handoff_to_gemini_flash' com o motivo detalhado.\n\n" +
+    "Sempre priorize economizar tokens do modelo avançado quando você for capaz.";
 
-    chatInput.disabled = true;
-    chatSendBtn.disabled = true;
-    chatSpinner.classList.remove('hidden');
-    showChatTypingIndicator();
+async function analyzePromptCapability(apiKey, userPrompt) {
+    console.log('[AI Agent Analysis] Iniciando análise de capacidade com modelo padrão (gemini-flash-lite-latest)...');
+    console.log('[AI Agent Analysis] Prompt sob análise:', userPrompt);
+    try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const triageModel = genAI.getGenerativeModel({
+            model: "gemini-flash-lite-latest",
+            systemInstruction: triageSystemInstruction,
+            tools: handoffTools
+        });
+
+        const deckBrief = `Baralho atual: ${deckCards.length} cartões.`;
+        const triageResult = await callWithRetry(() => triageModel.generateContent({
+            contents: [
+                {
+                    role: 'user',
+                    parts: [{ text: `${deckBrief}\nComando do usuário: "${userPrompt}"` }]
+                }
+            ]
+        }));
+
+        const candidate = triageResult.response.candidates?.[0];
+        const calls = candidate?.content?.parts?.filter(p => !!p.functionCall) || [];
+        const handoffCall = calls.find(c => c.functionCall.name === 'handoff_to_gemini_flash');
+
+        if (handoffCall) {
+            const reason = handoffCall.functionCall.args?.reason || 'Complexidade avaliada como superior à capacidade do modelo leve.';
+            console.log('[AI Agent Analysis] Tool call disparada: handoff_to_gemini_flash');
+            console.log('[AI Agent Analysis] Motivo do handoff:', reason);
+            console.log('[AI Agent Analysis] Decisão: Encaminhar execução para gemini-flash-latest');
+            return { handoff: true, reason };
+        }
+
+        console.log('[AI Agent Analysis] Decisão: gemini-flash-lite-latest é capaz do trabalho. Execução direta com modelo padrão.');
+        return { handoff: false };
+    } catch (err) {
+        console.warn('[AI Agent Analysis] Falha na análise prévia de capacidade (fallback para gemini-flash-lite-latest):', err);
+        return { handoff: false };
+    }
+}
+
+async function executeAgentChatTurn(apiKey, modelName, userPrompt, forceLite = false) {
+    const genAI = new GoogleGenerativeAI(apiKey);
+
+    let history = [];
+    if (geminiChatSession && geminiChatSession._history) {
+        try {
+            history = JSON.parse(JSON.stringify(geminiChatSession._history));
+        } catch (_) {
+            history = [];
+        }
+    }
+    const historyBeforeTurn = JSON.parse(JSON.stringify(history));
+
+    const toolsForModel = (!forceLite && modelName === "gemini-flash-lite-latest")
+        ? deckToolsWithHandoff
+        : deckTools;
+
+    const model = genAI.getGenerativeModel({
+        model: modelName,
+        systemInstruction,
+        tools: toolsForModel
+    });
+
+    currentGenModel = model;
+    currentEditorModel = modelName;
+    geminiChatSession = model.startChat({ history });
+
+    const contextLines = deckCards.map((c, i) => {
+        if (c.type === 'divisor' || c.type === 'divider' || c.type === 'note') {
+            return `[${i}] (divisor) # ${c.text || c.description || ''}`;
+        }
+        return `[${i}] (${c.type}) ${(c.description || '').substring(0, 60)}... | R: ${c.answer || ''}`;
+    }).join('\n');
+    const enrichedPrompt = `ATENÇÃO: O estado atual do baralho é:\n${contextLines}\n\nComando do Usuário: ${userPrompt}`;
 
     try {
-        const contextLines = deckCards.map((c, i) => {
-            if (c.type === 'divisor' || c.type === 'divider' || c.type === 'note') {
-                return `[${i}] (divisor) # ${c.text || c.description || ''}`;
-            }
-            return `[${i}] (${c.type}) ${(c.description || '').substring(0, 60)}... | R: ${c.answer || ''}`;
-        }).join('\n');
-        const enrichedPrompt = `ATENÇÃO: O estado atual do baralho é:\n${contextLines}\n\nComando do Usuário: ${text}`;
-
         let result = await callWithRetry(() => geminiChatSession.sendMessage(enrichedPrompt));
         let response = result.response;
 
         for (let i = 0; i < 5; i++) {
-            const candidate = response.candidates[0];
-            const calls = candidate.content.parts.filter(p => !!p.functionCall);
+            const candidate = response.candidates?.[0];
+            const calls = candidate?.content?.parts?.filter(p => !!p.functionCall) || [];
             if (calls.length === 0) break;
+
+            const midHandoff = calls.find(c => c.functionCall.name === 'handoff_to_gemini_flash');
+            if (midHandoff && modelName === "gemini-flash-lite-latest" && !forceLite) {
+                const reason = midHandoff.functionCall.args?.reason || 'Handoff solicitado durante turn';
+                console.log('[AI Agent Execution] Lite model acionou handoff_to_gemini_flash durante a execução. Motivo:', reason);
+                console.log('[AI Agent Execution] Transferindo execução para gemini-flash-latest...');
+                geminiChatSession._history = historyBeforeTurn;
+                return await executeAgentChatTurn(apiKey, "gemini-flash-latest", userPrompt, false);
+            }
 
             const functionResponses = calls.map(call => {
                 const { name, args } = call.functionCall;
+                console.log(`[AI Agent] [Tool Call] Invocando ferramenta '${name}':`, args);
                 const output = toolFunctions[name] ? toolFunctions[name](args) : { error: "Função não encontrada" };
                 return {
                     functionResponse: { name, response: output }
@@ -2967,20 +3104,107 @@ chatSendBtn.addEventListener('click', async () => {
             response = result.response;
         }
 
-        const modelText = response.text();
-        hideChatTypingIndicator();
-        addChatMessage('model', modelText || 'Ação realizada com sucesso.');
-
-    } catch (e) {
-        console.error(e);
-        hideChatTypingIndicator();
-        addChatMessage('error', `Erro ao processar: ${e.message}`);
-    } finally {
-        hideChatTypingIndicator();
-        chatInput.disabled = false;
-        chatSendBtn.disabled = false;
-        chatSpinner.classList.add('hidden');
+        const modelText = response.text ? response.text() : '';
+        return modelText || 'Ação realizada com sucesso.';
+    } catch (turnErr) {
+        if (geminiChatSession) {
+            geminiChatSession._history = historyBeforeTurn;
+        }
+        throw turnErr;
     }
+}
+
+async function executePromptWithAnalysisAndFallback(apiKey, userPrompt) {
+    const analysis = await analyzePromptCapability(apiKey, userPrompt);
+
+    if (analysis.handoff) {
+        console.log('[AI Agent Execution] Executando comando com modelo avançado: gemini-flash-latest');
+        try {
+            const output = await executeAgentChatTurn(apiKey, "gemini-flash-latest", userPrompt, false);
+            console.log('[AI Agent Execution] gemini-flash-latest completou a tarefa com sucesso.');
+            return output;
+        } catch (flashErr) {
+            console.warn('[AI Agent Fallback] gemini-flash-latest falhou com erro:', flashErr?.message || flashErr);
+            console.log('[AI Agent Fallback] Retornando e forçando gemini-flash-lite-latest a executar o trabalho como puder...');
+            const fallbackOutput = await executeAgentChatTurn(apiKey, "gemini-flash-lite-latest", userPrompt, true /* forceLite */);
+            console.log('[AI Agent Fallback] gemini-flash-lite-latest concluiu com sucesso a execução forçada.');
+            return fallbackOutput;
+        }
+    } else {
+        console.log('[AI Agent Execution] Executando comando com modelo padrão: gemini-flash-lite-latest');
+        const output = await executeAgentChatTurn(apiKey, "gemini-flash-lite-latest", userPrompt, false);
+        console.log('[AI Agent Execution] gemini-flash-lite-latest completou a tarefa com sucesso.');
+        return output;
+    }
+}
+
+async function processPromptQueue() {
+    if (isProcessingPromptQueue) return;
+    if (promptQueue.length === 0) return;
+
+    isProcessingPromptQueue = true;
+
+    while (promptQueue.length > 0) {
+        const item = promptQueue[0];
+        item.status = 'executing';
+        renderPromptQueue();
+
+        console.log('[AI Agent Queue] Iniciando execução do prompt na fila:', item.text);
+        showChatTypingIndicator();
+
+        const apiKey = getApiKey();
+        if (!apiKey) {
+            hideChatTypingIndicator();
+            addChatMessage('model', 'Por favor, insira sua API Key para usar o assistente.');
+            openApiKeyModalBtn.click();
+            promptQueue.shift();
+            renderPromptQueue();
+            break;
+        }
+
+        try {
+            const responseText = await executePromptWithAnalysisAndFallback(apiKey, item.text);
+            hideChatTypingIndicator();
+            // Log on chat the prompt and agent's response
+            addChatMessage('user', item.text);
+            addChatMessage('model', responseText || 'Ação realizada com sucesso.');
+        } catch (err) {
+            console.error('[AI Agent Queue] Erro ao processar prompt:', err);
+            hideChatTypingIndicator();
+            // Log on chat the prompt and error response
+            addChatMessage('user', item.text);
+            addChatMessage('error', `Erro ao processar: ${err.message || err}`);
+        }
+
+        promptQueue.shift();
+        renderPromptQueue();
+    }
+
+    isProcessingPromptQueue = false;
+    hideChatTypingIndicator();
+}
+
+chatSendBtn.addEventListener('click', () => {
+    const text = chatInput.value.trim();
+    if (!text) return;
+
+    const apiKey = getApiKey();
+    if (!apiKey) {
+        addChatMessage('model', 'Por favor, insira sua API Key para usar o assistente.');
+        openApiKeyModalBtn.click();
+        return;
+    }
+
+    chatInput.value = '';
+    console.log('[AI Agent Queue] Prompt recebido e enfileirado:', text);
+    promptQueue.push({
+        id: 'p_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+        text: text,
+        status: 'queued'
+    });
+    renderPromptQueue();
+
+    processPromptQueue();
 });
 
 chatInput.addEventListener('keyup', (e) => {
