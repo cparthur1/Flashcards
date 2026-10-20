@@ -156,7 +156,7 @@ O projeto conta com 4 otimizações críticas implementadas para garantir veloci
 
 Ao criar novas funcionalidades ou modificar código existente, siga rigorosamente estas regras:
 
-### 🔴 Regra 1: Logging Explícito e Identificável
+### Regra 1: Logging Explícito e Identificável
 Para permitir diagnósticos rápidos de problemas relatados por usuários ou testes:
 - **Sempre** insira logs claros no console utilizando os prefixos padronizados:
   - `[Game]`: Interações de botões, ciclo de cards, UI e formulários.
@@ -166,11 +166,11 @@ Para permitir diagnósticos rápidos de problemas relatados por usuários ou tes
   - `[Gamepad]`: Conexão, desconexão e status do loop.
 - **Sempre** registre com `console.warn` quando uma ação do usuário for impedida por uma flag de bloqueio (`isOpenSubmitting`, `submitBtn.disabled`, `isAnimating`).
 
-### 🔴 Regra 2: Resiliência em Flags de Trava (Locks)
+### Regra 2: Resiliência em Flags de Trava (Locks)
 - **Nunca** ative flags como `isOpenSubmitting = true` ou `isAnimating = true` sem envolver a execução subsequente em blocos `try...catch`.
 - Se ocorrer qualquer exceção no cálculo, na animação ou no registro de dados, o bloco `catch` deve restaurar `isOpenSubmitting = false` e `isAnimating = false` para evitar que a interface fique congelada para o usuário.
 
-### 🔴 Regra 3: Tipagem Defensiva em Strings e Objetos
+### Regra 3: Tipagem Defensiva em Strings e Objetos
 - Jamais assuma que propriedades como `card.answer`, `card.description` ou `input.value` são strings válidas.
 - Sempre utilize coerção segura antes de métodos de texto:
   ```javascript
@@ -178,16 +178,16 @@ Para permitir diagnósticos rápidos de problemas relatados por usuários ou tes
   const parts = answer.split('/').map(s => s.trim()).filter(Boolean);
   ```
 
-### 🔴 Regra 4: Validação de Sessão de Estatísticas
+### Regra 4: Validação de Sessão de Estatísticas
 - Ao registrar respostas em `recordStatsAnswer()`, sempre garanta que `data.currentSession` existe antes de acessar propriedades internas. Se não existir, reinicialize-a e recarregue a referência local de `data`.
 
-### 🔴 Regra 5: Arquitetura Orientada a Eventos
+### Regra 5: Arquitetura Orientada a Eventos
 - Evite criar loops contínuos baseados em `setInterval` ou `requestAnimationFrame` que rodem em segundo plano sem necessidade. Prefira disparadores orientados a eventos (`addEventListener`, `MutationObserver`, `IntersectionObserver`).
 
-### 🔴 Regra 6: 
+### Regra 6: 
 - Evite usar emojis. Use os icones do https://fonts.google.com/icons ou crie o vector.
 
-### 🔴 Regra 7: 
+### Regra 7: 
 - Deixe dicas e regras nesse md para auxiliar os próximos agentes/devs a seguir coerencia
   
 ---

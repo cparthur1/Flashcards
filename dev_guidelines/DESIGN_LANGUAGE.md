@@ -44,7 +44,7 @@ The application maps reference tones to semantic UI roles defined in `:root` and
 
 #### Primary & Brand Roles
 | Token Role | CSS Variable | Light Theme | Dark Theme | Purpose / Usage |
-| :--- | :--- | :--- | :--- | :--- |
+|
 | **Primary** | `--md-sys-color-primary` | `#1a56db` | `#93c5fd` | High-emphasis buttons, active tabs, main FAB |
 | **On Primary** | `--md-sys-color-on-primary` | `#ffffff` | `#1e3a8a` | Text & icons placed on top of `primary` |
 | **Primary Container** | `--md-sys-color-primary-container` | `#dbeafe` | `#1e40af` | Standout badges, chip fills, soft action cards |
@@ -53,7 +53,7 @@ The application maps reference tones to semantic UI roles defined in `:root` and
 
 #### Secondary Roles
 | Token Role | CSS Variable | Light Theme | Dark Theme | Purpose / Usage |
-| :--- | :--- | :--- | :--- | :--- |
+|
 | **Secondary** | `--md-sys-color-secondary` | `#4f46e5` | `#c4b5fd` | Secondary buttons, filters, auxiliary badges |
 | **On Secondary** | `--md-sys-color-on-secondary` | `#ffffff` | `#3730a3` | Text & icons on `secondary` |
 | **Secondary Container** | `--md-sys-color-secondary-container` | `#ede9fe` | `#4338ca` | Soft interactive cards, selected filter pills |
@@ -61,7 +61,7 @@ The application maps reference tones to semantic UI roles defined in `:root` and
 
 #### Tertiary Roles (AI & Smart Features)
 | Token Role | CSS Variable | Light Theme | Dark Theme | Purpose / Usage |
-| :--- | :--- | :--- | :--- | :--- |
+|
 | **Tertiary** | `--md-sys-color-tertiary` | `#7c3aed` | `#d8b4fe` | Gemini AI assistants, smart generation, sparks |
 | **On Tertiary** | `--md-sys-color-on-tertiary` | `#ffffff` | `#581c87` | Text & icons on `tertiary` |
 | **Tertiary Container** | `--md-sys-color-tertiary-container` | `#f3e8ff` | `#6b21a8` | AI suggestion chips, banner gradients |
@@ -70,7 +70,7 @@ The application maps reference tones to semantic UI roles defined in `:root` and
 #### Surface & Background Hierarchy
 Material 3 uses **Tonal Elevation** (surface containers) rather than heavy drop shadows:
 | Token Role | CSS Variable | Light Theme | Dark Theme | Usage |
-| :--- | :--- | :--- | :--- | :--- |
+|
 | **Background** | `--md-sys-color-background` | `#f8fafc` | `#0f172a` | Root app background |
 | **On Background** | `--md-sys-color-on-background` | `#0f172a` | `#f8fafc` | Primary body typography |
 | **Surface** | `--md-sys-color-surface` | `#f8fafc` | `#0f172a` | Baseline container surface |
