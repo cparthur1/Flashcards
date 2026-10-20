@@ -2,15 +2,15 @@
 
 > Plataforma moderna, 100% serverless e orientada a privacidade para estudo ativo, repetição espaçada e análise cognitiva com Inteligência Artificial.
 
-[![Acessar Webapp](https://img.shields.io/badge/Acessar-Webapp%20Online-2563eb?style=for-the-badge&logo=googlechrome&logoColor=white)](https://cparthur1.github.io/Flashcards/)
-[![PWA Ready](https://img.shields.io/badge/PWA-Offline%20Ready-7c3aed?style=for-the-badge&logo=pwa&logoColor=white)](https://cparthur1.github.io/Flashcards/)
+[![Acessar Webapp](https://img.shields.io/badge/Acessar-Webapp%20Online-2563eb?style=for-the-badge&logo=googlechrome&logoColor=white)](https://flashcards.camblu.org/)
+[![PWA Ready](https://img.shields.io/badge/PWA-Offline%20Ready-7c3aed?style=for-the-badge&logo=pwa&logoColor=white)](https://flashcards.camblu.org/)
 [![Powered by Gemini](https://img.shields.io/badge/AI-Google%20Gemini-4f46e5?style=for-the-badge&logo=google&logoColor=white)](https://aistudio.google.com/)
-[![Local First](https://img.shields.io/badge/Privacidade-100%25%20Local-10b981?style=for-the-badge&logo=databricks&logoColor=white)](https://cparthur1.github.io/Flashcards/)
+[![Local First](https://img.shields.io/badge/Privacidade-100%25%20Local-10b981?style=for-the-badge&logo=databricks&logoColor=white)](https://flashcards.camblu.org/)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg?style=for-the-badge)](./LICENSE)
 [![DCO](https://img.shields.io/badge/DCO-Signed--off--by-green.svg?style=for-the-badge)](./DCO.txt)
 
 > **Experimente online agora sem precisar instalar nada:**  
-> **[https://cparthur1.github.io/Flashcards/](https://cparthur1.github.io/Flashcards/)**
+> **[https://flashcards.camblu.org/](https://flashcards.camblu.org/)**
 
 O **Flashcards AI** transforma materiais brutos (PDFs, documentos Word, apostilas ou anotações) em baralhos interativos de alta retenção, combinando o algoritmo de repetição espaçada (estilo Anki), geração inteligente de perguntas, categorização semântica por matérias e assuntos, sincronização por QR Code sem servidor e analítica pedagógica em tempo real.
 
@@ -179,7 +179,7 @@ Você pode salvar e carregar seus próprios baralhos usando arquivos `.json`. O 
 
 Você pode utilizar o app diretamente pelo navegador em qualquer dispositivo (Desktop ou Mobile), sem precisar clonar ou instalar nada:
 
-**[https://cparthur1.github.io/Flashcards/](https://cparthur1.github.io/Flashcards/)**
+**[https://flashcards.camblu.org/](https://flashcards.camblu.org/)**
 
 Compatível com instalação como PWA para funcionamento offline.
 
