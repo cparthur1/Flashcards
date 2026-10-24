@@ -115,8 +115,14 @@
 
             <!-- Botão Caderno (visible only if notebook has cards) -->
             <button id="open-notebook-btn"
-                class="hidden m3-btn-expressive m3-btn-outlined w-full py-3.5 px-4 text-base font-bold">
-                <span class="material-symbols-rounded text-xl">bookmark</span> Estudar Caderno (<span id="notebook-count">0</span> cards)
+                class="hidden m3-btn-expressive m3-btn-outlined w-full py-3.5 px-4 text-base font-bold flex items-center justify-between">
+                <span class="flex items-center gap-2">
+                    <span class="material-symbols-rounded text-xl">bookmark</span> Estudar Caderno (<span id="notebook-count">0</span> cards)
+                </span>
+                <span id="home-notebook-streak" class="hidden items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold">
+                    <img src="assets/img/fire.svg" class="w-3.5 h-3.5" alt="Streak">
+                    <span id="home-notebook-streak-count">0</span>
+                </span>
             </button>
         </div>
         <p id="upload-error" class="text-red-500 mt-4 text-sm font-medium"></p>

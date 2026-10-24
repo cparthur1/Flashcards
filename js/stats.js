@@ -9,6 +9,7 @@ import {
 } from './stats-ai.js';
 import { ROUTES, escapeHtml } from './utils.js';
 import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
+import { getDailyStreak, getHeatmapActivityMap, getTodayDateString } from './engine/notebook-scheduler.js';
 
 // DOM Elements
 const backToGameBtn = document.getElementById('back-to-game-btn');
@@ -16,6 +17,12 @@ const deckBadge = document.getElementById('deck-badge');
 const liveSyncIndicator = document.getElementById('live-sync-indicator');
 const exportStatsBtn = document.getElementById('export-stats-btn');
 const clearStatsBtn = document.getElementById('clear-stats-btn');
+
+// Activity Heatmap & Streak Freeze DOM Elements
+const activityHeatmap = document.getElementById('activity-heatmap');
+const heatmapStreakVal = document.getElementById('heatmap-streak-val');
+const heatmapFreezeStatus = document.getElementById('heatmap-freeze-status');
+const heatmapHoverInfo = document.getElementById('heatmap-hover-info');
 
 function getActiveStorageKey() {
     const activeMode = localStorage.getItem('flashcardsActiveMode') || 'normal';
@@ -1328,10 +1335,240 @@ async function triggerAiCategorization(gameState, statsData) {
     }
 }
 
+// --- CALENDÁRIO DE ATIVIDADE (HEATMAP) & STREAK FREEZE ---
+function formatCellTitle(day) {
+    const [y, m, d] = day.dateStr.split('-').map(Number);
+    const dateObj = new Date(y, m - 1, d);
+    const formatted = dateObj.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' });
+    if (day.isFrozen) {
+        return `${formatted}: ❄️ Streak protegido pelo congelador`;
+    }
+    if (day.count > 0) {
+        return `${formatted}: ${day.count} ${day.count === 1 ? 'card resolvido' : 'cards resolvidos'}`;
+    }
+    return `${formatted}: 0 cards`;
+}
+
+function renderActivityHeatmap(statsData) {
+    if (!activityHeatmap) return;
+
+    const streakData = getDailyStreak();
+    const streakVal = Number(streakData.streak) || 0;
+    const freezesAvail = typeof streakData.freezesAvailable === 'number' ? streakData.freezesAvailable : 1;
+    const frozenDatesSet = new Set(streakData.frozenDates || []);
+
+    // 1. Atualiza badge de sequência diária no cabeçalho
+    if (heatmapStreakVal) {
+        heatmapStreakVal.textContent = `${streakVal} ${streakVal === 1 ? 'dia' : 'dias'}`;
+    }
+
+    // 2. Atualiza status de Streak Freeze no cabeçalho
+    if (heatmapFreezeStatus) {
+        let freezeHtml = `
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl ${freezesAvail > 0 ? 'bg-cyan-50 text-cyan-800 border-cyan-200/90' : 'bg-gray-50 text-gray-600 border-gray-200'} border text-xs font-bold shadow-2xs" title="O Streak Freeze protege sua sequência se você faltar 1 dia. Ganhe +1 proteção a cada 7 dias de streak (máx: 2).">
+                <span class="text-sm select-none">❄️</span>
+                <span>${freezesAvail}/2 ${freezesAvail === 1 ? 'Proteção ativa' : 'Proteções ativas'}</span>
+            </div>
+        `;
+        if (streakData.streakProtectedByFreeze) {
+            freezeHtml += `
+                <div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold animate-pulse" title="Sua sequência foi protegida pelo congelador recentemente!">
+                    <span>🛡️</span>
+                    <span>Streak protegido recentemente!</span>
+                </div>
+            `;
+        }
+        heatmapFreezeStatus.innerHTML = freezeHtml;
+    }
+
+    // 3. Obtém o mapa consolidado de resolução diária (Streak History + Histórico de Sessões)
+    const activityMap = getHeatmapActivityMap(statsData?.history || [], statsData?.currentSession || null);
+
+    // 4. Configuração da janela temporal: 20 semanas alinhadas pelo domingo
+    const TOTAL_WEEKS = 20;
+    const now = new Date();
+    const todayStr = getTodayDateString(now);
+    const dayOfWeek = now.getDay(); // 0 = Domingo, 6 = Sábado
+
+    const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    startDate.setDate(startDate.getDate() - dayOfWeek - ((TOTAL_WEEKS - 1) * 7));
+
+    const MONTH_LABELS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const DAY_LABELS = ['', 'Seg', '', 'Qua', '', 'Sex', ''];
+
+    const weeks = [];
+    let runningDate = new Date(startDate);
+    let prevMonth = -1;
+    let totalActiveDays = 0;
+    let totalPeriodCards = 0;
+
+    for (let w = 0; w < TOTAL_WEEKS; w++) {
+        const weekDays = [];
+        let monthHeader = null;
+
+        for (let d = 0; d < 7; d++) {
+            const dateStr = getTodayDateString(runningDate);
+            const m = runningDate.getMonth();
+
+            // Mostra o rótulo do mês na primeira coluna em que o mês surge
+            if (d === 0 && m !== prevMonth) {
+                monthHeader = MONTH_LABELS[m];
+                prevMonth = m;
+            }
+
+            const isToday = (dateStr === todayStr);
+            const isFuture = (runningDate > now && !isToday);
+            const count = Number(activityMap[dateStr]) || 0;
+            const isFrozen = frozenDatesSet.has(dateStr);
+
+            if (!isFuture) {
+                if (count > 0) {
+                    totalActiveDays++;
+                    totalPeriodCards += count;
+                } else if (isFrozen) {
+                    totalActiveDays++;
+                }
+            }
+
+            weekDays.push({
+                dateStr,
+                dateObj: new Date(runningDate),
+                dayOfWeek: d,
+                count,
+                isFrozen,
+                isToday,
+                isFuture
+            });
+
+            runningDate.setDate(runningDate.getDate() + 1);
+        }
+
+        weeks.push({
+            monthHeader,
+            days: weekDays
+        });
+    }
+
+    // 5. Renderização da grade em HTML
+    let html = `<div class="flex flex-col gap-1.5 select-none w-full">`;
+
+    // Linha de cabeçalho dos meses
+    html += `<div class="flex items-center gap-1 text-[11px] font-semibold text-gray-400 pl-8">`;
+    for (let w = 0; w < TOTAL_WEEKS; w++) {
+        const mLabel = weeks[w].monthHeader || '';
+        html += `<div class="w-4 sm:w-4.5 text-left truncate overflow-visible">${mLabel}</div>`;
+    }
+    html += `</div>`;
+
+    // Linha principal com rótulos de dias da semana + colunas de semanas
+    html += `<div class="flex items-start gap-2">`;
+
+    // Coluna esquerda com os dias da semana (Seg, Qua, Sex)
+    html += `<div class="flex flex-col gap-1 text-[10px] text-gray-400 font-medium w-6 text-right pt-0.5">`;
+    for (let d = 0; d < 7; d++) {
+        html += `<div class="h-4 sm:h-4.5 flex items-center justify-end leading-none">${DAY_LABELS[d] || ''}</div>`;
+    }
+    html += `</div>`;
+
+    // Colunas de semanas com as células diárias
+    html += `<div class="flex gap-1 items-start">`;
+    for (let w = 0; w < TOTAL_WEEKS; w++) {
+        html += `<div class="flex flex-col gap-1">`;
+        for (let d = 0; d < 7; d++) {
+            const day = weeks[w].days[d];
+
+            if (day.isFuture) {
+                html += `<div class="w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-xs opacity-0 pointer-events-none"></div>`;
+                continue;
+            }
+
+            let colorClasses = 'bg-gray-100 border border-gray-200/50 hover:bg-gray-200';
+            let cellContent = '';
+
+            if (day.isFrozen) {
+                colorClasses = 'bg-cyan-100 text-cyan-800 border-2 border-cyan-400 dark:bg-cyan-950/70 dark:border-cyan-500 font-bold text-[8px] flex items-center justify-center';
+                cellContent = '❄️';
+            } else if (day.count >= 30) {
+                colorClasses = 'bg-emerald-700 border border-emerald-800 text-white';
+            } else if (day.count >= 15) {
+                colorClasses = 'bg-emerald-500 border border-emerald-600 text-white';
+            } else if (day.count >= 5) {
+                colorClasses = 'bg-emerald-300 border border-emerald-400 text-emerald-950';
+            } else if (day.count >= 1) {
+                colorClasses = 'bg-emerald-100 border border-emerald-200/80 text-emerald-800';
+            }
+
+            const todayRing = day.isToday ? 'ring-2 ring-blue-500 ring-offset-1 z-1' : '';
+
+            html += `<div 
+                class="heatmap-cell w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-xs transition-all duration-150 cursor-pointer hover:scale-130 hover:z-20 ${colorClasses} ${todayRing}"
+                data-date="${day.dateStr}"
+                data-count="${day.count}"
+                data-frozen="${day.isFrozen}"
+                data-today="${day.isToday}"
+                title="${formatCellTitle(day)}"
+            >${cellContent}</div>`;
+        }
+        html += `</div>`;
+    }
+    html += `</div>`; // Fim week columns
+    html += `</div>`; // Fim grid row
+    html += `</div>`; // Fim container
+
+    activityHeatmap.innerHTML = html;
+
+    // 6. Resumo inicial na barra de detalhes
+    const defaultSummary = `<span class="text-gray-500">📊 <strong>${totalActiveDays}</strong> ${totalActiveDays === 1 ? 'dia ativo' : 'dias ativos'} • <strong>${totalPeriodCards}</strong> ${totalPeriodCards === 1 ? 'card revisado' : 'cards revisados'} nos últimos 5 meses</span>`;
+    if (heatmapHoverInfo) {
+        heatmapHoverInfo.innerHTML = defaultSummary;
+    }
+
+    // 7. Eventos de hover e clique para inspeção rápida
+    const cells = activityHeatmap.querySelectorAll('.heatmap-cell');
+    cells.forEach(cell => {
+        const dateStr = cell.getAttribute('data-date');
+        const count = Number(cell.getAttribute('data-count')) || 0;
+        const isFrozen = cell.getAttribute('data-frozen') === 'true';
+        const isToday = cell.getAttribute('data-today') === 'true';
+
+        const showDetail = () => {
+            if (!heatmapHoverInfo) return;
+            const [y, m, d] = dateStr.split('-').map(Number);
+            const dateObj = new Date(y, m - 1, d);
+            const formatted = dateObj.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            const capFormatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+
+            if (isFrozen) {
+                heatmapHoverInfo.innerHTML = `<span class="text-cyan-700 font-bold">❄️ ${capFormatted}</span>: <span class="text-gray-700 font-medium">Streak protegido pelo congelador!</span>`;
+            } else if (count > 0) {
+                heatmapHoverInfo.innerHTML = `<span class="text-gray-900 font-bold">${capFormatted}</span>: <span class="text-emerald-600 font-extrabold">${count} ${count === 1 ? 'card resolvido' : 'cards resolvidos'}</span>${isToday ? ' <span class="text-xs bg-blue-100 text-blue-700 font-bold px-1.5 py-0.5 rounded">Hoje</span>' : ''}`;
+            } else {
+                heatmapHoverInfo.innerHTML = `<span class="text-gray-700 font-medium">${capFormatted}</span>: <span class="text-gray-400">Nenhum card resolvido</span>${isToday ? ' <span class="text-xs bg-blue-100 text-blue-700 font-bold px-1.5 py-0.5 rounded">Hoje</span>' : ''}`;
+            }
+        };
+
+        cell.addEventListener('mouseenter', showDetail);
+        cell.addEventListener('click', showDetail);
+    });
+
+    activityHeatmap.addEventListener('mouseleave', () => {
+        if (heatmapHoverInfo) {
+            heatmapHoverInfo.innerHTML = defaultSummary;
+        }
+    });
+}
+
 // --- TAB 2: HISTORY ---
 function renderHistory(statsData) {
     const history = statsData.history || [];
     historyBadgeCount.textContent = history.length;
+
+    // Render Activity Heatmap & Streak Freeze
+    try {
+        renderActivityHeatmap(statsData);
+    } catch (e) {
+        console.error('Error rendering activity heatmap:', e);
+    }
 
     // Summary numbers
     alltimeSessions.textContent = statsData.allTime ? statsData.allTime.totalSessions || history.length : history.length;
@@ -1745,6 +1982,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // REAL-TIME CROSS-TAB AUTO-SYNC (Ultra-lightweight: 0% CPU idle, RAF debounced, background-tab deferred)
 const SYNC_STORAGE_KEYS = new Set([
     'flashcards_stats',
+    'flashcards_daily_streak',
     'flashcardsSave',
     'flashcardsNotebook',
     'flashcardsExam',

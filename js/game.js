@@ -1,5 +1,6 @@
 import { normalizeString, calculateSimilarity, shuffleArray, checkAndResetModelFallback, ROUTES, renderMathAndMarkdown, generateSecureId, stripHtml, escapeHtml, sanitizeImageUrl } from './utils.js';
 import { isPlayableCard, calculateThinkingGap, selectNextCard, isLeechCard, shouldGraduateCard, formatTimeDisplay, getCardTopic } from './engine/scheduler.js';
+import { getDailyStreak, recordDailyCardAnswered, inferNotebookQuality, calculateNotebookNextSchedule, selectNextNotebookCard, getNotebookDueCounts, isDifficultCard, getTodayDateString } from './engine/notebook-scheduler.js';
 import { initEffects, createBall, clearBalls, setBallColor, launchCelebrationParticles, playCompletionShockwave, cleanShockwaveContainer, resizeCanvas, animate, triggerHaptic, isHapticEnabled, setHapticEnabled, updateHapticUI } from './engine/effects.js';
 import { initInputController, startGamepadLoop, stopGamepadLoop } from './engine/input-controller.js';
 import { isTutorEnabled, setTutorApiKey, disableTutor, initTutor, updateTutorUI, setLastUserAnswerForChat, getLastUserAnswerForChat, resetTutorChatSession, getHasChatInteraction, setHasChatInteraction, evaluateAnswerSemantic, addMsg, showTyping, hideTyping, sendTutorChatMessage, getTermDefinition, logDefinitionToChat } from './engine/tutor.js';
@@ -17,6 +18,13 @@ const deckSelectArrow = document.getElementById('deck-select-arrow');
 const deckItemNormal = document.getElementById('deck-item-normal');
 const deckItemNormalName = document.getElementById('deck-item-normal-name');
 const deckItemNotebook = document.getElementById('deck-item-notebook');
+const notebookStreakBadge = document.getElementById('notebook-streak-badge');
+const notebookStreakFire = document.getElementById('notebook-streak-fire');
+const notebookStreakCount = document.getElementById('notebook-streak-count');
+const counterLeftLabel = document.getElementById('counter-left-label');
+const scoreLabel = document.getElementById('score-label');
+const cardDifficultTag = document.getElementById('card-difficult-tag');
+const notebookStageTag = cardDifficultTag;
 const deckItemExam = document.getElementById('deck-item-exam');
 const deckItemExamSub = document.getElementById('deck-item-exam-sub');
 const dropdownExamDecksSection = document.getElementById('dropdown-exam-decks-section');
@@ -198,6 +206,7 @@ let activeMode = 'normal'; // 'normal' or 'notebook'
 let allQuestions = [];
 let questionsPool = [];
 let score = 0;
+let notebookReviewsCount = 0;
 let currentQuestion = {};
 let currentQuestionIndexInPool = -1;
 let isFirstQuestion = true;
@@ -838,7 +847,55 @@ function restoreStreakAfterAiCorrection() {
     updateStreakUI(currentStreak >= 3);
 }
 
-// --- SPACED REPETITION & LEAN ALGORITHM HELPERS delegados para ./engine/scheduler.js ---
+// --- DAILY STREAK MANAGEMENT ---
+function updateDailyStreakUI() {
+    if (!notebookStreakCount || !notebookStreakFire) return;
+    const streakData = getDailyStreak();
+    notebookStreakCount.textContent = streakData.streak;
+
+    if (streakData.isTodayStudied) {
+        notebookStreakFire.classList.remove('is-desaturated');
+        notebookStreakCount.classList.remove('text-gray-500', 'text-gray-400');
+        notebookStreakCount.classList.add('text-amber-600', 'font-black');
+        if (notebookStreakBadge) {
+            notebookStreakBadge.classList.remove('bg-gray-100', 'border-gray-200/80');
+            notebookStreakBadge.classList.add('bg-amber-50', 'border-amber-200/90');
+        }
+    } else {
+        notebookStreakFire.classList.add('is-desaturated');
+        notebookStreakCount.classList.remove('text-amber-600', 'font-black');
+        notebookStreakCount.classList.add('text-gray-500');
+        if (notebookStreakBadge) {
+            notebookStreakBadge.classList.add('bg-gray-100', 'border-gray-200/80');
+            notebookStreakBadge.classList.remove('bg-amber-50', 'border-amber-200/90');
+        }
+    }
+}
+
+function handleDailyStreakOnCardAnswered() {
+    const res = recordDailyCardAnswered();
+    updateDailyStreakUI();
+    if (res.isFirstCardToday) {
+        if (deckSelectTrigger) {
+            deckSelectTrigger.classList.remove('deck-trigger-streak-shimmer');
+            void deckSelectTrigger.offsetWidth; // Force reflow
+            deckSelectTrigger.classList.add('deck-trigger-streak-shimmer');
+            setTimeout(() => {
+                deckSelectTrigger?.classList.remove('deck-trigger-streak-shimmer');
+            }, 1200);
+        }
+        triggerHaptic('streakUp');
+        if (res.streakProtectedByFreeze) {
+            showNotificationPill(`❄️ Sequência protegida pelo congelador! 🔥 ${res.streak} dias!`, 'fire.svg');
+        } else if (res.freezeAwarded) {
+            showNotificationPill(`❄️ +1 Protetor de Streak ganho! 🔥 ${res.streak} dias!`, 'fire.svg');
+        } else {
+            showNotificationPill(`🔥 Sequência diária: ${res.streak} ${res.streak === 1 ? 'dia' : 'dias'}!`, 'fire.svg');
+        }
+    }
+}
+
+// --- SPACED REPETITION & LEAN ALGORITHM HELPERS delegados para ./engine/scheduler.js & ./engine/notebook-scheduler.js ---
 let precomputedNextCard = null;
 
 /**
@@ -858,9 +915,20 @@ function precomputeNextCandidate() {
     }
 
     const nextStep = currentStep + 1;
-    // Exclude current card because any rescheduled card has gap >= 5, so it cannot be next
     const candidates = questionsPool.filter(c => c !== currentQuestion);
-    precomputedNextCard = selectNextCard(candidates.length > 0 ? candidates : questionsPool, nextStep, consecutiveDueCardsCount, lastCardTopic);
+    const poolToUse = candidates.length > 0 ? candidates : questionsPool;
+
+    if (activeMode === 'notebook') {
+        precomputedNextCard = selectNextNotebookCard({
+            pool: poolToUse,
+            currentStep: nextStep,
+            lastCardTopic,
+            lastSourceDeck: currentQuestion?.sourceDeck || '',
+            currentQuestion
+        });
+    } else {
+        precomputedNextCard = selectNextCard(poolToUse, nextStep, consecutiveDueCardsCount, lastCardTopic);
+    }
 }
 
 function schedulePrecomputeNextCard() {
@@ -1055,6 +1123,50 @@ window.restartDeckSession = restartDeckSession;
 function loadQuestion() {
     questionsPool = questionsPool.filter(isPlayableCard);
     if (questionsPool.length === 0) {
+        if (activeMode === 'notebook') {
+            clearBalls();
+            resetUI();
+            bookmarkCardBtn?.classList.add('hidden');
+            questionCard?.classList.remove('glow-correct', 'glow-incorrect', 'card-shake');
+            updateScoreDisplay();
+
+            const sourceTagElem = document.getElementById('question-source-tag');
+            const bodyElem = document.getElementById('question-body-text');
+            if (sourceTagElem) sourceTagElem.classList.add('hidden');
+            if (notebookStageTag) notebookStageTag.classList.add('hidden');
+
+            const emptyHtml = `
+                <div class="py-6 flex flex-col items-center justify-center text-center gap-3 select-none">
+                    <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-xs">
+                        <img src="../assets/img/bookmark_check.svg" class="w-7 h-7" alt="Caderno">
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800">Seu Caderno está vazio</h3>
+                    <p class="text-xs sm:text-sm text-gray-500 max-w-sm leading-relaxed">
+                        Favorite cartões durante o estudo clicando no ícone de marcador para salvá-los no Caderno e revisá-los a longo prazo com repetição espaçada.
+                    </p>
+                    <button id="notebook-empty-back-btn" class="mt-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs sm:text-sm transition shadow-sm">
+                        Ir para o Baralho Principal
+                    </button>
+                </div>
+            `;
+            if (bodyElem) {
+                bodyElem.innerHTML = emptyHtml;
+            } else if (questionText) {
+                questionText.innerHTML = emptyHtml;
+            }
+            const backBtn = document.getElementById('notebook-empty-back-btn');
+            if (backBtn) {
+                backBtn.addEventListener('click', () => switchActiveMode('normal'));
+            }
+            submitBtn?.classList.add('hidden');
+            nextQuestionBtn?.classList.add('hidden');
+            correctionOptions?.classList.add('hidden');
+            ankiControls?.classList.add('hidden');
+            mcAnswerArea?.classList.add('hidden');
+            openAnswerArea?.classList.add('hidden');
+            return;
+        }
+
         showDeckCompletionScreen();
         return;
     }
@@ -1063,17 +1175,29 @@ function loadQuestion() {
     resetUI();
     questionStartTime = Date.now();
     bookmarkCardBtn.classList.remove('hidden');
-    questionsLeftDisplay.textContent = questionsPool.length;
 
-    // Fast-path: use precomputed next card if valid and still in pool
-    if (precomputedNextCard && questionsPool.includes(precomputedNextCard)) {
-        currentQuestion = precomputedNextCard;
-        currentQuestionIndexInPool = questionsPool.indexOf(precomputedNextCard);
-    } else {
-        // Fallback / Initial pick: use selectNextCard with interleaving
-        currentQuestion = selectNextCard(questionsPool, currentStep, consecutiveDueCardsCount, lastCardTopic);
+    if (activeMode === 'notebook') {
+        currentQuestion = selectNextNotebookCard({
+            pool: questionsPool,
+            currentStep,
+            lastCardTopic,
+            lastSourceDeck: currentQuestion?.sourceDeck || '',
+            currentQuestion
+        }) || questionsPool[0];
         currentQuestionIndexInPool = questionsPool.indexOf(currentQuestion);
+    } else {
+        // Fast-path: use precomputed next card if valid and still in pool
+        if (precomputedNextCard && questionsPool.includes(precomputedNextCard)) {
+            currentQuestion = precomputedNextCard;
+            currentQuestionIndexInPool = questionsPool.indexOf(precomputedNextCard);
+        } else {
+            // Fallback / Initial pick: use selectNextCard with interleaving
+            currentQuestion = selectNextCard(questionsPool, currentStep, consecutiveDueCardsCount, lastCardTopic);
+            currentQuestionIndexInPool = questionsPool.indexOf(currentQuestion);
+        }
     }
+
+    updateScoreDisplay();
 
     // Update lastCardTopic for subsequent interleaved selections
     if (currentQuestion) {
@@ -1141,6 +1265,15 @@ function loadQuestion() {
             bodyElem.innerHTML = formatQuestionText(currentQuestion);
         } else {
             questionText.innerHTML = formatQuestionText(currentQuestion);
+        }
+    }
+
+    // Chip vermelho pastel para cartões geralmente respondidos incorretamente
+    if (cardDifficultTag) {
+        if (currentQuestion && isDifficultCard(currentQuestion)) {
+            cardDifficultTag.classList.remove('hidden');
+        } else {
+            cardDifficultTag.classList.add('hidden');
         }
     }
 
@@ -1288,6 +1421,8 @@ function handleAnkiRating(rating) {
         return;
     }
 
+    handleDailyStreakOnCardAnswered();
+
     const elapsedSeconds = (Date.now() - questionStartTime) / 1000;
     console.log("[Anki] Avaliando card:", { rating, elapsedSeconds: Math.round(elapsedSeconds * 10) / 10 + 's' });
 
@@ -1300,6 +1435,58 @@ function handleAnkiRating(rating) {
         });
     } catch (e) {
         console.error("[Anki] Erro ao gravar stats anki:", e);
+    }
+
+    if (activeMode === 'notebook') {
+        const schedule = calculateNotebookNextSchedule({
+            card: currentQuestion,
+            quality: rating,
+            currentStep,
+            poolSize: questionsPool.length
+        });
+        Object.assign(currentQuestion, schedule);
+        notebookReviewsCount++;
+
+        const cardInAll = allQuestions.find(q => q === currentQuestion || (q.description && stripHtml(q.description) === stripHtml(currentQuestion.description)));
+        if (cardInAll) {
+            Object.assign(cardInAll, schedule);
+        }
+
+        saveGameState();
+        updateScoreDisplay();
+
+        if (rating === 'easy' || rating === 'good') {
+            createBall(true);
+            triggerHaptic('correct');
+            showNotificationPill(`🧠 Próxima revisão em ${schedule.intervalDays} dias`, "bookmark_check.svg");
+            setTimeout(() => {
+                animateCardToBack(() => {
+                    loadQuestion();
+                });
+            }, 300);
+        } else if (rating === 'hard') {
+            createBall(false);
+            showNotificationPill(`⚡ Próxima revisão em ${schedule.intervalDays}d`, "cached.svg");
+            setTimeout(() => {
+                animateCardToBack(() => {
+                    loadQuestion();
+                });
+            }, 300);
+        } else if (rating === 'again') {
+            createBall(false);
+            questionCard.classList.remove('card-shake');
+            void questionCard.offsetWidth;
+            questionCard.classList.add('card-shake');
+            triggerHaptic('shake');
+            setTimeout(() => questionCard.classList.remove('card-shake'), 450);
+            showNotificationPill("⚡ Erro registrado: repetindo adiante", "cached.svg");
+            setTimeout(() => {
+                animateCardToBack(() => {
+                    loadQuestion();
+                });
+            }, 400);
+        }
+        return;
     }
 
     if (rating === 'easy') {
@@ -1731,6 +1918,8 @@ function showFeedback(isCorrect, element) {
             console.error("[Game] Erro ao registrar estatística (não bloqueante):", statErr);
         }
 
+        handleDailyStreakOnCardAnswered();
+
         const isLastCard = isCorrect && (questionsPool.length === 1 && questionsPool.includes(currentQuestion));
         const ballIdx = !isLastCard ? createBall(isCorrect) : null;
         if (!isLastCard) {
@@ -1785,20 +1974,42 @@ function showFeedback(isCorrect, element) {
             currentQuestion.isBeingCorrected = true;
             isOpenSubmitting = false;
 
-            // Spaced repetition & leech tracking
-            currentQuestion.wrongCount = (currentQuestion.wrongCount || 0) + 1;
-            currentQuestion.correctStreak = 0;
-            const gap = calculateThinkingGap(elapsedSeconds, currentQuestion);
-            currentQuestion.dueStep = currentStep + gap;
-            console.log("[Algorithm] Card incorreto reagendado:", {
-                tempoPensamento: Math.round(elapsedSeconds * 10) / 10 + 's',
-                gap,
-                currentStep,
-                dueStep: currentQuestion.dueStep,
-                totalErros: currentQuestion.wrongCount
-            });
-            saveGameState();
-            precomputeNextCandidate();
+            if (activeMode === 'notebook') {
+                const schedule = calculateNotebookNextSchedule({
+                    card: currentQuestion,
+                    quality: 'again',
+                    currentStep,
+                    poolSize: questionsPool.length
+                });
+                Object.assign(currentQuestion, schedule);
+                currentQuestion.wrongCount = (currentQuestion.wrongCount || 0) + 1;
+                currentQuestion.correctStreak = 0;
+
+                const cardInAll = allQuestions.find(q => q === currentQuestion || (q.description && stripHtml(q.description) === stripHtml(currentQuestion.description)));
+                if (cardInAll) {
+                    Object.assign(cardInAll, schedule);
+                    cardInAll.wrongCount = currentQuestion.wrongCount;
+                    cardInAll.correctStreak = 0;
+                }
+                saveGameState();
+                updateScoreDisplay();
+                precomputeNextCandidate();
+            } else {
+                // Spaced repetition & leech tracking
+                currentQuestion.wrongCount = (currentQuestion.wrongCount || 0) + 1;
+                currentQuestion.correctStreak = 0;
+                const gap = calculateThinkingGap(elapsedSeconds, currentQuestion);
+                currentQuestion.dueStep = currentStep + gap;
+                console.log("[Algorithm] Card incorreto reagendado:", {
+                    tempoPensamento: Math.round(elapsedSeconds * 10) / 10 + 's',
+                    gap,
+                    currentStep,
+                    dueStep: currentQuestion.dueStep,
+                    totalErros: currentQuestion.wrongCount
+                });
+                saveGameState();
+                precomputeNextCandidate();
+            }
 
             if (!element) {
                 updateFeedbackText();
@@ -1818,6 +2029,42 @@ function showFeedback(isCorrect, element) {
         } else {
             isBeingCorrected = false;
             delete currentQuestion.isBeingCorrected;
+
+            if (activeMode === 'notebook') {
+                const quality = inferNotebookQuality({
+                    card: currentQuestion,
+                    isCorrect: true,
+                    elapsedSeconds
+                });
+                const schedule = calculateNotebookNextSchedule({
+                    card: currentQuestion,
+                    quality,
+                    currentStep,
+                    poolSize: questionsPool.length
+                });
+                Object.assign(currentQuestion, schedule);
+                currentQuestion.correctStreak = (currentQuestion.correctStreak || 0) + 1;
+                notebookReviewsCount++;
+
+                const cardInAll = allQuestions.find(q => q === currentQuestion || (q.description && stripHtml(q.description) === stripHtml(currentQuestion.description)));
+                if (cardInAll) {
+                    Object.assign(cardInAll, schedule);
+                    cardInAll.correctStreak = currentQuestion.correctStreak;
+                }
+
+                saveGameState();
+                updateScoreDisplay();
+
+                showNotificationPill(`🧠 Próxima revisão em ${schedule.intervalDays}d`, "bookmark_check.svg");
+
+                setTimeout(() => {
+                    animateCardToBack(() => {
+                        loadQuestion();
+                    });
+                }, 400);
+                return;
+            }
+
             currentQuestion.correctStreak = (currentQuestion.correctStreak || 0) + 1;
             const totalWrongs = currentQuestion.wrongCount || 0;
             const isLeech = isLeechCard(currentQuestion);
@@ -1958,6 +2205,7 @@ function executeSaveGameState() {
                 questionsPool: cleanPool,
                 allQuestions: cleanAll,
                 score,
+                notebookReviewsCount,
                 currentStreak,
                 currentStep,
                 consecutiveDueCardsCount,
@@ -2027,7 +2275,18 @@ window.addEventListener('pagehide', () => {
 function updateScoreDisplay() {
     const scoreVal = document.getElementById('score');
     const scoreContainer = document.getElementById('score-container');
-    if (scoreVal) scoreVal.textContent = score;
+    if (activeMode === 'notebook') {
+        if (counterLeftLabel) counterLeftLabel.textContent = "Para Hoje";
+        if (scoreLabel) scoreLabel.textContent = "Revisões";
+        const dueInfo = getNotebookDueCounts(allQuestions);
+        if (questionsLeftDisplay) questionsLeftDisplay.textContent = dueInfo.dueToday;
+        if (scoreVal) scoreVal.textContent = notebookReviewsCount;
+    } else {
+        if (counterLeftLabel) counterLeftLabel.textContent = "Restantes";
+        if (scoreLabel) scoreLabel.textContent = "Score";
+        if (questionsLeftDisplay) questionsLeftDisplay.textContent = questionsPool.length;
+        if (scoreVal) scoreVal.textContent = score;
+    }
     if (scoreContainer) scoreContainer.classList.remove('hidden');
 }
 
@@ -2360,6 +2619,9 @@ function hideHighlightPopup() {
     lastAiDefinitionText = '';
     if (!textHighlightPopup) return;
 
+    delete textHighlightPopup.dataset.origLeft;
+    delete textHighlightPopup.dataset.origTop;
+
     try {
         textHighlightPopup.getAnimations().forEach(a => a.cancel());
     } catch (e) {}
@@ -2451,6 +2713,8 @@ function showHighlightPopup(range, isMarked) {
 
     textHighlightPopup.style.top = `${top}px`;
     textHighlightPopup.style.left = `${left}px`;
+    textHighlightPopup.dataset.origLeft = `${left}px`;
+    textHighlightPopup.dataset.origTop = `${top}px`;
 }
 
 function isRangeMarked(range, container) {
@@ -2761,6 +3025,12 @@ if (hlTriggerBtn) {
         if (hlAiBtn) {
             hlAiBtn.classList.remove('hl-ai-shimmering');
         }
+        if (textHighlightPopup && textHighlightPopup.dataset.origLeft) {
+            textHighlightPopup.style.left = textHighlightPopup.dataset.origLeft;
+        }
+        if (textHighlightPopup && textHighlightPopup.dataset.origTop) {
+            textHighlightPopup.style.top = textHighlightPopup.dataset.origTop;
+        }
 
         if (hlTriggerBtn.classList.contains('is-marked')) {
             removeHighlight();
@@ -2808,6 +3078,12 @@ if (hlAiBtn) {
         if (hlAiCard && !hlAiCard.classList.contains('hidden') && hlAiTermTitle?.dataset.term === selectedText) {
             hlAiCard.classList.add('hidden');
             hlAiBtn.classList.remove('hl-ai-shimmering');
+            if (textHighlightPopup && textHighlightPopup.dataset.origLeft) {
+                textHighlightPopup.style.left = textHighlightPopup.dataset.origLeft;
+            }
+            if (textHighlightPopup && textHighlightPopup.dataset.origTop) {
+                textHighlightPopup.style.top = textHighlightPopup.dataset.origTop;
+            }
             return;
         }
 
@@ -2830,9 +3106,28 @@ if (hlAiBtn) {
                 hlAiContent.innerHTML = '';
             }
 
-            // Adjust vertical position if card overflows screen bottom
+            const isMobile = window.innerWidth < 768;
+            if (isMobile && textHighlightPopup) {
+                textHighlightPopup.style.left = '50%';
+            }
+
+            // Adjust vertical position if card overflows screen bottom, keeping mobile centered in X axis
             requestAnimationFrame(() => {
                 if (textHighlightPopup) {
+                    const isMobileNow = window.innerWidth < 768;
+                    if (isMobileNow) {
+                        textHighlightPopup.style.left = '50%';
+                    } else if (hlAiCard && !hlAiCard.classList.contains('hidden')) {
+                        const popupRect = textHighlightPopup.getBoundingClientRect();
+                        if (popupRect.left < 16) {
+                            const curLeft = parseFloat(textHighlightPopup.style.left || 0);
+                            textHighlightPopup.style.left = `${curLeft + (16 - popupRect.left)}px`;
+                        } else if (popupRect.right > window.innerWidth - 16) {
+                            const curLeft = parseFloat(textHighlightPopup.style.left || 0);
+                            textHighlightPopup.style.left = `${curLeft - (popupRect.right - (window.innerWidth - 16))}px`;
+                        }
+                    }
+
                     const popupRect = textHighlightPopup.getBoundingClientRect();
                     if (popupRect.bottom > window.innerHeight - 12) {
                         const overflow = popupRect.bottom - (window.innerHeight - 12);
@@ -2872,6 +3167,20 @@ if (hlAiBtn) {
             // Adjust position again in case card content height changed
             requestAnimationFrame(() => {
                 if (textHighlightPopup) {
+                    const isMobileNow = window.innerWidth < 768;
+                    if (isMobileNow) {
+                        textHighlightPopup.style.left = '50%';
+                    } else if (hlAiCard && !hlAiCard.classList.contains('hidden')) {
+                        const popupRect = textHighlightPopup.getBoundingClientRect();
+                        if (popupRect.left < 16) {
+                            const curLeft = parseFloat(textHighlightPopup.style.left || 0);
+                            textHighlightPopup.style.left = `${curLeft + (16 - popupRect.left)}px`;
+                        } else if (popupRect.right > window.innerWidth - 16) {
+                            const curLeft = parseFloat(textHighlightPopup.style.left || 0);
+                            textHighlightPopup.style.left = `${curLeft - (popupRect.right - (window.innerWidth - 16))}px`;
+                        }
+                    }
+
                     const popupRect = textHighlightPopup.getBoundingClientRect();
                     if (popupRect.bottom > window.innerHeight - 12) {
                         const overflow = popupRect.bottom - (window.innerHeight - 12);
@@ -3853,6 +4162,7 @@ function renderBookmarkIcon() {
 function openDeckDropdown() {
     deckSelectDropdown.classList.remove('hidden');
     deckSelectArrow.classList.add('rotate-180');
+    updateDailyStreakUI();
     
     const normalData = JSON.parse(localStorage.getItem('flashcardsSave'));
     const normalTitle = normalData ? normalData.deckTitle : "Flashcards";
@@ -4095,25 +4405,32 @@ function switchActiveMode(newMode) {
             allQuestions: [],
             questionsPool: [],
             score: 0,
+            notebookReviewsCount: 0,
             deckTitle: "Caderno"
         };
         localStorage.setItem('flashcardsNotebook', JSON.stringify(data));
     }
     
     allQuestions = data.allQuestions || [];
-    questionsPool = (data.questionsPool || []).filter(isPlayableCard);
+    if (newMode === 'notebook') {
+        questionsPool = (allQuestions || []).filter(isPlayableCard);
+        notebookReviewsCount = data.notebookReviewsCount || 0;
+    } else {
+        questionsPool = (data.questionsPool || []).filter(isPlayableCard);
+    }
     score = data.score || 0;
     currentStep = data.currentStep || 0;
     precomputedNextCard = null;
-    if (score === 0) {
+    if (score === 0 && newMode !== 'notebook') {
         questionsPool = shuffleArray(questionsPool);
     }
     deckTitle.textContent = data.deckTitle || (newMode === 'notebook' ? "Caderno" : (newMode === 'exam' ? "Semana de Provas" : "Flashcards"));
     document.title = data.deckTitle ? `${data.deckTitle} | Flashcards` : "Estudando Flashcards";
     
     clearBalls();
-    scoreDisplay.textContent = score;
+    scoreDisplay.textContent = newMode === 'notebook' ? notebookReviewsCount : score;
     updateScoreDisplay();
+    updateDailyStreakUI();
     isFirstQuestion = true;
     
     initStatsSession(deckTitle.textContent, newMode, allQuestions.filter(isPlayableCard).length, score);
@@ -4239,7 +4556,12 @@ async function initGame() {
     }
 
     allQuestions = data.allQuestions || [];
-    questionsPool = (data.questionsPool || []).filter(isPlayableCard);
+    if (activeMode === 'notebook') {
+        questionsPool = (allQuestions || []).filter(isPlayableCard);
+        notebookReviewsCount = data.notebookReviewsCount || 0;
+    } else {
+        questionsPool = (data.questionsPool || []).filter(isPlayableCard);
+    }
     allQuestions.forEach(q => { if (q) delete q.isBeingCorrected; });
     questionsPool.forEach(q => { if (q) delete q.isBeingCorrected; });
     isBeingCorrected = false;
@@ -4249,13 +4571,14 @@ async function initGame() {
     consecutiveDueCardsCount = data.consecutiveDueCardsCount || 0;
     precomputedNextCard = null;
     // Requirement 1: Make all cards random at start
-    if (score === 0 || !data.questionsPool || data.questionsPool.length === allQuestions.filter(isPlayableCard).length) {
+    if ((score === 0 || !data.questionsPool || data.questionsPool.length === allQuestions.filter(isPlayableCard).length) && activeMode !== 'notebook') {
         questionsPool = shuffleArray(questionsPool);
     }
     updateStreakUI(false);
+    updateDailyStreakUI();
     deckTitle.textContent = data.deckTitle || (activeMode === 'notebook' ? "Caderno" : (activeMode === 'exam' ? "Semana de Provas" : "Flashcards"));
     document.title = data.deckTitle ? `${data.deckTitle} | Flashcards` : "Estudando Flashcards";
-    scoreDisplay.textContent = score; 
+    scoreDisplay.textContent = activeMode === 'notebook' ? notebookReviewsCount : score; 
     
     const normalData = JSON.parse(localStorage.getItem('flashcardsSave'));
     if (normalData && deckItemNormalName) {

@@ -284,7 +284,12 @@
                         <!-- Notebook Item -->
                         <button id="deck-item-notebook" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-left hover:bg-gray-100 transition">
                             <img src="../assets/img/bookmark_check.svg" class="w-5 h-5 flex-shrink-0" alt="Caderno">
-                            <span class="font-semibold text-gray-800 flex-1">Caderno</span>
+                            <span class="font-semibold text-gray-800 flex-1 truncate">Caderno</span>
+                            <!-- Daily Streak Badge aligned right -->
+                            <div id="notebook-streak-badge" class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 border border-gray-200/80 transition-all flex-shrink-0 ml-auto" title="Dias consecutivos estudando">
+                                <img src="../assets/img/fire.svg" id="notebook-streak-fire" class="notebook-streak-fire is-desaturated w-3.5 h-3.5 transition-all pointer-events-none" alt="Streak">
+                                <span id="notebook-streak-count" class="font-bold text-xs text-gray-500">0</span>
+                            </div>
                         </button>
 
                         <!-- Decks in Exam Week Section -->
@@ -309,7 +314,7 @@
 
         <div class="flex items-center gap-4 text-right ml-4">
             <div class="block">
-                <p class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">
+                <p id="counter-left-label" class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">
                     Restantes</p>
                 <p id="questions-left" class="text-sm font-bold text-blue-600 text-center">0</p>
             </div>
@@ -318,7 +323,7 @@
             <div id="score-wrapper" class="flex items-center min-w-[50px] justify-center">
                 <!-- SCORE CONTAINER (Always visible) -->
                 <div id="score-container" class="block">
-                    <p class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">
+                    <p id="score-label" class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">
                         Score</p>
                     <p id="score" class="text-sm font-bold text-gray-900 text-center">0</p>
                 </div>
@@ -375,6 +380,7 @@
             </div>
             <p id="question-text" class="text-center text-base sm:text-lg font-medium text-[var(--md-sys-color-on-surface)] whitespace-pre-line leading-relaxed">
                 <span id="question-source-tag" class="hidden text-xs uppercase tracking-wider text-blue-500 dark:text-blue-400 font-bold mb-1.5 block select-none"></span>
+                <span id="card-difficult-tag" class="hidden text-[11px] font-bold px-2.5 py-0.5 rounded-full mb-2 inline-flex items-center gap-1 select-none bg-red-50 text-red-600 border border-red-200/80 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800/60 shadow-2xs">Difícil</span>
                 <span id="question-body-text"></span>
                 <span id="question-feedback-text" class="hidden mt-2 block"></span>
             </p>
@@ -1055,7 +1061,7 @@
     </div>
 
     <script src="../js/ripple.js" defer></script>
-    <script src="../js/game.js?v=6.1" type="module" defer></script>
+    <script src="../js/game.js?v=6.4" type="module" defer></script>
 </body>
 
 </html>

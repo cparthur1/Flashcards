@@ -1,5 +1,6 @@
 // Handles landing page functionality: redirects, single deck and Semana de Provas multi-deck uploads.
 import { ROUTES, shuffleArray, generateSecureId } from './utils.js';
+import { getDailyStreak } from './engine/notebook-scheduler.js';
 
 function init() {
     // Redirect to game if active deck session exists
@@ -25,6 +26,17 @@ function init() {
                     localStorage.setItem('flashcardsActiveMode', 'notebook');
                     window.location.href = ROUTES.GAME;
                 });
+
+                const homeStreak = document.getElementById('home-notebook-streak');
+                const homeStreakCount = document.getElementById('home-notebook-streak-count');
+                if (homeStreak && homeStreakCount) {
+                    const streakData = getDailyStreak();
+                    if (streakData.streak > 0) {
+                        homeStreakCount.textContent = streakData.streak;
+                        homeStreak.classList.remove('hidden');
+                        homeStreak.classList.add('flex');
+                    }
+                }
             }
         } catch (e) {
             console.error("Erro ao carregar contador do Caderno:", e);

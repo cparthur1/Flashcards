@@ -3,7 +3,7 @@
  * Copyright (C) 2026 Arthur <arthur.paludo.c@gmail.com>
  */
 
-const CACHE_NAME = 'flashcards-v9.3'; // Increment version to trigger update
+const CACHE_NAME = 'flashcards-v9.6'; // Increment version to trigger update
 
 const BASE_PATH = self.registration && self.registration.scope 
   ? new URL(self.registration.scope).pathname.replace(/\/$/, '') 
@@ -24,6 +24,7 @@ const RAW_ASSETS = [
   '/js/index.js',
   '/js/game.js',
   '/js/engine/scheduler.js',
+  '/js/engine/notebook-scheduler.js',
   '/js/engine/effects.js',
   '/js/engine/input-controller.js',
   '/js/engine/tutor.js',
@@ -44,6 +45,7 @@ const RAW_ASSETS = [
   '/assets/img/logo.png',
   '/assets/img/menu.svg',
   '/assets/img/stats.svg',
+  '/assets/img/fire.svg',
   '/assets/img/config_ai.svg',
   '/assets/img/enabled_ai.svg',
   '/assets/img/highlight.svg',

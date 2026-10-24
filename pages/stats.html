@@ -448,6 +448,56 @@
                 </div>
             </div>
 
+            <!-- ==================== CALENDÁRIO DE ATIVIDADE & STREAK FREEZE ==================== -->
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <div>
+                        <div class="flex items-center gap-2.5">
+                            <h2 class="font-bold text-base text-gray-900">Calendário de Atividade</h2>
+                            <span id="heatmap-streak-badge" class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/80 inline-flex items-center gap-1">
+                                <span>🔥</span> <span id="heatmap-streak-val">0 dias</span>
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-0.5">Histórico diário de resolução e proteção de sequência</p>
+                    </div>
+
+                    <!-- Streak Freeze Status Pills -->
+                    <div id="heatmap-freeze-status" class="flex items-center gap-2 flex-wrap">
+                        <!-- Injected dynamically in stats.js -->
+                    </div>
+                </div>
+
+                <!-- Heatmap Scroll Container -->
+                <div class="w-full overflow-x-auto custom-scrollbar pb-2">
+                    <div id="activity-heatmap" class="min-w-[620px] select-none">
+                        <!-- Heatmap grid injected dynamically in stats.js -->
+                    </div>
+                </div>
+
+                <!-- Heatmap Footer with details & Legend -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-gray-500 pt-3 border-t border-gray-100 mt-2">
+                    <div id="heatmap-hover-info" class="text-xs text-gray-700 font-medium min-h-[20px] flex items-center gap-2">
+                        <span class="text-gray-400">Passe o cursor ou toque nos dias para ver detalhes</span>
+                    </div>
+                    <div class="flex items-center gap-2 self-end sm:self-auto text-[11px] text-gray-500">
+                        <span>Menos</span>
+                        <div class="flex gap-1 items-center">
+                            <div class="w-3.5 h-3.5 rounded-xs bg-gray-100 border border-gray-200/60" title="0 cards"></div>
+                            <div class="w-3.5 h-3.5 rounded-xs bg-emerald-100 border border-emerald-200/60" title="1 a 4 cards"></div>
+                            <div class="w-3.5 h-3.5 rounded-xs bg-emerald-300 border border-emerald-400/60" title="5 a 14 cards"></div>
+                            <div class="w-3.5 h-3.5 rounded-xs bg-emerald-500 border border-emerald-600/60" title="15 a 29 cards"></div>
+                            <div class="w-3.5 h-3.5 rounded-xs bg-emerald-700 border border-emerald-800/60" title="30+ cards"></div>
+                        </div>
+                        <span>Mais</span>
+                        <span class="mx-1 text-gray-300">|</span>
+                        <div class="flex items-center gap-1.5 font-semibold text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded-md border border-cyan-200/80">
+                            <span class="text-xs">❄️</span>
+                            <span>Congelado</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- DESEMPENHO POR MATÉRIA (HISTÓRICO IA) -->
             <section id="ai-history-subjects-section" class="w-full transition-all duration-300"></section>
 
@@ -572,7 +622,7 @@
     </div>
 
     <script src="../js/ripple.js" defer></script>
-    <script src="../js/stats.js?v=5.2" type="module"></script>
+    <script src="../js/stats.js?v=5.3" type="module"></script>
 </body>
 
 </html>
