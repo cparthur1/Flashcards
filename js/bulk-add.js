@@ -21,8 +21,12 @@ const btnLoadMore = document.getElementById('btn-load-more');
 
 const deckPreviewsWorkspace = document.getElementById('deck-previews-workspace');
 const leftCardsList = document.getElementById('left-cards-list');
+const leftSpacerTop = document.getElementById('left-spacer-top');
+const leftCardsContainer = document.getElementById('left-cards-container');
+const leftSpacerBottom = document.getElementById('left-spacer-bottom');
 const leftCardsCountBadge = document.getElementById('left-cards-count-badge');
 const btnSelectAll = document.getElementById('btn-select-all');
+const selectActionsSeparator = document.getElementById('select-actions-separator');
 const btnDeselectAll = document.getElementById('btn-deselect-all');
 
 const btnAddToNotebook = document.getElementById('btn-add-to-notebook');
@@ -55,6 +59,13 @@ let loadedDecksCount = 0;
 let editingCardId = null;
 let notificationTimeout = null;
 
+// Virtual Scrolling State (Renderiza apenas visíveis + 10 acima e 10 abaixo)
+const VIRTUAL_BUFFER_ITEMS = 10;
+const DEFAULT_CARD_HEIGHT = 145; // Altura estimada em px por card (incluindo margem de 12px)
+const cardHeightCache = new Map(); // cardId -> altura medida em px
+let currentRenderRange = { start: -1, end: -1 };
+let isVirtualScrollScheduled = false;
+
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
     updateNotebookHeaderBadge();
@@ -62,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSelectionHandlers();
     setupTransferHandlers();
     setupEditModalHandlers();
+    setupVirtualScrollListener();
 });
 
 function getNotebookDataFromStorage() {
@@ -226,8 +238,8 @@ async function processFilesList(files) {
     loadedDecksCount += filesSuccessCount;
     uploadedCards.push(...newCardsLoaded);
 
-    // Pre-select all newly uploaded cards for convenient bulk action
-    newCardsLoaded.forEach(c => selectedCardIds.add(c.id));
+    // Inicialmente, ao carregar os decks, nenhum card está selecionado
+    selectedCardIds.clear();
 
     // Show workspace & compact summary bar
     uploadZoneWrapper?.classList.add('hidden');
@@ -242,41 +254,151 @@ async function processFilesList(files) {
     }
 
     triggerHaptic('snap');
-    renderLeftCardsList();
+    renderVirtualLeftCards(true);
+    updateSelectAllButtonState();
     updateTransferButtonState();
     showNotification(`${newCardsLoaded.length} cartões carregados com sucesso!`, "📚");
 }
 
-// --- RENDER LEFT DECK PREVIEW (UPLOADED CARDS) ---
-function renderLeftCardsList() {
-    if (!leftCardsList) return;
+// --- VIRTUAL SCROLLING ENGINE FOR LEFT DECK PREVIEW ---
+// Renderiza apenas os cartões visíveis + 10 acima e 10 abaixo para evitar quedas de frames
+function getCardHeight(card) {
+    if (!card) return DEFAULT_CARD_HEIGHT;
+    return cardHeightCache.get(card.id) || DEFAULT_CARD_HEIGHT;
+}
+
+function calculateVirtualRange() {
+    if (!leftCardsList || uploadedCards.length === 0) {
+        return { start: 0, end: 0, topSpacer: 0, bottomSpacer: 0 };
+    }
+
+    const scrollTop = leftCardsList.scrollTop;
+    const viewportHeight = leftCardsList.clientHeight || 550;
+
+    let accum = 0;
+    let firstVisible = -1;
+    let lastVisible = uploadedCards.length - 1;
+
+    for (let i = 0; i < uploadedCards.length; i++) {
+        const h = getCardHeight(uploadedCards[i]);
+        if (firstVisible === -1 && accum + h >= scrollTop) {
+            firstVisible = i;
+        }
+        if (firstVisible !== -1 && accum > scrollTop + viewportHeight) {
+            lastVisible = i;
+            break;
+        }
+        accum += h;
+    }
+
+    if (firstVisible === -1) firstVisible = 0;
+
+    // Buffer de 10 cards acima e 10 cards abaixo que o usuário pode ver
+    const start = Math.max(0, firstVisible - VIRTUAL_BUFFER_ITEMS);
+    const end = Math.min(uploadedCards.length - 1, lastVisible + VIRTUAL_BUFFER_ITEMS);
+
+    let topSpacer = 0;
+    for (let i = 0; i < start; i++) {
+        topSpacer += getCardHeight(uploadedCards[i]);
+    }
+
+    let bottomSpacer = 0;
+    for (let i = end + 1; i < uploadedCards.length; i++) {
+        bottomSpacer += getCardHeight(uploadedCards[i]);
+    }
+
+    return { start, end, topSpacer, bottomSpacer };
+}
+
+function renderVirtualLeftCards(force = false) {
+    if (!leftCardsList || !leftCardsContainer) return;
 
     if (leftCardsCountBadge) {
         leftCardsCountBadge.textContent = `${uploadedCards.length} ${uploadedCards.length === 1 ? 'card' : 'cards'}`;
     }
 
     if (uploadedCards.length === 0) {
-        leftCardsList.innerHTML = `
+        if (leftSpacerTop) leftSpacerTop.style.height = '0px';
+        if (leftSpacerBottom) leftSpacerBottom.style.height = '0px';
+        leftCardsContainer.innerHTML = `
             <div class="h-64 flex flex-col items-center justify-center text-center p-6 text-gray-400 select-none">
                 <svg class="w-12 h-12 mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <p class="font-bold text-sm text-gray-600">Todos os cartões foram transferidos!</p>
                 <p class="text-xs mt-1">Carregue mais baralhos se desejar adicionar outros cartões.</p>
             </div>
         `;
+        currentRenderRange = { start: -1, end: -1 };
+        updateSelectAllButtonState();
         return;
     }
 
-    leftCardsList.innerHTML = '';
-    uploadedCards.forEach((card, idx) => {
-        const cardEl = createLeftCardElement(card, idx);
-        leftCardsList.appendChild(cardEl);
+    const { start, end, topSpacer, bottomSpacer } = calculateVirtualRange();
+
+    // Se o range de renderização não mudou e não é render forçado, evita re-render desnecessário
+    if (!force && start === currentRenderRange.start && end === currentRenderRange.end) {
+        return;
+    }
+
+    currentRenderRange = { start, end };
+    if (leftSpacerTop) leftSpacerTop.style.height = `${topSpacer}px`;
+    if (leftSpacerBottom) leftSpacerBottom.style.height = `${bottomSpacer}px`;
+
+    const fragment = document.createDocumentFragment();
+    for (let i = start; i <= end; i++) {
+        const card = uploadedCards[i];
+        const cardEl = createLeftCardElement(card, i);
+        fragment.appendChild(cardEl);
+    }
+
+    leftCardsContainer.innerHTML = '';
+    leftCardsContainer.appendChild(fragment);
+
+    // Mede as alturas reais dos elementos renderizados para precisão do scroll
+    requestAnimationFrame(() => {
+        measureRenderedCardHeights();
     });
+}
+
+function measureRenderedCardHeights() {
+    if (!leftCardsContainer) return;
+    let anyChanged = false;
+    const children = leftCardsContainer.children;
+    for (let i = 0; i < children.length; i++) {
+        const el = children[i];
+        const id = el.dataset?.id;
+        if (id) {
+            const measured = el.offsetHeight + 12; // 12px de margin (space-y-3)
+            const cached = cardHeightCache.get(id);
+            if (!cached || Math.abs(cached - measured) > 4) {
+                cardHeightCache.set(id, measured);
+                anyChanged = true;
+            }
+        }
+    }
+
+    if (anyChanged) {
+        const { topSpacer, bottomSpacer } = calculateVirtualRange();
+        if (leftSpacerTop) leftSpacerTop.style.height = `${topSpacer}px`;
+        if (leftSpacerBottom) leftSpacerBottom.style.height = `${bottomSpacer}px`;
+    }
+}
+
+function setupVirtualScrollListener() {
+    leftCardsList?.addEventListener('scroll', () => {
+        if (!isVirtualScrollScheduled) {
+            isVirtualScrollScheduled = true;
+            requestAnimationFrame(() => {
+                renderVirtualLeftCards(false);
+                isVirtualScrollScheduled = false;
+            });
+        }
+    }, { passive: true });
 }
 
 function createLeftCardElement(card, idx) {
     const cardEl = document.createElement('div');
     const isSelected = selectedCardIds.has(card.id);
-    cardEl.className = `flashcard-item bg-white border ${isSelected ? 'border-blue-400 ring-2 ring-blue-500/20' : 'border-gray-200'} p-4 rounded-2xl shadow-xs relative group flex flex-col gap-2 transition-all cursor-pointer select-none card-enter-anim`;
+    cardEl.className = `flashcard-item bg-white border ${isSelected ? 'border-blue-400 ring-2 ring-blue-500/20' : 'border-gray-200'} p-4 rounded-2xl shadow-xs relative group flex flex-col gap-2 transition-all cursor-pointer select-none`;
     cardEl.dataset.id = card.id;
 
     // Type Badge & Source Deck
@@ -387,19 +509,69 @@ function createLeftCardElement(card, idx) {
 
 // --- SELECTION HANDLING ---
 function setupSelectionHandlers() {
-    btnSelectAll?.addEventListener('click', () => {
-        uploadedCards.forEach(c => selectedCardIds.add(c.id));
-        updateAllCheckboxes(true);
-        updateTransferButtonState();
-        triggerHaptic('tick');
-    });
+    btnSelectAll?.addEventListener('click', handleToggleSelectAll);
+    btnDeselectAll?.addEventListener('click', handleClearSelection);
+}
 
-    btnDeselectAll?.addEventListener('click', () => {
+function handleToggleSelectAll() {
+    const totalCards = uploadedCards.length;
+    if (totalCards === 0) return;
+
+    const isAllSelected = (selectedCardIds.size === totalCards);
+
+    if (isAllSelected) {
+        // Estava tudo selecionado: limpa a seleção
         selectedCardIds.clear();
-        updateAllCheckboxes(false);
-        updateTransferButtonState();
-        triggerHaptic('tick');
-    });
+    } else {
+        // Seleciona todos os cards
+        uploadedCards.forEach(c => selectedCardIds.add(c.id));
+    }
+
+    updateSelectAllButtonState();
+    updateVisibleCheckboxes();
+    updateTransferButtonState();
+    triggerHaptic('tick');
+}
+
+function handleClearSelection() {
+    selectedCardIds.clear();
+    updateSelectAllButtonState();
+    updateVisibleCheckboxes();
+    updateTransferButtonState();
+    triggerHaptic('tick');
+}
+
+function updateSelectAllButtonState() {
+    if (!btnSelectAll) return;
+    const totalCards = uploadedCards.length;
+    const selectedCount = selectedCardIds.size;
+
+    if (totalCards === 0) {
+        btnSelectAll.textContent = "Selecionar todos";
+        btnSelectAll.disabled = true;
+        btnSelectAll.classList.add('opacity-50', 'pointer-events-none');
+        selectActionsSeparator?.classList.add('hidden');
+        btnDeselectAll?.classList.add('hidden');
+        return;
+    }
+
+    btnSelectAll.disabled = false;
+    btnSelectAll.classList.remove('opacity-50', 'pointer-events-none');
+
+    // Quando todos os cards estiverem selecionados, o botão "Selecionar todos" automaticamente vira "Limpar seleção"
+    if (selectedCount === totalCards) {
+        btnSelectAll.textContent = "Limpar seleção";
+        selectActionsSeparator?.classList.add('hidden');
+        btnDeselectAll?.classList.add('hidden');
+    } else if (selectedCount > 0) {
+        btnSelectAll.textContent = "Selecionar todos";
+        selectActionsSeparator?.classList.remove('hidden');
+        btnDeselectAll?.classList.remove('hidden');
+    } else {
+        btnSelectAll.textContent = "Selecionar todos";
+        selectActionsSeparator?.classList.add('hidden');
+        btnDeselectAll?.classList.add('hidden');
+    }
 }
 
 function toggleCardSelection(cardId, isChecked) {
@@ -409,7 +581,7 @@ function toggleCardSelection(cardId, isChecked) {
         selectedCardIds.delete(cardId);
     }
 
-    const cardEl = leftCardsList.querySelector(`[data-id="${cardId}"]`);
+    const cardEl = leftCardsContainer?.querySelector(`[data-id="${cardId}"]`);
     if (cardEl) {
         if (isChecked) {
             cardEl.classList.add('border-blue-400', 'ring-2', 'ring-blue-500/20');
@@ -420,17 +592,21 @@ function toggleCardSelection(cardId, isChecked) {
         }
     }
 
+    updateSelectAllButtonState();
     updateTransferButtonState();
     triggerHaptic('tick');
 }
 
-function updateAllCheckboxes(checked) {
-    const checkboxes = leftCardsList.querySelectorAll('md-checkbox');
-    checkboxes.forEach(cb => { cb.checked = checked; });
-
-    const cardElements = leftCardsList.querySelectorAll('.flashcard-item');
+function updateVisibleCheckboxes() {
+    if (!leftCardsContainer) return;
+    const cardElements = leftCardsContainer.querySelectorAll('.flashcard-item');
     cardElements.forEach(el => {
-        if (checked) {
+        const id = el.dataset?.id;
+        const isChecked = selectedCardIds.has(id);
+        const cb = el.querySelector('md-checkbox');
+        if (cb) cb.checked = isChecked;
+
+        if (isChecked) {
             el.classList.add('border-blue-400', 'ring-2', 'ring-blue-500/20');
             el.classList.remove('border-gray-200');
         } else {
@@ -462,6 +638,7 @@ function handleInstantMoveCard(card, cardEl) {
     // 1. Remove da seleção se estava marcado
     if (selectedCardIds.has(card.id)) {
         selectedCardIds.delete(card.id);
+        updateSelectAllButtonState();
         updateTransferButtonState();
     }
 
@@ -499,22 +676,17 @@ function handleInstantMoveCard(card, cardEl) {
         }
     }, 180);
 
-    // Remove da lista da esquerda e sincroniza contadores
+    // Remove da lista da esquerda e sincroniza virtual scroller
     setTimeout(() => {
         uploadedCards = uploadedCards.filter(c => c.id !== card.id);
-        cardEl.remove();
+        cardHeightCache.delete(card.id);
 
-        if (leftCardsCountBadge) {
-            leftCardsCountBadge.textContent = `${uploadedCards.length} ${uploadedCards.length === 1 ? 'card' : 'cards'}`;
-        }
         if (summaryCardsText) {
             summaryCardsText.textContent = `${uploadedCards.length} cartões disponíveis na lista`;
         }
 
-        if (uploadedCards.length === 0) {
-            renderLeftCardsList();
-        }
-
+        renderVirtualLeftCards(true);
+        updateSelectAllButtonState();
         updateTransferButtonState();
         showNotification("Cartão movido para o Caderno!", "✨");
     }, 300);
@@ -550,15 +722,12 @@ function handleTransferSelectedCards() {
     saveNotebookDataToStorage(nbData);
 
     // 2. Animação de Física Material You Expressive ao mover da esquerda para a direita:
-    // Aplica slide-out com escala e spring decay aos cartões selecionados
-    const selectedElements = [];
-    selectedCardIds.forEach(id => {
-        const el = leftCardsList.querySelector(`[data-id="${id}"]`);
-        if (el) selectedElements.push(el);
-    });
-
-    selectedElements.forEach(el => {
-        el.classList.add('card-moving-out');
+    // Aplica slide-out apenas nos cartões selecionados atualmente visíveis na janela virtual
+    const renderedItems = leftCardsContainer?.querySelectorAll('.flashcard-item') || [];
+    renderedItems.forEach(el => {
+        if (selectedCardIds.has(el.dataset?.id)) {
+            el.classList.add('card-moving-out');
+        }
     });
 
     triggerHaptic('pop');
@@ -567,6 +736,7 @@ function handleTransferSelectedCards() {
     setTimeout(() => {
         // Atualiza estado in-memory da esquerda
         uploadedCards = uploadedCards.filter(c => !selectedCardIds.has(c.id));
+        cardsToTransfer.forEach(c => cardHeightCache.delete(c.id));
         selectedCardIds.clear();
 
         // Adiciona à lista de sessão da direita
@@ -575,20 +745,25 @@ function handleTransferSelectedCards() {
         // Oculta a dica no fundo da direita
         if (rightEmptyHint) rightEmptyHint.classList.add('hidden');
 
-        // Renderiza novos cartões na direita com efeito spring-in
-        preparedCards.forEach(c => {
+        // Renderiza novos cartões na direita com efeito spring-in (apenas nos primeiros 10 para evitar frame drops)
+        const fragment = document.createDocumentFragment();
+        preparedCards.forEach((c, idx) => {
             const rightEl = createRightCardElement(c);
-            rightEl.classList.add('card-spring-in');
-            rightCardsList.appendChild(rightEl);
+            if (idx < 10) {
+                rightEl.classList.add('card-spring-in');
+            }
+            fragment.appendChild(rightEl);
         });
+        rightCardsList.appendChild(fragment);
 
         // Atualiza badge de contagem da direita
         if (rightCardsCountBadge) {
             rightCardsCountBadge.textContent = `${sessionAddedCards.length} ${sessionAddedCards.length === 1 ? 'adicionado' : 'adicionados'}`;
         }
 
-        // Re-renderiza a lista da esquerda
-        renderLeftCardsList();
+        // Re-renderiza a lista virtual da esquerda
+        renderVirtualLeftCards(true);
+        updateSelectAllButtonState();
         updateTransferButtonState();
 
         if (summaryCardsText) {
