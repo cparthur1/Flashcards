@@ -165,17 +165,6 @@
                     <p id="go-to-editor-btn-desc" class="text-xs text-[var(--md-sys-color-on-surface-variant)]">Abrir editor e gerador IA</p>
                 </div>
             </button>
-
-            <!-- Clear Notebook (Only visible when activeMode === 'notebook') -->
-            <button id="clear-notebook-btn"
-                class="hidden w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-red-50 dark:hover:bg-red-950/30 transition text-left group"
-                title="Apagar todo o conteúdo do Caderno">
-                <img src="../assets/img/delete.svg" class="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" alt="Limpar">
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-red-600 dark:text-red-400">Limpar caderno</p>
-                    <p class="text-xs text-red-500/80">Apagar todos os cards do caderno</p>
-                </div>
-            </button>
         </div>
 
         <div class="h-[1px] bg-[var(--md-sys-color-outline-variant)] my-1"></div>
@@ -232,8 +221,19 @@
 
         <div class="h-[1px] bg-[var(--md-sys-color-outline-variant)] my-1"></div>
 
-        <!-- SECTION 4: SAIR (EXIT) -->
-        <div class="px-1 py-1">
+        <!-- SECTION 4: SAIR (EXIT) & LIMPAR CADERNO -->
+        <div class="px-1 py-1 space-y-0.5">
+            <!-- Clear Notebook (Only visible when activeMode === 'notebook') -->
+            <button id="clear-notebook-btn"
+                class="hidden w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 transition text-left group"
+                title="Apagar todo o conteúdo do Caderno">
+                <img src="../assets/img/delete.svg" class="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" alt="Limpar">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-red-600 dark:text-red-400">Limpar caderno</p>
+                    <p class="text-xs text-red-500/80">Apagar todos os cards do caderno</p>
+                </div>
+            </button>
+
             <button id="reset-btn"
                 class="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 transition text-left group"
                 title="Voltar ao início">

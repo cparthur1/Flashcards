@@ -2588,7 +2588,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Close hamburger menu when any action is selected
-[exportBtn, goToEditorBtn, restartGameBtn, resetBtn, statsBtn, receiveSessionBtn, transferSessionBtn, aiToggleBtn].forEach(el => {
+[exportBtn, goToEditorBtn, restartGameBtn, clearNotebookBtn, resetBtn, statsBtn, receiveSessionBtn, transferSessionBtn, aiToggleBtn].forEach(el => {
     el?.addEventListener('click', () => {
         closeHamburgerMenu();
     });
