@@ -21,8 +21,10 @@ const deckItemNotebook = document.getElementById('deck-item-notebook');
 const notebookStreakBadge = document.getElementById('notebook-streak-badge');
 const notebookStreakFire = document.getElementById('notebook-streak-fire');
 const notebookStreakCount = document.getElementById('notebook-streak-count');
+const counterLeftWrapper = document.getElementById('counter-left-wrapper');
 const counterLeftLabel = document.getElementById('counter-left-label');
 const scoreLabel = document.getElementById('score-label');
+const clearNotebookBtn = document.getElementById('clear-notebook-btn');
 const cardDifficultTag = document.getElementById('card-difficult-tag');
 const notebookStageTag = cardDifficultTag;
 const deckItemExam = document.getElementById('deck-item-exam');
@@ -2272,6 +2274,31 @@ window.addEventListener('pagehide', () => {
     }
 });
 
+function getNotebookDailyGoal() {
+    try {
+        const val = localStorage.getItem('flashcards_notebook_daily_goal');
+        if (val !== null && val !== '') {
+            const num = parseInt(val, 10);
+            return isNaN(num) ? 0 : Math.max(0, num);
+        }
+        return 0;
+    } catch (e) {
+        return 0;
+    }
+}
+
+function setNotebookDailyGoal(goal) {
+    try {
+        if (!goal || goal <= 0) {
+            localStorage.removeItem('flashcards_notebook_daily_goal');
+        } else {
+            localStorage.setItem('flashcards_notebook_daily_goal', String(goal));
+        }
+    } catch (e) {
+        console.error("Erro ao salvar meta diária:", e);
+    }
+}
+
 function updateScoreDisplay() {
     const scoreVal = document.getElementById('score');
     const scoreContainer = document.getElementById('score-container');
@@ -2279,13 +2306,43 @@ function updateScoreDisplay() {
         if (counterLeftLabel) counterLeftLabel.textContent = "Para Hoje";
         if (scoreLabel) scoreLabel.textContent = "Revisões";
         const dueInfo = getNotebookDueCounts(allQuestions);
-        if (questionsLeftDisplay) questionsLeftDisplay.textContent = dueInfo.dueToday;
+        const dailyGoal = getNotebookDailyGoal();
+        const reviewedToday = dueInfo.reviewedToday || 0;
+
+        if (dailyGoal > 0) {
+            const remaining = Math.max(0, dailyGoal - reviewedToday);
+            if (questionsLeftDisplay) {
+                questionsLeftDisplay.textContent = remaining;
+                questionsLeftDisplay.title = `${reviewedToday}/${dailyGoal} da meta concluídos hoje (${dueInfo.dueToday} vencidos no total). Clique para alterar meta.`;
+            }
+            if (counterLeftWrapper) {
+                counterLeftWrapper.title = `Meta diária: ${dailyGoal} cards (${reviewedToday}/${dailyGoal} hoje). Clique para alterar meta.`;
+                counterLeftWrapper.classList.add('cursor-pointer', 'hover:opacity-80', 'transition');
+            }
+        } else {
+            if (questionsLeftDisplay) {
+                questionsLeftDisplay.textContent = dueInfo.dueToday;
+                questionsLeftDisplay.title = `${dueInfo.dueToday} cards vencidos para hoje. Clique para definir meta diária.`;
+            }
+            if (counterLeftWrapper) {
+                counterLeftWrapper.title = "Clique para definir meta de cards por dia";
+                counterLeftWrapper.classList.add('cursor-pointer', 'hover:opacity-80', 'transition');
+            }
+        }
+
         if (scoreVal) scoreVal.textContent = notebookReviewsCount;
     } else {
         if (counterLeftLabel) counterLeftLabel.textContent = "Restantes";
         if (scoreLabel) scoreLabel.textContent = "Score";
-        if (questionsLeftDisplay) questionsLeftDisplay.textContent = questionsPool.length;
+        if (questionsLeftDisplay) {
+            questionsLeftDisplay.textContent = questionsPool.length;
+            questionsLeftDisplay.title = "";
+        }
         if (scoreVal) scoreVal.textContent = score;
+        if (counterLeftWrapper) {
+            counterLeftWrapper.title = "";
+            counterLeftWrapper.classList.remove('cursor-pointer', 'hover:opacity-80');
+        }
     }
     if (scoreContainer) scoreContainer.classList.remove('hidden');
 }
@@ -3541,10 +3598,109 @@ exportBtn.addEventListener('click', () => {
     const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
 });
 goToEditorBtn.addEventListener('click', () => {
+    if (activeMode === 'notebook') {
+        window.location.href = ROUTES.BULK_ADD;
+        return;
+    }
     const cleanCards = (allQuestions || []).map(sanitizeCardForStorage);
     localStorage.setItem('editing_deck', JSON.stringify(cleanCards));
     localStorage.setItem('editing_deck_title', deckTitle.textContent);
     window.location.href = ROUTES.GENERATE;
+});
+
+// --- CLEAR NOTEBOOK LISTENER ---
+clearNotebookBtn?.addEventListener('click', () => {
+    closeHamburgerMenu();
+    const confirmed = confirm("Tem certeza de que deseja limpar todo o Caderno? Todos os cartões salvos e históricos de repetição serão apagados. Essa ação não pode ser desfeita.");
+    if (confirmed) {
+        localStorage.removeItem('flashcardsNotebook');
+        allQuestions = [];
+        questionsPool = [];
+        notebookReviewsCount = 0;
+        score = 0;
+        currentStep = 0;
+        precomputedNextCard = null;
+
+        clearBalls();
+        resetUI();
+        updateScoreDisplay();
+        loadQuestion();
+        triggerHaptic('delete');
+        showNotificationPill("Caderno limpo com sucesso!", "delete.svg");
+    }
+});
+
+// --- DAILY GOAL MODAL (PARA HOJE) ---
+const dailyGoalModal = document.getElementById('daily-goal-modal');
+const dailyGoalInput = document.getElementById('daily-goal-input');
+const dailyGoalProgressText = document.getElementById('daily-goal-progress-text');
+const dailyGoalDueText = document.getElementById('daily-goal-due-text');
+const closeDailyGoalModalBtn = document.getElementById('close-daily-goal-modal-btn');
+const cancelDailyGoalBtn = document.getElementById('cancel-daily-goal-btn');
+const saveDailyGoalBtn = document.getElementById('save-daily-goal-btn');
+const dailyGoalPresetBtns = document.querySelectorAll('.daily-goal-preset-btn');
+
+function openDailyGoalModal() {
+    if (!dailyGoalModal) return;
+    const currentGoal = getNotebookDailyGoal();
+    const dueInfo = getNotebookDueCounts(allQuestions);
+    const reviewedToday = dueInfo.reviewedToday || 0;
+
+    if (dailyGoalInput) {
+        dailyGoalInput.value = currentGoal > 0 ? currentGoal : '';
+    }
+    if (dailyGoalProgressText) {
+        dailyGoalProgressText.textContent = `${reviewedToday} ${reviewedToday === 1 ? 'card revisado hoje' : 'cards revisados hoje'}`;
+    }
+    if (dailyGoalDueText) {
+        dailyGoalDueText.textContent = `${dueInfo.dueToday} vencidos`;
+    }
+
+    dailyGoalModal.classList.remove('hidden');
+    setTimeout(() => dailyGoalInput?.focus(), 50);
+}
+
+function closeDailyGoalModal() {
+    dailyGoalModal?.classList.add('hidden');
+}
+
+closeDailyGoalModalBtn?.addEventListener('click', closeDailyGoalModal);
+cancelDailyGoalBtn?.addEventListener('click', closeDailyGoalModal);
+dailyGoalModal?.addEventListener('click', (e) => {
+    if (e.target === dailyGoalModal) closeDailyGoalModal();
+});
+
+dailyGoalPresetBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const val = btn.getAttribute('data-val');
+        if (dailyGoalInput && val) {
+            dailyGoalInput.value = val;
+            triggerHaptic('tick');
+        }
+    });
+});
+
+saveDailyGoalBtn?.addEventListener('click', () => {
+    const rawVal = dailyGoalInput ? dailyGoalInput.value.trim() : '';
+    const num = parseInt(rawVal, 10);
+    const goal = (!isNaN(num) && num > 0) ? num : 0;
+
+    setNotebookDailyGoal(goal);
+    updateScoreDisplay();
+    closeDailyGoalModal();
+    triggerHaptic('snap');
+
+    if (goal > 0) {
+        showNotificationPill(`🎯 Meta diária: ${goal} cards por dia!`, 'collection.svg');
+    } else {
+        showNotificationPill("🎯 Estudando todos os cards vencidos", 'collection.svg');
+    }
+});
+
+counterLeftWrapper?.addEventListener('click', () => {
+    if (activeMode === 'notebook') {
+        openDailyGoalModal();
+    }
 });
 if (aiToggleBtn) {
     aiToggleBtn.addEventListener('click', async () => { 
@@ -4388,6 +4544,43 @@ function closeDeckDropdown() {
     deckSelectArrow?.classList.remove('rotate-180');
 }
 
+function updateMenuButtonsForActiveMode() {
+    const exportTitle = document.getElementById('export-btn-title');
+    const exportDesc = document.getElementById('export-btn-desc');
+    const exportIcon = document.getElementById('export-btn-icon');
+    const editorTitle = document.getElementById('go-to-editor-btn-title');
+    const editorDesc = document.getElementById('go-to-editor-btn-desc');
+    const editorIcon = document.getElementById('go-to-editor-btn-icon');
+
+    if (activeMode === 'notebook') {
+        if (exportTitle) exportTitle.textContent = "Salvar Backup";
+        if (exportDesc) exportDesc.textContent = "Exportar backup completo (.json)";
+        if (exportBtn) exportBtn.title = "Salvar Backup do Caderno";
+
+        if (editorTitle) editorTitle.textContent = "Adicionar vários";
+        if (editorDesc) editorDesc.textContent = "Importar múltiplos baralhos para o caderno";
+        if (editorIcon) {
+            editorIcon.src = "../assets/img/bulk_add.svg";
+            editorIcon.alt = "Adicionar vários";
+        }
+        if (goToEditorBtn) goToEditorBtn.title = "Adicionar múltiplos baralhos ao Caderno";
+        if (clearNotebookBtn) clearNotebookBtn.classList.remove('hidden');
+    } else {
+        if (exportTitle) exportTitle.textContent = "Salvar Baralho";
+        if (exportDesc) exportDesc.textContent = "Exportar cópia em .json";
+        if (exportBtn) exportBtn.title = "Baixar JSON Atualizado";
+
+        if (editorTitle) editorTitle.textContent = "Editar Baralho";
+        if (editorDesc) editorDesc.textContent = "Abrir editor e gerador IA";
+        if (editorIcon) {
+            editorIcon.src = "../assets/img/edit.svg";
+            editorIcon.alt = "Editar";
+        }
+        if (goToEditorBtn) goToEditorBtn.title = "Editar com Assistente de IA";
+        if (clearNotebookBtn) clearNotebookBtn.classList.add('hidden');
+    }
+}
+
 function switchActiveMode(newMode) {
     saveGameState();
     archiveCurrentSession(false);
@@ -4431,6 +4624,7 @@ function switchActiveMode(newMode) {
     scoreDisplay.textContent = newMode === 'notebook' ? notebookReviewsCount : score;
     updateScoreDisplay();
     updateDailyStreakUI();
+    updateMenuButtonsForActiveMode();
     isFirstQuestion = true;
     
     initStatsSession(deckTitle.textContent, newMode, allQuestions.filter(isPlayableCard).length, score);
@@ -4586,6 +4780,7 @@ async function initGame() {
     }
 
     updateScoreDisplay();
+    updateMenuButtonsForActiveMode();
     initStatsSession(deckTitle.textContent, activeMode, allQuestions.filter(isPlayableCard).length, score);
     loadQuestion(); 
     const loadedKey = await getApiKeyAsync();

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6JNRDNHL0N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-6JNRDNHL0N');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adicionar Vários ao Caderno | Flashcards</title>
+    <meta name="description" content="Importe múltiplos baralhos para o seu Caderno com repetição espaçada.">
+    <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+
+    <!-- Fonts & Styling -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght,XOPQ,XTRA,YOPQ,YTDE,YTFI,YTLC,YTUC@8..144,135,1000,154,518,53,-203,738,514,712&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/fonts/fonts.css">
+    <link rel="stylesheet" href="../css/style.css?v=6.7">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Material Web Components (Includes md-checkbox) -->
+    <script type="module" src="../assets/vendor/material-web.bundle.js"></script>
+    <script type="module">
+        import { styles as typescaleStyles } from '../assets/vendor/material-web.bundle.js';
+        if (typescaleStyles?.styleSheet) {
+            try {
+                document.adoptedStyleSheets = [...document.adoptedStyleSheets, typescaleStyles.styleSheet];
+            } catch (e) {
+                console.warn('AdoptedStyleSheets error:', e);
+            }
+        }
+    </script>
+
+    <!-- Markdown & LaTeX Formula Rendering -->
+    <script src="../assets/vendor/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js" integrity="sha384-948ahk4ZmxYVYOc+rxN1H2gM1EJ2Duhp7uHtZ4WSLkV4Vtx5MUqnV+l7u9B+jFv+" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" integrity="sha384-GvrOXuhMATgEsSwCs4smul74iXGOixntILdUW9XmUC6+HX0sLNAK3q71HotJqlAn" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" integrity="sha384-cpW21h6RZv/phavutF+AuVYrr+dA8xD9zs6FwLpaCct6O9ctzYFfFr4dgmgccOTx" crossorigin="anonymous"></script>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(100, 116, 139, 0.25);
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.45);
+        }
+    </style>
+</head>
+
+<body class="bg-[#F8FAFC] text-gray-900 min-h-screen flex flex-col font-sans antialiased selection:bg-blue-100 selection:text-blue-900">
+
+    <!-- TOP APP BAR -->
+    <header class="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-gray-200/80 px-4 sm:px-6 py-3 transition-shadow shadow-xs">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <a href="game.html" id="back-to-game-btn" class="p-2 -ml-2 rounded-xl hover:bg-gray-100 text-gray-700 transition" title="Voltar ao Jogo">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                </a>
+                <div class="flex items-center gap-2">
+                    <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 shadow-2xs">
+                        <img src="../assets/img/bulk_add.svg" class="w-5 h-5" alt="Adicionar vários">
+                    </div>
+                    <div>
+                        <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-tight">Adicionar Vários ao Caderno</h1>
+                        <p class="text-xs text-gray-500 hidden sm:block">Importe cartões de múltiplos baralhos para revisão espaçada contínua</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Header Actions -->
+            <div class="flex items-center gap-2.5">
+                <!-- Notebook Total Cards Badge -->
+                <div id="notebook-total-badge" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 font-bold text-xs shadow-2xs" title="Total de cartões salvos no seu Caderno">
+                    <img src="../assets/img/bookmark_check.svg" class="w-3.5 h-3.5 flex-shrink-0" alt="Caderno">
+                    <span id="notebook-total-count">0 no caderno</span>
+                </div>
+
+                <!-- Done / Return Button -->
+                <a href="game.html" class="px-3.5 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 active:scale-95 text-gray-700 font-semibold text-xs sm:text-sm transition flex items-center gap-1">
+                    <span>Concluído</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN WORKSPACE -->
+    <main class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex-1 flex flex-col gap-6">
+
+        <!-- UPLOAD SECTION (INITIAL STATE) -->
+        <section id="upload-zone-wrapper" class="w-full">
+            <input type="file" id="bulk-file-input" accept=".json,.txt" multiple class="hidden">
+            
+            <div id="upload-dropzone" class="border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-3xl p-8 sm:p-12 text-center bg-white shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col items-center justify-center gap-3 group">
+                <div class="w-16 h-16 rounded-3xl bg-blue-50 group-hover:bg-blue-100 text-blue-600 flex items-center justify-center shadow-xs transition-transform group-hover:scale-110">
+                    <img src="../assets/img/bulk_add.svg" class="w-8 h-8" alt="Upload">
+                </div>
+                <div>
+                    <h2 class="text-lg sm:text-xl font-bold text-gray-900">Faça upload de baralhos para o Caderno</h2>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1 max-w-md mx-auto">
+                        Arraste ou clique para selecionar um ou múltiplos arquivos <strong>.json</strong>. Você poderá escolher exatamente quais cartões deseja adicionar.
+                    </p>
+                </div>
+                <button type="button" id="trigger-upload-btn" class="mt-2 px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-sm transition active:scale-95 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>Selecionar Baralhos</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- UPLOAD SUMMARY & COMPACT CONTROLS BAR (SHOWN AFTER UPLOAD) -->
+        <section id="upload-summary-bar" class="hidden bg-white p-3.5 sm:p-4 rounded-2xl border border-gray-200/90 shadow-xs flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">
+                    📁
+                </div>
+                <div>
+                    <span id="summary-decks-text" class="text-sm font-bold text-gray-900 block">0 baralhos carregados</span>
+                    <span id="summary-cards-text" class="text-xs text-gray-500">0 cartões disponíveis na lista</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button type="button" id="btn-load-more" class="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-xs transition flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>Carregar Mais Decks</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- TWO DECK PREVIEWS WORKSPACE -->
+        <div id="deck-previews-workspace" class="hidden flex-1 flex flex-col gap-4">
+            
+            <!-- Grid: Left Preview | Center Transfer | Right Preview -->
+            <div class="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-4 sm:gap-6 items-start flex-1 min-h-[500px]">
+
+                <!-- ==================== LEFT DECK PREVIEW (UPLOADED CARDS) ==================== -->
+                <div class="bg-white rounded-3xl border border-gray-200 shadow-sm flex flex-col overflow-hidden h-[620px]">
+                    <!-- Left Header -->
+                    <div class="px-5 py-4 border-b border-gray-100 bg-gray-50/70 flex items-center justify-between gap-3 flex-shrink-0">
+                        <div class="flex items-center gap-2.5">
+                            <h3 class="font-bold text-sm sm:text-base text-gray-900">Baralhos Carregados</h3>
+                            <span id="left-cards-count-badge" class="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                                0 cards
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-1.5 text-xs">
+                            <button type="button" id="btn-select-all" class="px-2.5 py-1 rounded-lg text-blue-600 hover:bg-blue-50 font-semibold transition">
+                                Selecionar todos
+                            </button>
+                            <span class="text-gray-300">|</span>
+                            <button type="button" id="btn-deselect-all" class="px-2.5 py-1 rounded-lg text-gray-500 hover:bg-gray-100 font-semibold transition">
+                                Limpar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Left Cards List -->
+                    <div id="left-cards-list" class="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar relative">
+                        <!-- Injected dynamically in bulk-add.js -->
+                    </div>
+                </div>
+
+                <!-- ==================== CENTER TRANSFER BUTTON ==================== -->
+                <div class="flex flex-col items-center justify-center py-2 lg:py-24 z-20 sticky lg:static bottom-4">
+                    <button id="btn-add-to-notebook"
+                        disabled
+                        class="group flex lg:flex-col items-center justify-center gap-2 px-6 py-3.5 lg:py-5 lg:px-4 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none text-white font-extrabold text-sm sm:text-base shadow-lg shadow-blue-500/25 transition-all duration-300"
+                        title="Mover cartões selecionados para o Caderno">
+                        <span class="truncate">Adicionar ao Caderno</span>
+                        <!-- Right Arrow -->
+                        <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center transition-transform group-hover:translate-x-1 lg:group-hover:translate-x-0 lg:group-hover:translate-y-1">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                        </div>
+                        <span id="selected-pill-counter" class="hidden text-xs bg-white text-blue-700 px-2.5 py-0.5 rounded-full font-bold shadow-xs">
+                            0 selecionados
+                        </span>
+                    </button>
+                </div>
+
+                <!-- ==================== RIGHT DECK PREVIEW (ADDED TO NOTEBOOK) ==================== -->
+                <div class="bg-white rounded-3xl border border-gray-200 shadow-sm flex flex-col overflow-hidden h-[620px] relative">
+                    <!-- Right Header -->
+                    <div class="px-5 py-4 border-b border-gray-100 bg-gray-50/70 flex items-center justify-between gap-3 flex-shrink-0">
+                        <div class="flex items-center gap-2.5">
+                            <h3 class="font-bold text-sm sm:text-base text-gray-900">Adicionados ao Caderno</h3>
+                            <span id="right-cards-count-badge" class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                                0 adicionados
+                            </span>
+                        </div>
+                        <span class="text-[11px] text-gray-400 font-medium">Nesta sessão</span>
+                    </div>
+
+                    <!-- Right Cards List (Empty by default with watermark hint) -->
+                    <div id="right-cards-list" class="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar relative">
+                        <!-- Hint in background when empty -->
+                        <div id="right-empty-hint" class="absolute inset-4 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center p-6 text-center select-none bg-gray-50/40 bulk-empty-hint">
+                            <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center mb-3 shadow-2xs">
+                                <img src="../assets/img/bulk_add.svg" class="w-7 h-7 opacity-60" alt="Mova cartões para cá">
+                            </div>
+                            <h4 class="text-base font-bold text-gray-700">Mova cartões para cá</h4>
+                            <p class="text-xs text-gray-400 max-w-xs mt-1 leading-relaxed">
+                                Selecione cartões na lista da esquerda e clique no botão com a flecha para adicioná-los ao seu Caderno.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- QUICK EDIT CARD MODAL -->
+    <div id="edit-card-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl border border-gray-200 shadow-xl max-w-lg w-full p-6 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200">
+            <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                <h3 class="font-bold text-base text-gray-900 flex items-center gap-2">
+                    <img src="../assets/img/edit.svg" class="w-4 h-4" alt="Editar">
+                    <span>Editar Cartão do Caderno</span>
+                </h3>
+                <button type="button" id="close-edit-modal-btn" class="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">Frente / Pergunta</label>
+                    <textarea id="edit-modal-front" rows="3" class="w-full p-3 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none resize-y"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">Verso / Resposta</label>
+                    <textarea id="edit-modal-back" rows="3" class="w-full p-3 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none resize-y"></textarea>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
+                <button type="button" id="cancel-edit-btn" class="px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-100 transition">
+                    Cancelar
+                </button>
+                <button type="button" id="save-edit-btn" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition shadow-sm">
+                    Salvar Alterações
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOATING NOTIFICATION PILL -->
+    <div id="bulk-notification-pill" class="fixed bottom-6 right-6 z-50 transform translate-y-16 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-gray-900 text-white text-xs sm:text-sm font-semibold shadow-lg">
+            <span id="bulk-pill-icon">✨</span>
+            <span id="bulk-pill-text">Mensagem</span>
+        </div>
+    </div>
+
+    <script src="../js/ripple.js" defer></script>
+    <script src="../js/bulk-add.js?v=1.1" type="module"></script>
+</body>
+
+</html>

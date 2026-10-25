@@ -160,7 +160,8 @@ export const ROUTES = {
     HOME: prefix + 'index.html',
     GAME: prefix + 'pages/game.html',
     GENERATE: prefix + 'pages/generate.html',
-    STATS: prefix + 'pages/stats.html'
+    STATS: prefix + 'pages/stats.html',
+    BULK_ADD: prefix + 'pages/bulk-add.html'
 };
 
 /**
