@@ -390,7 +390,7 @@ function createLeftCardElement(card, idx) {
     if (card.image) {
         const imgChip = document.createElement('span');
         imgChip.className = "inline-flex items-center gap-1 text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-medium w-fit";
-        imgChip.textContent = "🖼️ Imagem";
+        imgChip.innerHTML = `<img src="../assets/img/image.svg" class="w-3 h-3 flex-shrink-0" alt="Imagem"><span>Imagem</span>`;
         contentBox.appendChild(imgChip);
     }
 
