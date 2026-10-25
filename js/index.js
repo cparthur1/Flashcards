@@ -20,7 +20,12 @@ function init() {
         try {
             const notebookData = JSON.parse(localStorage.getItem('flashcardsNotebook'));
             if (notebookData && notebookData.allQuestions && notebookData.allQuestions.length > 0) {
-                notebookCount.textContent = notebookData.allQuestions.length;
+                const count = notebookData.allQuestions.length;
+                notebookCount.textContent = count;
+                const notebookCountLabel = document.getElementById('notebook-count-label');
+                if (notebookCountLabel) {
+                    notebookCountLabel.textContent = count === 1 ? 'card' : 'cards';
+                }
                 openNotebookBtn.classList.remove('hidden');
                 openNotebookBtn.addEventListener('click', () => {
                     localStorage.setItem('flashcardsActiveMode', 'notebook');
