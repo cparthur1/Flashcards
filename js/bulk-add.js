@@ -28,9 +28,6 @@ const transferSquircle = document.getElementById('transfer-squircle');
 const transferSquircleBadge = document.getElementById('transfer-squircle-badge');
 
 const leftCardsList = document.getElementById('left-cards-list');
-const leftSpacerTop = document.getElementById('left-spacer-top');
-const leftCardsContainer = document.getElementById('left-cards-container');
-const leftSpacerBottom = document.getElementById('left-spacer-bottom');
 const leftCardsCountBadge = document.getElementById('left-cards-count-badge');
 const btnSelectAll = document.getElementById('btn-select-all');
 const selectActionsSeparator = document.getElementById('select-actions-separator');
@@ -66,12 +63,6 @@ let loadedDecksCount = 0;
 let editingCardId = null;
 let notificationTimeout = null;
 
-// Virtual Scrolling State (Renderiza apenas visíveis + 10 acima e 10 abaixo)
-const VIRTUAL_BUFFER_ITEMS = 10;
-const CARD_SLOT_HEIGHT = 148; // 136px altura fixa do card + 12px margem inferior (100% estável e sem saltos de rolagem)
-let currentRenderRange = { start: -1, end: -1 };
-let isVirtualScrollScheduled = false;
-
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
     updateNotebookHeaderBadge();
@@ -79,7 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSelectionHandlers();
     setupTransferHandlers();
     setupEditModalHandlers();
-    setupVirtualScrollListener();
 });
 
 function getNotebookDataFromStorage() {
@@ -260,82 +250,51 @@ async function processFilesList(files) {
     }
 
     triggerHaptic('snap');
-    renderVirtualLeftCards(true);
+    renderLeftCardsList();
     updateSelectAllButtonState();
     updateTransferButtonState();
     showNotification(`${newCardsLoaded.length} cartões carregados com sucesso!`, "📚");
 }
 
-// --- VIRTUAL SCROLLING ENGINE FOR LEFT DECK PREVIEW ---
-// Renderiza apenas os cartões visíveis + 10 acima e 10 abaixo com altura fixa e determinística (zero bugs na rolagem rápida)
-function renderVirtualLeftCards(force = false) {
-    if (!leftCardsList || !leftCardsContainer) return;
-
-    const totalCards = uploadedCards.length;
-
+// --- NATIVE HARDWARE-ACCELERATED CARD RENDERING ---
+function updateLeftCardsCountBadge() {
     if (leftCardsCountBadge) {
+        const totalCards = uploadedCards.length;
         leftCardsCountBadge.textContent = `${totalCards} ${totalCards === 1 ? 'card' : 'cards'}`;
     }
-
-    if (totalCards === 0) {
-        if (leftSpacerTop) leftSpacerTop.style.height = '0px';
-        if (leftSpacerBottom) leftSpacerBottom.style.height = '0px';
-        leftCardsContainer.innerHTML = `
-            <div class="h-64 flex flex-col items-center justify-center text-center p-6 text-gray-400 select-none">
-                <svg class="w-12 h-12 mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <p class="font-bold text-sm text-gray-600">Todos os cartões foram transferidos!</p>
-                <p class="text-xs mt-1">Carregue mais baralhos se desejar adicionar outros cartões.</p>
-            </div>
-        `;
-        currentRenderRange = { start: -1, end: -1 };
-        updateSelectAllButtonState();
-        return;
-    }
-
-    const scrollTop = leftCardsList.scrollTop;
-    const viewportHeight = leftCardsList.clientHeight || 550;
-
-    // Cálculo instantâneo O(1) determinístico sem saltos ou jitter
-    const firstVisible = Math.floor(scrollTop / CARD_SLOT_HEIGHT);
-    const visibleCount = Math.ceil(viewportHeight / CARD_SLOT_HEIGHT);
-
-    // Buffer de 10 cards acima e 10 cards abaixo
-    const start = Math.max(0, firstVisible - VIRTUAL_BUFFER_ITEMS);
-    const end = Math.min(totalCards - 1, firstVisible + visibleCount + VIRTUAL_BUFFER_ITEMS);
-
-    // Se o range de renderização não mudou e não é render forçado, evita re-render desnecessário
-    if (!force && start === currentRenderRange.start && end === currentRenderRange.end) {
-        return;
-    }
-
-    currentRenderRange = { start, end };
-    const topSpacer = start * CARD_SLOT_HEIGHT;
-    const bottomSpacer = Math.max(0, (totalCards - 1 - end) * CARD_SLOT_HEIGHT);
-
-    if (leftSpacerTop) leftSpacerTop.style.height = `${topSpacer}px`;
-    if (leftSpacerBottom) leftSpacerBottom.style.height = `${bottomSpacer}px`;
-
-    const fragment = document.createDocumentFragment();
-    for (let i = start; i <= end; i++) {
-        const card = uploadedCards[i];
-        const cardEl = createLeftCardElement(card, i);
-        fragment.appendChild(cardEl);
-    }
-
-    leftCardsContainer.innerHTML = '';
-    leftCardsContainer.appendChild(fragment);
 }
 
-function setupVirtualScrollListener() {
-    leftCardsList?.addEventListener('scroll', () => {
-        if (!isVirtualScrollScheduled) {
-            isVirtualScrollScheduled = true;
-            requestAnimationFrame(() => {
-                renderVirtualLeftCards(false);
-                isVirtualScrollScheduled = false;
-            });
-        }
-    }, { passive: true });
+function showLeftEmptyState() {
+    if (!leftCardsList) return;
+    leftCardsList.innerHTML = `
+        <div class="h-64 flex flex-col items-center justify-center text-center p-6 text-gray-400 select-none">
+            <svg class="w-12 h-12 mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p class="font-bold text-sm text-gray-600">Todos os cartões foram transferidos!</p>
+            <p class="text-xs mt-1">Carregue mais baralhos se desejar adicionar outros cartões.</p>
+        </div>
+    `;
+    updateSelectAllButtonState();
+    updateTransferButtonState();
+}
+
+function renderLeftCardsList() {
+    if (!leftCardsList) return;
+
+    updateLeftCardsCountBadge();
+
+    if (uploadedCards.length === 0) {
+        showLeftEmptyState();
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    uploadedCards.forEach((card, idx) => {
+        const cardEl = createLeftCardElement(card, idx);
+        fragment.appendChild(cardEl);
+    });
+
+    leftCardsList.innerHTML = '';
+    leftCardsList.appendChild(fragment);
 }
 
 function createLeftCardElement(card, idx) {
@@ -522,7 +481,7 @@ function toggleCardSelection(cardId, isChecked) {
         selectedCardIds.delete(cardId);
     }
 
-    const cardEl = leftCardsContainer?.querySelector(`[data-id="${cardId}"]`);
+    const cardEl = leftCardsList?.querySelector(`[data-id="${cardId}"]`);
     if (cardEl) {
         if (isChecked) {
             cardEl.classList.add('border-blue-400', 'ring-2', 'ring-blue-500/20');
@@ -539,8 +498,8 @@ function toggleCardSelection(cardId, isChecked) {
 }
 
 function updateVisibleCheckboxes() {
-    if (!leftCardsContainer) return;
-    const cardElements = leftCardsContainer.querySelectorAll('.flashcard-item');
+    if (!leftCardsList) return;
+    const cardElements = leftCardsList.querySelectorAll('.flashcard-item');
     cardElements.forEach(el => {
         const id = el.dataset?.id;
         const isChecked = selectedCardIds.has(id);
@@ -617,7 +576,7 @@ function handleInstantMoveCard(card, cardEl) {
         }
     }, 180);
 
-    // Remove da lista da esquerda e sincroniza virtual scroller
+    // Remove da lista da esquerda
     setTimeout(() => {
         uploadedCards = uploadedCards.filter(c => c.id !== card.id);
 
@@ -625,7 +584,12 @@ function handleInstantMoveCard(card, cardEl) {
             summaryCardsText.textContent = `${uploadedCards.length} cartões disponíveis na lista`;
         }
 
-        renderVirtualLeftCards(true);
+        cardEl.remove();
+        if (uploadedCards.length === 0) {
+            showLeftEmptyState();
+        }
+
+        updateLeftCardsCountBadge();
         updateSelectAllButtonState();
         updateTransferButtonState();
         showNotification("Cartão movido para o Caderno!", "✨");
@@ -749,6 +713,12 @@ function handleTransferSelectedCards() {
     // Passo C: Por baixo do blur os cards simplesmente somem sem animação
     // Executado no meio do voo (~400ms), enquanto ambos os decks estão completamente sob o blur
     setTimeout(() => {
+        // Remove os elementos selecionados do DOM no deck da esquerda (cards somem sem animação)
+        selectedCardIds.forEach(id => {
+            const el = leftCardsList?.querySelector(`[data-id="${id}"]`);
+            if (el) el.remove();
+        });
+
         uploadedCards = uploadedCards.filter(c => !selectedCardIds.has(c.id));
         selectedCardIds.clear();
 
@@ -768,8 +738,11 @@ function handleTransferSelectedCards() {
             rightCardsCountBadge.textContent = `${sessionAddedCards.length} ${sessionAddedCards.length === 1 ? 'adicionado' : 'adicionados'}`;
         }
 
-        // Re-renderiza a lista virtual da esquerda (cards somem sem animação)
-        renderVirtualLeftCards(true);
+        if (uploadedCards.length === 0) {
+            showLeftEmptyState();
+        }
+
+        updateLeftCardsCountBadge();
         updateSelectAllButtonState();
         updateTransferButtonState();
 

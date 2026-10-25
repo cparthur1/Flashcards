@@ -3113,6 +3113,13 @@ mark.card-hl-purple {
     will-change: opacity;
 }
 
+/* Native Hardware-Accelerated Virtualization for Flashcard Items */
+.flashcard-item {
+    content-visibility: auto;
+    contain-intrinsic-size: auto none auto 136px;
+}
+
+
 
 
 
