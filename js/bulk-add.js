@@ -20,6 +20,13 @@ const summaryCardsText = document.getElementById('summary-cards-text');
 const btnLoadMore = document.getElementById('btn-load-more');
 
 const deckPreviewsWorkspace = document.getElementById('deck-previews-workspace');
+const leftDeckPanel = document.getElementById('left-deck-panel');
+const rightDeckPanel = document.getElementById('right-deck-panel');
+const leftDeckBlur = document.getElementById('left-deck-blur');
+const rightDeckBlur = document.getElementById('right-deck-blur');
+const transferSquircle = document.getElementById('transfer-squircle');
+const transferSquircleBadge = document.getElementById('transfer-squircle-badge');
+
 const leftCardsList = document.getElementById('left-cards-list');
 const leftSpacerTop = document.getElementById('left-spacer-top');
 const leftCardsContainer = document.getElementById('left-cards-container');
@@ -692,16 +699,23 @@ function handleInstantMoveCard(card, cardEl) {
     }, 300);
 }
 
-// --- TRANSFER FROM LEFT TO RIGHT (WITH MATERIAL YOU EXPRESSIVE ANIMATIONS) ---
+// --- TRANSFER FROM LEFT TO RIGHT (CINEMATIC SQUIRCLE LIFT & FLY WITH BLUR) ---
+let isTransferring = false;
+
 function setupTransferHandlers() {
     btnAddToNotebook?.addEventListener('click', handleTransferSelectedCards);
 }
 
 function handleTransferSelectedCards() {
-    if (selectedCardIds.size === 0) return;
+    if (isTransferring || selectedCardIds.size === 0) return;
 
     const cardsToTransfer = uploadedCards.filter(c => selectedCardIds.has(c.id));
     if (cardsToTransfer.length === 0) return;
+
+    isTransferring = true;
+    if (btnAddToNotebook) {
+        btnAddToNotebook.disabled = true;
+    }
 
     // 1. Salva os cartões no save do Caderno no localStorage
     // (Mesmo save dos que já estavam no caderno antes)
@@ -721,47 +735,108 @@ function handleTransferSelectedCards() {
     nbData.questionsPool.push(...preparedCards);
     saveNotebookDataToStorage(nbData);
 
-    // 2. Animação de Física Material You Expressive ao mover da esquerda para a direita:
-    // Aplica slide-out apenas nos cartões selecionados atualmente visíveis na janela virtual
-    const renderedItems = leftCardsContainer?.querySelectorAll('.flashcard-item') || [];
-    renderedItems.forEach(el => {
-        if (selectedCardIds.has(el.dataset?.id)) {
-            el.classList.add('card-moving-out');
-        }
-    });
+    // 2. Animação Cinematográfica Otimizada de Transferência em Lote:
+    // Passo A: Fade in blur em cima dos 2 decks
+    if (leftDeckBlur) {
+        leftDeckBlur.classList.remove('opacity-0', 'pointer-events-none');
+        leftDeckBlur.classList.add('opacity-100', 'pointer-events-auto');
+    }
+    if (rightDeckBlur) {
+        rightDeckBlur.classList.remove('opacity-0', 'pointer-events-none');
+        rightDeckBlur.classList.add('opacity-100', 'pointer-events-auto');
+    }
+
+    // Calcula coordenadas precisas do centro dos dois decks
+    const leftRect = leftDeckPanel?.getBoundingClientRect() || leftCardsList.getBoundingClientRect();
+    const rightRect = rightDeckPanel?.getBoundingClientRect() || rightCardsList.getBoundingClientRect();
+
+    const squircleSize = (window.innerWidth < 640) ? 64 : 80;
+    const startX = leftRect.left + (leftRect.width / 2) - (squircleSize / 2);
+    const startY = leftRect.top + (leftRect.height / 2) - (squircleSize / 2);
+    const endX = rightRect.left + (rightRect.width / 2) - (squircleSize / 2);
+    const endY = rightRect.top + (rightRect.height / 2) - (squircleSize / 2);
+
+    if (transferSquircleBadge) {
+        transferSquircleBadge.textContent = cardsToTransfer.length;
+    }
+
+    // Passo B: Surge no deck da esquerda o ícone da Semana de Provas dentro do squircle
+    // Esse aumenta em tamanho e renderiza um dropshadow pronunciado (como se tivesse levantado)
+    // Move-se para cima da lista da direita e desce
+    if (transferSquircle) {
+        transferSquircle.classList.remove('hidden');
+        transferSquircle.classList.add('flex');
+    }
 
     triggerHaptic('pop');
 
-    // Aguarda o slide out da física (240ms) e então move para a lista da direita
+    // Executa a física de levantamento, voo e aterrissagem acelerada por GPU
+    transferSquircle?.animate([
+        // 0%: Surge repousando no centro do deck esquerdo
+        {
+            transform: `translate3d(${startX}px, ${startY}px, 0) scale(0.65)`,
+            filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15))',
+            opacity: 0,
+            offset: 0
+        },
+        // 25%: Levanta de cima da lista da esquerda (aumenta de tamanho e ganha drop-shadow pronunciado)
+        {
+            transform: `translate3d(${startX}px, ${startY - 25}px, 0) scale(1.35)`,
+            filter: 'drop-shadow(0 28px 45px rgba(79, 70, 229, 0.55)) drop-shadow(0 14px 22px rgba(0, 0, 0, 0.35))',
+            opacity: 1,
+            offset: 0.25
+        },
+        // 68%: Move-se para cima da lista da direita (ainda elevado)
+        {
+            transform: `translate3d(${endX}px, ${endY - 25}px, 0) scale(1.35)`,
+            filter: 'drop-shadow(0 28px 45px rgba(79, 70, 229, 0.55)) drop-shadow(0 14px 22px rgba(0, 0, 0, 0.35))',
+            opacity: 1,
+            offset: 0.68
+        },
+        // 88%: Desce em cima da lista da direita
+        {
+            transform: `translate3d(${endX}px, ${endY}px, 0) scale(0.85)`,
+            filter: 'drop-shadow(0 6px 12px rgba(0, 0, 0, 0.2))',
+            opacity: 1,
+            offset: 0.88
+        },
+        // 100%: Fade out suave ao pousar
+        {
+            transform: `translate3d(${endX}px, ${endY}px, 0) scale(0.75)`,
+            filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))',
+            opacity: 0,
+            offset: 1.0
+        }
+    ], {
+        duration: 800,
+        easing: 'cubic-bezier(0.2, 0.0, 0.2, 1)',
+        fill: 'forwards'
+    });
+
+    // Passo C: Por baixo do blur os cards simplesmente somem sem animação
+    // Executado no meio do voo (~400ms), enquanto ambos os decks estão completamente sob o blur
     setTimeout(() => {
-        // Atualiza estado in-memory da esquerda
         uploadedCards = uploadedCards.filter(c => !selectedCardIds.has(c.id));
         cardsToTransfer.forEach(c => cardHeightCache.delete(c.id));
         selectedCardIds.clear();
 
-        // Adiciona à lista de sessão da direita
         sessionAddedCards.push(...preparedCards);
 
-        // Oculta a dica no fundo da direita
         if (rightEmptyHint) rightEmptyHint.classList.add('hidden');
 
-        // Renderiza novos cartões na direita com efeito spring-in (apenas nos primeiros 10 para evitar frame drops)
+        // Renderiza no deck da direita sem animação por card (somem/aparecem instantâneos por baixo do blur)
         const fragment = document.createDocumentFragment();
-        preparedCards.forEach((c, idx) => {
+        preparedCards.forEach(c => {
             const rightEl = createRightCardElement(c);
-            if (idx < 10) {
-                rightEl.classList.add('card-spring-in');
-            }
             fragment.appendChild(rightEl);
         });
         rightCardsList.appendChild(fragment);
 
-        // Atualiza badge de contagem da direita
         if (rightCardsCountBadge) {
             rightCardsCountBadge.textContent = `${sessionAddedCards.length} ${sessionAddedCards.length === 1 ? 'adicionado' : 'adicionados'}`;
         }
 
-        // Re-renderiza a lista virtual da esquerda
+        // Re-renderiza a lista virtual da esquerda (cards somem sem animação)
         renderVirtualLeftCards(true);
         updateSelectAllButtonState();
         updateTransferButtonState();
@@ -769,9 +844,31 @@ function handleTransferSelectedCards() {
         if (summaryCardsText) {
             summaryCardsText.textContent = `${uploadedCards.length} cartões disponíveis na lista`;
         }
+    }, 400);
 
+    // Passo D: Desce sobre a direita e blur fade out
+    setTimeout(() => {
+        triggerHaptic('snap');
+        // Blur fade out
+        if (leftDeckBlur) {
+            leftDeckBlur.classList.remove('opacity-100', 'pointer-events-auto');
+            leftDeckBlur.classList.add('opacity-0', 'pointer-events-none');
+        }
+        if (rightDeckBlur) {
+            rightDeckBlur.classList.remove('opacity-100', 'pointer-events-auto');
+            rightDeckBlur.classList.add('opacity-0', 'pointer-events-none');
+        }
+    }, 700);
+
+    // Finaliza transição
+    setTimeout(() => {
+        if (transferSquircle) {
+            transferSquircle.classList.add('hidden');
+            transferSquircle.classList.remove('flex');
+        }
+        isTransferring = false;
         showNotification(`${preparedCards.length} ${preparedCards.length === 1 ? 'cartão adicionado' : 'cartões adicionados'} ao Caderno!`, "✨");
-    }, 240);
+    }, 850);
 }
 
 // --- RENDER RIGHT DECK PREVIEW (CARDS ADDED TO NOTEBOOK) ---

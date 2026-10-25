@@ -3106,6 +3106,14 @@ mark.card-hl-purple {
     background-image: radial-gradient(#334155 1.5px, transparent 1.5px);
 }
 
+/* Deck Blur Overlay for Cinematic Bulk Transfer */
+.deck-blur-overlay {
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    will-change: opacity;
+}
+
+
 
 
 
