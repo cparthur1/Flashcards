@@ -68,8 +68,7 @@ let notificationTimeout = null;
 
 // Virtual Scrolling State (Renderiza apenas visíveis + 10 acima e 10 abaixo)
 const VIRTUAL_BUFFER_ITEMS = 10;
-const DEFAULT_CARD_HEIGHT = 145; // Altura estimada em px por card (incluindo margem de 12px)
-const cardHeightCache = new Map(); // cardId -> altura medida em px
+const CARD_SLOT_HEIGHT = 148; // 136px altura fixa do card + 12px margem inferior (100% estável e sem saltos de rolagem)
 let currentRenderRange = { start: -1, end: -1 };
 let isVirtualScrollScheduled = false;
 
@@ -268,63 +267,17 @@ async function processFilesList(files) {
 }
 
 // --- VIRTUAL SCROLLING ENGINE FOR LEFT DECK PREVIEW ---
-// Renderiza apenas os cartões visíveis + 10 acima e 10 abaixo para evitar quedas de frames
-function getCardHeight(card) {
-    if (!card) return DEFAULT_CARD_HEIGHT;
-    return cardHeightCache.get(card.id) || DEFAULT_CARD_HEIGHT;
-}
-
-function calculateVirtualRange() {
-    if (!leftCardsList || uploadedCards.length === 0) {
-        return { start: 0, end: 0, topSpacer: 0, bottomSpacer: 0 };
-    }
-
-    const scrollTop = leftCardsList.scrollTop;
-    const viewportHeight = leftCardsList.clientHeight || 550;
-
-    let accum = 0;
-    let firstVisible = -1;
-    let lastVisible = uploadedCards.length - 1;
-
-    for (let i = 0; i < uploadedCards.length; i++) {
-        const h = getCardHeight(uploadedCards[i]);
-        if (firstVisible === -1 && accum + h >= scrollTop) {
-            firstVisible = i;
-        }
-        if (firstVisible !== -1 && accum > scrollTop + viewportHeight) {
-            lastVisible = i;
-            break;
-        }
-        accum += h;
-    }
-
-    if (firstVisible === -1) firstVisible = 0;
-
-    // Buffer de 10 cards acima e 10 cards abaixo que o usuário pode ver
-    const start = Math.max(0, firstVisible - VIRTUAL_BUFFER_ITEMS);
-    const end = Math.min(uploadedCards.length - 1, lastVisible + VIRTUAL_BUFFER_ITEMS);
-
-    let topSpacer = 0;
-    for (let i = 0; i < start; i++) {
-        topSpacer += getCardHeight(uploadedCards[i]);
-    }
-
-    let bottomSpacer = 0;
-    for (let i = end + 1; i < uploadedCards.length; i++) {
-        bottomSpacer += getCardHeight(uploadedCards[i]);
-    }
-
-    return { start, end, topSpacer, bottomSpacer };
-}
-
+// Renderiza apenas os cartões visíveis + 10 acima e 10 abaixo com altura fixa e determinística (zero bugs na rolagem rápida)
 function renderVirtualLeftCards(force = false) {
     if (!leftCardsList || !leftCardsContainer) return;
 
+    const totalCards = uploadedCards.length;
+
     if (leftCardsCountBadge) {
-        leftCardsCountBadge.textContent = `${uploadedCards.length} ${uploadedCards.length === 1 ? 'card' : 'cards'}`;
+        leftCardsCountBadge.textContent = `${totalCards} ${totalCards === 1 ? 'card' : 'cards'}`;
     }
 
-    if (uploadedCards.length === 0) {
+    if (totalCards === 0) {
         if (leftSpacerTop) leftSpacerTop.style.height = '0px';
         if (leftSpacerBottom) leftSpacerBottom.style.height = '0px';
         leftCardsContainer.innerHTML = `
@@ -339,7 +292,16 @@ function renderVirtualLeftCards(force = false) {
         return;
     }
 
-    const { start, end, topSpacer, bottomSpacer } = calculateVirtualRange();
+    const scrollTop = leftCardsList.scrollTop;
+    const viewportHeight = leftCardsList.clientHeight || 550;
+
+    // Cálculo instantâneo O(1) determinístico sem saltos ou jitter
+    const firstVisible = Math.floor(scrollTop / CARD_SLOT_HEIGHT);
+    const visibleCount = Math.ceil(viewportHeight / CARD_SLOT_HEIGHT);
+
+    // Buffer de 10 cards acima e 10 cards abaixo
+    const start = Math.max(0, firstVisible - VIRTUAL_BUFFER_ITEMS);
+    const end = Math.min(totalCards - 1, firstVisible + visibleCount + VIRTUAL_BUFFER_ITEMS);
 
     // Se o range de renderização não mudou e não é render forçado, evita re-render desnecessário
     if (!force && start === currentRenderRange.start && end === currentRenderRange.end) {
@@ -347,6 +309,9 @@ function renderVirtualLeftCards(force = false) {
     }
 
     currentRenderRange = { start, end };
+    const topSpacer = start * CARD_SLOT_HEIGHT;
+    const bottomSpacer = Math.max(0, (totalCards - 1 - end) * CARD_SLOT_HEIGHT);
+
     if (leftSpacerTop) leftSpacerTop.style.height = `${topSpacer}px`;
     if (leftSpacerBottom) leftSpacerBottom.style.height = `${bottomSpacer}px`;
 
@@ -359,35 +324,6 @@ function renderVirtualLeftCards(force = false) {
 
     leftCardsContainer.innerHTML = '';
     leftCardsContainer.appendChild(fragment);
-
-    // Mede as alturas reais dos elementos renderizados para precisão do scroll
-    requestAnimationFrame(() => {
-        measureRenderedCardHeights();
-    });
-}
-
-function measureRenderedCardHeights() {
-    if (!leftCardsContainer) return;
-    let anyChanged = false;
-    const children = leftCardsContainer.children;
-    for (let i = 0; i < children.length; i++) {
-        const el = children[i];
-        const id = el.dataset?.id;
-        if (id) {
-            const measured = el.offsetHeight + 12; // 12px de margin (space-y-3)
-            const cached = cardHeightCache.get(id);
-            if (!cached || Math.abs(cached - measured) > 4) {
-                cardHeightCache.set(id, measured);
-                anyChanged = true;
-            }
-        }
-    }
-
-    if (anyChanged) {
-        const { topSpacer, bottomSpacer } = calculateVirtualRange();
-        if (leftSpacerTop) leftSpacerTop.style.height = `${topSpacer}px`;
-        if (leftSpacerBottom) leftSpacerBottom.style.height = `${bottomSpacer}px`;
-    }
 }
 
 function setupVirtualScrollListener() {
@@ -405,12 +341,12 @@ function setupVirtualScrollListener() {
 function createLeftCardElement(card, idx) {
     const cardEl = document.createElement('div');
     const isSelected = selectedCardIds.has(card.id);
-    cardEl.className = `flashcard-item bg-white border ${isSelected ? 'border-blue-400 ring-2 ring-blue-500/20' : 'border-gray-200'} p-4 rounded-2xl shadow-xs relative group flex flex-col gap-2 transition-all cursor-pointer select-none`;
+    cardEl.className = `flashcard-item bg-white border ${isSelected ? 'border-blue-400 ring-2 ring-blue-500/20' : 'border-gray-200'} p-3.5 rounded-2xl shadow-xs relative group flex flex-col justify-between mb-3 h-[136px] transition-all cursor-pointer select-none overflow-hidden`;
     cardEl.dataset.id = card.id;
 
     // Type Badge & Source Deck
     const topBar = document.createElement('div');
-    topBar.className = "flex items-center justify-between gap-2 pl-9 pr-1";
+    topBar.className = "flex items-center justify-between gap-2 pl-9 pr-1 flex-shrink-0";
 
     const sourceTag = document.createElement('span');
     sourceTag.className = "text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full truncate max-w-[180px]";
@@ -423,7 +359,7 @@ function createLeftCardElement(card, idx) {
         typeBadge.className += " bg-indigo-100 text-indigo-800";
         typeBadge.textContent = "Anki";
     } else if (card.type === 'multiple_choice') {
-        typeBadge.className += " bg-purple-100 text-purple-800";
+        typeBadge.className += " bg-cyan-100 text-cyan-800";
         typeBadge.textContent = "Múltipla escolha";
     } else if (card.type === 'open_double') {
         typeBadge.className += " bg-amber-100 text-amber-800";
@@ -476,29 +412,27 @@ function createLeftCardElement(card, idx) {
     leftControlsCol.appendChild(instantMoveBtn);
     cardEl.appendChild(leftControlsCol);
 
-    // Front (Question) & Back (Answer) Content (com recuo à esquerda para não sobrepor os controles)
+    // Front (Question) & Back (Answer) Content com altura previsível e sem quebra de scroll
     const contentBox = document.createElement('div');
-    contentBox.className = "flex flex-col gap-1.5 mt-1 pl-9";
+    contentBox.className = "flex flex-col gap-1 pl-9 flex-1 min-h-0 justify-center";
 
     const descHtml = renderMathAndMarkdown(card.description || '(Sem texto)');
     const frontEl = document.createElement('div');
-    frontEl.className = "text-sm text-gray-900 font-medium leading-relaxed";
-    frontEl.innerHTML = `<strong>Frente:</strong> <div class="mt-0.5 text-gray-800">${descHtml}</div>`;
+    frontEl.className = "text-xs text-gray-900 font-medium leading-snug line-clamp-2";
+    frontEl.innerHTML = `<strong>Frente:</strong> <span class="text-gray-800">${descHtml}</span>`;
     contentBox.appendChild(frontEl);
 
     const ansHtml = renderMathAndMarkdown(card.answer || '');
     const backEl = document.createElement('div');
-    backEl.className = "text-sm text-emerald-700 mt-1";
-    backEl.innerHTML = `<strong>Verso:</strong> <div class="mt-0.5 text-emerald-800">${ansHtml}</div>`;
+    backEl.className = "text-xs text-emerald-700 leading-snug line-clamp-2";
+    backEl.innerHTML = `<strong>Verso:</strong> <span class="text-emerald-800">${ansHtml}</span>`;
     contentBox.appendChild(backEl);
 
-    // Image previews if present
-    const safeImg = sanitizeImageUrl(card.image);
-    if (safeImg) {
-        const imgCont = document.createElement('div');
-        imgCont.className = "mt-2 max-h-24 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center p-1";
-        imgCont.innerHTML = `<img src="${safeImg}" class="max-h-20 w-auto object-contain rounded" alt="Imagem">`;
-        contentBox.appendChild(imgCont);
+    if (card.image) {
+        const imgChip = document.createElement('span');
+        imgChip.className = "inline-flex items-center gap-1 text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-medium w-fit";
+        imgChip.textContent = "🖼️ Imagem";
+        contentBox.appendChild(imgChip);
     }
 
     cardEl.appendChild(contentBox);
@@ -686,7 +620,6 @@ function handleInstantMoveCard(card, cardEl) {
     // Remove da lista da esquerda e sincroniza virtual scroller
     setTimeout(() => {
         uploadedCards = uploadedCards.filter(c => c.id !== card.id);
-        cardHeightCache.delete(card.id);
 
         if (summaryCardsText) {
             summaryCardsText.textContent = `${uploadedCards.length} cartões disponíveis na lista`;
@@ -736,7 +669,7 @@ function handleTransferSelectedCards() {
     saveNotebookDataToStorage(nbData);
 
     // 2. Animação Cinematográfica Otimizada de Transferência em Lote:
-    // Passo A: Fade in blur em cima dos 2 decks
+    // Passo A: Fade in blur somente em cima dos deck-previews (listas de cartões)
     if (leftDeckBlur) {
         leftDeckBlur.classList.remove('opacity-0', 'pointer-events-none');
         leftDeckBlur.classList.add('opacity-100', 'pointer-events-auto');
@@ -746,9 +679,9 @@ function handleTransferSelectedCards() {
         rightDeckBlur.classList.add('opacity-100', 'pointer-events-auto');
     }
 
-    // Calcula coordenadas precisas do centro dos dois decks
-    const leftRect = leftDeckPanel?.getBoundingClientRect() || leftCardsList.getBoundingClientRect();
-    const rightRect = rightDeckPanel?.getBoundingClientRect() || rightCardsList.getBoundingClientRect();
+    // Calcula coordenadas precisas do centro dos dois deck-previews
+    const leftRect = leftCardsList.getBoundingClientRect();
+    const rightRect = rightCardsList.getBoundingClientRect();
 
     const squircleSize = (window.innerWidth < 640) ? 64 : 80;
     const startX = leftRect.left + (leftRect.width / 2) - (squircleSize / 2);
@@ -761,7 +694,7 @@ function handleTransferSelectedCards() {
     }
 
     // Passo B: Surge no deck da esquerda o ícone da Semana de Provas dentro do squircle
-    // Esse aumenta em tamanho e renderiza um dropshadow pronunciado (como se tivesse levantado)
+    // Esse aumenta em tamanho e renderiza um dropshadow azul pronunciado (como se tivesse levantado)
     // Move-se para cima da lista da direita e desce
     if (transferSquircle) {
         transferSquircle.classList.remove('hidden');
@@ -770,7 +703,7 @@ function handleTransferSelectedCards() {
 
     triggerHaptic('pop');
 
-    // Executa a física de levantamento, voo e aterrissagem acelerada por GPU
+    // Executa a física de levantamento, voo e aterrissagem acelerada por GPU (sem tons roxos)
     transferSquircle?.animate([
         // 0%: Surge repousando no centro do deck esquerdo
         {
@@ -779,17 +712,17 @@ function handleTransferSelectedCards() {
             opacity: 0,
             offset: 0
         },
-        // 25%: Levanta de cima da lista da esquerda (aumenta de tamanho e ganha drop-shadow pronunciado)
+        // 25%: Levanta de cima da lista da esquerda (aumenta de tamanho e ganha drop-shadow azul claro pronunciado)
         {
             transform: `translate3d(${startX}px, ${startY - 25}px, 0) scale(1.35)`,
-            filter: 'drop-shadow(0 28px 45px rgba(79, 70, 229, 0.55)) drop-shadow(0 14px 22px rgba(0, 0, 0, 0.35))',
+            filter: 'drop-shadow(0 28px 45px rgba(37, 99, 235, 0.45)) drop-shadow(0 14px 22px rgba(0, 0, 0, 0.25))',
             opacity: 1,
             offset: 0.25
         },
         // 68%: Move-se para cima da lista da direita (ainda elevado)
         {
             transform: `translate3d(${endX}px, ${endY - 25}px, 0) scale(1.35)`,
-            filter: 'drop-shadow(0 28px 45px rgba(79, 70, 229, 0.55)) drop-shadow(0 14px 22px rgba(0, 0, 0, 0.35))',
+            filter: 'drop-shadow(0 28px 45px rgba(37, 99, 235, 0.45)) drop-shadow(0 14px 22px rgba(0, 0, 0, 0.25))',
             opacity: 1,
             offset: 0.68
         },
@@ -817,7 +750,6 @@ function handleTransferSelectedCards() {
     // Executado no meio do voo (~400ms), enquanto ambos os decks estão completamente sob o blur
     setTimeout(() => {
         uploadedCards = uploadedCards.filter(c => !selectedCardIds.has(c.id));
-        cardsToTransfer.forEach(c => cardHeightCache.delete(c.id));
         selectedCardIds.clear();
 
         sessionAddedCards.push(...preparedCards);
@@ -892,7 +824,7 @@ function createRightCardElement(card) {
         typeBadge.className += " bg-indigo-100 text-indigo-800";
         typeBadge.textContent = "Anki";
     } else if (card.type === 'multiple_choice') {
-        typeBadge.className += " bg-purple-100 text-purple-800";
+        typeBadge.className += " bg-cyan-100 text-cyan-800";
         typeBadge.textContent = "Múltipla escolha";
     } else if (card.type === 'open_double') {
         typeBadge.className += " bg-amber-100 text-amber-800";

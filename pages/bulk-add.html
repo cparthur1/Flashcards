@@ -125,8 +125,8 @@
         <!-- UPLOAD SUMMARY & COMPACT CONTROLS BAR (SHOWN AFTER UPLOAD) -->
         <section id="upload-summary-bar" class="hidden bg-white p-3.5 sm:p-4 rounded-2xl border border-gray-200/90 shadow-xs flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">
-                    📁
+                <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <img src="../assets/img/loaded.svg" class="w-5 h-5 flex-shrink-0" alt="Baralhos carregados">
                 </div>
                 <div>
                     <span id="summary-decks-text" class="text-sm font-bold text-gray-900 block">0 baralhos carregados</span>
@@ -149,12 +149,9 @@
             <div class="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-4 sm:gap-6 items-start flex-1 min-h-[500px]">
 
                 <!-- ==================== LEFT DECK PREVIEW (UPLOADED CARDS) ==================== -->
-                <div id="left-deck-panel" class="bg-white rounded-3xl border border-gray-200 shadow-sm flex flex-col overflow-hidden h-[620px] relative">
-                    <!-- Blur Overlay for Batch Transfer -->
-                    <div id="left-deck-blur" class="deck-blur-overlay absolute inset-0 z-30 bg-white/50 backdrop-blur-md rounded-3xl opacity-0 pointer-events-none transition-opacity duration-300 ease-out"></div>
-
-                    <!-- Left Header -->
-                    <div class="px-5 py-4 border-b border-gray-100 bg-gray-50/70 flex items-center justify-between gap-3 flex-shrink-0">
+                <div id="left-deck-panel" class="bg-white rounded-3xl border border-gray-200 shadow-sm flex flex-col overflow-hidden h-[620px]">
+                    <!-- Left Header (Unblurred) -->
+                    <div class="px-5 py-4 border-b border-gray-100 bg-gray-50/70 flex items-center justify-between gap-3 flex-shrink-0 z-10">
                         <div class="flex items-center gap-2.5">
                             <h3 class="font-bold text-sm sm:text-base text-gray-900">Baralhos Carregados</h3>
                             <span id="left-cards-count-badge" class="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
@@ -172,13 +169,19 @@
                         </div>
                     </div>
 
-                    <!-- Left Cards List (Virtual Scroll Windowing) -->
-                    <div id="left-cards-list" class="flex-1 overflow-y-auto p-4 custom-scrollbar relative">
-                        <div id="left-spacer-top" class="w-full flex-shrink-0" style="height: 0px;"></div>
-                        <div id="left-cards-container" class="space-y-3">
-                            <!-- Injected dynamically in bulk-add.js -->
+                    <!-- Left Deck Preview Area (Blur applied only here) -->
+                    <div class="relative flex-1 min-h-0 overflow-hidden flex flex-col">
+                        <!-- Blur Overlay for Left Deck Preview -->
+                        <div id="left-deck-blur" class="deck-blur-overlay absolute inset-0 z-30 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 ease-out"></div>
+
+                        <!-- Left Cards List (Virtual Scroll Windowing) -->
+                        <div id="left-cards-list" class="flex-1 overflow-y-auto p-4 custom-scrollbar relative">
+                            <div id="left-spacer-top" class="w-full flex-shrink-0" style="height: 0px;"></div>
+                            <div id="left-cards-container">
+                                <!-- Injected dynamically in bulk-add.js -->
+                            </div>
+                            <div id="left-spacer-bottom" class="w-full flex-shrink-0" style="height: 0px;"></div>
                         </div>
-                        <div id="left-spacer-bottom" class="w-full flex-shrink-0" style="height: 0px;"></div>
                     </div>
                 </div>
 
@@ -200,12 +203,9 @@
                 </div>
 
                 <!-- ==================== RIGHT DECK PREVIEW (ADDED TO NOTEBOOK) ==================== -->
-                <div id="right-deck-panel" class="bg-white rounded-3xl border border-gray-200 shadow-sm flex flex-col overflow-hidden h-[620px] relative">
-                    <!-- Blur Overlay for Batch Transfer -->
-                    <div id="right-deck-blur" class="deck-blur-overlay absolute inset-0 z-30 bg-white/50 backdrop-blur-md rounded-3xl opacity-0 pointer-events-none transition-opacity duration-300 ease-out"></div>
-
-                    <!-- Right Header -->
-                    <div class="px-5 py-4 border-b border-gray-100 bg-gray-50/70 flex items-center justify-between gap-3 flex-shrink-0">
+                <div id="right-deck-panel" class="bg-white rounded-3xl border border-gray-200 shadow-sm flex flex-col overflow-hidden h-[620px]">
+                    <!-- Right Header (Unblurred) -->
+                    <div class="px-5 py-4 border-b border-gray-100 bg-gray-50/70 flex items-center justify-between gap-3 flex-shrink-0 z-10">
                         <div class="flex items-center gap-2.5">
                             <h3 class="font-bold text-sm sm:text-base text-gray-900">Adicionados ao Caderno</h3>
                             <span id="right-cards-count-badge" class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
@@ -215,17 +215,23 @@
                         <span class="text-[11px] text-gray-400 font-medium">Nesta sessão</span>
                     </div>
 
-                    <!-- Right Cards List (Empty by default with watermark hint) -->
-                    <div id="right-cards-list" class="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar relative">
-                        <!-- Hint in background when empty -->
-                        <div id="right-empty-hint" class="absolute inset-4 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center p-6 text-center select-none bg-gray-50/40 bulk-empty-hint">
-                            <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center mb-3 shadow-2xs">
-                                <img src="../assets/img/bulk_add.svg" class="w-7 h-7 opacity-60" alt="Mova cartões para cá">
+                    <!-- Right Deck Preview Area (Blur applied only here) -->
+                    <div class="relative flex-1 min-h-0 overflow-hidden flex flex-col">
+                        <!-- Blur Overlay for Right Deck Preview -->
+                        <div id="right-deck-blur" class="deck-blur-overlay absolute inset-0 z-30 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 ease-out"></div>
+
+                        <!-- Right Cards List (Empty by default with watermark hint) -->
+                        <div id="right-cards-list" class="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar relative">
+                            <!-- Hint in background when empty -->
+                            <div id="right-empty-hint" class="absolute inset-4 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center p-6 text-center select-none bg-gray-50/40 bulk-empty-hint">
+                                <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center mb-3 shadow-2xs">
+                                    <img src="../assets/img/bulk_add.svg" class="w-7 h-7 opacity-60" alt="Mova cartões para cá">
+                                </div>
+                                <h4 class="text-base font-bold text-gray-700">Mova cartões para cá</h4>
+                                <p class="text-xs text-gray-400 max-w-xs mt-1 leading-relaxed">
+                                    Selecione cartões na lista da esquerda e clique no botão com a flecha para adicioná-los ao seu Caderno.
+                                </p>
                             </div>
-                            <h4 class="text-base font-bold text-gray-700">Mova cartões para cá</h4>
-                            <p class="text-xs text-gray-400 max-w-xs mt-1 leading-relaxed">
-                                Selecione cartões na lista da esquerda e clique no botão com a flecha para adicioná-los ao seu Caderno.
-                            </p>
                         </div>
                     </div>
                 </div>
@@ -272,12 +278,12 @@
 
     <!-- CINEMATIC BATCH TRANSFER SQUIRCLE TOKEN -->
     <div id="transfer-squircle" class="fixed top-0 left-0 z-50 pointer-events-none hidden items-center justify-center will-change-transform">
-        <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-[22px] bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 text-white flex items-center justify-center border-2 border-white/60 shadow-2xl">
+        <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-[22px] bg-gradient-to-br from-sky-400 via-blue-500 to-blue-600 text-white flex items-center justify-center border-2 border-white/60 shadow-2xl">
             <!-- Exact SVG Icon from Semana de Provas in index.html -->
             <svg class="w-8 h-8 sm:w-10 sm:h-10 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
             </svg>
-            <span id="transfer-squircle-badge" class="absolute -top-1.5 -right-1.5 bg-blue-500 text-white font-extrabold text-[11px] px-2 py-0.5 rounded-full border-2 border-white shadow-md">
+            <span id="transfer-squircle-badge" class="absolute -top-1.5 -right-1.5 bg-blue-600 text-white font-extrabold text-[11px] px-2 py-0.5 rounded-full border-2 border-white shadow-md">
                 0
             </span>
         </div>
