@@ -3048,6 +3048,7 @@ async function executeAgentChatTurn(apiKey, modelName, userPrompt, forceLite = f
             history = [];
         }
     }
+    sanitizeChatHistory(history);
     const historyBeforeTurn = JSON.parse(JSON.stringify(history));
 
     const toolsForModel = (!forceLite && modelName === "gemini-flash-lite-latest")

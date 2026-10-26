@@ -185,7 +185,9 @@ export function checkAndResetModelFallback() {
 }
 
 // --- FETCH INTERCEPTOR FOR GEMINI API ROLE FIX ---
-// Fixes GoogleGenerativeAI SDK sending deprecated role 'function' instead of 'user' for function responses
+// Fixes GoogleGenerativeAI SDK sending role 'function' over HTTP wire:
+// The Gemini REST API requires role 'user' for function response turns on the wire,
+// while the client SDK internal validation strictly requires role 'function' in memory.
 if (typeof window !== 'undefined' && window.fetch) {
     const originalFetch = window.fetch;
     window.fetch = async function (resource, options) {
@@ -224,15 +226,32 @@ if (typeof window !== 'undefined' && window.fetch) {
 }
 
 /**
- * Ensures all history items in a Gemini ChatSession use valid roles ('user' instead of 'function').
+ * Garante que os itens de histórico em uma sessão de chat ou array do Gemini usem os papéis (roles) válidos:
+ * - Partes que contêm 'functionResponse' DEVEM ter role 'function' na memória do SDK do GoogleGenerativeAI
+ *   para passar na validação estrita do SDK (startChat validação de histórico).
+ *   (O interceptor de fetch cuida da tradução de 'function' para 'user' no payload HTTP enviado à API).
+ * - Remove itens órfãos que antecedam a primeira mensagem de usuário.
+ * @param {Object|Array} target - ChatSession ou array de histórico
  */
-export function sanitizeChatHistory(chatSession) {
-    if (chatSession && Array.isArray(chatSession._history)) {
-        chatSession._history.forEach(item => {
-            if (item.role === 'function') {
-                item.role = 'user';
-            }
-        });
+export function sanitizeChatHistory(target) {
+    const list = Array.isArray(target)
+        ? target
+        : (target && Array.isArray(target._history) ? target._history : null);
+    if (!list) return;
+
+    list.forEach(item => {
+        if (!item || !Array.isArray(item.parts)) return;
+        const hasFunctionResponse = item.parts.some(p => p && !!p.functionResponse);
+        if (hasFunctionResponse) {
+            item.role = 'function';
+        } else if (item.role === 'function') {
+            item.role = 'user';
+        }
+    });
+
+    // Garante que o primeiro item seja de papel 'user' se o histórico não estiver vazio
+    while (list.length > 0 && list[0].role !== 'user') {
+        list.shift();
     }
 }
 
