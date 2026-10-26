@@ -2490,6 +2490,7 @@ resetBtn.addEventListener('click', () => {
 // --- HAMBURGER MENU LOGIC ---
 function openHamburgerMenu() {
     if (!hamburgerMenu) return;
+    closeDeckDropdown();
     updateHapticUI();
     hamburgerBackdrop?.classList.remove('hidden');
     hamburgerMenu.classList.remove('hidden');
@@ -4316,6 +4317,7 @@ function renderBookmarkIcon() {
 }
 
 function openDeckDropdown() {
+    closeHamburgerMenu();
     deckSelectDropdown.classList.remove('hidden');
     deckSelectArrow.classList.add('rotate-180');
     updateDailyStreakUI();
