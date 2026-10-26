@@ -323,20 +323,49 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-4 text-right ml-4">
-            <div id="counter-left-wrapper" class="block select-none" role="button" tabindex="0">
-                <p id="counter-left-label" class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">
-                    Restantes</p>
-                <p id="questions-left" class="text-sm font-bold text-blue-600 text-center">0</p>
+        <!-- Header Stats with Dropdown Selector -->
+        <div class="relative ml-auto flex items-center" id="header-stats-component">
+            <div id="header-stats-trigger" role="button" tabindex="0"
+                class="flex items-center gap-2.5 sm:gap-3.5 select-none cursor-pointer py-1 px-2 rounded-xl hover:bg-gray-100/90 active:bg-gray-200/80 transition-all duration-200 group text-right focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                aria-haspopup="true" aria-expanded="false" title="Clique para personalizar estatísticas do cabeçalho (máx. 3)">
+                <div id="header-pinned-stats-container" class="flex items-center gap-2.5 sm:gap-3.5">
+                    <!-- Default fallback structure for initial SSR / fast layout -->
+                    <div id="counter-left-wrapper" class="block select-none" data-stat-id="remaining">
+                        <p id="counter-left-label" class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">
+                            Restantes</p>
+                        <p id="questions-left" class="text-xs sm:text-sm font-bold text-blue-600 text-center">0</p>
+                    </div>
+                    <div class="h-6 sm:h-7 w-[1px] bg-gray-200/80 mx-0.5 block flex-shrink-0"></div>
+                    <div id="score-wrapper" class="flex items-center min-w-[42px] justify-center" data-stat-id="score">
+                        <div id="score-container" class="block">
+                            <p id="score-label" class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">
+                                Score</p>
+                            <p id="score" class="text-xs sm:text-sm font-bold text-gray-900 text-center">0</p>
+                        </div>
+                    </div>
+                </div>
+                <span class="material-symbols-rounded text-sm text-gray-400 group-hover:text-gray-600 transition-transform duration-200 flex-shrink-0 ml-0.5" id="header-stats-chevron">expand_more</span>
             </div>
-            <div class="h-8 w-[1px] bg-gray-100 mx-1 block"></div>
 
-            <div id="score-wrapper" class="flex items-center min-w-[50px] justify-center">
-                <!-- SCORE CONTAINER (Always visible) -->
-                <div id="score-container" class="block">
-                    <p id="score-label" class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none">
-                        Score</p>
-                    <p id="score" class="text-sm font-bold text-gray-900 text-center">0</p>
+            <!-- Floating Header Stats Dropdown Panel -->
+            <div id="header-stats-dropdown" class="hidden absolute top-full right-0 mt-2 w-80 sm:w-96 max-w-[calc(100vw-1.5rem)] bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200/90 z-[100] overflow-hidden transition-all duration-200">
+                <div class="p-3.5 border-b border-gray-100/90 flex items-center justify-between bg-gray-50/50">
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-800 flex items-center gap-1.5">
+                            <span class="material-symbols-rounded text-base text-blue-600">tune</span>
+                            <span>Estatísticas no Cabeçalho</span>
+                        </h4>
+                        <p class="text-[11px] text-gray-500 mt-0.5">Fixe até 3 métricas para acompanhar ao vivo</p>
+                    </div>
+                    <span id="pinned-stats-counter" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200/60 flex-shrink-0">
+                        2 de 3 fixadas
+                    </span>
+                </div>
+                <div id="header-stats-options-list" class="p-1.5 max-h-80 sm:max-h-96 overflow-y-auto custom-scrollbar space-y-1">
+                    <!-- Populated dynamically via JS -->
+                </div>
+                <div class="p-2 border-t border-gray-100 bg-gray-50/70 text-center">
+                    <p class="text-[10px] text-gray-400 font-medium">As estatísticas fixadas ficam sincronizadas durante o jogo</p>
                 </div>
             </div>
         </div>

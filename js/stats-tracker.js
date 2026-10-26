@@ -598,3 +598,63 @@ export function injectSampleHistory(deckTitle = "Flashcards") {
     saveStatsStorage(data);
     return data;
 }
+
+/**
+ * Retorna as métricas em tempo real da sessão atual para os indicadores do cabeçalho.
+ * @returns {{
+ *   cardsAnswered: number,
+ *   correctCount: number,
+ *   incorrectCount: number,
+ *   accuracy: number,
+ *   durationSeconds: number,
+ *   activeDurationSeconds: number,
+ *   activeCardsCount: number,
+ *   avgTimePerCardSeconds: number,
+ *   startTime: number
+ * }}
+ */
+export function getCurrentSessionMetrics() {
+    try {
+        const data = getStatsStorage();
+        const sess = data?.currentSession;
+        if (!sess) {
+            return {
+                cardsAnswered: 0,
+                correctCount: 0,
+                incorrectCount: 0,
+                accuracy: 100,
+                durationSeconds: 0,
+                activeDurationSeconds: 0,
+                activeCardsCount: 0,
+                avgTimePerCardSeconds: 0,
+                startTime: Date.now()
+            };
+        }
+        const avgTime = sess.activeCardsCount > 0
+            ? (sess.activeDurationSeconds / sess.activeCardsCount)
+            : (sess.cardsAnswered > 0 ? (sess.durationSeconds / sess.cardsAnswered) : 0);
+        return {
+            cardsAnswered: sess.cardsAnswered || 0,
+            correctCount: sess.correctCount || 0,
+            incorrectCount: sess.incorrectCount || 0,
+            accuracy: sess.accuracy ?? 100,
+            durationSeconds: sess.durationSeconds || 0,
+            activeDurationSeconds: sess.activeDurationSeconds || 0,
+            activeCardsCount: sess.activeCardsCount || 0,
+            avgTimePerCardSeconds: avgTime,
+            startTime: sess.startTime || Date.now()
+        };
+    } catch (e) {
+        return {
+            cardsAnswered: 0,
+            correctCount: 0,
+            incorrectCount: 0,
+            accuracy: 100,
+            durationSeconds: 0,
+            activeDurationSeconds: 0,
+            activeCardsCount: 0,
+            avgTimePerCardSeconds: 0,
+            startTime: Date.now()
+        };
+    }
+}

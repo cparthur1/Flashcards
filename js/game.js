@@ -4,10 +4,10 @@ import { getDailyStreak, recordDailyCardAnswered, inferNotebookQuality, calculat
 import { initEffects, createBall, clearBalls, setBallColor, launchCelebrationParticles, playCompletionShockwave, cleanShockwaveContainer, resizeCanvas, animate, triggerHaptic, isHapticEnabled, setHapticEnabled, updateHapticUI } from './engine/effects.js';
 import { initInputController, startGamepadLoop, stopGamepadLoop } from './engine/input-controller.js';
 import { isTutorEnabled, setTutorApiKey, disableTutor, initTutor, updateTutorUI, setLastUserAnswerForChat, getLastUserAnswerForChat, resetTutorChatSession, getHasChatInteraction, setHasChatInteraction, evaluateAnswerSemantic, addMsg, showTyping, hideTyping, sendTutorChatMessage, getTermDefinition, logDefinitionToChat } from './engine/tutor.js';
-import { initPomodoro, isPomodoroEnabled, setPomodoroEnabled, updatePomodoroUI } from './engine/pomodoro.js';
+import { initPomodoro, isPomodoroEnabled, setPomodoroEnabled, updatePomodoroUI, getPomodoroStatus } from './engine/pomodoro.js';
 import { isDeckCategorized, callGeminiFlashLiteCategorization, getStoredAiCategories, getCardSignature } from './stats-ai.js';
 import { initTransfer } from './transfer.js';
-import { initStatsSession, recordStatsAnswer, recordStatsAiCorrection, archiveCurrentSession, completeCurrentSession } from './stats-tracker.js';
+import { initStatsSession, recordStatsAnswer, recordStatsAiCorrection, archiveCurrentSession, completeCurrentSession, getCurrentSessionMetrics } from './stats-tracker.js';
 import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
 
 // --- DOM ELEMENTS ---
@@ -36,6 +36,15 @@ const dropdownAddDeckBtn = document.getElementById('dropdown-add-deck-btn');
 const dropdownAddDeckInput = document.getElementById('dropdown-add-deck-input');
 const bookmarkCardBtn = document.getElementById('bookmark-card-btn');
 const bookmarkCardIcon = document.getElementById('bookmark-card-icon');
+
+// Header Stats Customization DOM Elements
+const headerStatsComponent = document.getElementById('header-stats-component');
+const headerStatsTrigger = document.getElementById('header-stats-trigger');
+const headerPinnedStatsContainer = document.getElementById('header-pinned-stats-container');
+const headerStatsChevron = document.getElementById('header-stats-chevron');
+const headerStatsDropdown = document.getElementById('header-stats-dropdown');
+const headerStatsOptionsList = document.getElementById('header-stats-options-list');
+const pinnedStatsCounter = document.getElementById('pinned-stats-counter');
 
 const hamburgerBtn = document.getElementById('hamburger-btn');
 const hamburgerMenu = document.getElementById('hamburger-menu');
@@ -337,10 +346,12 @@ function getHeaderScoreTarget() {
     const scoreVal = document.getElementById('score');
     const scoreContainer = document.getElementById('score-container');
     const scoreWrapper = document.getElementById('score-wrapper');
+    const headerContainer = document.getElementById('header-pinned-stats-container') || document.getElementById('header-stats-trigger');
 
     if (scoreVal && scoreVal.offsetParent !== null) return scoreVal;
     if (scoreContainer && scoreContainer.offsetParent !== null) return scoreContainer;
-    return scoreWrapper || scoreContainer || scoreVal;
+    if (scoreWrapper && scoreWrapper.offsetParent !== null) return scoreWrapper;
+    return headerContainer || scoreWrapper || scoreContainer || scoreVal || document.body;
 }
 
 function animateCardToBack(callback) {
@@ -2307,52 +2318,539 @@ function setNotebookDailyGoal(goal) {
     }
 }
 
-function updateScoreDisplay() {
-    const scoreVal = document.getElementById('score');
-    const scoreContainer = document.getElementById('score-container');
+// --- HEADER STATS CUSTOMIZATION MODULE ---
+const HEADER_PINNED_STORAGE_KEY = 'flashcards_header_pinned_stats';
+const DEFAULT_PINNED_STATS = ['remaining', 'score'];
+const MAX_PINNED_STATS = 3;
+const MIN_PINNED_STATS = 1;
+
+const AVAILABLE_HEADER_STATS = [
+    {
+        id: 'remaining',
+        label: 'Restantes',
+        notebookLabel: 'Para Hoje',
+        title: 'Cartas Restantes',
+        description: 'Cartas pendentes para responder nesta rodada',
+        icon: 'filter_none',
+        iconBg: 'bg-blue-50 text-blue-600',
+        colorClass: 'text-blue-600',
+        getValue: () => {
+            if (activeMode === 'notebook') {
+                const dueInfo = getNotebookDueCounts(allQuestions);
+                const dailyGoal = getNotebookDailyGoal();
+                const reviewedToday = dueInfo.reviewedToday || 0;
+                return dailyGoal > 0 ? Math.max(0, dailyGoal - reviewedToday) : (dueInfo.dueToday || 0);
+            }
+            return questionsPool.length;
+        },
+        getSubtitle: () => {
+            if (activeMode === 'notebook') {
+                const dueInfo = getNotebookDueCounts(allQuestions);
+                const dailyGoal = getNotebookDailyGoal();
+                const reviewedToday = dueInfo.reviewedToday || 0;
+                return dailyGoal > 0 ? `Meta: ${reviewedToday}/${dailyGoal} hoje` : `${dueInfo.dueToday} vencidos hoje`;
+            }
+            return `${questionsPool.length} cartas restantes`;
+        }
+    },
+    {
+        id: 'score',
+        label: 'Score',
+        notebookLabel: 'Revisões',
+        title: 'Score / Acertos',
+        description: 'Total de revisões ou respostas corretas acumuladas',
+        icon: 'star',
+        iconBg: 'bg-amber-50 text-amber-600',
+        colorClass: 'text-gray-900',
+        getValue: () => {
+            return activeMode === 'notebook' ? notebookReviewsCount : score;
+        },
+        getSubtitle: () => {
+            return activeMode === 'notebook' ? `${notebookReviewsCount} revisões feitas` : `${score} acertos acumulados`;
+        }
+    },
+    {
+        id: 'estRemainingTime',
+        label: 'Previsão',
+        notebookLabel: 'Previsão',
+        title: 'Previsão de Término',
+        description: 'Tempo estimado para concluir o baralho atual',
+        icon: 'hourglass_bottom',
+        iconBg: 'bg-orange-50 text-orange-600',
+        colorClass: 'text-amber-600',
+        getValue: () => {
+            let remCards = 0;
+            if (activeMode === 'notebook') {
+                const dueInfo = getNotebookDueCounts(allQuestions);
+                const dailyGoal = getNotebookDailyGoal();
+                const reviewedToday = dueInfo.reviewedToday || 0;
+                remCards = dailyGoal > 0 ? Math.max(0, dailyGoal - reviewedToday) : (dueInfo.dueToday || 0);
+            } else {
+                remCards = questionsPool.length;
+            }
+            if (remCards <= 0) return '00:00';
+            const metrics = getCurrentSessionMetrics();
+            const avgSec = (metrics && metrics.avgTimePerCardSeconds > 0) ? metrics.avgTimePerCardSeconds : 15;
+            const totalSec = Math.round(remCards * avgSec);
+            return formatTimeDisplay(totalSec);
+        },
+        getSubtitle: () => {
+            const metrics = getCurrentSessionMetrics();
+            const avgSec = (metrics && metrics.avgTimePerCardSeconds > 0) ? Math.round(metrics.avgTimePerCardSeconds) : 15;
+            return `Estimativa (~${avgSec}s por carta)`;
+        }
+    },
+    {
+        id: 'pomodoro',
+        label: 'Pomodoro',
+        notebookLabel: 'Pomodoro',
+        title: 'Tempo no Pomodoro',
+        description: 'Contagem regressiva de foco ou pausa do Pomodoro',
+        icon: 'timer',
+        iconBg: 'bg-rose-50 text-rose-600',
+        colorClass: 'text-rose-600',
+        getValue: () => {
+            const status = getPomodoroStatus();
+            if (!status || !status.enabled) return 'Off';
+            return status.formattedTime || '25:00';
+        },
+        getSubtitle: () => {
+            const status = getPomodoroStatus();
+            if (!status || !status.enabled) return 'Pomodoro desativado';
+            const modeNames = { study: 'Ciclo de foco', shortBreak: 'Pausa curta', longBreak: 'Pausa longa' };
+            return `${modeNames[status.currentMode] || 'Foco'} • ${status.isRunning ? 'Ativo' : 'Pausado'}`;
+        }
+    },
+    {
+        id: 'accuracy',
+        label: 'Precisão',
+        notebookLabel: 'Precisão',
+        title: 'Taxa de Precisão',
+        description: 'Porcentagem de acertos na sessão atual',
+        icon: 'track_changes',
+        iconBg: 'bg-emerald-50 text-emerald-600',
+        colorClass: 'text-emerald-600',
+        getValue: () => {
+            const metrics = getCurrentSessionMetrics();
+            const acc = (metrics && typeof metrics.accuracy === 'number') ? Math.round(metrics.accuracy) : 100;
+            return `${acc}%`;
+        },
+        getSubtitle: () => {
+            const metrics = getCurrentSessionMetrics();
+            return `${metrics.correctCount || 0} acertos de ${metrics.cardsAnswered || 0} respondidos`;
+        }
+    },
+    {
+        id: 'totalTime',
+        label: 'Tempo Total',
+        notebookLabel: 'Tempo Total',
+        title: 'Tempo de Sessão',
+        description: 'Tempo decorrido desde o início da rodada',
+        icon: 'schedule',
+        iconBg: 'bg-indigo-50 text-indigo-600',
+        colorClass: 'text-indigo-600',
+        getValue: () => {
+            const metrics = getCurrentSessionMetrics();
+            const elapsed = metrics.startTime ? Math.max(0, Math.floor((Date.now() - metrics.startTime) / 1000)) : 0;
+            return formatTimeDisplay(elapsed);
+        },
+        getSubtitle: () => {
+            const metrics = getCurrentSessionMetrics();
+            const elapsed = metrics.startTime ? Math.max(0, Math.floor((Date.now() - metrics.startTime) / 1000)) : 0;
+            const mins = Math.floor(elapsed / 60);
+            return `${mins} min de estudo decorridos`;
+        }
+    },
+    {
+        id: 'avgTimePerCard',
+        label: 'Tempo / Card',
+        notebookLabel: 'Tempo / Card',
+        title: 'Média por Carta',
+        description: 'Tempo médio de raciocínio e resposta por card',
+        icon: 'speed',
+        iconBg: 'bg-teal-50 text-teal-600',
+        colorClass: 'text-teal-600',
+        getValue: () => {
+            const metrics = getCurrentSessionMetrics();
+            if (!metrics || !metrics.avgTimePerCardSeconds || metrics.avgTimePerCardSeconds <= 0) {
+                return '0s';
+            }
+            return metrics.avgTimePerCardSeconds < 10 
+                ? `${metrics.avgTimePerCardSeconds.toFixed(1)}s` 
+                : `${Math.round(metrics.avgTimePerCardSeconds)}s`;
+        },
+        getSubtitle: () => {
+            const metrics = getCurrentSessionMetrics();
+            const count = metrics.activeCardsCount || metrics.cardsAnswered || 0;
+            return `Média sobre ${count} cards`;
+        }
+    }
+];
+
+function getPinnedHeaderStats() {
+    try {
+        const saved = localStorage.getItem(HEADER_PINNED_STORAGE_KEY);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length >= MIN_PINNED_STATS && parsed.length <= MAX_PINNED_STATS) {
+                const validIds = AVAILABLE_HEADER_STATS.map(s => s.id);
+                const filtered = parsed.filter(id => validIds.includes(id));
+                if (filtered.length >= MIN_PINNED_STATS) {
+                    return filtered;
+                }
+            }
+        }
+    } catch (e) {
+        console.warn("[HeaderStats] Erro ao ler estatísticas fixadas:", e);
+    }
+    return [...DEFAULT_PINNED_STATS];
+}
+
+function savePinnedHeaderStats(pinnedList) {
+    try {
+        localStorage.setItem(HEADER_PINNED_STORAGE_KEY, JSON.stringify(pinnedList));
+    } catch (e) {
+        console.warn("[HeaderStats] Erro ao salvar estatísticas fixadas:", e);
+    }
+}
+
+function renderHeaderPinnedStats() {
+    if (!headerPinnedStatsContainer) return;
+    const pinnedIds = getPinnedHeaderStats();
+
+    const currentRenderedIds = Array.from(headerPinnedStatsContainer.querySelectorAll('[data-stat-id]'))
+        .map(el => el.getAttribute('data-stat-id'));
+
+    const needsFullRerender = currentRenderedIds.length !== pinnedIds.length ||
+        !pinnedIds.every((id, idx) => id === currentRenderedIds[idx]);
+
+    if (needsFullRerender) {
+        headerPinnedStatsContainer.innerHTML = '';
+        pinnedIds.forEach((statId, index) => {
+            const statDef = AVAILABLE_HEADER_STATS.find(s => s.id === statId);
+            if (!statDef) return;
+
+            if (index > 0) {
+                const divider = document.createElement('div');
+                divider.className = 'h-6 sm:h-7 w-[1px] bg-gray-200/80 mx-0.5 block flex-shrink-0';
+                headerPinnedStatsContainer.appendChild(divider);
+            }
+
+            const statWrapper = document.createElement('div');
+            statWrapper.setAttribute('data-stat-id', statId);
+
+            if (statId === 'remaining') {
+                statWrapper.id = 'counter-left-wrapper';
+                statWrapper.className = 'block select-none';
+                statWrapper.innerHTML = `
+                    <p id="counter-left-label" class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none text-center">
+                        ${activeMode === 'notebook' ? statDef.notebookLabel : statDef.label}
+                    </p>
+                    <p id="questions-left" class="text-xs sm:text-sm font-bold ${statDef.colorClass} text-center">
+                        ${statDef.getValue()}
+                    </p>
+                `;
+                statWrapper.addEventListener('click', (e) => {
+                    if (activeMode === 'notebook') {
+                        e.stopPropagation();
+                        openDailyGoalModal();
+                    }
+                });
+            } else if (statId === 'score') {
+                statWrapper.id = 'score-wrapper';
+                statWrapper.className = 'flex items-center min-w-[38px] justify-center select-none';
+                statWrapper.innerHTML = `
+                    <div id="score-container" class="block">
+                        <p id="score-label" class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none text-center">
+                            ${activeMode === 'notebook' ? statDef.notebookLabel : statDef.label}
+                        </p>
+                        <p id="score" class="text-xs sm:text-sm font-bold ${statDef.colorClass} text-center">
+                            ${statDef.getValue()}
+                        </p>
+                    </div>
+                `;
+            } else {
+                statWrapper.className = 'block select-none min-w-[38px]';
+                statWrapper.innerHTML = `
+                    <p id="stat-label-${statId}" class="text-[8px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-bold leading-none text-center">
+                        ${activeMode === 'notebook' ? statDef.notebookLabel : statDef.label}
+                    </p>
+                    <p id="stat-val-${statId}" class="text-xs sm:text-sm font-bold ${statDef.colorClass} text-center">
+                        ${statDef.getValue()}
+                    </p>
+                `;
+            }
+
+            headerPinnedStatsContainer.appendChild(statWrapper);
+        });
+    }
+
+    updateHeaderPinnedStatsValues();
+}
+
+function updateHeaderPinnedStatsValues() {
+    const pinnedIds = getPinnedHeaderStats();
+
     if (activeMode === 'notebook') {
-        if (counterLeftLabel) counterLeftLabel.textContent = "Para Hoje";
-        if (scoreLabel) scoreLabel.textContent = "Revisões";
         const dueInfo = getNotebookDueCounts(allQuestions);
         const dailyGoal = getNotebookDailyGoal();
         const reviewedToday = dueInfo.reviewedToday || 0;
+        const qLeft = document.getElementById('questions-left');
+        const cntWrapper = document.getElementById('counter-left-wrapper');
+        const cntLabel = document.getElementById('counter-left-label');
+        const scLabel = document.getElementById('score-label');
+
+        if (cntLabel) cntLabel.textContent = "Para Hoje";
+        if (scLabel) scLabel.textContent = "Revisões";
 
         if (dailyGoal > 0) {
-            const remaining = Math.max(0, dailyGoal - reviewedToday);
-            if (questionsLeftDisplay) {
-                questionsLeftDisplay.textContent = remaining;
-                questionsLeftDisplay.title = `${reviewedToday}/${dailyGoal} da meta concluídos hoje (${dueInfo.dueToday} vencidos no total). Clique para alterar meta.`;
+            const rem = Math.max(0, dailyGoal - reviewedToday);
+            if (qLeft) {
+                qLeft.textContent = rem;
+                qLeft.title = `${reviewedToday}/${dailyGoal} da meta concluídos hoje (${dueInfo.dueToday} vencidos no total). Clique para alterar meta.`;
             }
-            if (counterLeftWrapper) {
-                counterLeftWrapper.title = `Meta diária: ${dailyGoal} cards (${reviewedToday}/${dailyGoal} hoje). Clique para alterar meta.`;
-                counterLeftWrapper.classList.add('cursor-pointer', 'hover:opacity-80', 'transition');
+            if (cntWrapper) {
+                cntWrapper.title = `Meta diária: ${dailyGoal} cards (${reviewedToday}/${dailyGoal} hoje). Clique para alterar meta.`;
+                cntWrapper.classList.add('cursor-pointer', 'hover:opacity-80', 'transition');
             }
         } else {
-            if (questionsLeftDisplay) {
-                questionsLeftDisplay.textContent = dueInfo.dueToday;
-                questionsLeftDisplay.title = `${dueInfo.dueToday} cards vencidos para hoje. Clique para definir meta diária.`;
+            if (qLeft) {
+                qLeft.textContent = dueInfo.dueToday;
+                qLeft.title = `${dueInfo.dueToday} cards vencidos para hoje. Clique para definir meta diária.`;
             }
-            if (counterLeftWrapper) {
-                counterLeftWrapper.title = "Clique para definir meta de cards por dia";
-                counterLeftWrapper.classList.add('cursor-pointer', 'hover:opacity-80', 'transition');
+            if (cntWrapper) {
+                cntWrapper.title = "Clique para definir meta de cards por dia";
+                cntWrapper.classList.add('cursor-pointer', 'hover:opacity-80', 'transition');
             }
         }
-
-        if (scoreVal) scoreVal.textContent = notebookReviewsCount;
+        const scVal = document.getElementById('score');
+        if (scVal) scVal.textContent = notebookReviewsCount;
     } else {
-        if (counterLeftLabel) counterLeftLabel.textContent = "Restantes";
-        if (scoreLabel) scoreLabel.textContent = "Score";
-        if (questionsLeftDisplay) {
-            questionsLeftDisplay.textContent = questionsPool.length;
-            questionsLeftDisplay.title = "";
+        const cntLabel = document.getElementById('counter-left-label');
+        const scLabel = document.getElementById('score-label');
+        const qLeft = document.getElementById('questions-left');
+        const scVal = document.getElementById('score');
+        const cntWrapper = document.getElementById('counter-left-wrapper');
+
+        if (cntLabel) cntLabel.textContent = "Restantes";
+        if (scLabel) scLabel.textContent = "Score";
+        if (qLeft) {
+            qLeft.textContent = questionsPool.length;
+            qLeft.title = "";
         }
-        if (scoreVal) scoreVal.textContent = score;
-        if (counterLeftWrapper) {
-            counterLeftWrapper.title = "";
-            counterLeftWrapper.classList.remove('cursor-pointer', 'hover:opacity-80');
+        if (scVal) scVal.textContent = score;
+        if (cntWrapper) {
+            cntWrapper.title = "";
+            cntWrapper.classList.remove('cursor-pointer', 'hover:opacity-80');
         }
     }
+
+    pinnedIds.forEach(statId => {
+        if (statId === 'remaining' || statId === 'score') return;
+        const statDef = AVAILABLE_HEADER_STATS.find(s => s.id === statId);
+        if (!statDef) return;
+
+        const valEl = document.getElementById(`stat-val-${statId}`);
+        const lblEl = document.getElementById(`stat-label-${statId}`);
+        if (lblEl) {
+            lblEl.textContent = activeMode === 'notebook' ? statDef.notebookLabel : statDef.label;
+        }
+        if (valEl) {
+            valEl.textContent = statDef.getValue();
+        }
+    });
+
+    const scoreContainer = document.getElementById('score-container');
     if (scoreContainer) scoreContainer.classList.remove('hidden');
+
+    if (headerStatsDropdown && !headerStatsDropdown.classList.contains('hidden')) {
+        renderHeaderStatsDropdown();
+    }
+}
+
+function updateScoreDisplay() {
+    renderHeaderPinnedStats();
+}
+
+function renderHeaderStatsDropdown() {
+    if (!headerStatsOptionsList) return;
+    const pinnedIds = getPinnedHeaderStats();
+
+    if (pinnedStatsCounter) {
+        pinnedStatsCounter.textContent = `${pinnedIds.length} de ${MAX_PINNED_STATS} fixadas`;
+        if (pinnedIds.length >= MAX_PINNED_STATS) {
+            pinnedStatsCounter.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60 flex-shrink-0';
+        } else {
+            pinnedStatsCounter.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200/60 flex-shrink-0';
+        }
+    }
+
+    headerStatsOptionsList.innerHTML = '';
+
+    AVAILABLE_HEADER_STATS.forEach(stat => {
+        const isPinned = pinnedIds.includes(stat.id);
+        const liveVal = stat.getValue();
+        const subtitle = stat.getSubtitle();
+        const displayLabel = activeMode === 'notebook' ? stat.notebookLabel : stat.label;
+
+        const itemRow = document.createElement('div');
+        itemRow.className = `group/opt flex items-center justify-between p-2.5 rounded-xl border transition-all duration-150 cursor-pointer ${
+            isPinned 
+                ? 'bg-blue-50/40 hover:bg-blue-50/70 border-blue-200/70' 
+                : 'bg-white hover:bg-gray-50 border-gray-100'
+        }`;
+
+        itemRow.innerHTML = `
+            <div class="flex items-center gap-3 min-w-0 flex-1 pr-2">
+                <div class="w-8 h-8 rounded-xl ${stat.iconBg} flex items-center justify-center flex-shrink-0 shadow-xs">
+                    <span class="material-symbols-rounded text-lg">${stat.icon}</span>
+                </div>
+                <div class="min-w-0 flex-1 text-left">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs font-semibold text-gray-800 truncate">${stat.title}</span>
+                        <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 font-mono flex-shrink-0">${displayLabel}</span>
+                    </div>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <span class="text-[11px] font-bold ${stat.colorClass} truncate">${liveVal}</span>
+                        <span class="text-gray-300">•</span>
+                        <span class="text-[10px] text-gray-500 truncate" title="${subtitle}">${subtitle}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+                ${activeMode === 'notebook' && stat.id === 'remaining' ? `
+                    <button type="button" class="set-goal-btn p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 text-[11px] font-medium transition-all" title="Alterar meta diária">
+                        Meta
+                    </button>
+                ` : ''}
+                <button type="button" class="pin-toggle-btn p-1.5 rounded-xl transition-all duration-150 ${
+                    isPinned
+                        ? 'bg-blue-100/70 hover:bg-blue-200/80 border border-blue-300/80 text-blue-700 shadow-xs'
+                        : 'bg-gray-100 hover:bg-gray-200/80 border border-transparent text-gray-400 hover:text-gray-600'
+                }" title="${isPinned ? 'Desafixar do cabeçalho' : (pinnedIds.length >= MAX_PINNED_STATS ? 'Limite de 3 fixadas atingido' : 'Fixar no cabeçalho')}">
+                    <img src="${isPinned ? '../assets/img/pinned.svg' : '../assets/img/unpinned.svg'}" 
+                         class="w-5 h-5 flex-shrink-0 pointer-events-none transition-transform active:scale-90 ${isPinned ? '' : 'opacity-60'}" 
+                         alt="${isPinned ? 'Fixado' : 'Não fixado'}">
+                </button>
+            </div>
+        `;
+
+        const goalBtn = itemRow.querySelector('.set-goal-btn');
+        if (goalBtn) {
+            goalBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeHeaderStatsDropdown();
+                openDailyGoalModal();
+            });
+        }
+
+        const pinBtn = itemRow.querySelector('.pin-toggle-btn');
+        const handleToggle = (e) => {
+            e.stopPropagation();
+            togglePinStat(stat.id);
+        };
+
+        if (pinBtn) pinBtn.addEventListener('click', handleToggle);
+        itemRow.addEventListener('click', (e) => {
+            if (e.target.closest('.set-goal-btn')) return;
+            handleToggle(e);
+        });
+
+        headerStatsOptionsList.appendChild(itemRow);
+    });
+}
+
+function togglePinStat(statId) {
+    let pinnedIds = getPinnedHeaderStats();
+    const isPinned = pinnedIds.includes(statId);
+
+    if (isPinned) {
+        if (pinnedIds.length <= MIN_PINNED_STATS) {
+            showNotificationPill('Pelo menos 1 estatística deve permanecer fixada', 'pinned.svg', true);
+            triggerHaptic('shake');
+            return;
+        }
+        pinnedIds = pinnedIds.filter(id => id !== statId);
+        triggerHaptic('light');
+    } else {
+        if (pinnedIds.length >= MAX_PINNED_STATS) {
+            showNotificationPill('Máximo de 3 estatísticas fixadas atingido', 'pinned.svg', true);
+            triggerHaptic('shake');
+            return;
+        }
+        pinnedIds.push(statId);
+        triggerHaptic('streakUp');
+    }
+
+    savePinnedHeaderStats(pinnedIds);
+    renderHeaderPinnedStats();
+    renderHeaderStatsDropdown();
+}
+
+function openHeaderStatsDropdown() {
+    if (!headerStatsDropdown) return;
+    closeHamburgerMenu();
+    closeDeckDropdown();
+    renderHeaderStatsDropdown();
+    headerStatsDropdown.classList.remove('hidden');
+    headerStatsChevron?.classList.add('rotate-180');
+    headerStatsTrigger?.setAttribute('aria-expanded', 'true');
+}
+
+function closeHeaderStatsDropdown() {
+    if (!headerStatsDropdown) return;
+    headerStatsDropdown.classList.add('hidden');
+    headerStatsChevron?.classList.remove('rotate-180');
+    headerStatsTrigger?.setAttribute('aria-expanded', 'false');
+}
+
+function toggleHeaderStatsDropdown(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    if (!headerStatsDropdown) return;
+    if (headerStatsDropdown.classList.contains('hidden')) {
+        openHeaderStatsDropdown();
+    } else {
+        closeHeaderStatsDropdown();
+    }
+}
+
+let headerStatsTickerInterval = null;
+function startHeaderStatsTicker() {
+    if (headerStatsTickerInterval) clearInterval(headerStatsTickerInterval);
+    headerStatsTickerInterval = setInterval(() => {
+        if (document.hidden) return;
+        const pinnedIds = getPinnedHeaderStats();
+        const hasLiveTimeStats = pinnedIds.some(id => id === 'pomodoro' || id === 'totalTime' || id === 'estRemainingTime');
+        const isDropdownOpen = headerStatsDropdown && !headerStatsDropdown.classList.contains('hidden');
+        if (hasLiveTimeStats || isDropdownOpen) {
+            updateHeaderPinnedStatsValues();
+        }
+    }, 1000);
+}
+
+function initHeaderStats() {
+    if (!headerStatsTrigger) return;
+
+    headerStatsTrigger.addEventListener('click', (e) => {
+        toggleHeaderStatsDropdown(e);
+    });
+
+    headerStatsTrigger.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleHeaderStatsDropdown(e);
+        }
+    });
+
+    headerStatsDropdown?.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+    renderHeaderPinnedStats();
+    startHeaderStatsTicker();
 }
 
 // --- AI LOGIC (delegada para ./engine/tutor.js) ---
@@ -2499,6 +2997,7 @@ resetBtn.addEventListener('click', () => {
 function openHamburgerMenu() {
     if (!hamburgerMenu) return;
     closeDeckDropdown();
+    closeHeaderStatsDropdown();
     updateHapticUI();
     hamburgerBackdrop?.classList.remove('hidden');
     hamburgerMenu.classList.remove('hidden');
@@ -2588,7 +3087,13 @@ document.addEventListener('keydown', (e) => {
             return;
         }
 
-        // 4. Hamburger menu and AI chat drawer
+        // 4. Header stats dropdown
+        if (headerStatsDropdown && !headerStatsDropdown.classList.contains('hidden')) {
+            closeHeaderStatsDropdown();
+            return;
+        }
+
+        // 5. Hamburger menu and AI chat drawer
         closeHamburgerMenu();
         if (aiChatContainer && aiChatContainer.classList.contains('open')) {
             aiChatContainer.classList.remove('open');
@@ -3707,8 +4212,9 @@ saveDailyGoalBtn?.addEventListener('click', () => {
     }
 });
 
-counterLeftWrapper?.addEventListener('click', () => {
+counterLeftWrapper?.addEventListener('click', (e) => {
     if (activeMode === 'notebook') {
+        e.stopPropagation();
         openDailyGoalModal();
     }
 });
@@ -4327,6 +4833,7 @@ function renderBookmarkIcon() {
 
 function openDeckDropdown() {
     closeHamburgerMenu();
+    closeHeaderStatsDropdown();
     deckSelectDropdown.classList.remove('hidden');
     deckSelectArrow.classList.add('rotate-180');
     updateDailyStreakUI();
@@ -4658,8 +5165,11 @@ deckSelectTrigger.addEventListener('click', (e) => {
     e.stopPropagation();
 });
 
-document.addEventListener('click', () => {
+document.addEventListener('click', (e) => {
     closeDeckDropdown();
+    if (headerStatsComponent && !headerStatsComponent.contains(e.target)) {
+        closeHeaderStatsDropdown();
+    }
 });
 
 deckItemNormal.addEventListener('click', (e) => {
@@ -4807,6 +5317,7 @@ async function initGame() {
     }
     updateHapticUI();
     initPomodoro();
+    initHeaderStats();
     initBackgroundCategorization();
     const initialGamepads = (navigator.getGamepads ? navigator.getGamepads() : []).filter(Boolean);
     if (initialGamepads.length > 0) {

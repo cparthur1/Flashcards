@@ -449,3 +449,21 @@ export function initPomodoro() {
         startStudyCycle();
     }
 }
+
+/**
+ * Retorna o status atual do Pomodoro para visualização no cabeçalho ou em estatísticas.
+ * @returns {{ enabled: boolean, isRunning: boolean, currentMode: string, remainingSeconds: number, formattedTime: string }}
+ */
+export function getPomodoroStatus() {
+    const enabled = isPomodoroEnabled();
+    const mins = Math.max(0, Math.floor(remainingSeconds / 60));
+    const secs = Math.max(0, remainingSeconds % 60);
+    const formattedTime = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    return {
+        enabled,
+        isRunning,
+        currentMode,
+        remainingSeconds,
+        formattedTime
+    };
+}
