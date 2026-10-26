@@ -215,6 +215,7 @@ let isFirstQuestion = true;
 let isAnimating = false;
 let currentStep = 0;
 let consecutiveDueCardsCount = 0;
+let consecutiveNewCardsCount = 0;
 let lastCardTopic = '';
 let isAnkiFlipped = false;
 let pendingEditAnsImage = '';
@@ -929,7 +930,7 @@ function precomputeNextCandidate() {
             currentQuestion
         });
     } else {
-        precomputedNextCard = selectNextCard(poolToUse, nextStep, consecutiveDueCardsCount, lastCardTopic);
+        precomputedNextCard = selectNextCard(poolToUse, nextStep, consecutiveDueCardsCount, lastCardTopic, currentQuestion, consecutiveNewCardsCount);
     }
 }
 
@@ -1086,6 +1087,7 @@ function restartDeckSession() {
     score = 0;
     currentStreak = 0;
     consecutiveDueCardsCount = 0;
+    consecutiveNewCardsCount = 0;
     lastCardTopic = '';
     updateStreakUI(false);
     scoreDisplay.textContent = '0';
@@ -1194,7 +1196,7 @@ function loadQuestion() {
             currentQuestionIndexInPool = questionsPool.indexOf(precomputedNextCard);
         } else {
             // Fallback / Initial pick: use selectNextCard with interleaving
-            currentQuestion = selectNextCard(questionsPool, currentStep, consecutiveDueCardsCount, lastCardTopic);
+            currentQuestion = selectNextCard(questionsPool, currentStep, consecutiveDueCardsCount, lastCardTopic, currentQuestion, consecutiveNewCardsCount);
             currentQuestionIndexInPool = questionsPool.indexOf(currentQuestion);
         }
     }
@@ -1208,11 +1210,13 @@ function loadQuestion() {
     }
     isBeingCorrected = false;
 
-    // Update consecutive due counter
+    // Update consecutive due & new counters
     if (currentQuestion && currentQuestion.dueStep !== undefined && currentQuestion.dueStep <= currentStep) {
         consecutiveDueCardsCount++;
+        consecutiveNewCardsCount = 0;
     } else {
         consecutiveDueCardsCount = 0;
+        consecutiveNewCardsCount++;
     }
 
     console.log("[Game] Card carregado:", {
@@ -1532,7 +1536,8 @@ function handleAnkiRating(rating) {
             }, 300);
         } else {
             // Card mantido para consolidação neural
-            currentQuestion.dueStep = currentStep + 6;
+            const ankiReinforcGap = Math.max(7, Math.min(12, Math.round(questionsPool.length * 0.5)));
+            currentQuestion.dueStep = currentStep + ankiReinforcGap;
             saveGameState();
             console.log("[Anki] Card mantido para consolidação. dueStep:", currentQuestion.dueStep);
             setTimeout(() => {
@@ -1553,7 +1558,7 @@ function handleAnkiRating(rating) {
     } else if (rating === 'hard') {
         createBall(false);
         const elapsedSec = (Date.now() - questionStartTime) / 1000;
-        const gap = calculateThinkingGap(elapsedSec, currentQuestion);
+        const gap = calculateThinkingGap(elapsedSec, currentQuestion, questionsPool.length);
         currentQuestion.dueStep = currentStep + gap;
         saveGameState();
         console.log("[Anki] Card marcado como difícil. Próximo dueStep:", currentQuestion.dueStep);
@@ -1571,7 +1576,7 @@ function handleAnkiRating(rating) {
         currentQuestion.wrongCount = (currentQuestion.wrongCount || 0) + 1;
         currentQuestion.correctStreak = 0;
         const elapsedSec = (Date.now() - questionStartTime) / 1000;
-        const gap = calculateThinkingGap(elapsedSec, currentQuestion);
+        const gap = calculateThinkingGap(elapsedSec, currentQuestion, questionsPool.length);
         currentQuestion.dueStep = currentStep + gap;
         saveGameState();
         console.log("[Anki] Card marcado como erro (again). Próximo dueStep:", currentQuestion.dueStep, "gap:", gap);
@@ -2000,7 +2005,7 @@ function showFeedback(isCorrect, element) {
                 // Spaced repetition & leech tracking
                 currentQuestion.wrongCount = (currentQuestion.wrongCount || 0) + 1;
                 currentQuestion.correctStreak = 0;
-                const gap = calculateThinkingGap(elapsedSeconds, currentQuestion);
+                const gap = calculateThinkingGap(elapsedSeconds, currentQuestion, questionsPool.length);
                 currentQuestion.dueStep = currentStep + gap;
                 console.log("[Algorithm] Card incorreto reagendado:", {
                     tempoPensamento: Math.round(elapsedSeconds * 10) / 10 + 's',
@@ -2108,7 +2113,7 @@ function showFeedback(isCorrect, element) {
                 }, 400);
             } else {
                 // Card mantido para consolidação (leech ou esforço extremo de recuperação)
-                const reinforcGap = Math.max(5, Math.min(8, Math.round(questionsPool.length * 0.5)));
+                const reinforcGap = Math.max(8, Math.min(14, Math.round(questionsPool.length * 0.6)));
                 currentQuestion.dueStep = currentStep + reinforcGap;
                 saveGameState();
                 console.log("[Game] Card mantido no jogo para consolidação neural. dueStep:", currentQuestion.dueStep);
@@ -2211,6 +2216,7 @@ function executeSaveGameState() {
                 currentStreak,
                 currentStep,
                 consecutiveDueCardsCount,
+                consecutiveNewCardsCount,
                 deckTitle: "Caderno"
             }));
         } else if (activeMode === 'exam') {
@@ -2226,6 +2232,7 @@ function executeSaveGameState() {
                 currentStreak,
                 currentStep,
                 consecutiveDueCardsCount,
+                consecutiveNewCardsCount,
                 deckTitle: "Semana de Provas"
             }));
         } else {
@@ -2236,6 +2243,7 @@ function executeSaveGameState() {
                 currentStreak,
                 currentStep,
                 consecutiveDueCardsCount,
+                consecutiveNewCardsCount,
                 deckTitle: deckTitle.textContent
             }));
         }
@@ -3551,6 +3559,7 @@ if (restartGameBtn) {
             }
             currentStep = 0;
             consecutiveDueCardsCount = 0;
+            consecutiveNewCardsCount = 0;
             precomputedNextCard = null;
             saveGameState(true);
             updateScoreDisplay();
@@ -4765,6 +4774,7 @@ async function initGame() {
     currentStreak = data.currentStreak || 0;
     currentStep = data.currentStep || 0;
     consecutiveDueCardsCount = data.consecutiveDueCardsCount || 0;
+    consecutiveNewCardsCount = data.consecutiveNewCardsCount || 0;
     precomputedNextCard = null;
     // Requirement 1: Make all cards random at start
     if ((score === 0 || !data.questionsPool || data.questionsPool.length === allQuestions.filter(isPlayableCard).length) && activeMode !== 'notebook') {
