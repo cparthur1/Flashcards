@@ -888,11 +888,11 @@ function handleDailyStreakOnCardAnswered() {
         }
         triggerHaptic('streakUp');
         if (res.streakProtectedByFreeze) {
-            showNotificationPill(`❄️ Sequência protegida pelo congelador! 🔥 ${res.streak} dias!`, 'fire.svg');
+            showNotificationPill(`Sequência protegida pelo congelador! ${res.streak} dias!`, 'fire.svg');
         } else if (res.freezeAwarded) {
-            showNotificationPill(`❄️ +1 Protetor de Streak ganho! 🔥 ${res.streak} dias!`, 'fire.svg');
+            showNotificationPill(`+1 Protetor de Streak ganho! ${res.streak} dias!`, 'fire.svg');
         } else {
-            showNotificationPill(`🔥 Sequência diária: ${res.streak} ${res.streak === 1 ? 'dia' : 'dias'}!`, 'fire.svg');
+            showNotificationPill(`Sequência diária: ${res.streak} ${res.streak === 1 ? 'dia' : 'dias'}!`, 'fire.svg');
         }
     }
 }
