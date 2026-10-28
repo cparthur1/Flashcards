@@ -40,7 +40,19 @@ const rightCardsList = document.getElementById('right-cards-list');
 const rightCardsCountBadge = document.getElementById('right-cards-count-badge');
 const rightEmptyHint = document.getElementById('right-empty-hint');
 
+const notebookTotalBadge = document.getElementById('notebook-total-badge');
 const notebookTotalCount = document.getElementById('notebook-total-count');
+
+// Notebook Overview Modal Elements
+const notebookOverviewModal = document.getElementById('notebook-overview-modal');
+const closeNotebookModalBtn = document.getElementById('close-notebook-modal-btn');
+const notebookModalSubtitle = document.getElementById('notebook-modal-subtitle');
+const notebookModalSearch = document.getElementById('notebook-modal-search');
+const clearNotebookSearchBtn = document.getElementById('clear-notebook-search-btn');
+const notebookDeckChips = document.getElementById('notebook-deck-chips');
+const notebookModalCardsContainer = document.getElementById('notebook-modal-cards-container');
+const notebookModalFooterInfo = document.getElementById('notebook-modal-footer-info');
+const notebookModalDoneBtn = document.getElementById('notebook-modal-done-btn');
 
 // Edit Modal Elements
 const editCardModal = document.getElementById('edit-card-modal');
@@ -63,6 +75,11 @@ let loadedDecksCount = 0;
 let editingCardId = null;
 let notificationTimeout = null;
 
+// Notebook Overview Modal State
+let activeDeckFilter = 'ALL';
+let notebookSearchQuery = '';
+const collapsedDecks = new Set();
+
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
     updateNotebookHeaderBadge();
@@ -70,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSelectionHandlers();
     setupTransferHandlers();
     setupEditModalHandlers();
+    setupNotebookOverviewHandlers();
 });
 
 function getNotebookDataFromStorage() {
@@ -96,7 +114,7 @@ function saveNotebookDataToStorage(data) {
         updateNotebookHeaderBadge();
     } catch (e) {
         console.error("[BulkAdd] Erro ao salvar flashcardsNotebook:", e);
-        showNotification("Erro ao salvar no armazenamento local", "⚠️");
+        showNotification("Erro ao salvar no armazenamento local", "warning");
     }
 }
 
@@ -227,7 +245,7 @@ async function processFilesList(files) {
     }
 
     if (newCardsLoaded.length === 0) {
-        showNotification("Nenhum cartão válido encontrado nos arquivos.", "⚠️");
+        showNotification("Nenhum cartão válido encontrado nos arquivos.", "warning");
         return;
     }
 
@@ -253,7 +271,7 @@ async function processFilesList(files) {
     renderLeftCardsList();
     updateSelectAllButtonState();
     updateTransferButtonState();
-    showNotification(`${newCardsLoaded.length} cartões carregados com sucesso!`, "📚");
+    showNotification(`${newCardsLoaded.length} cartões carregados com sucesso!`, "collections_bookmark");
 }
 
 // --- NATIVE HARDWARE-ACCELERATED CARD RENDERING ---
@@ -297,6 +315,20 @@ function renderLeftCardsList() {
     leftCardsList.appendChild(fragment);
 }
 
+function getTypeBadgeInfo(type) {
+    if (type === 'anki') {
+        return { label: "Anki", classes: "bg-indigo-100 text-indigo-800" };
+    } else if (type === 'multiple_choice') {
+        return { label: "Múltipla escolha", classes: "bg-cyan-100 text-cyan-800" };
+    } else if (type === 'open_double') {
+        return { label: "Escrever duplo", classes: "bg-amber-100 text-amber-800" };
+    } else if (type === 'fill') {
+        return { label: "Preencher", classes: "bg-teal-100 text-teal-800" };
+    } else {
+        return { label: "Escrever", classes: "bg-gray-100 text-gray-700" };
+    }
+}
+
 function createLeftCardElement(card, idx) {
     const cardEl = document.createElement('div');
     const isSelected = selectedCardIds.has(card.id);
@@ -313,23 +345,9 @@ function createLeftCardElement(card, idx) {
     sourceTag.title = card.sourceDeck || '';
 
     const typeBadge = document.createElement('span');
-    typeBadge.className = "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded";
-    if (card.type === 'anki') {
-        typeBadge.className += " bg-indigo-100 text-indigo-800";
-        typeBadge.textContent = "Anki";
-    } else if (card.type === 'multiple_choice') {
-        typeBadge.className += " bg-cyan-100 text-cyan-800";
-        typeBadge.textContent = "Múltipla escolha";
-    } else if (card.type === 'open_double') {
-        typeBadge.className += " bg-amber-100 text-amber-800";
-        typeBadge.textContent = "Escrever duplo";
-    } else if (card.type === 'fill') {
-        typeBadge.className += " bg-teal-100 text-teal-800";
-        typeBadge.textContent = "Preencher";
-    } else {
-        typeBadge.className += " bg-gray-100 text-gray-700";
-        typeBadge.textContent = "Escrever";
-    }
+    const typeInfo = getTypeBadgeInfo(card.type);
+    typeBadge.className = `text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${typeInfo.classes}`;
+    typeBadge.textContent = typeInfo.label;
 
     topBar.appendChild(sourceTag);
     topBar.appendChild(typeBadge);
@@ -592,7 +610,7 @@ function handleInstantMoveCard(card, cardEl) {
         updateLeftCardsCountBadge();
         updateSelectAllButtonState();
         updateTransferButtonState();
-        showNotification("Cartão movido para o Caderno!", "✨");
+        showNotification("Cartão movido para o Caderno!", "check_circle");
     }, 300);
 }
 
@@ -772,7 +790,7 @@ function handleTransferSelectedCards() {
             transferSquircle.classList.remove('flex');
         }
         isTransferring = false;
-        showNotification(`${preparedCards.length} ${preparedCards.length === 1 ? 'cartão adicionado' : 'cartões adicionados'} ao Caderno!`, "✨");
+        showNotification(`${preparedCards.length} ${preparedCards.length === 1 ? 'cartão adicionado' : 'cartões adicionados'} ao Caderno!`, "check_circle");
     }, 850);
 }
 
@@ -792,23 +810,9 @@ function createRightCardElement(card) {
     sourceTag.title = card.sourceDeck || '';
 
     const typeBadge = document.createElement('span');
-    typeBadge.className = "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded";
-    if (card.type === 'anki') {
-        typeBadge.className += " bg-indigo-100 text-indigo-800";
-        typeBadge.textContent = "Anki";
-    } else if (card.type === 'multiple_choice') {
-        typeBadge.className += " bg-cyan-100 text-cyan-800";
-        typeBadge.textContent = "Múltipla escolha";
-    } else if (card.type === 'open_double') {
-        typeBadge.className += " bg-amber-100 text-amber-800";
-        typeBadge.textContent = "Escrever duplo";
-    } else if (card.type === 'fill') {
-        typeBadge.className += " bg-teal-100 text-teal-800";
-        typeBadge.textContent = "Preencher";
-    } else {
-        typeBadge.className += " bg-gray-100 text-gray-700";
-        typeBadge.textContent = "Escrever";
-    }
+    const typeInfo = getTypeBadgeInfo(card.type);
+    typeBadge.className = `text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${typeInfo.classes}`;
+    typeBadge.textContent = typeInfo.label;
 
     topBar.appendChild(sourceTag);
     topBar.appendChild(typeBadge);
@@ -903,7 +907,11 @@ function handleDeleteCardFromNotebook(cardId, cardEl) {
             rightEmptyHint.classList.remove('hidden');
         }
 
-        showNotification("Cartão removido do Caderno", "🗑️");
+        if (notebookOverviewModal && !notebookOverviewModal.classList.contains('hidden')) {
+            renderNotebookOverviewModalContent();
+        }
+
+        showNotification("Cartão removido do Caderno", "delete");
     }, 320);
 }
 
@@ -919,7 +927,8 @@ function setupEditModalHandlers() {
 }
 
 function openEditModal(cardId) {
-    const card = sessionAddedCards.find(c => c.id === cardId);
+    const nbData = getNotebookDataFromStorage();
+    const card = sessionAddedCards.find(c => c.id === cardId) || (nbData.allQuestions || []).find(c => c.id === cardId);
     if (!card) return;
 
     editingCardId = cardId;
@@ -967,8 +976,8 @@ function handleSaveCardEdit() {
     updateInList(nbData.questionsPool);
     saveNotebookDataToStorage(nbData);
 
-    // 3. Atualiza na UI do cartão na direita
-    const cardEl = rightCardsList.querySelector(`[data-id="${editingCardId}"]`);
+    // 3. Atualiza na UI do cartão na direita se existir
+    const cardEl = rightCardsList?.querySelector(`[data-id="${editingCardId}"]`);
     if (cardEl) {
         const descView = cardEl.querySelector('.card-desc-view');
         const ansView = cardEl.querySelector('.card-ans-view');
@@ -980,13 +989,454 @@ function handleSaveCardEdit() {
         }
     }
 
+    // 4. Se o modal de visualização do Caderno estiver aberto, re-renderiza o conteúdo dele
+    if (notebookOverviewModal && !notebookOverviewModal.classList.contains('hidden')) {
+        renderNotebookOverviewModalContent();
+    }
+
     closeEditModal();
     triggerHaptic('snap');
-    showNotification("Cartão atualizado com sucesso!", "✏️");
+    showNotification("Cartão atualizado com sucesso!", "edit");
+}
+
+// --- NOTEBOOK OVERVIEW MODAL (DECKS & CARDS SAVED IN NOTEBOOK) ---
+function setupNotebookOverviewHandlers() {
+    notebookTotalBadge?.addEventListener('click', () => {
+        openNotebookOverviewModal();
+    });
+
+    closeNotebookModalBtn?.addEventListener('click', closeNotebookOverviewModal);
+    notebookModalDoneBtn?.addEventListener('click', closeNotebookOverviewModal);
+
+    notebookOverviewModal?.addEventListener('click', (e) => {
+        if (e.target === notebookOverviewModal) {
+            closeNotebookOverviewModal();
+        }
+    });
+
+    notebookModalSearch?.addEventListener('input', (e) => {
+        notebookSearchQuery = (e.target.value || '').trim().toLowerCase();
+        if (notebookSearchQuery) {
+            clearNotebookSearchBtn?.classList.remove('hidden');
+        } else {
+            clearNotebookSearchBtn?.classList.add('hidden');
+        }
+        renderNotebookOverviewModalContent();
+    });
+
+    clearNotebookSearchBtn?.addEventListener('click', () => {
+        if (notebookModalSearch) {
+            notebookModalSearch.value = '';
+        }
+        notebookSearchQuery = '';
+        clearNotebookSearchBtn?.classList.add('hidden');
+        renderNotebookOverviewModalContent();
+        notebookModalSearch?.focus();
+    });
+
+    // Close open modals on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (editCardModal && !editCardModal.classList.contains('hidden')) {
+                closeEditModal();
+            } else if (notebookOverviewModal && !notebookOverviewModal.classList.contains('hidden')) {
+                closeNotebookOverviewModal();
+            }
+        }
+    });
+}
+
+function openNotebookOverviewModal() {
+    activeDeckFilter = 'ALL';
+    notebookSearchQuery = '';
+    if (notebookModalSearch) notebookModalSearch.value = '';
+    clearNotebookSearchBtn?.classList.add('hidden');
+
+    renderNotebookOverviewModalContent();
+    notebookOverviewModal?.classList.remove('hidden');
+    triggerHaptic('tick');
+}
+
+function closeNotebookOverviewModal() {
+    notebookOverviewModal?.classList.add('hidden');
+}
+
+function renderNotebookOverviewModalContent() {
+    if (!notebookModalCardsContainer) return;
+
+    const nbData = getNotebookDataFromStorage();
+    const allCards = (nbData.allQuestions || []).filter(isPlayableCard);
+    const totalCardsCount = allCards.length;
+
+    // Group cards by sourceDeck
+    const deckMap = new Map();
+    allCards.forEach(card => {
+        const deckName = (card.sourceDeck || '').trim() || 'Caderno';
+        if (!deckMap.has(deckName)) {
+            deckMap.set(deckName, []);
+        }
+        deckMap.get(deckName).push(card);
+    });
+
+    const totalDecksCount = deckMap.size;
+
+    // Update Subtitle
+    if (notebookModalSubtitle) {
+        notebookModalSubtitle.textContent = `${totalCardsCount} ${totalCardsCount === 1 ? 'cartão salvo' : 'cartões salvos'} de ${totalDecksCount} ${totalDecksCount === 1 ? 'baralho' : 'baralhos'}`;
+    }
+
+    // Empty state if Caderno has no cards
+    if (totalCardsCount === 0) {
+        if (notebookDeckChips) notebookDeckChips.innerHTML = '';
+        notebookModalCardsContainer.innerHTML = `
+            <div class="py-16 flex flex-col items-center justify-center text-center p-6 text-gray-400 select-none">
+                <div class="w-16 h-16 rounded-3xl bg-blue-50 text-blue-500 flex items-center justify-center mb-3 shadow-2xs">
+                    <span class="material-symbols-rounded text-3xl opacity-80">bookmark_border</span>
+                </div>
+                <h4 class="text-base font-bold text-gray-800">Seu Caderno está vazio</h4>
+                <p class="text-xs text-gray-500 max-w-sm mt-1.5 leading-relaxed">
+                    Nenhum cartão salvo ainda. Faça upload de baralhos e clique em "Adicionar ao Caderno" para começar suas revisões espaçadas contínuas.
+                </p>
+            </div>
+        `;
+        if (notebookModalFooterInfo) {
+            notebookModalFooterInfo.textContent = "0 cartões salvos";
+        }
+        return;
+    }
+
+    // Build Deck Filter Chips
+    if (notebookDeckChips) {
+        notebookDeckChips.innerHTML = '';
+        const chipsFragment = document.createDocumentFragment();
+
+        // "Todos" chip
+        const allChip = document.createElement('button');
+        allChip.type = 'button';
+        const isAllActive = (activeDeckFilter === 'ALL');
+        allChip.className = `px-3 py-1.5 rounded-full font-semibold transition flex items-center gap-1.5 flex-shrink-0 cursor-pointer ${
+            isAllActive 
+                ? 'bg-blue-600 text-white shadow-xs' 
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+        }`;
+        allChip.innerHTML = `<span>Todos</span> <span class="px-1.5 py-0.2 rounded-full text-[10px] ${isAllActive ? 'bg-white/25 text-white' : 'bg-gray-200 text-gray-700'}">${totalCardsCount}</span>`;
+        allChip.addEventListener('click', () => {
+            activeDeckFilter = 'ALL';
+            triggerHaptic('tick');
+            renderNotebookOverviewModalContent();
+        });
+        chipsFragment.appendChild(allChip);
+
+        // Deck Chips
+        deckMap.forEach((cards, deckName) => {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            const isActive = (activeDeckFilter === deckName);
+            chip.className = `px-3 py-1.5 rounded-full font-semibold transition flex items-center gap-1.5 flex-shrink-0 cursor-pointer max-w-[220px] ${
+                isActive 
+                    ? 'bg-blue-600 text-white shadow-xs' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+            }`;
+            chip.title = deckName;
+            chip.innerHTML = `
+                <span class="truncate">${escapeHtml(deckName)}</span>
+                <span class="px-1.5 py-0.2 rounded-full text-[10px] flex-shrink-0 ${isActive ? 'bg-white/25 text-white' : 'bg-gray-200 text-gray-700'}">${cards.length}</span>
+            `;
+            chip.addEventListener('click', () => {
+                activeDeckFilter = deckName;
+                triggerHaptic('tick');
+                renderNotebookOverviewModalContent();
+            });
+            chipsFragment.appendChild(chip);
+        });
+
+        notebookDeckChips.appendChild(chipsFragment);
+    }
+
+    // Filter cards by active chip and search query
+    let visibleCardsCount = 0;
+    const matchingDecks = [];
+
+    deckMap.forEach((cards, deckName) => {
+        if (activeDeckFilter !== 'ALL' && activeDeckFilter !== deckName) {
+            return;
+        }
+
+        let matchingCards = cards;
+        if (notebookSearchQuery) {
+            const query = notebookSearchQuery.toLowerCase();
+            matchingCards = cards.filter(c => {
+                const front = (c.description || '').toLowerCase();
+                const back = (c.answer || '').toLowerCase();
+                const deck = deckName.toLowerCase();
+                return front.includes(query) || back.includes(query) || deck.includes(query);
+            });
+        }
+
+        if (matchingCards.length > 0) {
+            matchingDecks.push({
+                name: deckName,
+                cards: matchingCards,
+                totalDeckCards: cards.length
+            });
+            visibleCardsCount += matchingCards.length;
+        }
+    });
+
+    if (matchingDecks.length === 0) {
+        notebookModalCardsContainer.innerHTML = `
+            <div class="py-12 flex flex-col items-center justify-center text-center p-6 text-gray-400 select-none">
+                <span class="material-symbols-rounded text-3xl mb-2 opacity-50">search_off</span>
+                <p class="font-bold text-sm text-gray-700">Nenhum cartão encontrado</p>
+                <p class="text-xs mt-1 text-gray-500">Tente buscar por outro termo ou selecione outro baralho no filtro acima.</p>
+            </div>
+        `;
+        if (notebookModalFooterInfo) {
+            notebookModalFooterInfo.textContent = `Mostrando 0 de ${totalCardsCount} cartões`;
+        }
+        return;
+    }
+
+    // Render deck sections and cards
+    const containerFragment = document.createDocumentFragment();
+
+    matchingDecks.forEach(deckObj => {
+        const deckSection = document.createElement('div');
+        deckSection.className = "bg-white rounded-2xl border border-gray-200/90 shadow-2xs overflow-hidden transition-all";
+
+        const isCollapsed = collapsedDecks.has(deckObj.name);
+
+        // Header
+        const header = document.createElement('div');
+        header.className = "px-4 py-3 bg-gradient-to-r from-blue-50/70 via-blue-50/30 to-white border-b border-gray-100 flex items-center justify-between gap-3 cursor-pointer select-none group/deck";
+        header.innerHTML = `
+            <div class="flex items-center gap-2 min-w-0">
+                <span class="material-symbols-rounded text-blue-600 text-lg transition-transform duration-200 deck-chevron ${isCollapsed ? '-rotate-90' : ''}">expand_more</span>
+                <span class="material-symbols-rounded text-blue-500 text-lg flex-shrink-0">style</span>
+                <h4 class="font-bold text-sm text-gray-900 truncate" title="${escapeHtml(deckObj.name)}">${escapeHtml(deckObj.name)}</h4>
+                <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 flex-shrink-0">
+                    ${deckObj.cards.length}${deckObj.cards.length !== deckObj.totalDeckCards ? ` de ${deckObj.totalDeckCards}` : ''} ${deckObj.totalDeckCards === 1 ? 'card' : 'cards'}
+                </span>
+            </div>
+            <div class="flex items-center gap-1">
+                <button type="button" class="btn-remove-deck text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-2.5 py-1 rounded-lg transition flex items-center gap-1 cursor-pointer" title="Remover todos os cartões deste baralho do Caderno">
+                    <span class="material-symbols-rounded text-sm">delete</span>
+                    <span class="hidden sm:inline">Remover baralho</span>
+                </button>
+            </div>
+        `;
+
+        const deleteDeckBtn = header.querySelector('.btn-remove-deck');
+        deleteDeckBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            handleModalDeleteDeck(deckObj.name);
+        });
+
+        // Cards list wrapper
+        const cardsList = document.createElement('div');
+        cardsList.className = `p-3 sm:p-4 space-y-3 ${isCollapsed ? 'hidden' : ''}`;
+
+        header.addEventListener('click', (e) => {
+            if (e.target.closest('.btn-remove-deck')) return;
+            const chevron = header.querySelector('.deck-chevron');
+            if (collapsedDecks.has(deckObj.name)) {
+                collapsedDecks.delete(deckObj.name);
+                cardsList.classList.remove('hidden');
+                chevron?.classList.remove('-rotate-90');
+            } else {
+                collapsedDecks.add(deckObj.name);
+                cardsList.classList.add('hidden');
+                chevron?.classList.add('-rotate-90');
+            }
+        });
+
+        deckObj.cards.forEach((card, idx) => {
+            const cardEl = createModalCardElement(card, idx);
+            cardsList.appendChild(cardEl);
+        });
+
+        deckSection.appendChild(header);
+        deckSection.appendChild(cardsList);
+        containerFragment.appendChild(deckSection);
+    });
+
+    notebookModalCardsContainer.innerHTML = '';
+    notebookModalCardsContainer.appendChild(containerFragment);
+
+    if (notebookModalFooterInfo) {
+        notebookModalFooterInfo.textContent = `Mostrando ${visibleCardsCount} de ${totalCardsCount} ${totalCardsCount === 1 ? 'cartão' : 'cartões'}`;
+    }
+}
+
+function createModalCardElement(card, idx) {
+    const cardEl = document.createElement('div');
+    cardEl.className = "bg-white border border-gray-200/90 hover:border-gray-300 rounded-xl p-3 sm:p-3.5 shadow-2xs transition-all flex flex-col gap-2 relative group";
+    cardEl.dataset.id = card.id;
+
+    const typeInfo = getTypeBadgeInfo(card.type);
+
+    const srsBadgeHtml = (card.repetitions && card.repetitions > 0)
+        ? `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+             <span class="material-symbols-rounded text-[11px]">history</span>
+             <span>Revisado ${card.repetitions}x · Intervalo ${card.intervalDays || 1}d</span>
+           </span>`
+        : `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1">
+             <span class="material-symbols-rounded text-[11px]">fiber_new</span>
+             <span>Novo</span>
+           </span>`;
+
+    // Top Row
+    const topRow = document.createElement('div');
+    topRow.className = "flex items-center justify-between gap-2";
+
+    const leftMeta = document.createElement('div');
+    leftMeta.className = "flex items-center gap-1.5 flex-wrap";
+    leftMeta.innerHTML = `
+        <span class="text-[10px] font-bold text-gray-400">#${idx + 1}</span>
+        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${typeInfo.classes}">
+            ${typeInfo.label}
+        </span>
+        ${srsBadgeHtml}
+    `;
+
+    const rightActions = document.createElement('div');
+    rightActions.className = "flex items-center gap-1";
+
+    const editBtn = document.createElement('button');
+    editBtn.type = "button";
+    editBtn.className = "p-1 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition cursor-pointer";
+    editBtn.title = "Editar este cartão";
+    editBtn.innerHTML = `<span class="material-symbols-rounded text-base">edit</span>`;
+    editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openEditModal(card.id);
+    });
+
+    const delBtn = document.createElement('button');
+    delBtn.type = "button";
+    delBtn.className = "p-1 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer";
+    delBtn.title = "Remover do Caderno";
+    delBtn.innerHTML = `<span class="material-symbols-rounded text-base">delete</span>`;
+    delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleModalDeleteCard(card.id, cardEl);
+    });
+
+    rightActions.appendChild(editBtn);
+    rightActions.appendChild(delBtn);
+
+    topRow.appendChild(leftMeta);
+    topRow.appendChild(rightActions);
+    cardEl.appendChild(topRow);
+
+    // Front (Question)
+    const frontEl = document.createElement('div');
+    frontEl.className = "text-xs sm:text-sm text-gray-900 leading-snug card-desc-view";
+    frontEl.innerHTML = `<strong class="text-gray-900 font-semibold">Frente:</strong> <div class="text-gray-800 mt-0.5">${renderMathAndMarkdown(card.description || '(Sem texto)')}</div>`;
+    cardEl.appendChild(frontEl);
+
+    // Back (Answer)
+    const backEl = document.createElement('div');
+    backEl.className = "text-xs sm:text-sm text-emerald-800 leading-snug border-t border-gray-100 pt-1.5 mt-0.5 card-ans-view";
+    backEl.innerHTML = `<strong class="text-emerald-900 font-semibold">Verso:</strong> <div class="text-emerald-800 mt-0.5">${renderMathAndMarkdown(card.answer || '')}</div>`;
+    cardEl.appendChild(backEl);
+
+    // Image if present
+    const safeImg = sanitizeImageUrl(card.image);
+    if (safeImg) {
+        const imgCont = document.createElement('div');
+        imgCont.className = "mt-1 max-h-24 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center p-1";
+        imgCont.innerHTML = `<img src="${safeImg}" class="max-h-20 w-auto object-contain rounded" alt="Imagem">`;
+        cardEl.appendChild(imgCont);
+    }
+
+    return cardEl;
+}
+
+function handleModalDeleteCard(cardId, cardEl) {
+    if (!cardId) return;
+
+    // 1. Remove do save do Caderno no localStorage
+    const nbData = getNotebookDataFromStorage();
+    nbData.allQuestions = nbData.allQuestions.filter(c => c.id !== cardId);
+    nbData.questionsPool = nbData.questionsPool.filter(c => c.id !== cardId);
+    saveNotebookDataToStorage(nbData);
+
+    // 2. Remove do estado in-memory da sessão
+    sessionAddedCards = sessionAddedCards.filter(c => c.id !== cardId);
+
+    // 3. Remove da lista da direita (rightCardsList) se estiver renderizado lá
+    const rightEl = rightCardsList?.querySelector(`[data-id="${cardId}"]`);
+    if (rightEl) {
+        rightEl.remove();
+        if (rightCardsCountBadge) {
+            rightCardsCountBadge.textContent = `${sessionAddedCards.length} ${sessionAddedCards.length === 1 ? 'adicionado' : 'adicionados'}`;
+        }
+        if (sessionAddedCards.length === 0 && rightEmptyHint) {
+            rightEmptyHint.classList.remove('hidden');
+        }
+    }
+
+    // 4. Animação de saída no modal
+    triggerHaptic('delete');
+    if (cardEl) {
+        cardEl.style.transition = 'all 0.2s ease-out';
+        cardEl.style.opacity = '0';
+        cardEl.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            renderNotebookOverviewModalContent();
+        }, 180);
+    } else {
+        renderNotebookOverviewModalContent();
+    }
+
+    showNotification("Cartão removido do Caderno", "delete");
+}
+
+function handleModalDeleteDeck(deckName) {
+    if (!deckName) return;
+
+    if (!confirm(`Remover todos os cartões do baralho "${deckName}" do seu Caderno?`)) {
+        return;
+    }
+
+    const nbData = getNotebookDataFromStorage();
+    const countBefore = nbData.allQuestions.length;
+    nbData.allQuestions = nbData.allQuestions.filter(c => ((c.sourceDeck || '').trim() || 'Caderno') !== deckName);
+    nbData.questionsPool = nbData.questionsPool.filter(c => ((c.sourceDeck || '').trim() || 'Caderno') !== deckName);
+    const removedCount = countBefore - nbData.allQuestions.length;
+    saveNotebookDataToStorage(nbData);
+
+    sessionAddedCards = sessionAddedCards.filter(c => ((c.sourceDeck || '').trim() || 'Caderno') !== deckName);
+
+    // Sync rightCardsList
+    if (rightCardsList) {
+        const items = rightCardsList.querySelectorAll('.flashcard-item');
+        items.forEach(item => {
+            const id = item.dataset?.id;
+            if (!sessionAddedCards.some(c => c.id === id)) {
+                item.remove();
+            }
+        });
+        if (rightCardsCountBadge) {
+            rightCardsCountBadge.textContent = `${sessionAddedCards.length} ${sessionAddedCards.length === 1 ? 'adicionado' : 'adicionados'}`;
+        }
+        if (sessionAddedCards.length === 0 && rightEmptyHint) {
+            rightEmptyHint.classList.remove('hidden');
+        }
+    }
+
+    if (activeDeckFilter === deckName) {
+        activeDeckFilter = 'ALL';
+    }
+
+    triggerHaptic('delete');
+    renderNotebookOverviewModalContent();
+    showNotification(`${removedCount} ${removedCount === 1 ? 'cartão removido' : 'cartões removidos'} do Caderno`, "delete");
 }
 
 // --- NOTIFICATION PILL ---
-function showNotification(text, icon = "✨") {
+function showNotification(text, icon = "check_circle") {
     if (!bulkNotificationPill || !bulkPillText) return;
 
     bulkPillText.textContent = text;

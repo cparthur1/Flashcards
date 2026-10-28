@@ -59,6 +59,19 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: rgba(100, 116, 139, 0.45);
         }
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.96) translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        .modal-animate-in {
+            animation: modalIn 0.2s cubic-bezier(0.2, 0, 0, 1) forwards;
+        }
     </style>
 </head>
 
@@ -84,11 +97,12 @@
 
             <!-- Header Actions -->
             <div class="flex items-center gap-2.5">
-                <!-- Notebook Total Cards Badge -->
-                <div id="notebook-total-badge" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 font-bold text-xs shadow-2xs" title="Total de cartões salvos no seu Caderno">
+                <!-- Notebook Total Cards Badge (Clickable Pill) -->
+                <button type="button" id="notebook-total-badge" class="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 hover:bg-blue-100/90 active:scale-95 border border-blue-200 hover:border-blue-300 text-blue-700 font-bold text-xs shadow-2xs hover:shadow-xs transition-all cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-blue-500/30" title="Ver baralhos e cartões salvos no Caderno" aria-label="Ver baralhos e cartões salvos no Caderno">
                     <img src="../assets/img/bookmark_check.svg" class="w-3.5 h-3.5 flex-shrink-0" alt="Caderno">
                     <span id="notebook-total-count">0 no caderno</span>
-                </div>
+                    <span class="material-symbols-rounded text-sm text-blue-500 transition-transform group-hover:translate-x-0.5">chevron_right</span>
+                </button>
 
                 <!-- Done / Return Button -->
                 <a href="game.html" class="group px-3.5 py-1.5 rounded-xl bg-green-600 hover:bg-green-700 active:scale-95 text-white font-semibold text-xs sm:text-sm transition flex items-center gap-1.5 shadow-xs hover:shadow-sm">
@@ -239,8 +253,63 @@
 
     </main>
 
+    <!-- NOTEBOOK OVERVIEW MODAL (DECKS & CARDS SAVED IN NOTEBOOK) -->
+    <div id="notebook-overview-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 hidden" role="dialog" aria-modal="true" aria-labelledby="notebook-modal-title">
+        <div class="bg-white rounded-3xl border border-gray-200 shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden modal-animate-in">
+            <!-- Modal Header -->
+            <div class="px-5 py-4 border-b border-gray-100 bg-gray-50/80 flex items-center justify-between gap-3 flex-shrink-0">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 shadow-2xs">
+                        <span class="material-symbols-rounded text-xl">collections_bookmark</span>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 id="notebook-modal-title" class="font-bold text-base sm:text-lg text-gray-900 leading-tight">
+                            Baralhos no Caderno
+                        </h3>
+                        <p id="notebook-modal-subtitle" class="text-xs text-gray-500 truncate">
+                            0 cartões salvos de 0 baralhos
+                        </p>
+                    </div>
+                </div>
+                <button type="button" id="close-notebook-modal-btn" class="p-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-200/60 transition active:scale-90 flex-shrink-0 cursor-pointer" title="Fechar" aria-label="Fechar">
+                    <span class="material-symbols-rounded text-xl leading-none">close</span>
+                </button>
+            </div>
+
+            <!-- Search & Deck Filter Chips Bar -->
+            <div class="px-5 py-3 border-b border-gray-100 bg-white flex flex-col gap-2.5 flex-shrink-0">
+                <!-- Search Input -->
+                <div class="relative w-full">
+                    <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg pointer-events-none">search</span>
+                    <input type="text" id="notebook-modal-search" placeholder="Buscar por pergunta, resposta ou baralho..." class="w-full pl-9 pr-8 py-2 rounded-xl border border-gray-200 bg-gray-50/60 hover:bg-gray-50 focus:bg-white text-xs sm:text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition">
+                    <button type="button" id="clear-notebook-search-btn" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-100 transition" aria-label="Limpar busca">
+                        <span class="material-symbols-rounded text-base">close</span>
+                    </button>
+                </div>
+
+                <!-- Deck Filter Chips (Horizontal Scrollable) -->
+                <div id="notebook-deck-chips" class="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar text-xs">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Cards Container -->
+            <div id="notebook-modal-cards-container" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 custom-scrollbar bg-slate-50/50">
+                <!-- Populated dynamically -->
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-5 py-3.5 border-t border-gray-100 bg-gray-50/80 flex items-center justify-between gap-3 flex-shrink-0 text-xs">
+                <span id="notebook-modal-footer-info" class="text-gray-500 font-medium">Mostrando 0 cartões</span>
+                <button type="button" id="notebook-modal-done-btn" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold transition shadow-xs cursor-pointer">
+                    Concluído
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- QUICK EDIT CARD MODAL -->
-    <div id="edit-card-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div id="edit-card-modal" class="fixed inset-0 z-[60] bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-3xl border border-gray-200 shadow-xl max-w-lg w-full p-6 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200">
             <div class="flex items-center justify-between border-b border-gray-100 pb-3">
                 <h3 class="font-bold text-base text-gray-900 flex items-center gap-2">
@@ -290,13 +359,13 @@
     <!-- FLOATING NOTIFICATION PILL -->
     <div id="bulk-notification-pill" class="fixed bottom-6 right-6 z-50 transform translate-y-16 opacity-0 transition-all duration-300 pointer-events-none">
         <div class="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-gray-900 text-white text-xs sm:text-sm font-semibold shadow-lg">
-            <span id="bulk-pill-icon">✨</span>
+            <span id="bulk-pill-icon" class="material-symbols-rounded text-base text-blue-400">check_circle</span>
             <span id="bulk-pill-text">Mensagem</span>
         </div>
     </div>
 
     <script src="../js/ripple.js" defer></script>
-    <script src="../js/bulk-add.js?v=1.1" type="module"></script>
+    <script src="../js/bulk-add.js?v=1.2" type="module"></script>
 </body>
 
 </html>
