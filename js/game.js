@@ -1475,7 +1475,6 @@ function handleAnkiRating(rating) {
         if (rating === 'easy' || rating === 'good') {
             createBall(true);
             triggerHaptic('correct');
-            showNotificationPill(`🧠 Próxima revisão em ${schedule.intervalDays} dias`, "bookmark_check.svg");
             setTimeout(() => {
                 animateCardToBack(() => {
                     loadQuestion();
@@ -1483,7 +1482,6 @@ function handleAnkiRating(rating) {
             }, 300);
         } else if (rating === 'hard') {
             createBall(false);
-            showNotificationPill(`⚡ Próxima revisão em ${schedule.intervalDays}d`, "cached.svg");
             setTimeout(() => {
                 animateCardToBack(() => {
                     loadQuestion();
@@ -1496,7 +1494,6 @@ function handleAnkiRating(rating) {
             questionCard.classList.add('card-shake');
             triggerHaptic('shake');
             setTimeout(() => questionCard.classList.remove('card-shake'), 450);
-            showNotificationPill("⚡ Erro registrado: repetindo adiante", "cached.svg");
             setTimeout(() => {
                 animateCardToBack(() => {
                     loadQuestion();
@@ -2072,8 +2069,6 @@ function showFeedback(isCorrect, element) {
 
                 saveGameState();
                 updateScoreDisplay();
-
-                showNotificationPill(`🧠 Próxima revisão em ${schedule.intervalDays}d`, "bookmark_check.svg");
 
                 setTimeout(() => {
                     animateCardToBack(() => {

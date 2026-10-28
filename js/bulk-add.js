@@ -1310,7 +1310,7 @@ function createModalCardElement(card, idx) {
     const srsBadgeHtml = (card.repetitions && card.repetitions > 0)
         ? `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
              <span class="material-symbols-rounded text-[11px]">history</span>
-             <span>Revisado ${card.repetitions}x · Intervalo ${card.intervalDays || 1}d</span>
+             <span>Revisado ${card.repetitions}x</span>
            </span>`
         : '';
 
