@@ -1,10 +1,21 @@
 import { normalizeString, calculateSimilarity, shuffleArray, checkAndResetModelFallback, ROUTES, renderMathAndMarkdown, generateSecureId, stripHtml, escapeHtml, sanitizeImageUrl } from './utils.js';
 import { isPlayableCard, calculateThinkingGap, selectNextCard, isLeechCard, shouldGraduateCard, formatTimeDisplay, getCardTopic } from './engine/scheduler.js';
 import { getDailyStreak, recordDailyCardAnswered, inferNotebookQuality, calculateNotebookNextSchedule, selectNextNotebookCard, getNotebookDueCounts, isDifficultCard, getTodayDateString } from './engine/notebook-scheduler.js';
-import { initEffects, createBall, clearBalls, setBallColor, launchCelebrationParticles, playCompletionShockwave, cleanShockwaveContainer, resizeCanvas, animate, triggerHaptic, isHapticEnabled, setHapticEnabled, updateHapticUI } from './engine/effects.js';
+import { 
+    initEffects, createBall, clearBalls, setBallColor, launchCelebrationParticles, 
+    playCompletionShockwave, cleanShockwaveContainer, resizeCanvas, animate, 
+    triggerHaptic, isHapticEnabled, setHapticEnabled, updateHapticUI,
+    isSoundEnabled, setSoundEnabled, playFeedbackSound, updateSoundUI,
+    isAnimationsEnabled, setAnimationsEnabled, applyAnimationsPreference, updateAnimationsUI, updateAccessibilityUI
+} from './engine/effects.js';
 import { initInputController, startGamepadLoop, stopGamepadLoop } from './engine/input-controller.js';
 import { isTutorEnabled, setTutorApiKey, disableTutor, initTutor, updateTutorUI, setLastUserAnswerForChat, getLastUserAnswerForChat, resetTutorChatSession, getHasChatInteraction, setHasChatInteraction, evaluateAnswerSemantic, addMsg, showTyping, hideTyping, sendTutorChatMessage, getTermDefinition, logDefinitionToChat } from './engine/tutor.js';
 import { initPomodoro, isPomodoroEnabled, setPomodoroEnabled, updatePomodoroUI, getPomodoroStatus } from './engine/pomodoro.js';
+import { 
+    getNotificationSettings, saveNotificationSettings, requestNotificationPermission, 
+    hasNotificationSupport, sendDailyNotification, startNotificationScheduler, 
+    updateNotificationsUI, checkAndTriggerScheduledNotifications 
+} from './engine/notifications.js';
 import { isDeckCategorized, callGeminiFlashLiteCategorization, getStoredAiCategories, getCardSignature } from './stats-ai.js';
 import { initTransfer } from './transfer.js';
 import { initStatsSession, recordStatsAnswer, recordStatsAiCorrection, archiveCurrentSession, completeCurrentSession, getCurrentSessionMetrics } from './stats-tracker.js';
@@ -359,6 +370,10 @@ function animateCardToBack(callback) {
         if (callback) callback();
         return;
     }
+    if (!isAnimationsEnabled()) {
+        if (callback) callback();
+        return;
+    }
     if (isAnimating) {
         if (callback) callback();
         return;
@@ -423,6 +438,10 @@ function animateCardToBack(callback) {
 
 function animateCardToHeader(callback) {
     if (questionsPool.length === 0) {
+        if (callback) callback();
+        return;
+    }
+    if (!isAnimationsEnabled()) {
         if (callback) callback();
         return;
     }
@@ -827,6 +846,7 @@ function incrementStreak() {
     updateStreakUI(shouldShimmer);
     if (shouldShimmer) {
         triggerHaptic('streakUp');
+        playHeaderShimmer('fire');
     }
 }
 
@@ -890,14 +910,7 @@ function handleDailyStreakOnCardAnswered() {
     const res = recordDailyCardAnswered();
     updateDailyStreakUI();
     if (res.isFirstCardToday) {
-        if (deckSelectTrigger) {
-            deckSelectTrigger.classList.remove('deck-trigger-streak-shimmer');
-            void deckSelectTrigger.offsetWidth; // Force reflow
-            deckSelectTrigger.classList.add('deck-trigger-streak-shimmer');
-            setTimeout(() => {
-                deckSelectTrigger?.classList.remove('deck-trigger-streak-shimmer');
-            }, 1200);
-        }
+        playHeaderShimmer('fire');
         triggerHaptic('streakUp');
         if (res.streakProtectedByFreeze) {
             showNotificationPill(`Sequência protegida pelo congelador! ${res.streak} dias!`, 'fire.svg');
@@ -1421,6 +1434,9 @@ function flipAnkiCard() {
     if (currentQuestion.type !== 'anki' || isAnkiFlipped) return;
     isAnkiFlipped = true;
 
+    triggerHaptic('cardFlip');
+    playFeedbackSound('flip');
+
     if (ankiAnswerContainer) {
         ankiAnswerText.innerHTML = renderMathAndMarkdown(currentQuestion.answer || '');
         setupCardImageWithPlaceholder(currentQuestion.answerImage, ankiAnswerImage, ankiAnswerImageContainer, ankiAnswerImagePlaceholder);
@@ -1471,34 +1487,38 @@ function handleAnkiRating(rating) {
 
         saveGameState();
         updateScoreDisplay();
+        checkAndCelebrateNotebookDailyGoal(true);
 
         if (rating === 'easy' || rating === 'good') {
             createBall(true);
             triggerHaptic('correct');
+            playFeedbackSound('correct');
             setTimeout(() => {
                 animateCardToBack(() => {
                     loadQuestion();
                 });
-            }, 300);
+            }, isAnimationsEnabled() ? 300 : 0);
         } else if (rating === 'hard') {
             createBall(false);
+            playFeedbackSound('wrong');
             setTimeout(() => {
                 animateCardToBack(() => {
                     loadQuestion();
                 });
-            }, 300);
+            }, isAnimationsEnabled() ? 300 : 0);
         } else if (rating === 'again') {
             createBall(false);
+            playFeedbackSound('wrong');
             questionCard.classList.remove('card-shake');
             void questionCard.offsetWidth;
             questionCard.classList.add('card-shake');
             triggerHaptic('shake');
-            setTimeout(() => questionCard.classList.remove('card-shake'), 450);
+            setTimeout(() => questionCard.classList.remove('card-shake'), isAnimationsEnabled() ? 450 : 0);
             setTimeout(() => {
                 animateCardToBack(() => {
                     loadQuestion();
                 });
-            }, 400);
+            }, isAnimationsEnabled() ? 400 : 0);
         }
         return;
     }
@@ -1510,6 +1530,7 @@ function handleAnkiRating(rating) {
             questionCard.classList.add('glow-correct');
         }
         triggerHaptic('correct');
+        playFeedbackSound('correct');
 
         currentQuestion.correctStreak = (currentQuestion.correctStreak || 0) + 1;
         const elapsedSec = (Date.now() - questionStartTime) / 1000;
@@ -1556,6 +1577,8 @@ function handleAnkiRating(rating) {
         }
     } else if (rating === 'good') {
         createBall(true);
+        triggerHaptic('correct');
+        playFeedbackSound('correct');
         currentQuestion.correctStreak = (currentQuestion.correctStreak || 0) + 1;
         currentQuestion.dueStep = currentStep + 10;
         saveGameState();
@@ -1565,6 +1588,7 @@ function handleAnkiRating(rating) {
         });
     } else if (rating === 'hard') {
         createBall(false);
+        playFeedbackSound('wrong');
         const elapsedSec = (Date.now() - questionStartTime) / 1000;
         const gap = calculateThinkingGap(elapsedSec, currentQuestion, questionsPool.length);
         currentQuestion.dueStep = currentStep + gap;
@@ -1575,6 +1599,7 @@ function handleAnkiRating(rating) {
         });
     } else if (rating === 'again') {
         createBall(false);
+        playFeedbackSound('wrong');
         questionCard.classList.remove('card-shake');
         void questionCard.offsetWidth;
         questionCard.classList.add('card-shake');
@@ -1943,6 +1968,9 @@ function showFeedback(isCorrect, element) {
 
         if (isCorrect) {
             triggerHaptic('correct');
+            playFeedbackSound('correct');
+        } else {
+            playFeedbackSound('wrong');
         }
 
         // Update streak counter (Anki cards are handled separately and do NOT touch streak)
@@ -2314,7 +2342,9 @@ function setNotebookDailyGoal(goal) {
 }
 
 // --- HEADER STATS CUSTOMIZATION MODULE ---
-const HEADER_PINNED_STORAGE_KEY = 'flashcards_header_pinned_stats';
+const HEADER_PINNED_DECK_STORAGE_KEY = 'flashcards_header_pinned_stats_deck';
+const HEADER_PINNED_NOTEBOOK_STORAGE_KEY = 'flashcards_header_pinned_stats_notebook';
+const LEGACY_HEADER_PINNED_STORAGE_KEY = 'flashcards_header_pinned_stats';
 const DEFAULT_PINNED_STATS = ['remaining', 'score'];
 const MAX_PINNED_STATS = 3;
 const MIN_PINNED_STATS = 1;
@@ -2482,9 +2512,21 @@ const AVAILABLE_HEADER_STATS = [
     }
 ];
 
-function getPinnedHeaderStats() {
+function normalizeStatsMode(mode = activeMode) {
+    return mode === 'notebook' ? 'notebook' : 'deck';
+}
+
+function getPinnedHeaderStats(mode = activeMode) {
+    const targetMode = normalizeStatsMode(mode);
+    const key = targetMode === 'notebook' 
+        ? HEADER_PINNED_NOTEBOOK_STORAGE_KEY 
+        : HEADER_PINNED_DECK_STORAGE_KEY;
+
     try {
-        const saved = localStorage.getItem(HEADER_PINNED_STORAGE_KEY);
+        let saved = localStorage.getItem(key);
+        if (!saved && targetMode === 'deck') {
+            saved = localStorage.getItem(LEGACY_HEADER_PINNED_STORAGE_KEY);
+        }
         if (saved) {
             const parsed = JSON.parse(saved);
             if (Array.isArray(parsed) && parsed.length >= MIN_PINNED_STATS && parsed.length <= MAX_PINNED_STATS) {
@@ -2501,12 +2543,63 @@ function getPinnedHeaderStats() {
     return [...DEFAULT_PINNED_STATS];
 }
 
-function savePinnedHeaderStats(pinnedList) {
+function savePinnedHeaderStats(pinnedList, mode = activeMode) {
+    const targetMode = normalizeStatsMode(mode);
+    const key = targetMode === 'notebook' 
+        ? HEADER_PINNED_NOTEBOOK_STORAGE_KEY 
+        : HEADER_PINNED_DECK_STORAGE_KEY;
+
     try {
-        localStorage.setItem(HEADER_PINNED_STORAGE_KEY, JSON.stringify(pinnedList));
+        localStorage.setItem(key, JSON.stringify(pinnedList));
+        if (targetMode === 'deck') {
+            localStorage.setItem(LEGACY_HEADER_PINNED_STORAGE_KEY, JSON.stringify(pinnedList));
+        }
     } catch (e) {
         console.warn("[HeaderStats] Erro ao salvar estatísticas fixadas:", e);
     }
+}
+
+export function playHeaderShimmer(variant = 'fire') {
+    if (!isAnimationsEnabled()) return;
+    const header = document.getElementById('global-header');
+    if (!header) return;
+    header.classList.remove('header-shimmer-active', 'header-shimmer-fire', 'header-shimmer-goal');
+    void header.offsetWidth; // Force DOM reflow
+    const variantClass = variant === 'goal' ? 'header-shimmer-goal' : 'header-shimmer-fire';
+    header.classList.add('header-shimmer-active', variantClass);
+    setTimeout(() => {
+        header?.classList.remove('header-shimmer-active', 'header-shimmer-fire', 'header-shimmer-goal');
+    }, 1400);
+}
+
+function checkAndCelebrateNotebookDailyGoal(isFromAnsweringCard = false) {
+    if (activeMode !== 'notebook') return;
+    const dailyGoal = getNotebookDailyGoal();
+    if (dailyGoal <= 0) return;
+
+    const dueInfo = getNotebookDueCounts(allQuestions || []);
+    const reviewedToday = dueInfo.reviewedToday || 0;
+    if (reviewedToday < dailyGoal) return;
+
+    // Apenas celebra se a stat "para hoje" (remaining) estiver pinada no cabeçalho do caderno
+    const pinnedIds = getPinnedHeaderStats('notebook');
+    const isParaHojePinned = pinnedIds.includes('remaining');
+    if (!isParaHojePinned) return;
+
+    const todayStr = getTodayDateString();
+    const celebrationKey = `flashcards_daily_goal_celebrated_${todayStr}_${dailyGoal}`;
+    if (localStorage.getItem(celebrationKey)) {
+        return; // Já comemorou esta meta hoje
+    }
+
+    localStorage.setItem(celebrationKey, 'true');
+
+    // Toque animação shimmer rosa, azul claro e verde neon 1x no header e desce confetes
+    playHeaderShimmer('goal');
+    launchCelebrationParticles(120);
+    triggerHaptic('streakUp');
+    playFeedbackSound('confirm');
+    showNotificationPill('Meta diária do caderno concluída!', 'collection.svg');
 }
 
 function renderHeaderPinnedStats() {
@@ -2756,7 +2849,8 @@ function renderHeaderStatsDropdown() {
 }
 
 function togglePinStat(statId) {
-    let pinnedIds = getPinnedHeaderStats();
+    const mode = normalizeStatsMode(activeMode);
+    let pinnedIds = getPinnedHeaderStats(mode);
     const isPinned = pinnedIds.includes(statId);
 
     if (isPinned) {
@@ -2777,9 +2871,10 @@ function togglePinStat(statId) {
         triggerHaptic('streakUp');
     }
 
-    savePinnedHeaderStats(pinnedIds);
+    savePinnedHeaderStats(pinnedIds, mode);
     renderHeaderPinnedStats();
     renderHeaderStatsDropdown();
+    renderSettingsPinnedStatsList(settingsCurrentStatsTab);
 }
 
 function openHeaderStatsDropdown() {
@@ -4201,10 +4296,11 @@ saveDailyGoalBtn?.addEventListener('click', () => {
     triggerHaptic('snap');
 
     if (goal > 0) {
-        showNotificationPill(`🎯 Meta diária: ${goal} cards por dia!`, 'collection.svg');
+        showNotificationPill(`Meta diária: ${goal} cards por dia!`, 'collection.svg');
     } else {
-        showNotificationPill("🎯 Estudando todos os cards vencidos", 'collection.svg');
+        showNotificationPill("Estudando todos os cards vencidos", 'collection.svg');
     }
+    checkAndCelebrateNotebookDailyGoal(false);
 });
 
 counterLeftWrapper?.addEventListener('click', (e) => {
@@ -4259,13 +4355,518 @@ if (aiSettingRow) {
     });
 }
 
+// --- APP SETTINGS MODAL & ACCESSIBILITY CONTROLLER ---
+const openSettingsModalBtn = document.getElementById('open-settings-modal-btn');
+const appSettingsModal = document.getElementById('app-settings-modal');
+const closeAppSettingsModalBtn = document.getElementById('close-app-settings-modal-btn');
+const doneAppSettingsModalBtn = document.getElementById('done-app-settings-modal-btn');
+
+// Accessibility switches & rows
+const settingHapticRow = document.getElementById('setting-haptic-row');
+const settingHapticSwitch = document.getElementById('setting-haptic-switch');
+const settingSoundRow = document.getElementById('setting-sound-row');
+const settingSoundSwitch = document.getElementById('setting-sound-switch');
+const settingAnimationsRow = document.getElementById('setting-animations-row');
+const settingAnimationsSwitch = document.getElementById('setting-animations-switch');
+
+// Pomodoro controls in settings modal
+const settingPomodoroRow = document.getElementById('setting-pomodoro-row');
+const settingPomodoroSwitch = document.getElementById('setting-pomodoro-switch');
+
+// AI controls in settings modal
+const settingAiRow = document.getElementById('setting-ai-row');
+const settingAiSwitch = document.getElementById('setting-ai-switch');
+const settingApiKeyBtn = document.getElementById('setting-api-key-btn');
+const settingApiKeyStatus = document.getElementById('setting-api-key-status');
+
+// Notebook goal & clear controls in settings modal
+const settingNotebookGoalSelect = document.getElementById('setting-notebook-goal-select');
+const settingNotebookGoalInfo = document.getElementById('setting-notebook-goal-info');
+const settingClearNotebookBtn = document.getElementById('setting-clear-notebook-btn');
+
+// Pinned header stats controls in settings modal
+let settingsCurrentStatsTab = 'deck'; // 'deck' | 'notebook'
+const settingStatsTabDeckBtn = document.getElementById('setting-stats-tab-deck');
+const settingStatsTabNotebookBtn = document.getElementById('setting-stats-tab-notebook');
+const settingStatsPinnedCount = document.getElementById('setting-stats-pinned-count');
+const settingStatsListContainer = document.getElementById('setting-stats-list-container');
+
+// Daily notifications controls in settings modal
+const settingNotifMasterSwitch = document.getElementById('setting-notif-master-switch');
+const settingNotifPeriodsContainer = document.getElementById('setting-notif-periods-container');
+const settingNotifMorningSwitch = document.getElementById('setting-notif-morning-switch');
+const settingNotifMorningTime = document.getElementById('setting-notif-morning-time');
+const settingNotifNoonSwitch = document.getElementById('setting-notif-noon-switch');
+const settingNotifNoonTime = document.getElementById('setting-notif-noon-time');
+const settingNotifNightSwitch = document.getElementById('setting-notif-night-switch');
+const settingNotifNightTime = document.getElementById('setting-notif-night-time');
+const settingNotifTestBtn = document.getElementById('setting-notif-test-btn');
+
+// Legacy elements (if present)
 const hapticSwitch = document.getElementById('haptic-switch');
 const hapticSettingRow = document.getElementById('haptic-setting-row');
 const hapticToggleBtn = document.getElementById('haptic-toggle-btn');
 
+async function updateSettingsModalState() {
+    // 1. Accessibility switches
+    updateAccessibilityUI();
+
+    // 2. Pomodoro state
+    updatePomodoroUI();
+
+    // 3. AI state
+    const isAiOn = localStorage.getItem('flashcards_ai_enabled') === 'true';
+    if (settingAiSwitch) {
+        settingAiSwitch.selected = isAiOn;
+    }
+    const currentApiKey = await getApiKeyAsync();
+    if (settingApiKeyStatus) {
+        if (currentApiKey) {
+            settingApiKeyStatus.textContent = 'Chave configurada';
+            settingApiKeyStatus.className = 'text-[11px] font-semibold text-emerald-600 dark:text-emerald-400';
+        } else {
+            settingApiKeyStatus.textContent = 'Nenhuma chave salva';
+            settingApiKeyStatus.className = 'text-[11px] text-[var(--md-sys-color-on-surface-variant)]';
+        }
+    }
+
+    // 4. Notebook goal & status
+    const currentGoal = getNotebookDailyGoal();
+    if (settingNotebookGoalSelect) {
+        settingNotebookGoalSelect.value = String(currentGoal);
+    }
+    if (settingNotebookGoalInfo) {
+        const dueInfo = getNotebookDueCounts(allQuestions || []);
+        const reviewedToday = dueInfo.reviewedToday || 0;
+        settingNotebookGoalInfo.textContent = `${reviewedToday} ${reviewedToday === 1 ? 'card revisado hoje' : 'cards revisados hoje'} • ${dueInfo.dueToday} vencidos`;
+    }
+
+    // 5. Header pinned stats tab & list
+    switchSettingsStatsTab(normalizeStatsMode(activeMode));
+
+    // 6. Daily notifications settings
+    updateNotificationsUI();
+}
+
+function switchSettingsStatsTab(tab) {
+    settingsCurrentStatsTab = tab === 'notebook' ? 'notebook' : 'deck';
+    if (settingStatsTabDeckBtn && settingStatsTabNotebookBtn) {
+        if (settingsCurrentStatsTab === 'deck') {
+            settingStatsTabDeckBtn.className = 'flex-1 py-1.5 px-3 rounded-xl transition-all text-center cursor-pointer bg-white dark:bg-slate-800 text-[var(--md-sys-color-primary)] font-bold shadow-xs';
+            settingStatsTabNotebookBtn.className = 'flex-1 py-1.5 px-3 rounded-xl transition-all text-center cursor-pointer text-[var(--md-sys-color-on-surface-variant)] font-semibold hover:text-[var(--md-sys-color-on-surface)]';
+        } else {
+            settingStatsTabNotebookBtn.className = 'flex-1 py-1.5 px-3 rounded-xl transition-all text-center cursor-pointer bg-white dark:bg-slate-800 text-[var(--md-sys-color-primary)] font-bold shadow-xs';
+            settingStatsTabDeckBtn.className = 'flex-1 py-1.5 px-3 rounded-xl transition-all text-center cursor-pointer text-[var(--md-sys-color-on-surface-variant)] font-semibold hover:text-[var(--md-sys-color-on-surface)]';
+        }
+    }
+    renderSettingsPinnedStatsList(settingsCurrentStatsTab);
+}
+
+settingStatsTabDeckBtn?.addEventListener('click', () => switchSettingsStatsTab('deck'));
+settingStatsTabNotebookBtn?.addEventListener('click', () => switchSettingsStatsTab('notebook'));
+
+function renderSettingsPinnedStatsList(mode = settingsCurrentStatsTab) {
+    if (!settingStatsListContainer) return;
+    const targetMode = mode === 'notebook' ? 'notebook' : 'deck';
+    const pinnedIds = getPinnedHeaderStats(targetMode);
+
+    if (settingStatsPinnedCount) {
+        settingStatsPinnedCount.textContent = `${pinnedIds.length} de ${MAX_PINNED_STATS} fixadas`;
+        if (pinnedIds.length >= MAX_PINNED_STATS) {
+            settingStatsPinnedCount.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800 flex-shrink-0';
+        } else {
+            settingStatsPinnedCount.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800 flex-shrink-0';
+        }
+    }
+
+    settingStatsListContainer.innerHTML = '';
+
+    AVAILABLE_HEADER_STATS.forEach(stat => {
+        const isPinned = pinnedIds.includes(stat.id);
+        const displayLabel = targetMode === 'notebook' ? stat.notebookLabel : stat.label;
+        const statTitle = stat.title;
+
+        const row = document.createElement('div');
+        row.className = `group/stat flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer ${
+            isPinned 
+                ? 'bg-blue-50/50 dark:bg-blue-950/30 border-blue-200/80 dark:border-blue-800/80' 
+                : 'bg-transparent border-transparent hover:bg-[var(--md-sys-color-surface-container-high)]'
+        }`;
+
+        row.innerHTML = `
+            <div class="flex items-center gap-3 min-w-0 flex-1 pr-2">
+                <div class="w-8 h-8 rounded-xl ${stat.iconBg} flex items-center justify-center flex-shrink-0 shadow-xs">
+                    <span class="material-symbols-rounded text-lg">${stat.icon}</span>
+                </div>
+                <div class="min-w-0 flex-1 text-left">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs font-bold text-[var(--md-sys-color-on-surface)] truncate">${statTitle}</span>
+                        <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 font-mono flex-shrink-0">${displayLabel}</span>
+                    </div>
+                    <p class="text-[10px] text-[var(--md-sys-color-on-surface-variant)] truncate mt-0.5">${stat.description}</p>
+                </div>
+            </div>
+            <button type="button" class="pin-stat-btn p-1.5 rounded-xl transition-all cursor-pointer ${
+                isPinned 
+                    ? 'bg-blue-100/80 dark:bg-blue-900/50 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 shadow-xs' 
+                    : 'bg-gray-100 dark:bg-gray-800 border border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+            }" title="${isPinned ? 'Desafixar do cabeçalho' : (pinnedIds.length >= MAX_PINNED_STATS ? 'Limite atingido' : 'Fixar no cabeçalho')}">
+                <img src="${isPinned ? '../assets/img/pinned.svg' : '../assets/img/unpinned.svg'}" 
+                     class="w-5 h-5 flex-shrink-0 pointer-events-none transition-transform active:scale-90 ${isPinned ? '' : 'opacity-60'}" 
+                     alt="${isPinned ? 'Fixado' : 'Não fixado'}">
+            </button>
+        `;
+
+        const handleToggle = (e) => {
+            e.stopPropagation();
+            let currentList = getPinnedHeaderStats(targetMode);
+            const currentlyPinned = currentList.includes(stat.id);
+
+            if (currentlyPinned) {
+                if (currentList.length <= MIN_PINNED_STATS) {
+                    showNotificationPill('Pelo menos 1 estatística deve permanecer fixada', 'pinned.svg', true);
+                    triggerHaptic('shake');
+                    return;
+                }
+                currentList = currentList.filter(id => id !== stat.id);
+                triggerHaptic('light');
+                showNotificationPill(`"${displayLabel}" desafixada do ${targetMode === 'notebook' ? 'Caderno' : 'Jogo Normal'}`, 'unpinned.svg');
+            } else {
+                if (currentList.length >= MAX_PINNED_STATS) {
+                    showNotificationPill('Máximo de 3 estatísticas fixadas atingido', 'pinned.svg', true);
+                    triggerHaptic('shake');
+                    return;
+                }
+                currentList.push(stat.id);
+                triggerHaptic('streakUp');
+                showNotificationPill(`"${displayLabel}" fixada no cabeçalho do ${targetMode === 'notebook' ? 'Caderno' : 'Jogo Normal'}`, 'pinned.svg');
+            }
+
+            savePinnedHeaderStats(currentList, targetMode);
+            renderSettingsPinnedStatsList(targetMode);
+
+            if (targetMode === normalizeStatsMode(activeMode)) {
+                renderHeaderPinnedStats();
+                if (headerStatsDropdown && !headerStatsDropdown.classList.contains('hidden')) {
+                    renderHeaderStatsDropdown();
+                }
+            }
+        };
+
+        const pinBtn = row.querySelector('.pin-stat-btn');
+        if (pinBtn) pinBtn.addEventListener('click', handleToggle);
+        row.addEventListener('click', handleToggle);
+
+        settingStatsListContainer.appendChild(row);
+    });
+}
+
+function openAppSettingsModal() {
+    if (!appSettingsModal) return;
+    updateSettingsModalState();
+    appSettingsModal.classList.remove('hidden');
+}
+
+function closeAppSettingsModal() {
+    if (!appSettingsModal) return;
+    appSettingsModal.classList.add('hidden');
+}
+
+// Open / Close modal events
+openSettingsModalBtn?.addEventListener('click', () => {
+    closeHamburgerMenu();
+    openAppSettingsModal();
+});
+closeAppSettingsModalBtn?.addEventListener('click', closeAppSettingsModal);
+doneAppSettingsModalBtn?.addEventListener('click', closeAppSettingsModal);
+appSettingsModal?.addEventListener('click', (e) => {
+    if (e.target === appSettingsModal) closeAppSettingsModal();
+});
+
+// Accessibility: Haptic Switch
+if (settingHapticSwitch) {
+    settingHapticSwitch.addEventListener('change', () => {
+        const enabled = Boolean(settingHapticSwitch.selected);
+        setHapticEnabled(enabled);
+        showNotificationPill(
+            enabled ? "Vibração tátil ativada" : "Vibração tátil desativada",
+            "vibrate.svg"
+        );
+    });
+}
+if (settingHapticRow && settingHapticSwitch) {
+    settingHapticRow.addEventListener('click', (e) => {
+        if (e.target.closest('md-switch')) return;
+        e.preventDefault();
+        if (settingHapticSwitch.disabled) return;
+        settingHapticSwitch.selected = !settingHapticSwitch.selected;
+        settingHapticSwitch.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+}
+
+// Accessibility: Sound Switch
+if (settingSoundSwitch) {
+    settingSoundSwitch.addEventListener('change', () => {
+        const enabled = Boolean(settingSoundSwitch.selected);
+        setSoundEnabled(enabled);
+        showNotificationPill(
+            enabled ? "Efeitos sonoros ativados" : "Efeitos sonoros desativados",
+            "stats.svg"
+        );
+    });
+}
+if (settingSoundRow && settingSoundSwitch) {
+    settingSoundRow.addEventListener('click', (e) => {
+        if (e.target.closest('md-switch')) return;
+        e.preventDefault();
+        settingSoundSwitch.selected = !settingSoundSwitch.selected;
+        settingSoundSwitch.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+}
+
+// Accessibility: Animations Switch
+if (settingAnimationsSwitch) {
+    settingAnimationsSwitch.addEventListener('change', () => {
+        const enabled = Boolean(settingAnimationsSwitch.selected);
+        setAnimationsEnabled(enabled);
+        showNotificationPill(
+            enabled ? "Animações ativadas" : "Animações reduzidas",
+            "stats.svg"
+        );
+    });
+}
+if (settingAnimationsRow && settingAnimationsSwitch) {
+    settingAnimationsRow.addEventListener('click', (e) => {
+        if (e.target.closest('md-switch')) return;
+        e.preventDefault();
+        settingAnimationsSwitch.selected = !settingAnimationsSwitch.selected;
+        settingAnimationsSwitch.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+}
+
+// Pomodoro Row click in modal
+if (settingPomodoroRow && settingPomodoroSwitch) {
+    settingPomodoroRow.addEventListener('click', (e) => {
+        if (e.target.closest('md-switch')) return;
+        e.preventDefault();
+        settingPomodoroSwitch.selected = !settingPomodoroSwitch.selected;
+        settingPomodoroSwitch.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+}
+
+// AI Switch in Settings Modal
+if (settingAiSwitch) {
+    settingAiSwitch.addEventListener('change', async () => {
+        const nextState = Boolean(settingAiSwitch.selected);
+        if (nextState) {
+            geminiApiKey = await getApiKeyAsync();
+            if (geminiApiKey) {
+                localStorage.setItem('flashcards_ai_enabled', 'true');
+                initializeAi();
+                initBackgroundCategorization();
+                if (aiSwitch) aiSwitch.selected = true;
+                updateSettingsModalState();
+                showNotificationPill("Recursos de IA ativados", "enabled_ai.svg");
+            } else {
+                settingAiSwitch.selected = false;
+                if (aiSwitch) aiSwitch.selected = false;
+                closeAppSettingsModal();
+                apiModal.classList.remove('hidden');
+                apiKeyInput.value = '';
+                if (apiKeyRemember) apiKeyRemember.checked = isKeyRemembered();
+                setTimeout(() => apiKeyInput.focus(), 50);
+                showNotificationPill("Insira sua chave de API para ativar a IA", "config_ai.svg");
+            }
+        } else {
+            localStorage.setItem('flashcards_ai_enabled', 'false');
+            disableTutor();
+            updateAiUI();
+            if (aiSwitch) aiSwitch.selected = false;
+            updateSettingsModalState();
+            showNotificationPill("Recursos de IA desativados", "config_ai.svg");
+        }
+    });
+}
+if (settingAiRow && settingAiSwitch) {
+    settingAiRow.addEventListener('click', (e) => {
+        if (e.target.closest('md-switch') || e.target.closest('#setting-api-key-btn')) return;
+        e.preventDefault();
+        settingAiSwitch.selected = !settingAiSwitch.selected;
+        settingAiSwitch.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+}
+
+// API Key Configure Button in Settings Modal
+settingApiKeyBtn?.addEventListener('click', async () => {
+    closeAppSettingsModal();
+    apiModal.classList.remove('hidden');
+    geminiApiKey = await getApiKeyAsync();
+    apiKeyInput.value = geminiApiKey || '';
+    if (apiKeyRemember) apiKeyRemember.checked = isKeyRemembered();
+    setTimeout(() => apiKeyInput.focus(), 50);
+});
+
+// Notebook Goal Select in Settings Modal
+settingNotebookGoalSelect?.addEventListener('change', () => {
+    const rawVal = settingNotebookGoalSelect.value;
+    const num = parseInt(rawVal, 10);
+    const goal = (!isNaN(num) && num > 0) ? num : 0;
+    setNotebookDailyGoal(goal);
+    updateScoreDisplay();
+    triggerHaptic('snap');
+    updateSettingsModalState();
+    showNotificationPill(
+        goal > 0 ? `Meta diária: ${goal} cards por dia!` : "Estudando todos os cards vencidos",
+        'collection.svg'
+    );
+    checkAndCelebrateNotebookDailyGoal(false);
+});
+
+// Clear Notebook Button in Settings Modal
+settingClearNotebookBtn?.addEventListener('click', () => {
+    closeAppSettingsModal();
+    if (clearNotebookBtn) {
+        clearNotebookBtn.click();
+    }
+});
+
+// --- DAILY NOTIFICATIONS SETTINGS LISTENERS ---
+async function ensureNotificationPermission() {
+    if (!hasNotificationSupport()) {
+        showNotificationPill('Seu navegador não suporta notificações web.', 'poor_wifi.svg', true);
+        return false;
+    }
+    const perm = await requestNotificationPermission();
+    if (perm !== 'granted') {
+        showNotificationPill('Permissão de notificação negada no navegador.', 'poor_wifi.svg', true);
+        return false;
+    }
+    return true;
+}
+
+// Master switch
+settingNotifMasterSwitch?.addEventListener('change', async () => {
+    const nextVal = Boolean(settingNotifMasterSwitch.selected);
+    if (nextVal) {
+        const granted = await ensureNotificationPermission();
+        if (!granted) {
+            settingNotifMasterSwitch.selected = false;
+            return;
+        }
+    }
+    const settings = getNotificationSettings();
+    settings.enabled = nextVal;
+    if (nextVal && !settings.morning.enabled && !settings.noon.enabled && !settings.night.enabled) {
+        settings.morning.enabled = true;
+        settings.noon.enabled = true;
+        settings.night.enabled = true;
+    }
+    saveNotificationSettings(settings);
+    showNotificationPill(
+        nextVal ? 'Lembretes diários ativados!' : 'Lembretes diários desativados.',
+        'notifications.svg'
+    );
+});
+
+// Morning switch & time
+settingNotifMorningSwitch?.addEventListener('change', async () => {
+    const nextVal = Boolean(settingNotifMorningSwitch.selected);
+    if (nextVal) {
+        const granted = await ensureNotificationPermission();
+        if (!granted) {
+            settingNotifMorningSwitch.selected = false;
+            return;
+        }
+    }
+    const settings = getNotificationSettings();
+    settings.morning.enabled = nextVal;
+    if (nextVal) settings.enabled = true;
+    saveNotificationSettings(settings);
+    showNotificationPill(
+        nextVal ? `Lembrete da manhã ativado (${settings.morning.time})` : 'Lembrete da manhã desativado',
+        'notifications.svg'
+    );
+});
+settingNotifMorningTime?.addEventListener('change', () => {
+    const settings = getNotificationSettings();
+    settings.morning.time = settingNotifMorningTime.value || '09:00';
+    saveNotificationSettings(settings);
+});
+
+// Noon switch & time
+settingNotifNoonSwitch?.addEventListener('change', async () => {
+    const nextVal = Boolean(settingNotifNoonSwitch.selected);
+    if (nextVal) {
+        const granted = await ensureNotificationPermission();
+        if (!granted) {
+            settingNotifNoonSwitch.selected = false;
+            return;
+        }
+    }
+    const settings = getNotificationSettings();
+    settings.noon.enabled = nextVal;
+    if (nextVal) settings.enabled = true;
+    saveNotificationSettings(settings);
+    showNotificationPill(
+        nextVal ? `Lembrete do meio-dia ativado (${settings.noon.time})` : 'Lembrete do meio-dia desativado',
+        'notifications.svg'
+    );
+});
+settingNotifNoonTime?.addEventListener('change', () => {
+    const settings = getNotificationSettings();
+    settings.noon.time = settingNotifNoonTime.value || '13:00';
+    saveNotificationSettings(settings);
+});
+
+// Night switch & time (Urgente / Salvar Streak)
+settingNotifNightSwitch?.addEventListener('change', async () => {
+    const nextVal = Boolean(settingNotifNightSwitch.selected);
+    if (nextVal) {
+        const granted = await ensureNotificationPermission();
+        if (!granted) {
+            settingNotifNightSwitch.selected = false;
+            return;
+        }
+    }
+    const settings = getNotificationSettings();
+    settings.night.enabled = nextVal;
+    if (nextVal) settings.enabled = true;
+    saveNotificationSettings(settings);
+    showNotificationPill(
+        nextVal ? `Alerta noturno urgente ativado (${settings.night.time})` : 'Alerta noturno desativado',
+        'fire.svg'
+    );
+});
+settingNotifNightTime?.addEventListener('change', () => {
+    const settings = getNotificationSettings();
+    settings.night.time = settingNotifNightTime.value || '21:00';
+    saveNotificationSettings(settings);
+});
+
+// Test button
+settingNotifTestBtn?.addEventListener('click', async () => {
+    const granted = await ensureNotificationPermission();
+    if (!granted) return;
+    const settings = getNotificationSettings();
+    const periodToTest = settings.night.enabled ? 'night' : (settings.noon.enabled ? 'noon' : 'morning');
+    const sent = await sendDailyNotification(periodToTest, true);
+    if (sent) {
+        triggerHaptic('tap');
+        showNotificationPill(`Notificação de teste (${periodToTest === 'night' ? 'Alerta Urgente' : 'Lembrete'}) enviada!`, 'notifications.svg');
+    }
+});
+
+// Start notification scheduler & visibility listener
+startNotificationScheduler();
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        checkAndTriggerScheduledNotifications();
+    }
+});
+
+// Legacy Haptic listeners (fallback)
 if (hapticSwitch) {
     hapticSwitch.selected = isHapticEnabled();
-
     hapticSwitch.addEventListener('change', () => {
         const nextState = hapticSwitch.selected;
         setHapticEnabled(nextState);
@@ -4275,10 +4876,8 @@ if (hapticSwitch) {
         );
     });
 }
-
 if (hapticSettingRow && hapticSwitch) {
     hapticSettingRow.addEventListener('click', (e) => {
-        // If clicking directly on the switch control, let md-switch handle it natively
         if (e.target.closest('md-switch')) return;
         e.preventDefault();
         if (hapticSwitch.disabled) return;
@@ -4286,7 +4885,6 @@ if (hapticSettingRow && hapticSwitch) {
         hapticSwitch.dispatchEvent(new Event('change', { bubbles: true }));
     });
 }
-
 if (hapticToggleBtn) {
     hapticToggleBtn.addEventListener('click', () => {
         const nextState = !isHapticEnabled();

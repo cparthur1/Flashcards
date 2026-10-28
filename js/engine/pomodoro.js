@@ -4,7 +4,7 @@
  * e promoção de micro-pausas estratégicas na consolidação da memória.
  */
 
-import { triggerHaptic } from './effects.js';
+import { triggerHaptic, isSoundEnabled } from './effects.js';
 
 const POMODORO_STORAGE_KEY = 'flashcards_pomodoro_enabled';
 const POMODORO_SETTINGS_KEY = 'flashcards_pomodoro_settings';
@@ -198,6 +198,7 @@ export function snoozeBreak(minutes = 5) {
 }
 
 function playPomodoroChime() {
+    if (!isSoundEnabled()) return;
     try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         if (!AudioCtx) return;
@@ -349,11 +350,25 @@ export function updatePomodoroUI() {
     if (!pomodoroSwitchEl) pomodoroSwitchEl = document.getElementById('pomodoro-switch');
     if (!pomodoroSubtitleEl) pomodoroSubtitleEl = document.getElementById('pomodoro-subtitle');
 
+    const settingPomodoroSwitch = document.getElementById('setting-pomodoro-switch');
+    const settingFocusSelect = document.getElementById('setting-pomodoro-focus-select');
+    const settingBreakSelect = document.getElementById('setting-pomodoro-break-select');
+
     const enabled = isPomodoroEnabled();
     const settings = getPomodoroSettings();
 
     if (pomodoroSwitchEl) {
         pomodoroSwitchEl.selected = enabled;
+    }
+    if (settingPomodoroSwitch) {
+        settingPomodoroSwitch.selected = enabled;
+    }
+
+    if (settingFocusSelect) {
+        settingFocusSelect.value = String(settings.focusMinutes);
+    }
+    if (settingBreakSelect) {
+        settingBreakSelect.value = String(settings.breakMinutes);
     }
 
     if (pomodoroSubtitleEl) {
@@ -387,6 +402,30 @@ export function initPomodoro() {
             setPomodoroEnabled(checked);
         });
     }
+
+    // Modal settings switch listener
+    const settingPomodoroSwitch = document.getElementById('setting-pomodoro-switch');
+    if (settingPomodoroSwitch) {
+        settingPomodoroSwitch.addEventListener('change', () => {
+            const checked = Boolean(settingPomodoroSwitch.selected);
+            setPomodoroEnabled(checked);
+        });
+    }
+
+    // Modal select listeners
+    const settingFocusSelect = document.getElementById('setting-pomodoro-focus-select');
+    const settingBreakSelect = document.getElementById('setting-pomodoro-break-select');
+    const handleSettingDurationChange = () => {
+        const focusMinutes = Number(settingFocusSelect?.value || 25);
+        const breakMinutes = Number(settingBreakSelect?.value || 5);
+        savePomodoroSettings({ focusMinutes, breakMinutes });
+        updatePomodoroUI();
+        if (isPomodoroEnabled()) {
+            startStudyCycle();
+        }
+    };
+    if (settingFocusSelect) settingFocusSelect.addEventListener('change', handleSettingDurationChange);
+    if (settingBreakSelect) settingBreakSelect.addEventListener('change', handleSettingDurationChange);
 
     // Config trigger (click row or title to open popup)
     if (pomodoroConfigTriggerEl) {

@@ -1,3 +1,45 @@
+CHANGELOG: DAILY NOTIFICATION SYSTEM TO SAVE STREAK & REVIEW CARDS (v10.7)
+Date: 2026-10-28
+
+OVERVIEW:
+1. Implemented a complete daily study reminder and streak protection notification system (`js/engine/notifications.js`).
+2. Disabled by default (`enabled: false`), fully configurable inside the Material Design 3 settings modal (`#app-settings-modal`).
+3. Independent scheduling and time controls for three daily periods:
+   - Manhã (Morning): default 09:00, friendly morning focus prompt.
+   - Meio-dia (Noon): default 13:00, midday consolidation and lunchtime practice prompt.
+   - Noite (Night - Salvar Streak): default 21:00, high-urgency streak alert. If the user hasn't studied today, triggers persistent vibration and warns about losing their active streak before midnight.
+4. Added browser Notification API permission handling with fallbacks to Service Worker notifications (`showNotification`) and background periodic checks (every 45s and on page visibility change).
+5. Added interactive test notification button (`#setting-notif-test-btn`) allowing instant preview of notification appearance and vibration patterns.
+6. Created official Material Symbols `assets/img/notifications.svg` icon and added notification service worker click handler to re-focus or open the app.
+7. Differentiated full-header shimmer animations: streaks shimmer sweeps across the entire header in vibrant yellow and orange fire tones (`.header-shimmer-fire`), while daily goal celebration shimmer exclusively uses pink, light blue, and neon green (`.header-shimmer-goal`).
+8. Bumped Service Worker cache version to `flashcards-v10.7`.
+
+--------------------------------------------------------------------------------
+
+CHANGELOG: APP SETTINGS MODAL, ACCESSIBILITY CONTROLS & HEADER PINNED STATS (v10.6)
+Date: 2026-10-28
+
+OVERVIEW:
+1. Renamed "Settings" to "Quick settings" in the hamburger menu.
+2. Replaced "Vibração Tátil" row in the menu with "Configurações" (`#open-settings-modal-btn`) using `assets/img/settings.svg` to open the full settings modal.
+3. Implemented Material Design 3 modal `#app-settings-modal` with five organized categories:
+   - Acessibilidade: toggles for Vibração (Haptics), Som (Sound), and Animações (Motion/Animations) - all ON by default.
+   - Estatísticas no Cabeçalho: configure separate pinned metrics for "Jogo Normal (Baralho)" and "Caderno de Erros" with segmented mode buttons.
+   - Pomodoro & Pausas: switch and duration selects for focus and micro-break times.
+   - Recursos de IA: Gemini assistant switch and API key management status button.
+   - Meta do Caderno & Dados: daily review goal select and clear notebook action.
+4. Implemented full functional support for the accessibility settings:
+   - Vibração: synced with Haptic API (`flashcardsHapticEnabled`, default true).
+   - Som: synced with Web Audio API feedback system (`flashcardsSoundEnabled`, default true) for correct/wrong/flip/chime and Pomodoro audio.
+   - Animações: synced with CSS transitions/animations via `.reduce-motion` class on body, Canvas particle physics, shockwaves, and instant card transitions (`flashcardsAnimationsEnabled`, default true).
+5. Full-Header Shimmer Animation Refactor:
+   - Refactored streak shimmer to sweep across the entire `#global-header` with pink, light blue, and neon green gradient waves (`#header-shimmer-sweep`).
+   - Triggered 1x across the entire header along with confetti drop (`launchCelebrationParticles`) when the daily notebook goal is reached and the "Para Hoje" stat is pinned.
+6. Cleaned up remaining Unicode emojis across the game screen and notifications, adhering strictly to Material Symbols and semantic SVG icons.
+7. Added `settings.svg` to service worker cache and updated cache version to `flashcards-v10.3`.
+
+--------------------------------------------------------------------------------
+
 CHANGELOG: BULK-ADD NOTEBOOK OVERVIEW PILL & SAVED DECKS MODAL (v10.5)
 Date: 2026-10-28
 

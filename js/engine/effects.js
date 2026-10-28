@@ -1,6 +1,7 @@
 /**
  * js/engine/effects.js
  * Módulo de efeitos visuais e sensoriais: vibração tátil (Haptic API),
+ * efeitos sonoros (Web Audio API), controle de acessibilidade/movimento reduzido,
  * física de bolinhas no Canvas de fundo, confetes de comemoração e ondas de choque (Shockwave).
  */
 
@@ -49,23 +50,26 @@ export function triggerHaptic(type) {
 }
 
 export function updateHapticUI() {
-    const hapticSwitch = document.getElementById('haptic-switch');
+    const switches = [
+        document.getElementById('haptic-switch'),
+        document.getElementById('setting-haptic-switch')
+    ];
     const hapticStatusBadge = document.getElementById('haptic-status-badge');
-    if (!hapticSwitch && !hapticStatusBadge) return;
     const hasVibrationSupport = typeof navigator !== 'undefined' && 'vibrate' in navigator;
     const enabled = isHapticEnabled();
 
-    if (hapticSwitch) {
+    switches.forEach(sw => {
+        if (!sw) return;
         if (!hasVibrationSupport) {
-            hapticSwitch.disabled = true;
-            hapticSwitch.selected = false;
-            hapticSwitch.title = 'Vibração indisponível neste dispositivo';
+            sw.disabled = true;
+            sw.selected = false;
+            sw.title = 'Vibração indisponível neste dispositivo';
         } else {
-            hapticSwitch.disabled = false;
-            hapticSwitch.selected = enabled;
-            hapticSwitch.title = enabled ? 'Vibração ativada' : 'Vibração desativada';
+            sw.disabled = false;
+            sw.selected = enabled;
+            sw.title = enabled ? 'Vibração ativada' : 'Vibração desativada';
         }
-    }
+    });
 
     if (hapticStatusBadge) {
         if (!hasVibrationSupport) {
@@ -82,6 +86,150 @@ export function updateHapticUI() {
             hapticStatusBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500';
         }
     }
+}
+
+// --- SOUND FEEDBACK (WEB AUDIO API) ---
+const SOUND_STORAGE_KEY = 'flashcardsSoundEnabled';
+let audioCtxInstance = null;
+
+export function isSoundEnabled() {
+    return localStorage.getItem(SOUND_STORAGE_KEY) !== 'false';
+}
+
+function getAudioContext() {
+    if (typeof window === 'undefined') return null;
+    if (!audioCtxInstance) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+            audioCtxInstance = new AudioCtx();
+        }
+    }
+    if (audioCtxInstance && audioCtxInstance.state === 'suspended') {
+        audioCtxInstance.resume().catch(() => {});
+    }
+    return audioCtxInstance;
+}
+
+export function playFeedbackSound(type) {
+    if (!isSoundEnabled()) return;
+    try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+
+        if (type === 'correct') {
+            // Dois tons harmônicos ascendentes suaves: C5 (523Hz), E5 (659Hz)
+            const notes = [523.25, 659.25];
+            notes.forEach((freq, idx) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                gain.gain.setValueAtTime(0, now + idx * 0.08);
+                gain.gain.linearRampToValueAtTime(0.12, now + idx * 0.08 + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.28);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now + idx * 0.08);
+                osc.stop(now + idx * 0.08 + 0.3);
+            });
+        } else if (type === 'wrong') {
+            // Tom suave e discreto descendente
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(220, now);
+            osc.frequency.exponentialRampToValueAtTime(140, now + 0.18);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.22);
+        } else if (type === 'confirm' || type === 'toggle') {
+            // Sinal doce para confirmação de ativação do som
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(587.33, now); // D5
+            osc.frequency.setValueAtTime(880.00, now + 0.09); // A5
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.1, now + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.3);
+        } else if (type === 'flip') {
+            // Micro-click suave tipo folhear página
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(440, now);
+            osc.frequency.exponentialRampToValueAtTime(620, now + 0.04);
+            gain.gain.setValueAtTime(0.04, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.06);
+        }
+    } catch (e) {
+        // Ignora silenciosamente se áudio for bloqueado pelo navegador
+    }
+}
+
+export function setSoundEnabled(enabled) {
+    localStorage.setItem(SOUND_STORAGE_KEY, enabled ? 'true' : 'false');
+    updateSoundUI();
+    if (enabled) {
+        playFeedbackSound('confirm');
+    }
+}
+
+export function updateSoundUI() {
+    const soundSwitch = document.getElementById('setting-sound-switch');
+    if (soundSwitch) {
+        soundSwitch.selected = isSoundEnabled();
+        soundSwitch.title = isSoundEnabled() ? 'Efeitos sonoros ativados' : 'Efeitos sonoros desativados';
+    }
+}
+
+// --- ANIMATIONS & MOTION PREFERENCE ---
+const ANIMATIONS_STORAGE_KEY = 'flashcardsAnimationsEnabled';
+
+export function isAnimationsEnabled() {
+    return localStorage.getItem(ANIMATIONS_STORAGE_KEY) !== 'false';
+}
+
+export function applyAnimationsPreference() {
+    const enabled = isAnimationsEnabled();
+    if (typeof document !== 'undefined' && document.body) {
+        document.body.classList.toggle('reduce-motion', !enabled);
+    }
+}
+
+export function setAnimationsEnabled(enabled) {
+    localStorage.setItem(ANIMATIONS_STORAGE_KEY, enabled ? 'true' : 'false');
+    applyAnimationsPreference();
+    updateAnimationsUI();
+    if (enabled) {
+        triggerHaptic('tap');
+    }
+}
+
+export function updateAnimationsUI() {
+    const animSwitch = document.getElementById('setting-animations-switch');
+    if (animSwitch) {
+        animSwitch.selected = isAnimationsEnabled();
+        animSwitch.title = isAnimationsEnabled() ? 'Animações ativadas' : 'Animações reduzidas';
+    }
+}
+
+export function updateAccessibilityUI() {
+    updateHapticUI();
+    updateSoundUI();
+    updateAnimationsUI();
 }
 
 // --- CANVAS ANIMATION & VISUAL EFFECTS ---
@@ -102,6 +250,9 @@ export function initEffects(options = {}) {
     }
     shockwaveContainerElem = options.shockwaveContainer || document.getElementById('shockwave-container');
     questionCardElem = options.questionCard || document.getElementById('question-card');
+
+    applyAnimationsPreference();
+    updateAccessibilityUI();
 }
 
 export function getBalls() {
@@ -135,6 +286,7 @@ export function clearBalls() {
 }
 
 export function launchCelebrationParticles(count = 140) {
+    if (!isAnimationsEnabled()) return;
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
     const colors = [
@@ -170,6 +322,7 @@ export function cleanShockwaveContainer() {
 }
 
 export function playCompletionShockwave() {
+    if (!isAnimationsEnabled()) return;
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const container = shockwaveContainerElem || document.getElementById('shockwave-container');
     const card = questionCardElem || document.getElementById('question-card');
@@ -267,14 +420,14 @@ export function createBall(isCorrect) {
     if (!canvasCtx) canvasCtx = canvasElement.getContext('2d');
     if (!canvasCtx) return -1;
 
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const noMotion = !isAnimationsEnabled() || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const radius = Math.random() * 5 + 8;
     const x = Math.random() * (canvasElement.width - radius * 2) + radius;
-    const y = prefersReducedMotion ? (canvasElement.height - radius) : -radius;
+    const y = noMotion ? (canvasElement.height - radius) : -radius;
     const color = isCorrect ? 'rgba(74, 222, 128, 0.8)' : 'rgba(239, 68, 68, 0.8)';
-    balls.push({ x, y, radius, color, dy: 0, isStatic: prefersReducedMotion });
+    balls.push({ x, y, radius, color, dy: 0, isStatic: noMotion });
 
-    if (prefersReducedMotion) {
+    if (noMotion) {
         canvasCtx.beginPath();
         canvasCtx.arc(x, y, radius, 0, Math.PI * 2);
         canvasCtx.fillStyle = color;

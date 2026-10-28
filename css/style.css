@@ -3134,6 +3134,123 @@ mark.card-hl-purple {
     contain-intrinsic-size: auto none auto 136px;
 }
 
+/* ==========================================================================
+   FULL HEADER SHIMMER ANIMATION
+   - Streaks: Amarelo & Laranja simbolizando fogo (chama ativa)
+   - Meta Atingida: Rosa, Azul Claro & Verde Neon
+   ========================================================================== */
+#header-shimmer-sweep {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: inherit;
+    z-index: 15;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+#header-shimmer-beam {
+    position: absolute;
+    top: -60%;
+    left: -160%;
+    width: 280%;
+    height: 220%;
+    transform: rotate(20deg);
+}
+
+.header-shimmer-active #header-shimmer-sweep {
+    opacity: 1;
+}
+
+.header-shimmer-active #header-shimmer-beam {
+    animation: fullHeaderShimmerSweep 1.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* 1. Streaks Shimmer (Amarelo & Laranja simbolizando fogo) */
+.header-shimmer-fire,
+.header-shimmer-active:not(.header-shimmer-goal) {
+    border-color: rgba(249, 115, 22, 0.65) !important;
+    box-shadow: 0 0 25px rgba(249, 115, 22, 0.45), 0 0 12px rgba(234, 179, 8, 0.35) !important;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.header-shimmer-fire #header-shimmer-beam,
+.header-shimmer-active:not(.header-shimmer-goal) #header-shimmer-beam {
+    background: linear-gradient(
+        105deg,
+        transparent 0%,
+        rgba(253, 224, 71, 0) 10%,
+        rgba(253, 224, 71, 0.9) 32%,   /* Amarelo Ouro Vivo (#fde047) */
+        rgba(249, 115, 22, 0.95) 54%,  /* Laranja Fogo Radiante (#f97316) */
+        rgba(234, 88, 12, 0.92) 76%,   /* Laranja Queimado / Chama Intensa (#ea580c) */
+        rgba(234, 88, 12, 0) 90%,
+        transparent 100%
+    );
+    filter: drop-shadow(0 0 14px rgba(249, 115, 22, 0.75)) drop-shadow(0 0 8px rgba(253, 224, 71, 0.65));
+}
+
+/* 2. Meta Atingida Shimmer (Rosa, Azul Claro & Verde Neon) */
+.header-shimmer-goal {
+    border-color: rgba(56, 189, 248, 0.6) !important;
+    box-shadow: 0 0 24px rgba(56, 189, 248, 0.35), 0 0 12px rgba(244, 114, 182, 0.25) !important;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.header-shimmer-goal #header-shimmer-beam {
+    background: linear-gradient(
+        105deg,
+        transparent 0%,
+        rgba(244, 114, 182, 0) 10%,
+        rgba(244, 114, 182, 0.88) 32%,   /* Rosa (#f472b6) */
+        rgba(56, 189, 248, 0.92) 54%,    /* Azul Claro (#38bdf8) */
+        rgba(74, 222, 128, 0.95) 76%,   /* Verde Neon (#4ade80) */
+        rgba(74, 222, 128, 0) 90%,
+        transparent 100%
+    );
+    filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.65)) drop-shadow(0 0 8px rgba(74, 222, 128, 0.5));
+}
+
+@keyframes fullHeaderShimmerSweep {
+    0% {
+        transform: translateX(0) rotate(20deg);
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+    }
+    80% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(135%) rotate(20deg);
+        opacity: 0;
+    }
+}
+
+/* ==========================================================================
+   ACCESSIBILITY: REDUCE MOTION & DISABLE ANIMATIONS
+   ========================================================================== */
+body.reduce-motion,
+body.reduce-motion *,
+body.reduce-motion *::before,
+body.reduce-motion *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+}
+
+body.reduce-motion .completion-ripple-wave,
+body.reduce-motion .card-shockwave-pulse,
+body.reduce-motion .anim-card-to-back,
+body.reduce-motion #flying-card-to-header,
+body.reduce-motion #header-shimmer-sweep,
+body.reduce-motion #header-shimmer-beam {
+    display: none !important;
+}
+
+
 
 
 

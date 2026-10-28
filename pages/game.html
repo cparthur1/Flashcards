@@ -87,23 +87,23 @@
     <nav id="hamburger-menu" aria-label="Menu de Navegação e Ações"
         class="hidden fixed z-[70] top-14 left-4 w-72 sm:w-80 max-h-[85vh] overflow-y-auto custom-scrollbar lg:top-24 lg:left-6 md:landscape:top-24 md:landscape:left-6 m3-dialog-card p-2 sm:p-3">
         
-        <!-- SECTION 1: SETTINGS (VIBRATION & AI) -->
-        <div class="px-1 py-1 space-y-0.5" role="group" aria-label="Settings">
-            <span class="block text-[10px] font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)] px-2 py-1">Settings</span>
+        <!-- SECTION 1: QUICK SETTINGS (CONFIGURAÇÕES, AI & POMODORO) -->
+        <div class="px-1 py-1 space-y-0.5" role="group" aria-label="Quick settings">
+            <span class="block text-[10px] font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)] px-2 py-1">Quick settings</span>
 
-            <!-- Vibration / Haptic Feedback Toggle (Material 3 Switch, no icons/labels inside switch, with animations) -->
-            <label id="haptic-setting-row" for="haptic-switch"
+            <!-- Configurações (Abre o Modal Completo de Configurações: Acessibilidade, Pomodoro, IA, Metas) -->
+            <button type="button" id="open-settings-modal-btn"
                 class="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-2xl hover:bg-[var(--md-sys-color-surface-container-high)] transition text-left cursor-pointer group select-none no-ripple"
-                title="Ativar ou Desativar Vibração Tátil no Celular">
+                title="Abrir Configurações do Aplicativo">
                 <div class="flex items-center gap-3 min-w-0">
-                    <img id="haptic-menu-icon" src="../assets/img/vibrate.svg" class="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" alt="Vibração">
+                    <img id="settings-menu-icon" src="../assets/img/settings.svg" class="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" alt="Configurações">
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-semibold text-[var(--md-sys-color-on-surface)]">Vibração Tátil</p>
-                        <p class="text-xs text-[var(--md-sys-color-on-surface-variant)] truncate">Feedback sincronizado com animações</p>
+                        <p class="text-sm font-semibold text-[var(--md-sys-color-on-surface)]">Configurações</p>
+                        <p class="text-xs text-[var(--md-sys-color-on-surface-variant)] truncate">Acessibilidade, Pomodoro, IA e metas</p>
                     </div>
                 </div>
-                <md-switch id="haptic-switch" aria-label="Alternar vibração"></md-switch>
-            </label>
+                <span class="material-symbols-rounded text-lg text-[var(--md-sys-color-on-surface-variant)] group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+            </button>
 
             <!-- AI Settings -->
             <div id="ai-setting-row"
@@ -251,8 +251,12 @@
         Clean header with Hamburger menu, deck selector, and score counter.
     -->
     <header id="global-header"
-        class="fixed z-50 transition-all duration-300 top-0 left-0 w-full bg-white/90 backdrop-blur-md border-b border-gray-200 px-4 py-2 flex items-center justify-between lg:top-6 lg:left-6 lg:w-auto lg:rounded-full lg:px-6 lg:py-3 lg:shadow-2xl lg:border lg:border-gray-200 md:landscape:top-6 md:landscape:left-6 md:landscape:w-auto md:landscape:rounded-full md:landscape:px-6 md:landscape:py-3 md:landscape:shadow-2xl md:landscape:border">
-        <div class="flex items-center gap-2 min-w-0 flex-1 mr-2">
+        class="fixed z-50 transition-all duration-300 top-0 left-0 w-full bg-white/90 backdrop-blur-md border-b border-gray-200 px-4 py-2 flex items-center justify-between lg:top-6 lg:left-6 lg:w-auto lg:rounded-full lg:px-6 lg:py-3 lg:shadow-2xl lg:border lg:border-gray-200 md:landscape:top-6 md:landscape:left-6 md:landscape:w-auto md:landscape:rounded-full md:landscape:px-6 md:landscape:py-3 md:landscape:shadow-2xl md:landscape:border relative">
+        <!-- FULL-HEADER SHIMMER SWEEP OVERLAY (Streaks: Amarelo/Laranja Fogo | Meta: Rosa/Azul/Verde Neon) -->
+        <div id="header-shimmer-sweep" class="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit] z-10 opacity-0" aria-hidden="true">
+            <div id="header-shimmer-beam" class="absolute pointer-events-none"></div>
+        </div>
+        <div class="flex items-center gap-2 min-w-0 flex-1 mr-2 relative z-20">
             <!-- HAMBURGER MENU BUTTON -->
             <button id="hamburger-btn"
                 class="cursor-pointer hover:bg-gray-100 rounded-full p-2 transition-colors flex items-center justify-center flex-shrink-0 relative z-[65]"
@@ -380,7 +384,7 @@
                 title="Sequência de acertos consecutivos">
                 <div id="streak-bg-color" class="absolute inset-0 transition-opacity duration-300 opacity-0 pointer-events-none"></div>
                 <div id="streak-shimmer-sweep" class="absolute inset-0 pointer-events-none opacity-0"></div>
-                <span id="streak-fire-icon" class="relative z-10 text-xs transition-transform duration-300 grayscale opacity-60 select-none">🔥</span>
+                <img id="streak-fire-icon" src="../assets/img/fire.svg" class="w-3.5 h-3.5 relative z-10 transition-transform duration-300 grayscale opacity-60 select-none pointer-events-none" alt="Streak">
                 <span id="streak-count" class="relative z-10 font-black tracking-tight text-xs text-gray-600">0</span>
             </div>
         </div>
@@ -471,7 +475,7 @@
                         <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Sequência</span>
                         <span class="inline-flex items-center gap-1 text-amber-500">
                             <span id="completion-stat-streak" class="text-base sm:text-lg font-extrabold">0</span>
-                            <span class="text-sm select-none">🔥</span>
+                            <img src="../assets/img/fire.svg" class="w-4 h-4 select-none pointer-events-none inline-block" alt="Fogo">
                         </span>
                     </div>
                 </div>
@@ -800,6 +804,333 @@
         </div>
     </div>
 
+    <!-- MODAL DE CONFIGURAÇÕES GERAIS DO APP -->
+    <div id="app-settings-modal"
+        class="hidden fixed inset-0 modal-overlay z-[75] flex items-center justify-center p-4 backdrop-blur-xs"
+        role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+        <div class="m3-dialog-card w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface-container-low)] flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <img src="../assets/img/settings.svg" class="w-6 h-6 flex-shrink-0" alt="Configurações">
+                    <div>
+                        <h3 id="settings-modal-title" class="font-extrabold text-xl text-[var(--md-sys-color-on-surface)] tracking-tight leading-tight">Configurações</h3>
+                        <p class="text-xs text-[var(--md-sys-color-on-surface-variant)]">Acessibilidade, Pomodoro, IA e metas</p>
+                    </div>
+                </div>
+                <button id="close-app-settings-modal-btn" type="button" class="p-2 rounded-full hover:bg-[var(--md-sys-color-surface-container-high)] text-[var(--md-sys-color-on-surface-variant)] transition cursor-pointer" aria-label="Fechar">
+                    <span class="material-symbols-rounded text-xl">close</span>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+
+                <!-- CATEGORIA 1: ACESSIBILIDADE -->
+                <section class="space-y-3" aria-labelledby="settings-accessibility-heading">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-rounded text-xl text-[var(--md-sys-color-primary)]">tune</span>
+                        <h4 id="settings-accessibility-heading" class="text-xs font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Acessibilidade</h4>
+                    </div>
+
+                    <div class="space-y-1 bg-[var(--md-sys-color-surface-container-low)] rounded-2xl p-1.5 border border-[var(--md-sys-color-outline-variant)]">
+                        <!-- Vibração Tátil -->
+                        <div id="setting-haptic-row"
+                            class="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--md-sys-color-surface-container-high)] transition text-left cursor-pointer group select-none">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <img src="../assets/img/vibrate.svg" class="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" alt="Vibração">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-semibold text-[var(--md-sys-color-on-surface)]">Vibração tátil</p>
+                                    <p class="text-xs text-[var(--md-sys-color-on-surface-variant)]">Feedback ao virar cards, acertos e erros</p>
+                                </div>
+                            </div>
+                            <md-switch id="setting-haptic-switch" aria-label="Alternar vibração tátil"></md-switch>
+                        </div>
+
+                        <!-- Som -->
+                        <div id="setting-sound-row"
+                            class="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--md-sys-color-surface-container-high)] transition text-left cursor-pointer group select-none">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <span class="material-symbols-rounded text-xl text-[var(--md-sys-color-primary)] flex-shrink-0">volume_up</span>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-semibold text-[var(--md-sys-color-on-surface)]">Efeitos sonoros</p>
+                                    <p class="text-xs text-[var(--md-sys-color-on-surface-variant)]">Sinais sonoros em respostas e Pomodoro</p>
+                                </div>
+                            </div>
+                            <md-switch id="setting-sound-switch" aria-label="Alternar efeitos sonoros"></md-switch>
+                        </div>
+
+                        <!-- Animações -->
+                        <div id="setting-animations-row"
+                            class="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--md-sys-color-surface-container-high)] transition text-left cursor-pointer group select-none">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <span class="material-symbols-rounded text-xl text-[var(--md-sys-color-primary)] flex-shrink-0">motion_photos_on</span>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-semibold text-[var(--md-sys-color-on-surface)]">Animações e transições</p>
+                                    <p class="text-xs text-[var(--md-sys-color-on-surface-variant)]">Efeitos de partículas, ondas de choque e física</p>
+                                </div>
+                            </div>
+                            <md-switch id="setting-animations-switch" aria-label="Alternar animações"></md-switch>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="h-[1px] bg-[var(--md-sys-color-outline-variant)]"></div>
+
+                <!-- CATEGORIA: NOTIFICAÇÕES DIÁRIAS (LEMBRETES & STREAK) -->
+                <section class="space-y-3" aria-labelledby="settings-notifications-heading">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-rounded text-xl text-[var(--md-sys-color-primary)]">notifications</span>
+                            <div>
+                                <h4 id="settings-notifications-heading" class="text-xs font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Notificações Diárias</h4>
+                                <p class="text-[11px] text-[var(--md-sys-color-on-surface-variant)]">Lembretes para praticar cards e salvar o streak</p>
+                            </div>
+                        </div>
+                        <md-switch id="setting-notif-master-switch" aria-label="Ativar todas as notificações"></md-switch>
+                    </div>
+
+                    <!-- Bloco de Períodos Agendados -->
+                    <div id="setting-notif-periods-container" class="space-y-2 bg-[var(--md-sys-color-surface-container-low)] rounded-2xl p-2.5 border border-[var(--md-sys-color-outline-variant)]">
+                        <!-- Manhã -->
+                        <div class="flex items-center justify-between gap-3 p-2 rounded-xl hover:bg-[var(--md-sys-color-surface-container-high)] transition select-none">
+                            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                                <span class="material-symbols-rounded text-lg text-amber-500 flex-shrink-0">wb_sunny</span>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs font-bold text-[var(--md-sys-color-on-surface)]">Manhã</p>
+                                    <p class="text-[10px] text-[var(--md-sys-color-on-surface-variant)] truncate">Inicie o dia revisando</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <input type="time" id="setting-notif-morning-time" value="09:00"
+                                    class="px-2 py-1 text-xs font-bold rounded-lg border border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-on-surface)] outline-none focus:ring-2 focus:ring-blue-500"
+                                    title="Horário do lembrete da manhã">
+                                <md-switch id="setting-notif-morning-switch" aria-label="Lembrete da manhã"></md-switch>
+                            </div>
+                        </div>
+
+                        <!-- Meio-dia -->
+                        <div class="flex items-center justify-between gap-3 p-2 rounded-xl hover:bg-[var(--md-sys-color-surface-container-high)] transition select-none">
+                            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                                <span class="material-symbols-rounded text-lg text-orange-500 flex-shrink-0">light_mode</span>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs font-bold text-[var(--md-sys-color-on-surface)]">Meio-dia</p>
+                                    <p class="text-[10px] text-[var(--md-sys-color-on-surface-variant)] truncate">Pausa do almoço e metas</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <input type="time" id="setting-notif-noon-time" value="13:00"
+                                    class="px-2 py-1 text-xs font-bold rounded-lg border border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-on-surface)] outline-none focus:ring-2 focus:ring-blue-500"
+                                    title="Horário do lembrete do meio-dia">
+                                <md-switch id="setting-notif-noon-switch" aria-label="Lembrete do meio-dia"></md-switch>
+                            </div>
+                        </div>
+
+                        <!-- Noite (Agressivo / Proteger Streak) -->
+                        <div class="flex items-center justify-between gap-3 p-2 rounded-xl bg-red-50/40 dark:bg-red-950/20 border border-red-200/50 dark:border-red-900/40 transition select-none">
+                            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                                <span class="material-symbols-rounded text-lg text-red-600 dark:text-red-400 flex-shrink-0">warning</span>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-1.5">
+                                        <p class="text-xs font-bold text-red-600 dark:text-red-400">Noite (Salvar Streak)</p>
+                                        <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-red-100 dark:bg-red-900/60 text-red-700 dark:text-red-300">Urgente</span>
+                                    </div>
+                                    <p class="text-[10px] text-[var(--md-sys-color-on-surface-variant)] truncate">Aviso antes da meia-noite se streak não salvo</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <input type="time" id="setting-notif-night-time" value="21:00"
+                                    class="px-2 py-1 text-xs font-bold rounded-lg border border-red-200 dark:border-red-900/60 bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-on-surface)] outline-none focus:ring-2 focus:ring-red-500"
+                                    title="Horário do lembrete da noite">
+                                <md-switch id="setting-notif-night-switch" aria-label="Lembrete urgente da noite"></md-switch>
+                            </div>
+                        </div>
+
+                        <!-- Botão Testar Lembrete -->
+                        <div class="pt-2 border-t border-[var(--md-sys-color-outline-variant)]/60 flex items-center justify-between gap-3">
+                            <span class="text-[11px] text-[var(--md-sys-color-on-surface-variant)]">Teste como a notificação aparece no seu dispositivo:</span>
+                            <button type="button" id="setting-notif-test-btn"
+                                class="px-3 py-1 rounded-xl border border-[var(--md-sys-color-outline-variant)] hover:bg-[var(--md-sys-color-surface-container-high)] text-xs font-bold text-[var(--md-sys-color-primary)] transition cursor-pointer flex items-center gap-1">
+                                <span class="material-symbols-rounded text-sm">notifications_active</span>
+                                <span>Testar</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="h-[1px] bg-[var(--md-sys-color-outline-variant)]"></div>
+
+                <!-- CATEGORIA: ESTATÍSTICAS NO CABEÇALHO -->
+                <section class="space-y-3" aria-labelledby="settings-pinned-stats-heading">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-rounded text-xl text-[var(--md-sys-color-primary)]">tune</span>
+                            <div>
+                                <h4 id="settings-pinned-stats-heading" class="text-xs font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Estatísticas no Cabeçalho</h4>
+                                <p class="text-[11px] text-[var(--md-sys-color-on-surface-variant)]">Escolha quais métricas aparecem fixadas no topo</p>
+                            </div>
+                        </div>
+                        <span id="setting-stats-pinned-count" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800 flex-shrink-0">
+                            2 de 3 fixadas
+                        </span>
+                    </div>
+
+                    <!-- Segmented Buttons: Jogo Normal vs Caderno -->
+                    <div class="flex p-1 rounded-2xl bg-[var(--md-sys-color-surface-container-high)] border border-[var(--md-sys-color-outline-variant)]/60 text-xs font-bold gap-1">
+                        <button type="button" id="setting-stats-tab-deck"
+                            class="flex-1 py-1.5 px-3 rounded-xl transition-all text-center cursor-pointer bg-white dark:bg-slate-800 text-[var(--md-sys-color-primary)] shadow-xs">
+                            Jogo Normal (Baralho)
+                        </button>
+                        <button type="button" id="setting-stats-tab-notebook"
+                            class="flex-1 py-1.5 px-3 rounded-xl transition-all text-center cursor-pointer text-[var(--md-sys-color-on-surface-variant)] hover:text-[var(--md-sys-color-on-surface)]">
+                            Caderno de Erros
+                        </button>
+                    </div>
+
+                    <!-- Lista dinâmica de estatísticas -->
+                    <div id="setting-stats-list-container" class="space-y-1.5 bg-[var(--md-sys-color-surface-container-low)] rounded-2xl p-2 border border-[var(--md-sys-color-outline-variant)]">
+                        <!-- Itens renderizados dinamicamente via JS -->
+                    </div>
+                </section>
+
+                <div class="h-[1px] bg-[var(--md-sys-color-outline-variant)]"></div>
+
+                <!-- CATEGORIA 2: POMODORO & MICRO-PAUSAS -->
+                <section class="space-y-3" aria-labelledby="settings-pomodoro-heading">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-rounded text-xl text-[var(--md-sys-color-primary)]">timer</span>
+                        <h4 id="settings-pomodoro-heading" class="text-xs font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Pomodoro & Pausas</h4>
+                    </div>
+
+                    <div class="space-y-3 bg-[var(--md-sys-color-surface-container-low)] rounded-2xl p-3 border border-[var(--md-sys-color-outline-variant)]">
+                        <!-- Switch Pomodoro -->
+                        <div id="setting-pomodoro-row"
+                            class="w-full flex items-center justify-between gap-3 px-2 py-1 text-left cursor-pointer group select-none">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-semibold text-[var(--md-sys-color-on-surface)]">Timer Pomodoro</p>
+                                <p class="text-xs text-[var(--md-sys-color-on-surface-variant)]">Micro-pausas para combate à fadiga sináptica</p>
+                            </div>
+                            <md-switch id="setting-pomodoro-switch" aria-label="Alternar Pomodoro"></md-switch>
+                        </div>
+
+                        <!-- Intervalos -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-[var(--md-sys-color-outline-variant)]/60">
+                            <div>
+                                <label for="setting-pomodoro-focus-select" class="block text-[11px] font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)] mb-1">
+                                    Tempo de Foco
+                                </label>
+                                <select id="setting-pomodoro-focus-select" class="w-full px-3 py-2 rounded-xl border border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-on-surface)] text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <option value="15">15 minutos</option>
+                                    <option value="20">20 minutos</option>
+                                    <option value="25" selected>25 minutos (Padrão)</option>
+                                    <option value="30">30 minutos</option>
+                                    <option value="45">45 minutos</option>
+                                    <option value="50">50 minutos</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="setting-pomodoro-break-select" class="block text-[11px] font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)] mb-1">
+                                    Micro-pausa
+                                </label>
+                                <select id="setting-pomodoro-break-select" class="w-full px-3 py-2 rounded-xl border border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-on-surface)] text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <option value="3">3 minutos</option>
+                                    <option value="5" selected>5 minutos (Padrão)</option>
+                                    <option value="10">10 minutos</option>
+                                    <option value="15">15 minutos</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="h-[1px] bg-[var(--md-sys-color-outline-variant)]"></div>
+
+                <!-- CATEGORIA 3: RECURSOS DE IA -->
+                <section class="space-y-3" aria-labelledby="settings-ai-heading">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-rounded text-xl text-[var(--md-sys-color-primary)]">auto_awesome</span>
+                        <h4 id="settings-ai-heading" class="text-xs font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Recursos de IA</h4>
+                    </div>
+
+                    <div class="space-y-2 bg-[var(--md-sys-color-surface-container-low)] rounded-2xl p-3 border border-[var(--md-sys-color-outline-variant)]">
+                        <!-- Switch IA -->
+                        <div id="setting-ai-row"
+                            class="w-full flex items-center justify-between gap-3 px-2 py-1 text-left cursor-pointer group select-none">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-semibold text-[var(--md-sys-color-on-surface)]">Assistente Gemini</p>
+                                <p class="text-xs text-[var(--md-sys-color-on-surface-variant)]">Correção semântica e explicação de respostas</p>
+                            </div>
+                            <md-switch id="setting-ai-switch" aria-label="Alternar assistente de IA"></md-switch>
+                        </div>
+
+                        <!-- Botão Gerenciar Chave de API -->
+                        <div class="pt-2 border-t border-[var(--md-sys-color-outline-variant)]/60 flex items-center justify-between gap-3">
+                            <div>
+                                <span class="text-xs font-semibold text-[var(--md-sys-color-on-surface)] block">Chave de API Gemini</span>
+                                <span id="setting-api-key-status" class="text-[11px] text-[var(--md-sys-color-on-surface-variant)]">Verificando...</span>
+                            </div>
+                            <button type="button" id="setting-api-key-btn"
+                                class="px-3 py-1.5 rounded-xl border border-[var(--md-sys-color-outline-variant)] hover:bg-[var(--md-sys-color-surface-container-high)] text-xs font-bold text-[var(--md-sys-color-primary)] transition cursor-pointer flex items-center gap-1.5">
+                                <span class="material-symbols-rounded text-sm">key</span>
+                                <span>Configurar</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="h-[1px] bg-[var(--md-sys-color-outline-variant)]"></div>
+
+                <!-- CATEGORIA 4: META DO CADERNO & DADOS -->
+                <section class="space-y-3" aria-labelledby="settings-notebook-heading">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-rounded text-xl text-[var(--md-sys-color-primary)]">collections_bookmark</span>
+                        <h4 id="settings-notebook-heading" class="text-xs font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Meta do Caderno & Dados</h4>
+                    </div>
+
+                    <div class="space-y-3 bg-[var(--md-sys-color-surface-container-low)] rounded-2xl p-3 border border-[var(--md-sys-color-outline-variant)]">
+                        <!-- Meta diária -->
+                        <div>
+                            <label for="setting-notebook-goal-select" class="block text-[11px] font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)] mb-1">
+                                Meta Diária de Revisão
+                            </label>
+                            <select id="setting-notebook-goal-select" class="w-full px-3 py-2 rounded-xl border border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-on-surface)] text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="0">Sem limite (Estudar todos os cards vencidos)</option>
+                                <option value="10">10 cards por dia</option>
+                                <option value="20">20 cards por dia</option>
+                                <option value="30">30 cards por dia</option>
+                                <option value="50">50 cards por dia</option>
+                            </select>
+                            <p id="setting-notebook-goal-info" class="text-[11px] text-[var(--md-sys-color-on-surface-variant)] mt-1.5">
+                                Progresso de hoje calculado automaticamente.
+                            </p>
+                        </div>
+
+                        <!-- Limpar caderno -->
+                        <div class="pt-2 border-t border-[var(--md-sys-color-outline-variant)]/60 flex items-center justify-between gap-3">
+                            <div>
+                                <span class="text-xs font-semibold text-red-600 dark:text-red-400 block">Limpar Caderno</span>
+                                <span class="text-[11px] text-[var(--md-sys-color-on-surface-variant)]">Apaga todos os cartões e históricos</span>
+                            </div>
+                            <button type="button" id="setting-clear-notebook-btn"
+                                class="px-3 py-1.5 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-xs font-bold text-red-600 dark:text-red-400 transition cursor-pointer flex items-center gap-1.5">
+                                <span class="material-symbols-rounded text-sm">delete</span>
+                                <span>Limpar</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 bg-[var(--md-sys-color-surface-container-low)] border-t border-[var(--md-sys-color-outline-variant)] flex justify-end flex-shrink-0">
+                <button type="button" id="done-app-settings-modal-btn"
+                    class="m3-btn-expressive m3-btn-filled px-6 py-2.5 font-bold shadow-md cursor-pointer">
+                    Concluído
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- POMODORO NOTIFICAÇÃO FLUTUANTE DE DESCANSO (SAMSUNG ONE UI STYLE) -->
     <div id="pomodoro-prompt-dialog"
         class="hidden fixed top-5 sm:top-6 left-1/2 -translate-x-1/2 z-[100] w-[calc(100vw-1.5rem)] sm:w-auto sm:min-w-[420px] max-w-lg transition-all duration-500 ease-out transform -translate-y-24 opacity-0 pointer-events-auto">
@@ -1107,7 +1438,7 @@
             <div class="px-6 py-4 border-b border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface-container-low)] flex justify-between items-center">
                 <div class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm">
-                        🎯
+                        <span class="material-symbols-rounded text-lg">track_changes</span>
                     </div>
                     <div>
                         <h3 class="text-base font-bold text-[var(--md-sys-color-on-surface)] leading-tight">Meta Diária de Cards</h3>
