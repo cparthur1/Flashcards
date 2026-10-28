@@ -1052,6 +1052,15 @@ function openNotebookOverviewModal() {
     if (notebookModalSearch) notebookModalSearch.value = '';
     clearNotebookSearchBtn?.classList.add('hidden');
 
+    // Inicializa todos os decks como colapsados para otimizar o loading inicial do popup
+    const nbData = getNotebookDataFromStorage();
+    const allCards = (nbData.allQuestions || []).filter(isPlayableCard);
+    collapsedDecks.clear();
+    allCards.forEach(c => {
+        const deckName = (c.sourceDeck || '').trim() || 'Caderno';
+        collapsedDecks.add(deckName);
+    });
+
     renderNotebookOverviewModalContent();
     notebookOverviewModal?.classList.remove('hidden');
     triggerHaptic('tick');
@@ -1144,6 +1153,7 @@ function renderNotebookOverviewModalContent() {
             `;
             chip.addEventListener('click', () => {
                 activeDeckFilter = deckName;
+                collapsedDecks.delete(deckName); // Auto-expande o deck selecionado no filtro
                 triggerHaptic('tick');
                 renderNotebookOverviewModalContent();
             });
@@ -1197,18 +1207,21 @@ function renderNotebookOverviewModalContent() {
         return;
     }
 
-    // Render deck sections and cards
+    // Render deck sections and cards with lazy card rendering
     const containerFragment = document.createDocumentFragment();
+    const isSearching = Boolean(notebookSearchQuery);
 
     matchingDecks.forEach(deckObj => {
         const deckSection = document.createElement('div');
         deckSection.className = "bg-white rounded-2xl border border-gray-200/90 shadow-2xs overflow-hidden transition-all";
 
-        const isCollapsed = collapsedDecks.has(deckObj.name);
+        // Decks start collapsed unless user actively searched
+        const isCollapsed = isSearching ? false : collapsedDecks.has(deckObj.name);
 
         // Header
         const header = document.createElement('div');
-        header.className = "px-4 py-3 bg-gradient-to-r from-blue-50/70 via-blue-50/30 to-white border-b border-gray-100 flex items-center justify-between gap-3 cursor-pointer select-none group/deck";
+        header.className = "px-4 py-3 bg-gradient-to-r from-blue-50/70 via-blue-50/30 to-white hover:from-blue-50 hover:to-blue-50/50 border-b border-gray-100 flex items-center justify-between gap-3 cursor-pointer select-none group/deck transition-colors";
+        header.title = isCollapsed ? "Clique para expandir os cartões deste baralho" : "Clique para recolher os cartões deste baralho";
         header.innerHTML = `
             <div class="flex items-center gap-2 min-w-0">
                 <span class="material-symbols-rounded text-blue-600 text-lg transition-transform duration-200 deck-chevron ${isCollapsed ? '-rotate-90' : ''}">expand_more</span>
@@ -1232,27 +1245,46 @@ function renderNotebookOverviewModalContent() {
             handleModalDeleteDeck(deckObj.name);
         });
 
-        // Cards list wrapper
+        // Cards list wrapper (Lazy rendered to optimize initial opening)
         const cardsList = document.createElement('div');
         cardsList.className = `p-3 sm:p-4 space-y-3 ${isCollapsed ? 'hidden' : ''}`;
+
+        const populateCards = () => {
+            if (cardsList.dataset.rendered === 'true') return;
+            const frag = document.createDocumentFragment();
+            deckObj.cards.forEach((card, idx) => {
+                const cardEl = createModalCardElement(card, idx);
+                frag.appendChild(cardEl);
+            });
+            cardsList.appendChild(frag);
+            cardsList.dataset.rendered = 'true';
+        };
+
+        if (!isCollapsed) {
+            populateCards();
+        } else {
+            cardsList.dataset.rendered = 'false';
+        }
 
         header.addEventListener('click', (e) => {
             if (e.target.closest('.btn-remove-deck')) return;
             const chevron = header.querySelector('.deck-chevron');
             if (collapsedDecks.has(deckObj.name)) {
+                // Expand
                 collapsedDecks.delete(deckObj.name);
+                populateCards();
                 cardsList.classList.remove('hidden');
                 chevron?.classList.remove('-rotate-90');
+                header.title = "Clique para recolher os cartões deste baralho";
+                triggerHaptic('tick');
             } else {
+                // Collapse
                 collapsedDecks.add(deckObj.name);
                 cardsList.classList.add('hidden');
                 chevron?.classList.add('-rotate-90');
+                header.title = "Clique para expandir os cartões deste baralho";
+                triggerHaptic('tick');
             }
-        });
-
-        deckObj.cards.forEach((card, idx) => {
-            const cardEl = createModalCardElement(card, idx);
-            cardsList.appendChild(cardEl);
         });
 
         deckSection.appendChild(header);
@@ -1280,10 +1312,7 @@ function createModalCardElement(card, idx) {
              <span class="material-symbols-rounded text-[11px]">history</span>
              <span>Revisado ${card.repetitions}x · Intervalo ${card.intervalDays || 1}d</span>
            </span>`
-        : `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1">
-             <span class="material-symbols-rounded text-[11px]">fiber_new</span>
-             <span>Novo</span>
-           </span>`;
+        : '';
 
     // Top Row
     const topRow = document.createElement('div');

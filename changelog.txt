@@ -4,10 +4,11 @@ Date: 2026-10-28
 OVERVIEW:
 1. Made the "X no caderno" pill badge in bulk-add header interactive and clickable to view cards and decks saved in the Caderno.
 2. Created a dedicated Material Design 3 (M3) overview dialog (`#notebook-overview-modal`) that displays cards grouped by their source deck.
-3. Added real-time deck filter chips ("Todos (N)", "[Deck] (N)") and instant search filtering across questions, answers, and deck names.
-4. Added card action controls (quick edit and removal from Caderno) and deck removal with instant synchronization back to localStorage, header badge, and the bulk-add workspace.
-5. Replaced all Unicode emojis across bulk-add UI with official Google Material Symbols icons in compliance with design guidelines.
-6. Bumped service worker cache to `flashcards-v10.2`.
+3. Optimized popup loading: decks now open collapsed by default with lazy on-demand card rendering, eliminating upfront DOM/KaTeX parsing overhead.
+4. Added real-time deck filter chips ("Todos (N)", "[Deck] (N)") and instant search filtering across questions, answers, and deck names.
+5. Added card action controls (quick edit and removal from Caderno) and deck removal with instant synchronization back to localStorage, header badge, and the bulk-add workspace.
+6. Replaced all Unicode emojis across bulk-add UI with official Google Material Symbols icons in compliance with design guidelines.
+7. Bumped service worker cache to `flashcards-v10.2`.
 
 --------------------------------------------------------------------------------
 
