@@ -219,8 +219,8 @@ function switchTab(tabName) {
 
     const updateDOM = () => {
         [tabBtnCurrent, tabBtnHistory, tabBtnStruggling].forEach(btn => {
-            btn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm', 'dark:bg-gray-700', 'dark:text-blue-400');
-            btn.classList.add('text-gray-600', 'dark:text-gray-300');
+            btn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+            btn.classList.add('text-gray-600');
             btn.removeAttribute('aria-selected');
         });
 
@@ -250,8 +250,8 @@ function switchTab(tabName) {
             }
         }
 
-        targetBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm', 'dark:bg-gray-700', 'dark:text-blue-400');
-        targetBtn.classList.remove('text-gray-600', 'dark:text-gray-300');
+        targetBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+        targetBtn.classList.remove('text-gray-600');
         targetBtn.setAttribute('aria-selected', 'true');
 
         targetContent.classList.remove('hidden');
@@ -488,11 +488,11 @@ function renderPerformanceByType(sess) {
             row.className = 'space-y-1.5';
             row.innerHTML = `
                 <div class="flex items-center justify-between text-xs">
-                    <span class="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                    <span class="font-medium text-gray-700 flex items-center gap-1.5">
                         <span class="material-symbols-rounded text-sm">${info.icon}</span>
                         <span>${info.name}</span>
                     </span>
-                    <span class="font-bold text-gray-900 dark:text-gray-100">${pct}% <span class="text-gray-400 font-normal">(${item.correct}/${item.total})</span></span>
+                    <span class="font-bold text-gray-900">${pct}% <span class="text-gray-400 font-normal">(${item.correct}/${item.total})</span></span>
                 </div>
                 <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
                     <div class="${info.color} h-full rounded-full transition-all duration-500" style="width: ${pct}%"></div>
@@ -1486,7 +1486,7 @@ function renderActivityHeatmap(statsData) {
             let cellContent = '';
 
             if (day.isFrozen) {
-                colorClasses = 'bg-cyan-100 text-cyan-800 border-2 border-cyan-400 dark:bg-cyan-950/70 dark:border-cyan-500 font-bold text-[8px] flex items-center justify-center';
+                colorClasses = 'bg-cyan-100 text-cyan-800 border-2 border-cyan-400 font-bold text-[8px] flex items-center justify-center';
                 cellContent = '❄️';
             } else if (day.count >= 30) {
                 colorClasses = 'bg-emerald-700 border border-emerald-800 text-white';

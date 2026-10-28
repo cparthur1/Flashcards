@@ -175,14 +175,14 @@
 
             <!-- Stats Page Link -->
             <a href="stats.html" id="stats-btn"
-                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-950/40 text-blue-600 dark:text-blue-400 transition text-left group"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-blue-50 text-blue-600 transition text-left group"
                 title="Ver Estatísticas da Sessão e Anteriores">
                 <img src="../assets/img/stats.svg" class="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" alt="Estatísticas">
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold text-blue-600 dark:text-blue-400">Estatísticas</p>
+                    <p class="text-sm font-bold text-blue-600">Estatísticas</p>
                     <p class="text-xs text-blue-500/80">Progresso, retenção & histórico</p>
                 </div>
-                <span class="text-[10px] font-bold bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">Ver</span>
+                <span class="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Ver</span>
             </a>
 
             <!-- Restart Game -->
@@ -225,17 +225,17 @@
         <div class="px-1 py-1 space-y-0.5">
             <!-- Clear Notebook (Only visible when activeMode === 'notebook') -->
             <button id="clear-notebook-btn"
-                class="hidden w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 transition text-left group"
+                class="hidden w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-red-50 text-red-600 transition text-left group"
                 title="Apagar todo o conteúdo do Caderno">
                 <img src="../assets/img/delete.svg" class="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" alt="Limpar">
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-red-600 dark:text-red-400">Limpar caderno</p>
+                    <p class="text-sm font-semibold text-red-600">Limpar caderno</p>
                     <p class="text-xs text-red-500/80">Apagar todos os cards do caderno</p>
                 </div>
             </button>
 
             <button id="reset-btn"
-                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 transition text-left group"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-red-50 text-red-600 transition text-left group"
                 title="Voltar ao início">
                 <img id="exit-icon" src="../assets/img/exit.svg?v=3" class="w-5 h-5 flex-shrink-0 transition-transform group-hover:translate-x-[-2px]" alt="Sair">
                 <div class="flex-1 min-w-0">
@@ -251,7 +251,7 @@
         Clean header with Hamburger menu, deck selector, and score counter.
     -->
     <header id="global-header"
-        class="fixed z-50 transition-all duration-300 top-0 left-0 w-full bg-white/90 backdrop-blur-md border-b border-gray-200 px-4 py-2 flex items-center justify-between lg:top-6 lg:left-6 lg:w-auto lg:rounded-full lg:px-6 lg:py-3 lg:shadow-2xl lg:border lg:border-gray-200 md:landscape:top-6 md:landscape:left-6 md:landscape:w-auto md:landscape:rounded-full md:landscape:px-6 md:landscape:py-3 md:landscape:shadow-2xl md:landscape:border relative">
+        class="fixed z-50 transition-all duration-300 top-0 left-0 w-full bg-white/90 backdrop-blur-md border-b border-gray-200 px-4 py-2 flex items-center justify-between lg:top-6 lg:left-6 lg:w-auto lg:rounded-full lg:px-6 lg:py-3 lg:shadow-2xl lg:border lg:border-gray-200 md:landscape:top-6 md:landscape:left-6 md:landscape:w-auto md:landscape:rounded-full md:landscape:px-6 md:landscape:py-3 md:landscape:shadow-2xl md:landscape:border">
         <!-- FULL-HEADER SHIMMER SWEEP OVERLAY (Streaks: Amarelo/Laranja Fogo | Meta: Rosa/Azul/Verde Neon) -->
         <div id="header-shimmer-sweep" class="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit] z-10 opacity-0" aria-hidden="true">
             <div id="header-shimmer-beam" class="absolute pointer-events-none"></div>
@@ -423,15 +423,15 @@
                     class="hidden max-h-36 xs:max-h-48 sm:max-h-80 w-auto rounded-2xl shadow-md border border-[var(--md-sys-color-outline-variant)] card-img-zoomable object-contain transition-opacity duration-300 opacity-0">
             </div>
             <p id="question-text" class="text-center text-base sm:text-lg font-medium text-[var(--md-sys-color-on-surface)] whitespace-pre-line leading-relaxed">
-                <span id="question-source-tag" class="hidden text-xs uppercase tracking-wider text-blue-500 dark:text-blue-400 font-bold mb-1.5 block select-none"></span>
-                <span id="card-difficult-tag" class="hidden text-[11px] font-bold px-2.5 py-0.5 rounded-full mb-2 inline-flex items-center gap-1 select-none bg-red-50 text-red-600 border border-red-200/80 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800/60 shadow-2xs">Difícil</span>
+                <span id="question-source-tag" class="hidden text-xs uppercase tracking-wider text-blue-500 font-bold mb-1.5 block select-none"></span>
+                <span id="card-difficult-tag" class="hidden text-[11px] font-bold px-2.5 py-0.5 rounded-full mb-2 inline-flex items-center gap-1 select-none bg-red-50 text-red-600 border border-red-200/80 shadow-2xs">Difícil</span>
                 <span id="question-body-text"></span>
                 <span id="question-feedback-text" class="hidden mt-2 block"></span>
             </p>
 
             <!-- Anki-like Answer Reveal Area (Question at top, Answer below) -->
             <div id="anki-answer-container" class="hidden w-full mt-4 pt-4 border-t border-[var(--md-sys-color-outline-variant)] flex flex-col items-center">
-                <span class="text-xs uppercase tracking-wider font-extrabold text-blue-600 dark:text-blue-400 mb-1">Resposta</span>
+                <span class="text-xs uppercase tracking-wider font-extrabold text-blue-600 mb-1">Resposta</span>
                 <div id="anki-answer-text" class="w-full text-center text-base sm:text-lg font-medium text-[var(--md-sys-color-on-surface)] leading-relaxed"></div>
                 <div id="anki-answer-image-container" class="hidden mt-3 w-full flex flex-col items-center justify-center">
                     <div id="anki-answer-image-placeholder" class="hidden image-loading-placeholder w-full max-w-sm sm:max-w-md h-36 xs:h-48 sm:h-60 rounded-2xl flex flex-col items-center justify-center gap-2 select-none shadow-sm">
@@ -465,11 +465,11 @@
                     </div>
                     <div class="p-2.5 rounded-2xl bg-[var(--md-sys-color-surface-container-high)] border border-[var(--md-sys-color-outline-variant)] flex flex-col items-center">
                         <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Precisão</span>
-                        <span id="completion-stat-acc" class="text-base sm:text-lg font-extrabold text-emerald-600 dark:text-emerald-400">100%</span>
+                        <span id="completion-stat-acc" class="text-base sm:text-lg font-extrabold text-emerald-600">100%</span>
                     </div>
                     <div class="p-2.5 rounded-2xl bg-[var(--md-sys-color-surface-container-high)] border border-[var(--md-sys-color-outline-variant)] flex flex-col items-center">
                         <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Tempo</span>
-                        <span id="completion-stat-time" class="text-base sm:text-lg font-extrabold text-purple-600 dark:text-purple-400">00:00</span>
+                        <span id="completion-stat-time" class="text-base sm:text-lg font-extrabold text-purple-600">00:00</span>
                     </div>
                     <div class="p-2.5 rounded-2xl bg-[var(--md-sys-color-surface-container-high)] border border-[var(--md-sys-color-outline-variant)] flex flex-col items-center">
                         <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Sequência</span>
@@ -481,8 +481,8 @@
                 </div>
 
                 <!-- Neuroscience / Time-of-day Dynamic Tip Callout -->
-                <div class="mb-5 p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 text-blue-700 dark:text-blue-300 text-xs sm:text-sm font-medium flex items-center justify-center gap-2 max-w-sm shadow-xs" id="deck-completion-tip-banner">
-                    <span class="material-symbols-rounded text-xl text-blue-600 dark:text-blue-400 flex-shrink-0" id="deck-completion-tip-icon">bedtime</span>
+                <div class="mb-5 p-3 rounded-2xl bg-blue-50 border border-blue-200 text-blue-700 text-xs sm:text-sm font-medium flex items-center justify-center gap-2 max-w-sm shadow-xs" id="deck-completion-tip-banner">
+                    <span class="material-symbols-rounded text-xl text-blue-600 flex-shrink-0" id="deck-completion-tip-icon">bedtime</span>
                     <span id="deck-completion-tip-text">Agora durma! Sono REM vai fazer você salvar tudo isso ;)</span>
                 </div>
 
@@ -592,7 +592,7 @@
                         <span class="material-symbols-rounded text-lg">edit</span> Editar
                     </button>
                     <button id="delete-correction-btn"
-                        class="m3-btn-expressive flex-1 py-3 px-4 font-bold bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-950/40 dark:text-red-300">
+                        class="m3-btn-expressive flex-1 py-3 px-4 font-bold bg-red-100 hover:bg-red-200 text-red-700">
                         <span class="material-symbols-rounded text-lg">delete</span> Excluir
                     </button>
                 </div>
@@ -654,7 +654,7 @@
                         <span class="text-xs text-[var(--md-sys-color-on-surface-variant)]">Marque a correta</span>
                     </div>
                     <div id="edit-mc-options-list" class="space-y-2"></div>
-                    <button type="button" id="edit-add-mc-opt-btn" class="w-full py-2 border border-dashed border-blue-400 text-xs font-bold text-blue-600 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-950/40 transition flex items-center justify-center gap-1">
+                    <button type="button" id="edit-add-mc-opt-btn" class="w-full py-2 border border-dashed border-blue-400 text-xs font-bold text-blue-600 rounded-xl hover:bg-blue-50 transition flex items-center justify-center gap-1">
                         + Adicionar Alternativa
                     </button>
                 </div>
@@ -727,13 +727,13 @@
                         </md-outlined-text-field>
                     </div>
                     <div class="flex items-center gap-2.5 pt-0.5">
-                        <input type="checkbox" id="api-key-remember" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-800 cursor-pointer">
+                        <input type="checkbox" id="api-key-remember" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer">
                         <label for="api-key-remember" class="text-xs text-[var(--md-sys-color-on-surface-variant)] cursor-pointer select-none">
-                            Lembrar chave <span class="text-amber-600 dark:text-amber-400 font-semibold">(menos seguro)</span>
+                            Lembrar chave <span class="text-amber-600 font-semibold">(menos seguro)</span>
                         </label>
                     </div>
-                    <div class="bg-blue-50 dark:bg-blue-950/40 p-4 rounded-2xl border border-blue-200 dark:border-blue-900">
-                        <p class="text-xs text-blue-700 dark:text-blue-300">Não tem uma chave? <button
+                    <div class="bg-blue-50 p-4 rounded-2xl border border-blue-200">
+                        <p class="text-xs text-blue-700">Não tem uma chave? <button
                                 type="button" id="open-ai-instructions" class="font-bold underline cursor-pointer">Clique aqui para ver o tutorial</button></p>
                     </div>
                 </div>
@@ -791,8 +791,8 @@
                         </select>
                     </div>
                 </div>
-                <div class="bg-blue-50 dark:bg-blue-950/40 p-3.5 rounded-2xl border border-blue-200 dark:border-blue-900/60">
-                    <p class="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
+                <div class="bg-blue-50 p-3.5 rounded-2xl border border-blue-200">
+                    <p class="text-xs text-blue-700 leading-relaxed">
                         <strong>Por que funciona?</strong> Micro-pausas permitem que o cérebro ative a rede neural em modo difuso (DMN), reorganizando traços sinápticos e aliviando a memória de trabalho.
                     </p>
                 </div>
@@ -927,20 +927,20 @@
                         </div>
 
                         <!-- Noite (Agressivo / Proteger Streak) -->
-                        <div class="flex items-center justify-between gap-3 p-2 rounded-xl bg-red-50/40 dark:bg-red-950/20 border border-red-200/50 dark:border-red-900/40 transition select-none">
+                        <div class="flex items-center justify-between gap-3 p-2 rounded-xl bg-red-50/40 border border-red-200/50 transition select-none">
                             <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                                <span class="material-symbols-rounded text-lg text-red-600 dark:text-red-400 flex-shrink-0">warning</span>
+                                <span class="material-symbols-rounded text-lg text-red-600 flex-shrink-0">warning</span>
                                 <div class="min-w-0 flex-1">
                                     <div class="flex items-center gap-1.5">
-                                        <p class="text-xs font-bold text-red-600 dark:text-red-400">Noite (Salvar Streak)</p>
-                                        <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-red-100 dark:bg-red-900/60 text-red-700 dark:text-red-300">Urgente</span>
+                                        <p class="text-xs font-bold text-red-600">Noite (Salvar Streak)</p>
+                                        <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-red-100 text-red-700">Urgente</span>
                                     </div>
                                     <p class="text-[10px] text-[var(--md-sys-color-on-surface-variant)] truncate">Aviso antes da meia-noite se streak não salvo</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 flex-shrink-0">
                                 <input type="time" id="setting-notif-night-time" value="21:00"
-                                    class="px-2 py-1 text-xs font-bold rounded-lg border border-red-200 dark:border-red-900/60 bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-on-surface)] outline-none focus:ring-2 focus:ring-red-500"
+                                    class="px-2 py-1 text-xs font-bold rounded-lg border border-red-200 bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-on-surface)] outline-none focus:ring-2 focus:ring-red-500"
                                     title="Horário do lembrete da noite">
                                 <md-switch id="setting-notif-night-switch" aria-label="Lembrete urgente da noite"></md-switch>
                             </div>
@@ -970,7 +970,7 @@
                                 <p class="text-[11px] text-[var(--md-sys-color-on-surface-variant)]">Escolha quais métricas aparecem fixadas no topo</p>
                             </div>
                         </div>
-                        <span id="setting-stats-pinned-count" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800 flex-shrink-0">
+                        <span id="setting-stats-pinned-count" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60 flex-shrink-0">
                             2 de 3 fixadas
                         </span>
                     </div>
@@ -978,7 +978,7 @@
                     <!-- Segmented Buttons: Jogo Normal vs Caderno -->
                     <div class="flex p-1 rounded-2xl bg-[var(--md-sys-color-surface-container-high)] border border-[var(--md-sys-color-outline-variant)]/60 text-xs font-bold gap-1">
                         <button type="button" id="setting-stats-tab-deck"
-                            class="flex-1 py-1.5 px-3 rounded-xl transition-all text-center cursor-pointer bg-white dark:bg-slate-800 text-[var(--md-sys-color-primary)] shadow-xs">
+                            class="flex-1 py-1.5 px-3 rounded-xl transition-all text-center cursor-pointer bg-white text-[var(--md-sys-color-primary)] shadow-xs">
                             Jogo Normal (Baralho)
                         </button>
                         <button type="button" id="setting-stats-tab-notebook"
@@ -1108,11 +1108,11 @@
                         <!-- Limpar caderno -->
                         <div class="pt-2 border-t border-[var(--md-sys-color-outline-variant)]/60 flex items-center justify-between gap-3">
                             <div>
-                                <span class="text-xs font-semibold text-red-600 dark:text-red-400 block">Limpar Caderno</span>
+                                <span class="text-xs font-semibold text-red-600 block">Limpar Caderno</span>
                                 <span class="text-[11px] text-[var(--md-sys-color-on-surface-variant)]">Apaga todos os cartões e históricos</span>
                             </div>
                             <button type="button" id="setting-clear-notebook-btn"
-                                class="px-3 py-1.5 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-xs font-bold text-red-600 dark:text-red-400 transition cursor-pointer flex items-center gap-1.5">
+                                class="px-3 py-1.5 rounded-xl border border-red-200 bg-red-50/50 hover:bg-red-100 text-xs font-bold text-red-600 transition cursor-pointer flex items-center gap-1.5">
                                 <span class="material-symbols-rounded text-sm">delete</span>
                                 <span>Limpar</span>
                             </button>
@@ -1134,7 +1134,7 @@
     <!-- POMODORO NOTIFICAÇÃO FLUTUANTE DE DESCANSO (SAMSUNG ONE UI STYLE) -->
     <div id="pomodoro-prompt-dialog"
         class="hidden fixed top-5 sm:top-6 left-1/2 -translate-x-1/2 z-[100] w-[calc(100vw-1.5rem)] sm:w-auto sm:min-w-[420px] max-w-lg transition-all duration-500 ease-out transform -translate-y-24 opacity-0 pointer-events-auto">
-        <div class="flex items-center gap-3 p-2 sm:p-2.5 pl-3 sm:pl-3.5 pr-2.5 sm:pr-3 rounded-[28px] sm:rounded-full bg-white/90 dark:bg-[#1a2234]/90 backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.18),0_2px_8px_rgba(0,0,0,0.06)] border border-blue-200/60 dark:border-blue-500/20">
+        <div class="flex items-center gap-3 p-2 sm:p-2.5 pl-3 sm:pl-3.5 pr-2.5 sm:pr-3 rounded-[28px] sm:rounded-full bg-white/90 backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.18),0_2px_8px_rgba(0,0,0,0.06)] border border-blue-200/60">
             <!-- Icon squircle -->
             <div class="w-10 h-10 rounded-full sm:rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
                 <span class="material-symbols-rounded text-xl">self_improvement</span>
@@ -1150,7 +1150,7 @@
                     <span>Aceitar</span>
                 </button>
                 <button type="button" id="pomodoro-snooze-break-btn"
-                    class="m3-btn-expressive py-2 px-2.5 sm:px-3 text-xs font-semibold rounded-full bg-blue-100/80 dark:bg-blue-900/40 hover:bg-blue-200/80 active:scale-95 text-blue-700 dark:text-blue-300 cursor-pointer transition-all">
+                    class="m3-btn-expressive py-2 px-2.5 sm:px-3 text-xs font-semibold rounded-full bg-blue-100/80 hover:bg-blue-200/80 active:scale-95 text-blue-700 cursor-pointer transition-all">
                     <span>+5 min</span>
                 </button>
             </div>
@@ -1161,13 +1161,13 @@
     <div id="pomodoro-break-overlay" class="hidden fixed inset-0 z-[90] modal-overlay flex items-center justify-center p-4 backdrop-blur-xl bg-slate-950/70 transition-all duration-700 pomodoro-state-running">
         <!-- Ambient beacon rings container (illuminates full screen when timer is done) -->
         <div id="pomodoro-done-ambient" class="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-700 flex items-center justify-center overflow-hidden">
-            <div class="pomodoro-beacon-ring w-[140vw] h-[140vw] max-w-[900px] max-h-[900px] rounded-full border border-emerald-400/30 dark:border-emerald-400/20"></div>
-            <div class="pomodoro-beacon-ring ring-delay w-[110vw] h-[110vw] max-w-[700px] max-h-[700px] rounded-full border border-teal-400/40 dark:border-teal-400/30"></div>
+            <div class="pomodoro-beacon-ring w-[140vw] h-[140vw] max-w-[900px] max-h-[900px] rounded-full border border-emerald-400/30"></div>
+            <div class="pomodoro-beacon-ring ring-delay w-[110vw] h-[110vw] max-w-[700px] max-h-[700px] rounded-full border border-teal-400/40"></div>
             <div class="pomodoro-beacon-glow absolute inset-0 bg-radial from-emerald-500/20 via-transparent to-transparent"></div>
         </div>
 
         <div id="pomodoro-break-card"
-            class="relative z-10 m3-dialog-card w-full max-w-md p-6 sm:p-8 flex flex-col items-center text-center shadow-2xl rounded-[32px] sm:rounded-[36px] bg-white/95 dark:bg-[#16151d]/95 backdrop-blur-2xl border transition-all duration-500">
+            class="relative z-10 m3-dialog-card w-full max-w-md p-6 sm:p-8 flex flex-col items-center text-center shadow-2xl rounded-[32px] sm:rounded-[36px] bg-white/95 backdrop-blur-2xl border transition-all duration-500">
             
             <!-- Icon Container with Animated Ping Shockwave -->
             <div class="relative mb-4">
@@ -1322,7 +1322,7 @@
                     class="bg-white p-3 rounded-2xl shadow-inner w-48 h-48 border border-[var(--md-sys-color-outline-variant)]"></canvas>
 
                 <div class="text-center space-y-3">
-                    <p id="transfer-status" class="text-sm font-semibold text-blue-600 dark:text-blue-400">Aguardando conexão...</p>
+                    <p id="transfer-status" class="text-sm font-semibold text-blue-600">Aguardando conexão...</p>
                     <button id="force-sync-btn"
                         class="mx-auto text-xs bg-[var(--md-sys-color-surface-container-low)] px-3.5 py-1.5 rounded-full hover:bg-[var(--md-sys-color-surface-container-high)] text-[var(--md-sys-color-on-surface-variant)] transition border border-[var(--md-sys-color-outline-variant)]">Não sincronizou? Tente reenviar</button>
                     <p class="text-xs text-[var(--md-sys-color-on-surface-variant)] px-4 leading-relaxed">
@@ -1437,7 +1437,7 @@
             <!-- Header -->
             <div class="px-6 py-4 border-b border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface-container-low)] flex justify-between items-center">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm">
+                    <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">
                         <span class="material-symbols-rounded text-lg">track_changes</span>
                     </div>
                     <div>
@@ -1459,7 +1459,7 @@
                         <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)] block">Progresso de Hoje</span>
                         <span id="daily-goal-progress-text" class="text-sm font-bold text-[var(--md-sys-color-on-surface)]">0 revisados hoje</span>
                     </div>
-                    <span id="daily-goal-due-text" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200">
+                    <span id="daily-goal-due-text" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800">
                         0 vencidos
                     </span>
                 </div>

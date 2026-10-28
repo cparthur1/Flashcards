@@ -10,10 +10,10 @@
     };
 })();
 
-// Centralized tailwind config and global settings
+// Centralized tailwind config and global settings (Light Mode Only - Dark mode is disabled and prohibited)
 window.tailwind = window.tailwind || {};
 window.tailwind.config = {
-    darkMode: 'class',
+    darkMode: 'class', // Enforce class mode so Tailwind never activates dark theme via prefers-color-scheme
     theme: {
         extend: {
             colors: {

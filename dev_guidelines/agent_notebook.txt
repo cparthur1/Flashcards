@@ -25,3 +25,8 @@
    - Retain existing copyright notices; append new author lines when significantly modifying files.
    - Always create commits using the `-s` flag (`git commit -s -m "..."`) so that commits include the required `Signed-off-by:` line.
    - The automated DCO check runs exclusively on incoming Pull Requests.
+
+6. **Strict Theme Rule: Light Mode Only (Prohibited Dark Mode)**:
+   - **DO NOT implement, re-introduce, or design for Dark Mode**. The application is strictly Light Mode only.
+   - Never add `@media (prefers-color-scheme: dark)`, `.dark` selectors, `dark:` Tailwind classes, or theme toggles.
+   - Maintain all backgrounds, containers, typography, and contrast tokens strictly within the Light Theme Material Design 3 specifications.

@@ -1,3 +1,20 @@
+CHANGELOG: REMOVAL OF DARK MODE & STRICT LIGHT THEME ENFORCEMENT (v10.8)
+Date: 2026-10-28
+
+OVERVIEW:
+1. Completely removed dark mode across the entire codebase in compliance with user specifications:
+   - Removed all `@media (prefers-color-scheme: dark)` blocks from `css/style.css`.
+   - Removed all legacy `.dark` selectors (`.dark .m3-select-*`, `.dark .bulk-empty-hint`).
+   - Cleaned all `dark:*` Tailwind utility variants across `pages/game.html`, `pages/stats.html`, `pages/bulk-add.html`, `index.html`, `js/game.js`, and `js/stats.js`.
+2. Centralized Tailwind configuration: added `js/config.js` to `pages/bulk-add.html` to guarantee `darkMode: 'class'` prevents accidental media-query triggering.
+3. Updated agent guidelines and documentation:
+   - Added Rule 6 in `dev_guidelines/agent_notebook.txt` strictly forbidding re-introduction of dark mode.
+   - Updated `dev_guidelines/DESIGN_LANGUAGE.md` declaring the design system strictly Light Theme Only.
+4. Fixed header placement in `pages/game.html`: removed accidental `relative` class that overrode `position: fixed`, restoring the header to its habitual fixed placement at the top of the viewport.
+5. Bumped Service Worker cache version to `flashcards-v10.8`.
+
+--------------------------------------------------------------------------------
+
 CHANGELOG: DAILY NOTIFICATION SYSTEM TO SAVE STREAK & REVIEW CARDS (v10.7)
 Date: 2026-10-28
 

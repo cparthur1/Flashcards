@@ -10,7 +10,7 @@
 
 The Flashcards web application utilizes the **Google Material Design 3 (Material You) Expressive** design system. The core tenets are:
 
-1. **Dynamic & Accessible Tonal Contrast**: Colors are organized into tonal palettes (0–100 luminosity scale), guaranteeing accessible contrast ratios (WCAG 2.1 AA/AAA) across both Light and Dark themes.
+1. **Dynamic & Accessible Tonal Contrast**: Colors are organized into tonal palettes (0–100 luminosity scale), guaranteeing accessible contrast ratios (WCAG 2.1 AA/AAA) across the Light theme. **Note: The application is strictly Light Theme Only; Dark Mode is explicitly prohibited.**
 2. **Expressive Fluid Geometry**: Generous corner radiuses up to **28px** (extra-large) and **9999px** (pill/full), creating a friendly, high-focus study environment.
 3. **Parametric Variable Typography**: Distinctive page titles powered by **Roboto Flex** with custom variable axes, paired with clean interface typography.
 4. **Authentic Motion & State Layers**: Natural touch/click-originating Material 3 ripples, spring-physics transitions, and Google 4-color indeterminate progress indicators.
@@ -40,56 +40,59 @@ Tone:  0     10    20    30    40    50    60    70    80    90    95    99    1
 
 ### 2.2 System Color Tokens & Semantic Roles
 
-The application maps reference tones to semantic UI roles defined in `:root` and `@media (prefers-color-scheme: dark)`.
+The application maps reference tones to semantic UI roles defined in `:root`.
+
+> [!IMPORTANT]
+> **Strict Light Theme Only**: Dark Mode has been completely removed and is prohibited from being re-implemented. Never add `@media (prefers-color-scheme: dark)`, `.dark` class selectors, or `dark:` utility variants.
 
 #### Primary & Brand Roles
-| Token Role | CSS Variable | Light Theme | Dark Theme | Purpose / Usage |
-|
-| **Primary** | `--md-sys-color-primary` | `#1a56db` | `#93c5fd` | High-emphasis buttons, active tabs, main FAB |
-| **On Primary** | `--md-sys-color-on-primary` | `#ffffff` | `#1e3a8a` | Text & icons placed on top of `primary` |
-| **Primary Container** | `--md-sys-color-primary-container` | `#dbeafe` | `#1e40af` | Standout badges, chip fills, soft action cards |
-| **On Primary Container** | `--md-sys-color-on-primary-container` | `#1e3a8a` | `#dbeafe` | Text & icons on `primary-container` |
-| **Brand Title Accent** | `.brand-page-title` | `#3b82f7` | `#3b82f7` | Expressive Roboto Flex page headings |
+| Token Role | CSS Variable | Value (Hex) | Purpose / Usage |
+| :--- | :--- | :--- | :--- |
+| **Primary** | `--md-sys-color-primary` | `#1a56db` | High-emphasis buttons, active tabs, main FAB |
+| **On Primary** | `--md-sys-color-on-primary` | `#ffffff` | Text & icons placed on top of `primary` |
+| **Primary Container** | `--md-sys-color-primary-container` | `#dbeafe` | Standout badges, chip fills, soft action cards |
+| **On Primary Container** | `--md-sys-color-on-primary-container` | `#1e3a8a` | Text & icons on `primary-container` |
+| **Brand Title Accent** | `.brand-page-title` | `#3b82f7` | Expressive Roboto Flex page headings |
 
 #### Secondary Roles
-| Token Role | CSS Variable | Light Theme | Dark Theme | Purpose / Usage |
-|
-| **Secondary** | `--md-sys-color-secondary` | `#4f46e5` | `#c4b5fd` | Secondary buttons, filters, auxiliary badges |
-| **On Secondary** | `--md-sys-color-on-secondary` | `#ffffff` | `#3730a3` | Text & icons on `secondary` |
-| **Secondary Container** | `--md-sys-color-secondary-container` | `#ede9fe` | `#4338ca` | Soft interactive cards, selected filter pills |
-| **On Secondary Container** | `--md-sys-color-on-secondary-container` | `#3730a3` | `#ede9fe` | Text & icons on `secondary-container` |
+| Token Role | CSS Variable | Value (Hex) | Purpose / Usage |
+| :--- | :--- | :--- | :--- |
+| **Secondary** | `--md-sys-color-secondary` | `#4f46e5` | Secondary buttons, filters, auxiliary badges |
+| **On Secondary** | `--md-sys-color-on-secondary` | `#ffffff` | Text & icons on `secondary` |
+| **Secondary Container** | `--md-sys-color-secondary-container` | `#ede9fe` | Soft interactive cards, selected filter pills |
+| **On Secondary Container** | `--md-sys-color-on-secondary-container` | `#3730a3` | Text & icons on `secondary-container` |
 
 #### Tertiary Roles (AI & Smart Features)
-| Token Role | CSS Variable | Light Theme | Dark Theme | Purpose / Usage |
-|
-| **Tertiary** | `--md-sys-color-tertiary` | `#7c3aed` | `#d8b4fe` | Gemini AI assistants, smart generation, sparks |
-| **On Tertiary** | `--md-sys-color-on-tertiary` | `#ffffff` | `#581c87` | Text & icons on `tertiary` |
-| **Tertiary Container** | `--md-sys-color-tertiary-container` | `#f3e8ff` | `#6b21a8` | AI suggestion chips, banner gradients |
-| **On Tertiary Container**| `--md-sys-color-on-tertiary-container`| `#581c87` | `#f3e8ff` | Text & icons on `tertiary-container` |
+| Token Role | CSS Variable | Value (Hex) | Purpose / Usage |
+| :--- | :--- | :--- | :--- |
+| **Tertiary** | `--md-sys-color-tertiary` | `#7c3aed` | Gemini AI assistants, smart generation, sparks |
+| **On Tertiary** | `--md-sys-color-on-tertiary` | `#ffffff` | Text & icons on `tertiary` |
+| **Tertiary Container** | `--md-sys-color-tertiary-container` | `#f3e8ff` | AI suggestion chips, banner gradients |
+| **On Tertiary Container**| `--md-sys-color-on-tertiary-container`| `#581c87` | Text & icons on `tertiary-container` |
 
 #### Surface & Background Hierarchy
 Material 3 uses **Tonal Elevation** (surface containers) rather than heavy drop shadows:
-| Token Role | CSS Variable | Light Theme | Dark Theme | Usage |
-|
-| **Background** | `--md-sys-color-background` | `#f8fafc` | `#0f172a` | Root app background |
-| **On Background** | `--md-sys-color-on-background` | `#0f172a` | `#f8fafc` | Primary body typography |
-| **Surface** | `--md-sys-color-surface` | `#f8fafc` | `#0f172a` | Baseline container surface |
-| **Surface Container Lowest** | `--md-sys-color-surface-container-lowest` | `#ffffff` | `#020617` | Cards, dialog modals, editor panels |
-| **Surface Container Low** | `--md-sys-color-surface-container-low` | `#f1f5f9` | `#1e293b` | Navigation headers, modal footers |
-| **Surface Container** | `--md-sys-color-surface-container` | `#e2e8f0` | `#334155` | Table headers, dropdown backgrounds |
-| **Surface Container High**| `--md-sys-color-surface-container-high`| `#cbd5e1` | `#475569` | Floating action sheets, tooltips |
-| **Surface Container Highest**| `--md-sys-color-surface-container-highest`| `#94a3b8` | `#64748b` | Slider grooves, inactive progress tracks |
-| **On Surface** | `--md-sys-color-on-surface` | `#0f172a` | `#f8fafc` | High-emphasis content on surface |
-| **On Surface Variant** | `--md-sys-color-on-surface-variant` | `#475569` | `#94a3b8` | Medium-emphasis labels, helper text |
-| **Outline** | `--md-sys-color-outline` | `#64748b` | `#94a3b8` | Form field borders, active outlines |
-| **Outline Variant** | `--md-sys-color-outline-variant` | `#e2e8f0` | `#334155` | Subtle dividers, card borders |
+| Token Role | CSS Variable | Value (Hex) | Usage |
+| :--- | :--- | :--- | :--- |
+| **Background** | `--md-sys-color-background` | `#f8fafc` | Root app background |
+| **On Background** | `--md-sys-color-on-background` | `#0f172a` | Primary body typography |
+| **Surface** | `--md-sys-color-surface` | `#f8fafc` | Baseline container surface |
+| **Surface Container Lowest** | `--md-sys-color-surface-container-lowest` | `#ffffff` | Cards, dialog modals, editor panels |
+| **Surface Container Low** | `--md-sys-color-surface-container-low` | `#f1f5f9` | Navigation headers, modal footers |
+| **Surface Container** | `--md-sys-color-surface-container` | `#e2e8f0` | Table headers, dropdown backgrounds |
+| **Surface Container High**| `--md-sys-color-surface-container-high`| `#cbd5e1` | Floating action sheets, tooltips |
+| **Surface Container Highest**| `--md-sys-color-surface-container-highest`| `#94a3b8` | Slider grooves, inactive progress tracks |
+| **On Surface** | `--md-sys-color-on-surface` | `#0f172a` | High-emphasis content on surface |
+| **On Surface Variant** | `--md-sys-color-on-surface-variant` | `#475569` | Medium-emphasis labels, helper text |
+| **Outline** | `--md-sys-color-outline` | `#64748b` | Form field borders, active outlines |
+| **Outline Variant** | `--md-sys-color-outline-variant` | `#e2e8f0` | Subtle dividers, card borders |
 
 #### Functional & Feedback Roles
-| Status | Container Token | On Container Token | Accent Hex (Light / Dark) |
+| Status | Container Token | On Container Token | Accent Hex |
 | :--- | :--- | :--- | :--- |
-| **Success** | `--md-sys-color-success-container` (`#dcfce7`) | `--md-sys-color-on-success-container` (`#14532d`) | `#15803d` / `#86efac` |
-| **Warning** | `--md-sys-color-warning-container` (`#fef3c7`) | `--md-sys-color-on-warning-container` (`#78350f`) | `#b45309` / `#fde047` |
-| **Error** | `--md-sys-color-error-container` (`#ffdad6`) | `--md-sys-color-on-error-container` (`#410002`) | `#ba1a1a` / `#ffb4ab` |
+| **Success** | `--md-sys-color-success-container` (`#dcfce7`) | `--md-sys-color-on-success-container` (`#14532d`) | `#15803d` |
+| **Warning** | `--md-sys-color-warning-container` (`#fef3c7`) | `--md-sys-color-on-warning-container` (`#78350f`) | `#b45309` |
+| **Error** | `--md-sys-color-error-container` (`#ffdad6`) | `--md-sys-color-on-error-container` (`#410002`) | `#ba1a1a` |
 
 ---
 
@@ -100,7 +103,6 @@ In compliance with Google Material 3 guidelines for indeterminate AI generation 
 ```
 [ Color 1: Blue ]  -->  [ Color 2: Red ]  -->  [ Color 3: Yellow ]  -->  [ Color 4: Green ]
      #3b82f7                 #ea4335                 #fbbc04                 #34a853
-  (Dark: #8ab4f8)         (Dark: #f28b82)         (Dark: #fdd663)         (Dark: #81c995)
 ```
 
 #### Token Definitions

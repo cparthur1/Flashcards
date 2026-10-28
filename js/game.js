@@ -4423,7 +4423,7 @@ async function updateSettingsModalState() {
     if (settingApiKeyStatus) {
         if (currentApiKey) {
             settingApiKeyStatus.textContent = 'Chave configurada';
-            settingApiKeyStatus.className = 'text-[11px] font-semibold text-emerald-600 dark:text-emerald-400';
+            settingApiKeyStatus.className = 'text-[11px] font-semibold text-emerald-600';
         } else {
             settingApiKeyStatus.textContent = 'Nenhuma chave salva';
             settingApiKeyStatus.className = 'text-[11px] text-[var(--md-sys-color-on-surface-variant)]';
@@ -4452,10 +4452,10 @@ function switchSettingsStatsTab(tab) {
     settingsCurrentStatsTab = tab === 'notebook' ? 'notebook' : 'deck';
     if (settingStatsTabDeckBtn && settingStatsTabNotebookBtn) {
         if (settingsCurrentStatsTab === 'deck') {
-            settingStatsTabDeckBtn.className = 'flex-1 py-1.5 px-3 rounded-xl transition-all text-center cursor-pointer bg-white dark:bg-slate-800 text-[var(--md-sys-color-primary)] font-bold shadow-xs';
+            settingStatsTabDeckBtn.className = 'flex-1 py-1.5 px-3 rounded-xl transition-all text-center cursor-pointer bg-white text-[var(--md-sys-color-primary)] font-bold shadow-xs';
             settingStatsTabNotebookBtn.className = 'flex-1 py-1.5 px-3 rounded-xl transition-all text-center cursor-pointer text-[var(--md-sys-color-on-surface-variant)] font-semibold hover:text-[var(--md-sys-color-on-surface)]';
         } else {
-            settingStatsTabNotebookBtn.className = 'flex-1 py-1.5 px-3 rounded-xl transition-all text-center cursor-pointer bg-white dark:bg-slate-800 text-[var(--md-sys-color-primary)] font-bold shadow-xs';
+            settingStatsTabNotebookBtn.className = 'flex-1 py-1.5 px-3 rounded-xl transition-all text-center cursor-pointer bg-white text-[var(--md-sys-color-primary)] font-bold shadow-xs';
             settingStatsTabDeckBtn.className = 'flex-1 py-1.5 px-3 rounded-xl transition-all text-center cursor-pointer text-[var(--md-sys-color-on-surface-variant)] font-semibold hover:text-[var(--md-sys-color-on-surface)]';
         }
     }
@@ -4473,9 +4473,9 @@ function renderSettingsPinnedStatsList(mode = settingsCurrentStatsTab) {
     if (settingStatsPinnedCount) {
         settingStatsPinnedCount.textContent = `${pinnedIds.length} de ${MAX_PINNED_STATS} fixadas`;
         if (pinnedIds.length >= MAX_PINNED_STATS) {
-            settingStatsPinnedCount.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800 flex-shrink-0';
+            settingStatsPinnedCount.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60 flex-shrink-0';
         } else {
-            settingStatsPinnedCount.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800 flex-shrink-0';
+            settingStatsPinnedCount.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60 flex-shrink-0';
         }
     }
 
@@ -4489,7 +4489,7 @@ function renderSettingsPinnedStatsList(mode = settingsCurrentStatsTab) {
         const row = document.createElement('div');
         row.className = `group/stat flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer ${
             isPinned 
-                ? 'bg-blue-50/50 dark:bg-blue-950/30 border-blue-200/80 dark:border-blue-800/80' 
+                ? 'bg-blue-50/50 border-blue-200/80' 
                 : 'bg-transparent border-transparent hover:bg-[var(--md-sys-color-surface-container-high)]'
         }`;
 
@@ -4501,15 +4501,15 @@ function renderSettingsPinnedStatsList(mode = settingsCurrentStatsTab) {
                 <div class="min-w-0 flex-1 text-left">
                     <div class="flex items-center gap-1.5">
                         <span class="text-xs font-bold text-[var(--md-sys-color-on-surface)] truncate">${statTitle}</span>
-                        <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 font-mono flex-shrink-0">${displayLabel}</span>
+                        <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 font-mono flex-shrink-0">${displayLabel}</span>
                     </div>
                     <p class="text-[10px] text-[var(--md-sys-color-on-surface-variant)] truncate mt-0.5">${stat.description}</p>
                 </div>
             </div>
             <button type="button" class="pin-stat-btn p-1.5 rounded-xl transition-all cursor-pointer ${
                 isPinned 
-                    ? 'bg-blue-100/80 dark:bg-blue-900/50 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 shadow-xs' 
-                    : 'bg-gray-100 dark:bg-gray-800 border border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+                    ? 'bg-blue-100/80 border border-blue-300 text-blue-700 shadow-xs' 
+                    : 'bg-gray-100 border border-transparent text-gray-400 hover:text-gray-600'
             }" title="${isPinned ? 'Desafixar do cabeçalho' : (pinnedIds.length >= MAX_PINNED_STATS ? 'Limite atingido' : 'Fixar no cabeçalho')}">
                 <img src="${isPinned ? '../assets/img/pinned.svg' : '../assets/img/unpinned.svg'}" 
                      class="w-5 h-5 flex-shrink-0 pointer-events-none transition-transform active:scale-90 ${isPinned ? '' : 'opacity-60'}" 

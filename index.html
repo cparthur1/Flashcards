@@ -79,9 +79,9 @@
 
         <!-- Área de Upload de Arquivo -->
         <div
-            class="mb-6 p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-blue-500 transition-colors">
+            class="mb-6 p-4 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-500 transition-colors">
             <input type="file" id="file-input" accept=".json" multiple
-                class="block w-full text-sm text-gray-500 dark:text-gray-400 font-['Inter',sans-serif] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
+                class="block w-full text-sm text-gray-500 font-['Inter',sans-serif] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
         </div>
 
         <div class="flex flex-col gap-3.5">
@@ -137,7 +137,7 @@
         <div class="m3-dialog-card w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-6 py-4 border-b border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface-container-low)] flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-2xl bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center text-purple-600 dark:text-purple-300 shadow-sm">
+                    <div class="w-10 h-10 rounded-2xl bg-purple-100 flex items-center justify-center text-purple-600 shadow-sm">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                     </div>
                     <div class="text-left">
@@ -152,12 +152,12 @@
 
             <div class="p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
                 <!-- Banner de Sessão Salva (se existir) -->
-                <div id="exam-saved-session-box" class="hidden p-4 bg-purple-50 dark:bg-purple-950/40 rounded-2xl border border-purple-200 dark:border-purple-800 text-left">
+                <div id="exam-saved-session-box" class="hidden p-4 bg-purple-50 rounded-2xl border border-purple-200 text-left">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wide">Sessão em Andamento</span>
-                        <span id="exam-saved-cards-count" class="text-xs px-2.5 py-0.5 rounded-full bg-purple-200 dark:bg-purple-900 text-purple-800 dark:text-purple-200 font-semibold">0 cards restantes</span>
+                        <span class="text-xs font-bold text-purple-700 uppercase tracking-wide">Sessão em Andamento</span>
+                        <span id="exam-saved-cards-count" class="text-xs px-2.5 py-0.5 rounded-full bg-purple-200 text-purple-800 font-semibold">0 cards restantes</span>
                     </div>
-                    <p class="text-xs text-purple-600 dark:text-purple-400 mb-3" id="exam-saved-decks-text">Você já tem uma mistura salva.</p>
+                    <p class="text-xs text-purple-600 mb-3" id="exam-saved-decks-text">Você já tem uma mistura salva.</p>
                     <button id="exam-continue-btn" class="m3-btn-expressive w-full py-2.5 px-4 bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm shadow">
                         <span class="material-symbols-rounded text-base">play_arrow</span> Continuar Sessão Salva
                     </button>
@@ -169,7 +169,7 @@
                     <div id="exam-drop-zone" class="border-2 border-dashed border-[var(--md-sys-color-outline-variant)] hover:border-purple-500 rounded-2xl p-6 text-center cursor-pointer transition-colors bg-[var(--md-sys-color-surface-container-low)]">
                         <input type="file" id="exam-file-input" accept=".json" multiple class="hidden">
                         <div class="flex flex-col items-center gap-2">
-                            <div class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center text-purple-600 dark:text-purple-300">
+                            <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
                                 <span class="material-symbols-rounded text-2xl">upload_file</span>
                             </div>
                             <div>

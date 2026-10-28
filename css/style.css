@@ -145,67 +145,6 @@
   --md-linear-progress-active-indicator-height: 4px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --md-sys-color-primary: #93c5fd;
-    --md-sys-color-on-primary: #1e3a8a;
-    --md-sys-color-primary-container: #1e40af;
-    --md-sys-color-on-primary-container: #dbeafe;
-
-    --md-sys-color-secondary: #c4b5fd;
-    --md-sys-color-on-secondary: #3730a3;
-    --md-sys-color-secondary-container: #4338ca;
-    --md-sys-color-on-secondary-container: #ede9fe;
-
-    --md-sys-color-tertiary: #d8b4fe;
-    --md-sys-color-on-tertiary: #581c87;
-    --md-sys-color-tertiary-container: #6b21a8;
-    --md-sys-color-on-tertiary-container: #f3e8ff;
-
-    --md-sys-color-error: #ffb4ab;
-    --md-sys-color-on-error: #690005;
-    --md-sys-color-error-container: #93000a;
-    --md-sys-color-on-error-container: #ffdad6;
-
-    --md-sys-color-success: #86efac;
-    --md-sys-color-on-success: #14532d;
-    --md-sys-color-success-container: #166534;
-    --md-sys-color-on-success-container: #dcfce7;
-
-    --md-sys-color-warning: #fde047;
-    --md-sys-color-on-warning: #713f12;
-    --md-sys-color-warning-container: #854d0e;
-    --md-sys-color-on-warning-container: #fef9c3;
-
-    --md-sys-color-background: #0f172a;
-    --md-sys-color-on-background: #f8fafc;
-
-    --md-sys-color-surface: #0f172a;
-    --md-sys-color-on-surface: #f8fafc;
-    --md-sys-color-on-surface-variant: #94a3b8;
-
-    --md-sys-color-surface-container-lowest: #020617;
-    --md-sys-color-surface-container-low: #1e293b;
-    --md-sys-color-surface-container: #334155;
-    --md-sys-color-surface-container-high: #475569;
-    --md-sys-color-surface-container-highest: #64748b;
-
-    --md-sys-color-outline: #94a3b8;
-    --md-sys-color-outline-variant: #334155;
-
-    /* Dark Mode Four-Color Indicator Tokens */
-    --md-circular-progress-four-color-active-indicator-one-color: #8ab4f8;
-    --md-circular-progress-four-color-active-indicator-two-color: #f28b82;
-    --md-circular-progress-four-color-active-indicator-three-color: #fdd663;
-    --md-circular-progress-four-color-active-indicator-four-color: #81c995;
-
-    --md-linear-progress-four-color-active-indicator-one-color: #8ab4f8;
-    --md-linear-progress-four-color-active-indicator-two-color: #f28b82;
-    --md-linear-progress-four-color-active-indicator-three-color: #fdd663;
-    --md-linear-progress-four-color-active-indicator-four-color: #81c995;
-    --md-linear-progress-track-color: rgba(51, 65, 85, 0.6);
-  }
-}
 
 /* Brand Expressive Page Titles (Material You Roboto Flex Variable) */
 .brand-page-title {
@@ -303,18 +242,6 @@ md-outlined-text-field {
   --md-outlined-text-field-supporting-text-color: var(--md-sys-color-on-surface-variant, #64748b);
 }
 
-@media (prefers-color-scheme: dark) {
-  md-outlined-text-field {
-    --md-outlined-text-field-outline-color: var(--md-sys-color-outline-variant, #334155);
-    --md-outlined-text-field-hover-outline-color: var(--md-sys-color-outline, #64748b);
-    --md-outlined-text-field-focus-outline-color: var(--md-sys-color-primary, #93c5fd);
-    --md-outlined-text-field-label-text-color: var(--md-sys-color-on-surface-variant, #94a3b8);
-    --md-outlined-text-field-hover-label-text-color: var(--md-sys-color-on-surface-variant, #cbd5e1);
-    --md-outlined-text-field-focus-label-text-color: var(--md-sys-color-primary, #93c5fd);
-    --md-outlined-text-field-input-text-color: var(--md-sys-color-on-surface, #f8fafc);
-    --md-outlined-text-field-supporting-text-color: var(--md-sys-color-on-surface-variant, #94a3b8);
-  }
-}
 
 /* ==========================================================================
    MATERIAL DESIGN 3 MOTION PATTERNS (https://m3.material.io/styles/motion)
@@ -1387,35 +1314,6 @@ textarea::-webkit-scrollbar-thumb,
     justify-content: center;
 }
 
-/* Dark Mode support for M3 Select */
-.dark .m3-select-label {
-    background-color: #1e293b;
-    color: #818cf8;
-}
-.dark .m3-select-trigger {
-    background-color: #1e293b;
-    border-color: #475569;
-    color: #f8fafc;
-}
-.dark .m3-select-dropdown {
-    background-color: #1e293b;
-    border-color: #475569;
-    box-shadow: 0 14px 36px -4px rgba(0, 0, 0, 0.5), 0 6px 16px -2px rgba(0, 0, 0, 0.3);
-}
-.dark .m3-select-item {
-    color: #f1f5f9;
-}
-.dark .m3-select-item:hover:not(.m3-select-item-selected) {
-    background-color: #334155;
-    color: #93c5fd;
-}
-.dark .m3-select-item.m3-select-item-selected {
-    background-color: #3b2d54;
-    color: #e9d5ff;
-}
-.dark .m3-select-item.m3-select-item-selected .m3-select-check {
-    color: #c084fc;
-}
 
 /* Subtle Breathing Glow (tactile light reflection) */
 @keyframes badgeBreathing {
@@ -2829,13 +2727,6 @@ mark.card-hl-purple {
     color: #2563eb;
 }
 
-@media (prefers-color-scheme: dark) {
-    #pomodoro-break-overlay.pomodoro-state-running #pomodoro-break-status-badge {
-        color: #60a5fa;
-        background: rgba(59, 130, 246, 0.2);
-    }
-}
-
 #pomodoro-break-overlay.pomodoro-state-running #pomodoro-break-timer-box {
     background: var(--md-sys-color-surface-container-high);
     border-color: var(--md-sys-color-outline-variant);
@@ -2843,12 +2734,6 @@ mark.card-hl-purple {
 
 #pomodoro-break-overlay.pomodoro-state-running #pomodoro-break-countdown {
     color: #2563eb;
-}
-
-@media (prefers-color-scheme: dark) {
-    #pomodoro-break-overlay.pomodoro-state-running #pomodoro-break-countdown {
-        color: #60a5fa;
-    }
 }
 
 #pomodoro-break-overlay.pomodoro-state-running #pomodoro-resume-btn {
@@ -2889,13 +2774,6 @@ mark.card-hl-purple {
     background: rgba(16, 185, 129, 0.16);
     color: #059669;
     border: 1px solid rgba(16, 185, 129, 0.4);
-}
-
-@media (prefers-color-scheme: dark) {
-    #pomodoro-break-overlay.pomodoro-state-done #pomodoro-break-status-badge {
-        color: #34d399;
-        background: rgba(16, 185, 129, 0.22);
-    }
 }
 
 #pomodoro-break-overlay.pomodoro-state-done #pomodoro-break-title {
@@ -3116,9 +2994,6 @@ mark.card-hl-purple {
 .bulk-empty-hint {
     background-image: radial-gradient(#e2e8f0 1.5px, transparent 1.5px);
     background-size: 16px 16px;
-}
-.dark .bulk-empty-hint {
-    background-image: radial-gradient(#334155 1.5px, transparent 1.5px);
 }
 
 /* Deck Blur Overlay for Cinematic Bulk Transfer */
