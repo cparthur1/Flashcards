@@ -115,6 +115,9 @@ export async function evaluateAnswerSemantic({ questionObj, actualAnswer, onSlow
         const model = genAI.getGenerativeModel({
             model: "gemini-flash-lite-latest",
             generationConfig: {
+                thinkingConfig: {
+                    thinkingLevel: "LOW"
+                },
                 responseMimeType: "application/json",
                 responseSchema: {
                     type: "OBJECT",
@@ -169,7 +172,21 @@ export async function evaluateAnswerSemantic({ questionObj, actualAnswer, onSlow
             }
         }
 
-        const responseText = result.response.text();
+        let responseText = "";
+        try {
+            responseText = result.response.text();
+        } catch (e) {
+            if (result.response?.candidates?.[0]?.content?.parts) {
+                for (const part of result.response.candidates[0].content.parts) {
+                    if (part.text && !part.thought) responseText += part.text;
+                }
+            }
+        }
+        if (!responseText && result.response?.candidates?.[0]?.content?.parts) {
+            for (const part of result.response.candidates[0].content.parts) {
+                if (part.text && !part.thought) responseText += part.text;
+            }
+        }
         let evalData = null;
         try {
             evalData = JSON.parse(responseText);
@@ -307,7 +324,12 @@ Não inclua preâmbulos, saudações, nem repita "o termo significa...". Seja di
 
         const model = genAI.getGenerativeModel({
             model: "gemini-flash-lite-latest",
-            systemInstruction: systemPrompt
+            systemInstruction: systemPrompt,
+            generationConfig: {
+                thinkingConfig: {
+                    thinkingLevel: "LOW"
+                }
+            }
         });
 
         const prompt = `Flashcard:
@@ -317,7 +339,22 @@ Resposta: "${cleanAnswer}"
 Termo selecionado para definir: "${selectedText}"`;
 
         const result = await callWithRetry(() => model.generateContent(prompt));
-        return result.response.text().trim();
+        let definitionText = "";
+        try {
+            definitionText = result.response.text();
+        } catch (e) {
+            if (result.response?.candidates?.[0]?.content?.parts) {
+                for (const part of result.response.candidates[0].content.parts) {
+                    if (part.text && !part.thought) definitionText += part.text;
+                }
+            }
+        }
+        if (!definitionText && result.response?.candidates?.[0]?.content?.parts) {
+            for (const part of result.response.candidates[0].content.parts) {
+                if (part.text && !part.thought) definitionText += part.text;
+            }
+        }
+        return definitionText.trim();
     } catch (e) {
         console.error("[Tutor] Erro ao obter definição do termo:", e);
         throw e;
