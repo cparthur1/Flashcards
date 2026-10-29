@@ -3,7 +3,7 @@
  * Copyright (C) 2026 Arthur <arthur.paludo.c@gmail.com>
  */
 
-const CACHE_NAME = 'flashcards-v10.8'; // Increment version to trigger update
+const CACHE_NAME = 'flashcards-v10.9'; // Increment version to trigger update
 
 const BASE_PATH = self.registration && self.registration.scope 
   ? new URL(self.registration.scope).pathname.replace(/\/$/, '') 
@@ -46,6 +46,8 @@ const RAW_ASSETS = [
   '/assets/img/favicon.png',
   '/assets/img/logo.svg',
   '/assets/img/logo.png',
+  '/assets/img/badge.svg',
+  '/assets/img/badge.png',
   '/assets/img/menu.svg',
   '/assets/img/stats.svg',
   '/assets/img/bulk_add.svg',
@@ -102,6 +104,27 @@ self.addEventListener('notificationclick', (event) => {
       }
     })
   );
+});
+
+self.addEventListener('push', (event) => {
+  let data = {};
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch (e) {
+      data = { body: event.data.text() };
+    }
+  }
+  const title = data.title || 'Flashcards';
+  const options = {
+    body: data.body || 'Hora de revisar seus cards e acelerar seu aprendizado.',
+    icon: `${BASE_PATH}/assets/img/logo.png`,
+    badge: `${BASE_PATH}/assets/img/badge.png`,
+    tag: data.tag || 'flashcards-push',
+    renotify: true,
+    data: data.data || { url: './pages/game.html' }
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
 const ALLOWED_CDN_HOSTS = new Set([

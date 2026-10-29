@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright (C) 2026 Arthur <arthur.paludo.c@gmail.com>
+ */
 /**
  * js/engine/notifications.js
  * Módulo de notificações diárias para lembretes de estudo e proteção de streak.
@@ -141,10 +145,15 @@ export async function sendDailyNotification(period, forced = false) {
         }
     }
 
+    const isSubpage = typeof window !== 'undefined' && window.location.pathname.includes('/pages/');
+    const assetBase = isSubpage ? '../assets/img/' : 'assets/img/';
+    const iconUrl = typeof window !== 'undefined' ? new URL(`${assetBase}logo.png`, window.location.href).href : `${assetBase}logo.png`;
+    const badgeUrl = typeof window !== 'undefined' ? new URL(`${assetBase}badge.png`, window.location.href).href : `${assetBase}badge.png`;
+
     const options = {
         body,
-        icon: '../assets/img/logo.png',
-        badge: '../assets/img/favicon.png',
+        icon: iconUrl,
+        badge: badgeUrl,
         tag,
         renotify: true,
         requireInteraction,

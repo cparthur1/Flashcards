@@ -1,3 +1,15 @@
+CHANGELOG: TRANSPARENT NOTIFICATION ICON & BADGE FOR SYSTEM PUSH NOTIFICATIONS (v10.9)
+Date: 2026-10-29
+
+OVERVIEW:
+1. Removed squircle background (`#dbeafe` rounded rectangle) from notification vector assets and rendered PNGs (`assets/img/logo.svg`, `assets/img/logo.png`).
+2. Generated dedicated status bar notification badge asset (`assets/img/badge.svg`, `assets/img/badge.png`) with alpha transparency, ensuring Android's notification bar renders the crisp flashcards silhouette instead of an opaque white squircle.
+3. Updated `js/engine/notifications.js` to dynamically resolve absolute URLs for both `icon` and `badge`, setting `badge` to the transparent badge asset instead of `favicon.png`.
+4. Added push event listener in `sw.js` with transparent icon and badge options for background push notifications.
+5. Cached new badge assets in Service Worker and bumped cache version to `flashcards-v10.9`.
+
+--------------------------------------------------------------------------------
+
 CHANGELOG: REMOVAL OF DARK MODE & STRICT LIGHT THEME ENFORCEMENT (v10.8)
 Date: 2026-10-28
 
