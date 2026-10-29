@@ -1,3 +1,19 @@
+CHANGELOG: POMODORO PAUSE MODAL REFINEMENTS & BITCOUNT CLOCK FONT (v10.10)
+Date: 2026-10-29
+
+OVERVIEW:
+1. Removed squircle background behind the icon in the Pomodoro break modal, presenting the Material Symbols icon directly with transparent background.
+2. Removed status pill badge ("Micro-pausa em andamento" / "Tempo esgotado • Foco pronto").
+3. Removed post-break description text ("Sua mente descansou...").
+4. Imported and applied Google Font 'Bitcount Prop Single' to the countdown clock for a digital clock display.
+5. Renamed modal title from "Micro-pausa Cognitiva" to "Pausa Pomodoro".
+6. Updated completion title from "Pausa Concluída! Hora de Voltar!" to "Acabou a pausa!".
+7. Kept the clock display (00:00) colored red upon timer completion instead of text ("Foco 100% Recarregado PRONTO!").
+8. Updated completion button action text to "Continuar".
+9. Bumped Service Worker cache version to `flashcards-v10.10`.
+
+--------------------------------------------------------------------------------
+
 CHANGELOG: TRANSPARENT NOTIFICATION ICON & BADGE FOR SYSTEM PUSH NOTIFICATIONS (v10.9)
 Date: 2026-10-29
 

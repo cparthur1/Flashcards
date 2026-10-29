@@ -228,7 +228,7 @@ function playPomodoroChime() {
 }
 
 function onBreakTimeElapsed() {
-    console.log("[Pomodoro] Micro-pausa finalizada. Cérebro pronto para retomar.");
+    console.log("[Pomodoro] Pausa finalizada. Cérebro pronto para retomar.");
     triggerHaptic('timerDone');
     playPomodoroChime();
 
@@ -241,26 +241,30 @@ function onBreakTimeElapsed() {
         if (iconEl) iconEl.textContent = 'rocket_launch';
 
         const statusTextEl = document.getElementById('pomodoro-break-status-text');
-        if (statusTextEl) statusTextEl.textContent = 'Tempo Esgotado • Foco Pronto';
+        if (statusTextEl) statusTextEl.textContent = '';
 
         const titleEl = document.getElementById('pomodoro-break-title');
-        if (titleEl) titleEl.textContent = 'Pausa Concluída! Hora de Voltar!';
+        if (titleEl) titleEl.textContent = 'Acabou a pausa!';
 
         const descEl = document.getElementById('pomodoro-break-desc');
-        if (descEl) descEl.textContent = 'Sua mente descansou e os neurônios estão com energia máxima renovada para dominar mais cards!';
+        if (descEl) {
+            descEl.textContent = '';
+            descEl.classList.add('hidden');
+        }
 
         const timerLabelEl = document.getElementById('pomodoro-break-timer-label');
-        if (timerLabelEl) timerLabelEl.textContent = 'Foco 100% Recarregado';
+        if (timerLabelEl) timerLabelEl.textContent = 'Tempo Restante de Pausa';
 
+        if (!pomodoroBreakCountdownEl) pomodoroBreakCountdownEl = document.getElementById('pomodoro-break-countdown');
         if (pomodoroBreakCountdownEl) {
-            pomodoroBreakCountdownEl.textContent = 'PRONTO!';
+            pomodoroBreakCountdownEl.textContent = '00:00';
         }
 
         const resumeIconEl = document.getElementById('pomodoro-resume-icon');
         if (resumeIconEl) resumeIconEl.textContent = 'play_arrow';
 
         const resumeTextEl = document.getElementById('pomodoro-resume-text');
-        if (resumeTextEl) resumeTextEl.textContent = 'RETOMAR ESTUDOS AGORA';
+        if (resumeTextEl) resumeTextEl.textContent = 'Continuar';
     }
 }
 
@@ -281,13 +285,16 @@ function showBreakOverlay() {
         if (iconEl) iconEl.textContent = 'self_improvement';
 
         const statusTextEl = document.getElementById('pomodoro-break-status-text');
-        if (statusTextEl) statusTextEl.textContent = 'Micro-pausa em andamento';
+        if (statusTextEl) statusTextEl.textContent = '';
 
         const titleEl = document.getElementById('pomodoro-break-title');
-        if (titleEl) titleEl.textContent = 'Micro-pausa Cognitiva';
+        if (titleEl) titleEl.textContent = 'Pausa Pomodoro';
 
         const descEl = document.getElementById('pomodoro-break-desc');
-        if (descEl) descEl.textContent = 'Feche os olhos, beba água ou respire fundo. O cérebro consolida novas conexões durante o descanso.';
+        if (descEl) {
+            descEl.textContent = 'Feche os olhos, beba água ou respire fundo. O cérebro consolida novas conexões durante o descanso.';
+            descEl.classList.remove('hidden');
+        }
 
         const timerLabelEl = document.getElementById('pomodoro-break-timer-label');
         if (timerLabelEl) timerLabelEl.textContent = 'Tempo Restante de Pausa';

@@ -3,6 +3,7 @@
    Following @material/web Guidelines (https://m3.material.io & MWC)
    ========================================================================== */
 
+@import url('https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single:wght@100..900&display=swap');
 @import url('../assets/fonts/fonts.css');
 
 :root {
@@ -2717,14 +2718,10 @@ mark.card-hl-purple {
 }
 
 #pomodoro-break-overlay.pomodoro-state-running #pomodoro-break-icon-box {
-    background: rgba(59, 130, 246, 0.15);
+    background: transparent;
+    box-shadow: none;
     color: #3b82f6;
     animation: pomodoroCalmBreathing 4s infinite ease-in-out;
-}
-
-#pomodoro-break-overlay.pomodoro-state-running #pomodoro-break-status-badge {
-    background: rgba(59, 130, 246, 0.12);
-    color: #2563eb;
 }
 
 #pomodoro-break-overlay.pomodoro-state-running #pomodoro-break-timer-box {
@@ -2732,8 +2729,13 @@ mark.card-hl-purple {
     border-color: var(--md-sys-color-outline-variant);
 }
 
+#pomodoro-break-countdown {
+    font-family: 'Bitcount Prop Single', monospace;
+}
+
 #pomodoro-break-overlay.pomodoro-state-running #pomodoro-break-countdown {
     color: #2563eb;
+    font-family: 'Bitcount Prop Single', monospace;
 }
 
 #pomodoro-break-overlay.pomodoro-state-running #pomodoro-resume-btn {
@@ -2743,7 +2745,7 @@ mark.card-hl-purple {
     color: var(--md-sys-color-on-secondary-container);
 }
 
-/* --- Pomodoro Break Overlay: DONE State (Distance Attention & M3 Expressive) --- */
+/* --- Pomodoro Break Overlay: DONE State (Distance Attention & Red Clock Alert) --- */
 #pomodoro-break-overlay.pomodoro-state-done {
     background-color: rgba(3, 7, 18, 0.88);
 }
@@ -2753,61 +2755,56 @@ mark.card-hl-purple {
 }
 
 #pomodoro-break-overlay.pomodoro-state-done #pomodoro-break-card {
-    border: 2px solid #10b981;
-    box-shadow: 0 0 60px 20px rgba(16, 185, 129, 0.4), 0 25px 60px rgba(0, 0, 0, 0.7);
+    border: 2px solid #ef4444;
+    box-shadow: 0 0 50px 15px rgba(239, 68, 68, 0.25), 0 25px 60px rgba(0, 0, 0, 0.7);
     transform: scale(1.025);
     animation: pomodoroCardDonePulse 3s infinite ease-in-out;
 }
 
-#pomodoro-break-overlay.pomodoro-state-done #pomodoro-icon-ping {
-    display: block;
-}
-
 #pomodoro-break-overlay.pomodoro-state-done #pomodoro-break-icon-box {
-    background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
-    color: #ffffff;
-    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.55);
+    background: transparent;
+    box-shadow: none;
+    color: #dc2626;
     animation: pomodoroIconDoneShake 2s infinite ease-in-out;
-}
-
-#pomodoro-break-overlay.pomodoro-state-done #pomodoro-break-status-badge {
-    background: rgba(16, 185, 129, 0.16);
-    color: #059669;
-    border: 1px solid rgba(16, 185, 129, 0.4);
 }
 
 #pomodoro-break-overlay.pomodoro-state-done #pomodoro-break-title {
     color: var(--md-sys-color-on-surface);
 }
 
+#pomodoro-break-overlay.pomodoro-state-done #pomodoro-break-desc {
+    display: none;
+}
+
 #pomodoro-break-overlay.pomodoro-state-done #pomodoro-break-timer-box {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(13, 148, 136, 0.2) 100%);
-    border: 2px solid rgba(16, 185, 129, 0.5);
-    box-shadow: inset 0 0 24px rgba(16, 185, 129, 0.18);
+    background: rgba(220, 38, 38, 0.06);
+    border: 2px solid rgba(220, 38, 38, 0.35);
+    box-shadow: inset 0 0 20px rgba(220, 38, 38, 0.08);
 }
 
 #pomodoro-break-overlay.pomodoro-state-done #pomodoro-break-countdown {
-    color: #10b981;
-    text-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+    color: #dc2626;
+    text-shadow: 0 0 20px rgba(220, 38, 38, 0.45);
     letter-spacing: 0.08em;
+    font-family: 'Bitcount Prop Single', monospace;
 }
 
-/* Material 3 Expressive Extra-Large Hero Button */
+/* Material 3 Expressive Action Button */
 #pomodoro-break-overlay.pomodoro-state-done #pomodoro-resume-btn {
-    height: 60px;
+    height: 52px;
     border-radius: var(--md-sys-shape-corner-full);
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: var(--md-sys-color-primary, #2563eb);
     color: #ffffff;
-    font-size: 1.05rem;
-    font-weight: 900;
-    letter-spacing: 0.035em;
-    box-shadow: 0 12px 35px rgba(16, 185, 129, 0.48);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.025em;
+    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4);
     animation: pomodoroBtnGlowPulse 2.2s infinite ease-in-out;
 }
 
 #pomodoro-break-overlay.pomodoro-state-done #pomodoro-resume-btn:hover {
     transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 16px 42px rgba(16, 185, 129, 0.65);
+    box-shadow: 0 14px 38px rgba(37, 99, 235, 0.55);
 }
 
 /* Radar Beacon Waves & Ambient Animations */
@@ -2833,21 +2830,21 @@ mark.card-hl-purple {
 
 @keyframes pomodoroCardDonePulse {
     0%, 100% {
-        box-shadow: 0 0 50px 15px rgba(16, 185, 129, 0.35), 0 25px 60px rgba(0, 0, 0, 0.7);
+        box-shadow: 0 0 50px 15px rgba(239, 68, 68, 0.25), 0 25px 60px rgba(0, 0, 0, 0.7);
     }
     50% {
-        box-shadow: 0 0 85px 30px rgba(16, 185, 129, 0.6), 0 25px 60px rgba(0, 0, 0, 0.7);
+        box-shadow: 0 0 80px 28px rgba(239, 68, 68, 0.45), 0 25px 60px rgba(0, 0, 0, 0.7);
     }
 }
 
 @keyframes pomodoroBtnGlowPulse {
     0%, 100% {
         transform: scale(1);
-        box-shadow: 0 10px 30px rgba(16, 185, 129, 0.45);
+        box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4);
     }
     50% {
         transform: scale(1.02);
-        box-shadow: 0 16px 40px rgba(16, 185, 129, 0.7);
+        box-shadow: 0 16px 38px rgba(37, 99, 235, 0.6);
     }
 }
 
