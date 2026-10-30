@@ -656,14 +656,26 @@ export default {
         const serviceAccount = getServiceAccount(env);
         const userDoc = await getUserDocument(serviceAccount, user.uid);
 
-        // 1. Cancel Asaas Subscription if exists
+        // 1. Cancel Subscription if exists (Stripe or Asaas)
         const subId = userDoc?.subscription?.subscriptionId;
+        const provider = userDoc?.subscription?.provider;
         if (subId) {
-          await cancelSubscription({
-            subscriptionId: subId,
-            apiKey: env.ASAAS_API_KEY,
-            isProduction: env.ASAAS_ENV !== 'sandbox'
-          }).catch(err => console.warn('Falha ao cancelar assinatura Asaas:', err));
+          if (provider === 'stripe' || subId.startsWith('sub_')) {
+            if (env.STRIPE_SECRET_KEY) {
+              try {
+                const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' });
+                await stripe.subscriptions.cancel(subId);
+              } catch (stripeErr) {
+                console.warn('Falha ao cancelar assinatura Stripe:', stripeErr.message);
+              }
+            }
+          } else if (env.ASAAS_API_KEY) {
+            await cancelSubscription({
+              subscriptionId: subId,
+              apiKey: env.ASAAS_API_KEY,
+              isProduction: env.ASAAS_ENV !== 'sandbox'
+            }).catch(err => console.warn('Falha ao cancelar assinatura Asaas:', err));
+          }
         }
 
         // 2. Delete Firestore data (user doc + user decks + shares)
@@ -678,7 +690,7 @@ export default {
         }, 200, corsHeaders);
       }
 
-      // 5.2 Get Subscription Details from Asaas (for manage modal)
+      // 5.2 Get Subscription Details from Stripe / Asaas (for manage modal)
       if (path === '/api/subscription/details' && request.method === 'GET') {
         const user = await authenticateUser();
         const isLifetime = LIFETIME_PRO_EMAILS.includes((user.email || '').toLowerCase().trim());
@@ -701,6 +713,26 @@ export default {
         }
 
         const subId = userDoc?.subscription?.subscriptionId;
+        const provider = userDoc?.subscription?.provider;
+
+        if (subId && (provider === 'stripe' || subId.startsWith('sub_')) && env.STRIPE_SECRET_KEY) {
+          try {
+            const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' });
+            const sub = await stripe.subscriptions.retrieve(subId);
+            const nextDueDate = sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString().slice(0, 10) : null;
+            return jsonResponse({
+              isPro: sub.status === 'active' || sub.status === 'trialing',
+              isLifetime: false,
+              status: sub.status.toUpperCase(),
+              nextDueDate,
+              provider: 'stripe',
+              storedStatus: userDoc?.subscription?.status || 'inactive'
+            }, 200, corsHeaders);
+          } catch (stripeErr) {
+            console.warn('[Subscription] Erro ao buscar assinatura Stripe:', stripeErr.message);
+          }
+        }
+
         if (!subId) {
           return jsonResponse({
             isPro: Boolean(userDoc?.subscription?.status === 'active' || user.pro),
@@ -709,11 +741,11 @@ export default {
           }, 200, corsHeaders);
         }
 
-        const details = await getSubscriptionDetails({
+        const details = env.ASAAS_API_KEY ? await getSubscriptionDetails({
           subscriptionId: subId,
           apiKey: env.ASAAS_API_KEY,
           isProduction: env.ASAAS_ENV !== 'sandbox'
-        });
+        }) : null;
 
         return jsonResponse({
           isPro: details ? (details.status === 'ACTIVE') : Boolean(userDoc?.subscription?.status === 'active'),
@@ -723,7 +755,7 @@ export default {
         }, 200, corsHeaders);
       }
 
-      // 5.3 Cancel Asaas Subscription Only (keeps account and decks intact)
+      // 5.3 Cancel Subscription Only (keeps account and decks intact)
       if (path === '/api/subscription/cancel' && request.method === 'POST') {
         const user = await authenticateUser();
         let serviceAccount = null;
@@ -736,12 +768,25 @@ export default {
         }
 
         const subId = userDoc?.subscription?.subscriptionId;
+        const provider = userDoc?.subscription?.provider;
+
         if (subId) {
-          await cancelSubscription({
-            subscriptionId: subId,
-            apiKey: env.ASAAS_API_KEY,
-            isProduction: env.ASAAS_ENV !== 'sandbox'
-          }).catch(err => console.warn('Falha ao cancelar assinatura Asaas:', err));
+          if (provider === 'stripe' || subId.startsWith('sub_')) {
+            if (env.STRIPE_SECRET_KEY) {
+              try {
+                const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' });
+                await stripe.subscriptions.cancel(subId);
+              } catch (stripeErr) {
+                console.warn('Falha ao cancelar assinatura Stripe:', stripeErr.message);
+              }
+            }
+          } else if (env.ASAAS_API_KEY) {
+            await cancelSubscription({
+              subscriptionId: subId,
+              apiKey: env.ASAAS_API_KEY,
+              isProduction: env.ASAAS_ENV !== 'sandbox'
+            }).catch(err => console.warn('Falha ao cancelar assinatura Asaas:', err));
+          }
         }
 
         if (serviceAccount) {

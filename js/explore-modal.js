@@ -606,7 +606,7 @@ function bindProCheckoutBtn() {
         if (invoiceBtn && result.invoiceUrl) {
           invoiceBtn.href = result.invoiceUrl;
           invoiceBtn.classList.remove('hidden');
-          invoiceBtn.innerHTML = '<span class="material-symbols-rounded text-base">credit_card</span><span>Pagar com Cartão no Asaas</span>';
+          invoiceBtn.innerHTML = '<span class="material-symbols-rounded text-base">credit_card</span><span>Pagar com Cartão</span>';
         }
       }
 

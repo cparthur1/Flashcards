@@ -166,7 +166,7 @@ async function renderAccountModalContent() {
       </div>
     `;
   } else if (pro) {
-    // 2.2 PRO MENSAL (Ativo via Asaas)
+    // 2.2 PRO MENSAL (Ativo via Stripe)
     const nextDateFormatted = subDetailsCache?.nextDueDate 
       ? new Date(subDetailsCache.nextDueDate + 'T12:00:00Z').toLocaleDateString('pt-BR') 
       : 'Mensal';
@@ -196,18 +196,18 @@ async function renderAccountModalContent() {
           </div>
         </div>
 
-        <!-- Ações do Asaas: Fatura / Trocar Cartão -->
+        <!-- Ações do Stripe: Fatura / Gerenciar -->
         <div class="pt-2 border-t border-blue-200/80 space-y-2">
           ${invoiceUrl ? `
             <a href="${invoiceUrl}" target="_blank" rel="noopener noreferrer"
               class="m3-btn-expressive m3-btn-tonal w-full py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-blue-700 bg-white hover:bg-blue-50 border border-blue-200 transition cursor-pointer shadow-xs">
               <span class="material-symbols-rounded text-base">credit_card</span>
-              <span>Trocar Cartão ou Ver Fatura no Asaas</span>
+              <span>Ver Fatura ou Gerenciar no Stripe</span>
               <span class="material-symbols-rounded text-sm">open_in_new</span>
             </a>
           ` : `
             <div id="account-loading-details" class="text-[11px] text-blue-700 font-medium text-center">
-              ${isLoadingSubDetails ? 'Carregando opções de pagamento...' : 'Assinatura ativa via Asaas.'}
+              ${isLoadingSubDetails ? 'Carregando opções de pagamento...' : 'Assinatura ativa via Stripe.'}
             </div>
           `}
 
@@ -305,7 +305,7 @@ async function renderAccountModalContent() {
   // Cancelar Assinatura (mantém conta e dados)
   document.getElementById('account-cancel-sub-btn')?.addEventListener('click', async () => {
     const confirmed = confirm(
-      "Deseja realmente cancelar sua assinatura do Flashcards Pro?\n\nAs próximas cobranças no Asaas serão canceladas imediatamente e seus baralhos continuarão salvos na nuvem."
+      "Deseja realmente cancelar sua assinatura do Flashcards Pro?\n\nAs próximas cobranças no Stripe serão canceladas imediatamente e seus baralhos continuarão salvos na nuvem."
     );
     if (!confirmed) return;
 
@@ -329,7 +329,7 @@ async function renderAccountModalContent() {
   // Exclusão definitiva de conta
   document.getElementById('account-delete-account-btn')?.addEventListener('click', async () => {
     const confirmed = confirm(
-      "Atenção: Esta ação é definitiva e irreversível.\n\nSua conta, baralhos sincronizados na nuvem e eventual assinatura no Asaas serão cancelados e apagados permanentemente.\n\nDeseja continuar?"
+      "Atenção: Esta ação é definitiva e irreversível.\n\nSua conta, baralhos sincronizados na nuvem e eventual assinatura no Stripe serão cancelados e apagados permanentemente.\n\nDeseja continuar?"
     );
     if (!confirmed) return;
 
@@ -361,7 +361,7 @@ async function renderAccountModalContent() {
       isLoadingSubDetails = false;
       renderAccountModalContent();
     }).catch(e => {
-      console.warn("Falha ao carregar detalhes de assinatura do Asaas:", e);
+      console.warn("Falha ao carregar detalhes de assinatura do Stripe:", e);
       isLoadingSubDetails = false;
     });
   }

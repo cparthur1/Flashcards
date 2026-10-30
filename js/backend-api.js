@@ -212,7 +212,7 @@ export async function getStatsAIInsights(statsPrompt) {
 }
 
 /**
- * Get detailed subscription info from backend / Asaas
+ * Get detailed subscription info from backend / Stripe
  */
 export async function getSubscriptionDetails() {
   const res = await fetchWithAuth('/api/subscription/details');
@@ -224,7 +224,7 @@ export async function getSubscriptionDetails() {
 }
 
 /**
- * Cancel only the Asaas recurring subscription (keeps user account and decks)
+ * Cancel recurring subscription (keeps user account and decks)
  */
 export async function cancelSubscriptionOnly() {
   const res = await fetchWithAuth('/api/subscription/cancel', {
