@@ -15,6 +15,13 @@
     <script>
       gtag('event', 'conversion', {'send_to': 'AW-956292330/tipVCPvrrtoBEOq5_8cD'});
     </script>
+    <script>
+      // Early capture of PWA beforeinstallprompt for Android/Chromium
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        window.deferredPrompt = e;
+      });
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
     <title>Estudando Flashcards</title>

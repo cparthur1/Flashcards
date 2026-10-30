@@ -25,6 +25,7 @@ import { openAccountModal } from './account-modal.js';
 import { onAuthChange, auth } from './firebase-client.js';
 import { checkAndLoadSharedDeck } from './share-manager.js';
 import { debouncedSyncSlotsToCloud, syncSlotsToCloud } from './slot-manager.js';
+import { initPwaInstallBanner } from './engine/pwa-install.js';
 
 // --- DOM ELEMENTS ---
 const deckTitle = document.getElementById('deck-title');
@@ -5854,6 +5855,7 @@ async function initGame() {
     
     initTransfer(); // Initialize P2P logic from transfer.js
     initExploreModal(); // Initialize Explore Files & Pro Modal
+    initPwaInstallBanner(); // PWA Install Notification on Mobile/Tablet
 
     // Check if opening a shared deck via link (?share=...)
     const sharedLoaded = await checkAndLoadSharedDeck();

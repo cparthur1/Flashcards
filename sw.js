@@ -3,7 +3,7 @@
  * Copyright (C) 2026 Arthur <arthur.paludo.c@gmail.com>
  */
 
-const CACHE_NAME = 'flashcards-v13.7'; // Increment version to trigger update
+const CACHE_NAME = 'flashcards-v13.8'; // Increment version to trigger update
 
 const BASE_PATH = self.registration && self.registration.scope 
   ? new URL(self.registration.scope).pathname.replace(/\/$/, '') 
@@ -39,6 +39,7 @@ const RAW_ASSETS = [
   '/js/engine/tutor.js',
   '/js/engine/pomodoro.js',
   '/js/engine/notifications.js',
+  '/js/engine/pwa-install.js',
   '/js/generate.js',
   '/js/stats.js',
   '/js/stats-tracker.js',
@@ -75,7 +76,13 @@ const RAW_ASSETS = [
   '/assets/img/notifications.svg',
   '/assets/img/paywall.svg',
   '/assets/img/open_folder.svg',
-  '/assets/img/criar_novo.svg'
+  '/assets/img/criar_novo.svg',
+  '/assets/img/install_webapp/apple_share.png',
+  '/assets/img/install_webapp/apple_add.png',
+  '/assets/img/install_webapp/apple_add.svg',
+  '/assets/img/apple_share.png',
+  '/assets/img/apple_add.png',
+  '/assets/img/apple_add.svg'
 ];
 
 const ASSETS_TO_CACHE = RAW_ASSETS.map(p => p === '/' ? (BASE_PATH || '/') : `${BASE_PATH}${p}`);
