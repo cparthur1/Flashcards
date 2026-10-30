@@ -137,7 +137,7 @@ async function renderAccountModalContent() {
     <!-- Perfil do Usuário -->
     <div class="flex items-center gap-3.5 p-3.5 rounded-2xl bg-[var(--md-sys-color-surface-container-low)] border border-[var(--md-sys-color-outline-variant)]">
       <div class="relative flex-shrink-0">
-        ${photo ? `<img src="${photo}" class="w-12 h-12 rounded-full object-cover border-2 border-blue-400" alt="Avatar">`
+        ${photo ? `<img src="${photo}" referrerpolicy="no-referrer" class="w-12 h-12 rounded-full object-cover border-2 border-blue-400" alt="Avatar">`
                 : `<span class="material-symbols-rounded text-5xl text-blue-600">account_circle</span>`}
         ${pro ? `<span class="absolute -bottom-1 -right-1 bg-amber-500 text-white rounded-full p-0.5 text-[10px]" title="Assinante Pro"><span class="material-symbols-rounded text-xs block">star</span></span>` : ''}
       </div>

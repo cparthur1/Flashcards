@@ -3,7 +3,7 @@
  * Copyright (C) 2026 Arthur <arthur.paludo.c@gmail.com>
  */
 
-const CACHE_NAME = 'flashcards-v13.8'; // Increment version to trigger update
+const CACHE_NAME = 'flashcards-v13.9'; // Increment version to trigger update
 
 const BASE_PATH = self.registration && self.registration.scope 
   ? new URL(self.registration.scope).pathname.replace(/\/$/, '') 
@@ -75,6 +75,7 @@ const RAW_ASSETS = [
   '/assets/img/settings.svg',
   '/assets/img/notifications.svg',
   '/assets/img/paywall.svg',
+  '/assets/img/PRO.svg',
   '/assets/img/open_folder.svg',
   '/assets/img/criar_novo.svg',
   '/assets/img/install_webapp/apple_share.png',

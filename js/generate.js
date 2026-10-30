@@ -1316,7 +1316,7 @@ function updateProPaywalledUI() {
             if (!existingBadge) {
                 const badge = document.createElement('div');
                 badge.className = 'paywall-badge-pill';
-                badge.innerHTML = `<img src="../assets/img/paywall.svg" alt="Pro"><span>PRO</span>`;
+                badge.innerHTML = `<img src="../assets/img/PRO.svg" alt="Pro"><span>PRO</span>`;
                 card.appendChild(badge);
             }
         } else {
@@ -1331,7 +1331,7 @@ function updateProPaywalledUI() {
             tabAiChatBtn.classList.add('opacity-75');
             if (!tabBadge) {
                 const icon = document.createElement('img');
-                icon.src = '../assets/img/paywall.svg';
+                icon.src = '../assets/img/PRO.svg';
                 icon.className = 'w-3.5 h-3.5 paywall-tab-icon ml-1.5 inline opacity-80';
                 icon.alt = 'Pro';
                 tabAiChatBtn.appendChild(icon);

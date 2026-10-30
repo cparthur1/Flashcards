@@ -985,7 +985,7 @@ function renderAuthHeader() {
 
     container.innerHTML = `
       <div class="relative">
-        ${photo ? `<img src="${photo}" class="w-10 h-10 rounded-full border border-blue-200 object-cover" alt="Avatar">`
+        ${photo ? `<img src="${photo}" referrerpolicy="no-referrer" class="w-10 h-10 rounded-full border border-blue-200 object-cover" alt="Avatar">`
                 : `<span class="material-symbols-rounded text-4xl text-blue-600">account_circle</span>`}
         ${isPro ? `<span class="absolute -bottom-1 -right-1 bg-amber-500 text-white rounded-full p-0.5 text-[10px]" title="Assinante Pro"><span class="material-symbols-rounded text-xs block">star</span></span>` : ''}
       </div>

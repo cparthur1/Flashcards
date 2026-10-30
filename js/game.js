@@ -3107,6 +3107,7 @@ function openHamburgerMenu() {
     closeDeckDropdown();
     closeHeaderStatsDropdown();
     updateHapticUI();
+    updateHamburgerUserUI(auth.currentUser);
     hamburgerBackdrop?.classList.remove('hidden');
     hamburgerMenu.classList.remove('hidden');
     hamburgerBtn?.setAttribute('aria-expanded', 'true');
@@ -6009,60 +6010,79 @@ async function initBackgroundCategorization() {
     } catch (e) {
         console.warn("[Algorithm] Falha ao verificar categorização em segundo plano:", e);
     }
-    function updateSyncButtonsVisibility(user) {
-        const isUserLoggedIn = Boolean(user || auth.currentUser);
-        if (isUserLoggedIn) {
-            if (transferSessionBtn) transferSessionBtn.classList.add('hidden');
-            if (receiveSessionBtn) receiveSessionBtn.classList.add('hidden');
-        } else {
-            if (transferSessionBtn) transferSessionBtn.classList.remove('hidden');
-            if (receiveSessionBtn) receiveSessionBtn.classList.remove('hidden');
-        }
-    }
-
-    function updateHamburgerUserUI(user) {
-        const menuAccountIcon = document.getElementById('menu-account-icon');
-        const menuAccountAvatar = document.getElementById('menu-account-avatar');
-        const menuAccountTitle = document.getElementById('menu-account-title');
-        const menuAccountSubtitle = document.getElementById('menu-account-subtitle');
-
-        if (user && user.photoURL) {
-            if (menuAccountIcon) menuAccountIcon.classList.add('hidden');
-            if (menuAccountAvatar) {
-                menuAccountAvatar.src = user.photoURL;
-                menuAccountAvatar.classList.remove('hidden');
-            }
-            if (menuAccountTitle) {
-                menuAccountTitle.textContent = user.displayName || user.email.split('@')[0];
-            }
-            if (menuAccountSubtitle) {
-                menuAccountSubtitle.textContent = isUserPro() ? 'Plano Pro Ativo' : 'Conectado com Google';
-            }
-        } else if (user) {
-            if (menuAccountAvatar) menuAccountAvatar.classList.add('hidden');
-            if (menuAccountIcon) menuAccountIcon.classList.remove('hidden');
-            if (menuAccountTitle) {
-                menuAccountTitle.textContent = user.displayName || user.email.split('@')[0];
-            }
-            if (menuAccountSubtitle) {
-                menuAccountSubtitle.textContent = isUserPro() ? 'Plano Pro Ativo' : 'Conectado com Google';
-            }
-        } else {
-            if (menuAccountAvatar) menuAccountAvatar.classList.add('hidden');
-            if (menuAccountIcon) menuAccountIcon.classList.remove('hidden');
-            if (menuAccountTitle) menuAccountTitle.textContent = 'Minha Conta';
-            if (menuAccountSubtitle) menuAccountSubtitle.textContent = 'Sincronização e Plano Pro';
-        }
-    }
-
-    onAuthChange((user) => {
-        updateAiUI();
-        updateSyncButtonsVisibility(user);
-        updateHamburgerUserUI(user);
-    });
-    updateSyncButtonsVisibility(auth.currentUser);
-    updateHamburgerUserUI(auth.currentUser);
 }
+
+function getInitialsAvatarSvg(nameOrEmail) {
+    const initial = (nameOrEmail || 'U').charAt(0).toUpperCase();
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill="#2563eb"/><text x="20" y="25" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="bold" text-anchor="middle">${initial}</text></svg>`;
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
+export function updateSyncButtonsVisibility(user) {
+    const isUserLoggedIn = Boolean(user || auth.currentUser);
+    if (isUserLoggedIn) {
+        if (transferSessionBtn) transferSessionBtn.classList.add('hidden');
+        if (receiveSessionBtn) receiveSessionBtn.classList.add('hidden');
+    } else {
+        if (transferSessionBtn) transferSessionBtn.classList.remove('hidden');
+        if (receiveSessionBtn) receiveSessionBtn.classList.remove('hidden');
+    }
+}
+
+export function updateHamburgerUserUI(user) {
+    const currentUser = user || auth.currentUser;
+    const menuAccountIcon = document.getElementById('menu-account-icon');
+    const menuAccountAvatar = document.getElementById('menu-account-avatar');
+    const menuAccountTitle = document.getElementById('menu-account-title');
+    const menuAccountSubtitle = document.getElementById('menu-account-subtitle');
+
+    if (currentUser) {
+        const photo = currentUser.photoURL || currentUser.providerData?.[0]?.photoURL || '';
+        const displayName = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'Usuário');
+
+        if (menuAccountIcon) {
+            menuAccountIcon.classList.add('hidden');
+        }
+
+        if (menuAccountAvatar) {
+            menuAccountAvatar.referrerPolicy = 'no-referrer';
+            menuAccountAvatar.onerror = function() {
+                this.onerror = null;
+                this.src = getInitialsAvatarSvg(displayName);
+            };
+            menuAccountAvatar.src = photo || getInitialsAvatarSvg(displayName);
+            menuAccountAvatar.classList.remove('hidden');
+        }
+
+        if (menuAccountTitle) {
+            menuAccountTitle.textContent = displayName;
+        }
+        if (menuAccountSubtitle) {
+            menuAccountSubtitle.textContent = isUserPro() ? 'Plano Pro Ativo' : 'Conectado com Google';
+        }
+    } else {
+        if (menuAccountAvatar) {
+            menuAccountAvatar.classList.add('hidden');
+        }
+        if (menuAccountIcon) {
+            menuAccountIcon.classList.remove('hidden');
+        }
+        if (menuAccountTitle) {
+            menuAccountTitle.textContent = 'Minha Conta';
+        }
+        if (menuAccountSubtitle) {
+            menuAccountSubtitle.textContent = 'Sincronização e Plano Pro';
+        }
+    }
+}
+
+onAuthChange((user) => {
+    updateAiUI();
+    updateSyncButtonsVisibility(user);
+    updateHamburgerUserUI(user);
+});
+updateSyncButtonsVisibility(auth.currentUser);
+updateHamburgerUserUI(auth.currentUser);
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initGame);
