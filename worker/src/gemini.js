@@ -16,7 +16,7 @@ const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
  * @param {string} params.apiKey - Internal server Gemini API key
  */
 export async function callGemini({
-  model = 'gemini-2.5-flash',
+  model = 'gemini-3.8-flash',
   contents,
   systemInstruction,
   generationConfig,
@@ -25,8 +25,16 @@ export async function callGemini({
   stream = false,
   apiKey
 }) {
-  const action = stream ? 'streamGenerateContent?alt=sse' : 'generateContent';
-  const url = `${GEMINI_API_BASE}/models/${model}:${action}&key=${apiKey}`;
+  const action = stream ? 'streamGenerateContent' : 'generateContent';
+  const queryParams = new URLSearchParams();
+  if (stream) {
+    queryParams.set('alt', 'sse');
+  }
+  if (apiKey) {
+    queryParams.set('key', apiKey);
+  }
+  const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+  const url = `${GEMINI_API_BASE}/models/${model}:${action}${queryString}`;
 
   const body = {
     contents
@@ -43,13 +51,82 @@ export async function callGemini({
   const response = await fetch(url, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'x-goog-api-key': apiKey || ''
     },
     body: JSON.stringify(body)
   });
 
   if (!response.ok) {
     const errorText = await response.text();
+    console.error(`[Gemini API Error] (${response.status}) Model: ${model}:`, errorText);
+
+    // Fallback 1: Se erro 400 com thinkingConfig, retenta sem thinkingConfig
+    if (response.status === 400 && body.generationConfig?.thinkingConfig) {
+      console.warn(`[Gemini Fallback] Tentando novamente sem thinkingConfig para ${model}...`);
+      const fallbackBody = { ...body, generationConfig: { ...body.generationConfig } };
+      delete fallbackBody.generationConfig.thinkingConfig;
+      const retryRes = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey || ''
+        },
+        body: JSON.stringify(fallbackBody)
+      });
+      if (retryRes.ok) {
+        if (stream) {
+          return new Response(retryRes.body, {
+            status: 200,
+            headers: {
+              'Content-Type': 'text/event-stream; charset=utf-8',
+              'Cache-Control': 'no-cache',
+              'Connection': 'keep-alive'
+            }
+          });
+        }
+        return new Response(JSON.stringify(await retryRes.json()), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
+    // Fallback 2: Se erro 404 ou 400 persistir, tenta fallback para gemini-3.8-flash
+    if ((response.status === 404 || response.status === 400) && model !== 'gemini-3.8-flash') {
+      console.warn(`[Gemini Fallback] Tentando fallback para gemini-3.8-flash...`);
+      const fallbackUrl = `${GEMINI_API_BASE}/models/gemini-3.8-flash:${action}${queryString}`;
+      const cleanBody = { ...body };
+      if (cleanBody.generationConfig?.thinkingConfig) {
+        cleanBody.generationConfig = { ...cleanBody.generationConfig };
+        delete cleanBody.generationConfig.thinkingConfig;
+      }
+      const retryRes = await fetch(fallbackUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey || ''
+        },
+        body: JSON.stringify(cleanBody)
+      });
+      if (retryRes.ok) {
+        if (stream) {
+          return new Response(retryRes.body, {
+            status: 200,
+            headers: {
+              'Content-Type': 'text/event-stream; charset=utf-8',
+              'Cache-Control': 'no-cache',
+              'Connection': 'keep-alive'
+            }
+          });
+        }
+        return new Response(JSON.stringify(await retryRes.json()), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
     throw new Error(`Erro na API do Gemini (${response.status}): ${errorText}`);
   }
 

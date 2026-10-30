@@ -84,6 +84,8 @@ export default {
         }, 200, corsHeaders);
       }
 
+
+
       // 2. Asaas Webhook (No client auth, called directly by Asaas servers)
       if (path === '/api/webhook/asaas' && request.method === 'POST') {
         return await handleAsaasWebhook(request, env);
