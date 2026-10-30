@@ -8,6 +8,7 @@
   ],
   "vars": {
     "FIREBASE_PROJECT_ID": "flashcards-ead57",
-    "ASAAS_ENV": "production"
+    "ASAAS_ENV": "production",
+    "STRIPE_PRICE_ID": "price_1Q_PLACEHOLDER"
   }
 }

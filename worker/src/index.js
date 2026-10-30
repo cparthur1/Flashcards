@@ -12,6 +12,7 @@ import { verifyFirebaseIdToken, setFirebaseUserProClaim, deleteFirebaseUser, get
 import { getOrCreateCustomer, createSubscription, createExtraGenerationPayment, cancelSubscription, getSubscriptionDetails, checkCustomerProStatusInAsaas } from './asaas.js';
 import { callGemini } from './gemini.js';
 import { getUserDocument, updateUserDocument, deleteUserDocument, getDocument, setDocument } from './firestore.js';
+import Stripe from 'stripe';
 
 const ALLOWED_ORIGINS = [
   'https://flashcards.camblu.org',
@@ -91,6 +92,11 @@ export default {
         return await handleAsaasWebhook(request, env);
       }
 
+      // 2.1 Stripe Webhook (No client auth, called directly by Stripe servers)
+      if ((path === '/api/webhook/stripe' || path === '/api/webhook') && request.method === 'POST') {
+        return await handleStripeWebhook(request, env);
+      }
+
       // Helper to authenticate user for protected routes
       async function authenticateUser() {
         const authHeader = request.headers.get('Authorization') || '';
@@ -110,6 +116,84 @@ export default {
             headers: { 'Content-Type': 'application/json', ...corsHeaders }
           });
         }
+      }
+
+      // 2.2 Create Stripe Embedded Checkout Form Session
+      if (path === '/api/create-checkout-session' && request.method === 'POST') {
+        let user = null;
+        try {
+          user = await authenticateUser();
+        } catch (e) {
+          // Authentication is optional for initial checkout session creation, but links user if logged in
+        }
+
+        // Mode is set to "subscription" for recurring billing (Flashcards Pro R$ 4,99 / mês)
+        const mode = "subscription";
+
+        // Checkout Session parameters configured per Field Intents
+        const sessionParams = {
+          ui_mode: "form",
+          mode,
+          billing_address_collection: "auto",
+          phone_number_collection: {
+            enabled: false
+          },
+          automatic_tax: {
+            enabled: false
+          },
+          submit_type: "auto",
+          saved_payment_method_options: {
+            payment_method_save: "enabled"
+          },
+          integration_identifier: "custom_embedded_web_0001",
+          line_items: [
+            {
+              price: env.STRIPE_PRICE_ID || "price_1Q_PLACEHOLDER",
+              quantity: 1
+            }
+          ]
+        };
+
+        if (mode === "subscription") {
+          sessionParams.payment_method_collection = "always";
+        }
+
+        if (user) {
+          sessionParams.customer_email = user.email;
+          sessionParams.client_reference_id = user.uid;
+          sessionParams.metadata = { uid: user.uid };
+          sessionParams.subscription_data = {
+            metadata: { uid: user.uid }
+          };
+        }
+
+        if (!env.STRIPE_SECRET_KEY) {
+          return jsonResponse({
+            error: 'configuration_error',
+            message: 'STRIPE_SECRET_KEY não configurada no servidor. Consulte STRIPE_INTEGRATION_TODO.md.'
+          }, 500, corsHeaders);
+        }
+
+        const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' });
+        const session = await stripe.checkout.sessions.create(sessionParams);
+
+        if (user) {
+          try {
+            const serviceAccount = getServiceAccount(env);
+            await updateUserDocument(serviceAccount, user.uid, {
+              subscription: {
+                id: session.id,
+                provider: 'stripe',
+                status: 'pending',
+                updatedAt: new Date().toISOString()
+              }
+            });
+          } catch (dbErr) {
+            console.warn('[Stripe] Falha ao persistir sessão pendente no Firestore:', dbErr.message);
+          }
+        }
+
+        return jsonResponse({ client_secret: session.client_secret }, 200, corsHeaders);
       }
 
       // 3. User Pro Status & Quota
@@ -351,6 +435,34 @@ export default {
           return jsonResponse({ isPro: true, status: 'active', plan: 'pro_lifetime' }, 200, corsHeaders);
         }
 
+        // Check Stripe subscription / session if applicable
+        if (env.STRIPE_SECRET_KEY && (userDoc?.subscription?.provider === 'stripe' || userDoc?.subscription?.id?.startsWith('cs_'))) {
+          try {
+            const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' });
+            if (userDoc.subscription.id && userDoc.subscription.id.startsWith('cs_')) {
+              const session = await stripe.checkout.sessions.retrieve(userDoc.subscription.id);
+              if (session && (session.status === 'complete' || session.payment_status === 'paid')) {
+                await Promise.all([
+                  setFirebaseUserProClaim(serviceAccount, user.uid, true).catch(() => {}),
+                  updateUserDocument(serviceAccount, user.uid, {
+                    subscription: {
+                      status: 'active',
+                      plan: 'pro_monthly',
+                      provider: 'stripe',
+                      subscriptionId: session.subscription || '',
+                      customerId: session.customer || '',
+                      updatedAt: new Date().toISOString()
+                    }
+                  }).catch(() => {})
+                ]);
+                return jsonResponse({ isPro: true, status: 'active', plan: 'pro_monthly' }, 200, corsHeaders);
+              }
+            }
+          } catch (stripeErr) {
+            console.warn('[Verify] Erro ao checar Stripe:', stripeErr.message);
+          }
+        }
+
         const asaasCheck = await checkCustomerProStatusInAsaas({
           email: user.email,
           customerId: userDoc?.subscription?.customerId || null,
@@ -537,7 +649,7 @@ export default {
         if (!isPro) {
           return jsonResponse({
             error: 'subscription_required',
-            message: 'A geração de baralhos por IA é exclusiva para assinantes Pro (R$ 5,00/mês).'
+            message: 'A geração de baralhos por IA é exclusiva para assinantes Pro (R$ 4,99/mês).'
           }, 403, corsHeaders);
         }
 
@@ -818,6 +930,97 @@ async function handleAsaasWebhook(request, env) {
         'subscription.status': 'canceled'
       });
       console.log(`[Asaas Webhook] Pro desativado para UID: ${uid}`);
+    }
+  }
+
+  return new Response(JSON.stringify({ received: true }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
+
+/**
+ * Handle Stripe Webhook events
+ */
+async function handleStripeWebhook(request, env) {
+  const sig = request.headers.get('stripe-signature');
+  const bodyText = await request.text();
+  let event;
+
+  const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' });
+
+  if (env.STRIPE_WEBHOOK_SECRET && sig) {
+    try {
+      event = await stripe.webhooks.constructEventAsync(bodyText, sig, env.STRIPE_WEBHOOK_SECRET);
+    } catch (err) {
+      console.warn('[Stripe Webhook] Erro ao validar assinatura:', err.message);
+      return new Response(`Webhook Error: ${err.message}`, { status: 400 });
+    }
+  } else {
+    try {
+      event = JSON.parse(bodyText);
+    } catch (err) {
+      return new Response('Invalid JSON payload', { status: 400 });
+    }
+  }
+
+  const serviceAccount = getServiceAccount(env);
+  const dataObject = event.data?.object || {};
+
+  console.log(`[Stripe Webhook] Evento: ${event.type}, ID: ${dataObject.id}`);
+
+  // 1. Checkout Session Completed -> Activate Pro
+  if (event.type === 'checkout.session.completed') {
+    let uid = dataObject.client_reference_id || dataObject.metadata?.uid || null;
+
+    if (!uid && (dataObject.customer_details?.email || dataObject.customer_email)) {
+      const email = dataObject.customer_details?.email || dataObject.customer_email;
+      const userRecord = await getFirebaseUserByEmail(serviceAccount, email).catch(() => null);
+      if (userRecord?.uid) {
+        uid = userRecord.uid;
+      }
+    }
+
+    if (uid) {
+      await setFirebaseUserProClaim(serviceAccount, uid, true);
+      await updateUserDocument(serviceAccount, uid, {
+        subscription: {
+          status: 'active',
+          plan: 'pro_monthly',
+          provider: 'stripe',
+          subscriptionId: dataObject.subscription || '',
+          customerId: dataObject.customer || '',
+          updatedAt: new Date().toISOString()
+        }
+      });
+      console.log(`[Stripe Webhook] Pro ativado com sucesso para UID: ${uid}`);
+    }
+  }
+
+  // 2. Subscription Deleted / Canceled -> Deactivate Pro
+  if (event.type === 'customer.subscription.deleted') {
+    let uid = dataObject.metadata?.uid || null;
+    if (!uid && dataObject.customer && env.STRIPE_SECRET_KEY) {
+      try {
+        const customer = await stripe.customers.retrieve(dataObject.customer);
+        if (customer && customer.email) {
+          const userRecord = await getFirebaseUserByEmail(serviceAccount, customer.email).catch(() => null);
+          if (userRecord?.uid) {
+            uid = userRecord.uid;
+          }
+        }
+      } catch (e) {
+        console.warn('[Stripe Webhook] Falha ao recuperar cliente cancelado:', e.message);
+      }
+    }
+
+    if (uid) {
+      await setFirebaseUserProClaim(serviceAccount, uid, false);
+      await updateUserDocument(serviceAccount, uid, {
+        'subscription.status': 'canceled',
+        'subscription.canceledAt': new Date().toISOString()
+      });
+      console.log(`[Stripe Webhook] Pro desativado para UID: ${uid}`);
     }
   }
 

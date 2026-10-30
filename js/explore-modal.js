@@ -5,7 +5,7 @@
  * Used across index.html and pages/game.html
  */
 
-import { auth, signInWithGoogle, signOutUser, onAuthChange } from './firebase-client.js';
+import { auth, signInWithGoogle, signOutUser, onAuthChange, getCurrentUserToken } from './firebase-client.js';
 import {
   getLocalSlots,
   getNotebookSlotData,
@@ -17,7 +17,7 @@ import {
   loadSlotsFromCloud
 } from './slot-manager.js';
 import { shareDeckToCloud } from './share-manager.js';
-import { getUserStatus, createProSubscription, buyExtraGeneration, deleteAccountAndCancelSubscription, verifyPaymentStatus } from './backend-api.js';
+import { getUserStatus, createProSubscription, createCheckoutSession, buyExtraGeneration, deleteAccountAndCancelSubscription, verifyPaymentStatus, BACKEND_URL } from './backend-api.js';
 import { ROUTES } from './utils.js';
 
 let modalInitialized = false;
@@ -220,9 +220,9 @@ function injectModalHtml() {
       </div>
     </div>
 
-    <!-- PRO SUBSCRIPTION MODAL (R$ 5,00/MÊS) -->
+    <!-- PRO SUBSCRIPTION MODAL (R$ 4,99/MÊS) -->
     <div id="pro-subscription-modal" class="hidden fixed inset-0 modal-overlay z-[110] items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm">
-      <div class="m3-dialog-card w-full max-w-md bg-[var(--md-sys-color-surface-container-lowest)] rounded-[28px] shadow-2xl border border-[var(--md-sys-color-outline-variant)] p-6 text-center animate-fadeIn">
+      <div class="m3-dialog-card w-full max-w-md bg-[var(--md-sys-color-surface-container-lowest)] rounded-[28px] shadow-2xl border border-[var(--md-sys-color-outline-variant)] p-6 text-center animate-fadeIn max-h-[92vh] overflow-y-auto custom-scrollbar">
         <div class="w-12 h-12 rounded-2xl bg-blue-100 text-[var(--md-sys-color-primary)] flex items-center justify-center mx-auto mb-3">
           <span class="material-symbols-rounded text-2xl">workspace_premium</span>
         </div>
@@ -257,85 +257,13 @@ function injectModalHtml() {
         </div>
 
         <div class="mb-5">
-          <span class="text-3xl font-extrabold text-[var(--md-sys-color-primary)]">R$ 5,00</span>
+          <span class="text-3xl font-extrabold text-[var(--md-sys-color-primary)]">R$ 4,99</span>
           <span class="text-xs text-[var(--md-sys-color-on-surface-variant)]">/ mês</span>
         </div>
 
         <!-- Checkout View -->
         <div id="pro-checkout-container" class="space-y-3">
-          <div class="space-y-1 text-left">
-            <label for="pro-cpf-input" class="block text-[11px] font-bold text-[var(--md-sys-color-on-surface)]">
-              CPF do Titular (obrigatório para emissão)
-            </label>
-            <input type="text" id="pro-cpf-input" placeholder="000.000.000-00" maxlength="14" class="w-full text-xs p-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 bg-white text-gray-900" />
-          </div>
-
-          <div class="space-y-1 text-left">
-            <label class="block text-[11px] font-bold text-[var(--md-sys-color-on-surface)]">
-              Forma de pagamento
-            </label>
-            <div class="grid grid-cols-2 gap-2" id="pro-payment-method-selector">
-              <label id="opt-method-pix" class="flex items-center gap-2 p-2.5 border-2 rounded-xl cursor-pointer transition border-blue-600 bg-blue-50/50">
-                <input type="radio" name="pro-payment-method" value="PIX" checked class="accent-blue-600" />
-                <div class="min-w-0">
-                  <div class="text-xs font-bold text-gray-900 flex items-center gap-1">
-                    <span class="material-symbols-rounded text-sm text-blue-600">qr_code_2</span>
-                    <span>Pix</span>
-                  </div>
-                  <span class="text-[10px] text-gray-500 block leading-tight">Instantâneo</span>
-                </div>
-              </label>
-
-              <label id="opt-method-card" class="flex items-center gap-2 p-2.5 border-2 rounded-xl cursor-pointer transition border-gray-200 hover:border-gray-300 bg-white">
-                <input type="radio" name="pro-payment-method" value="CREDIT_CARD" class="accent-blue-600" />
-                <div class="min-w-0">
-                  <div class="text-xs font-bold text-gray-900 flex items-center gap-1">
-                    <span class="material-symbols-rounded text-sm text-gray-700">credit_card</span>
-                    <span>Cartão</span>
-                  </div>
-                  <span class="text-[10px] text-gray-500 block leading-tight">Crédito ou Débito</span>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          <button id="pro-generate-pix-btn" class="m3-btn-expressive m3-btn-filled w-full py-3 px-4 font-bold text-sm flex items-center justify-center shadow cursor-pointer">
-            <span>Assinar agora</span>
-          </button>
-        </div>
-
-        <!-- Awaiting Payment & Checkout Result View (Hidden by default) -->
-        <div id="pro-pix-result" class="hidden space-y-3">
-          <div id="pro-qr-container" class="space-y-2">
-            <div class="p-3 bg-white border border-gray-200 rounded-2xl inline-block mx-auto shadow-sm">
-              <img id="pro-pix-qr-img" class="w-48 h-48 mx-auto" alt="QR Code Pix" />
-            </div>
-            <div class="text-xs text-gray-500">Escaneie o QR Code ou copie a chave Pix abaixo:</div>
-            <button id="pro-copy-pix-btn" class="m3-btn-expressive m3-btn-tonal w-full py-2.5 px-3 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
-              <span class="material-symbols-rounded text-base">content_copy</span>
-              <span>Copiar Chave Pix</span>
-            </button>
-          </div>
-
-          <a id="pro-invoice-btn" href="#" target="_blank" rel="noopener noreferrer" class="m3-btn-expressive m3-btn-filled w-full py-2.5 px-3 text-xs font-bold flex items-center justify-center gap-1.5 shadow cursor-pointer">
-            <span class="material-symbols-rounded text-base">open_in_new</span>
-            <span>Abrir página de pagamento no Asaas</span>
-          </a>
-
-          <div id="pro-polling-status" class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-left space-y-1">
-            <div class="flex items-center gap-2 text-xs font-bold text-blue-900">
-              <span class="material-symbols-rounded text-base animate-spin text-blue-600">sync</span>
-              <span>Aguardando confirmação do pagamento...</span>
-            </div>
-            <p class="text-[11px] text-blue-700 leading-tight">
-              Assim que o pagamento for concluído na página do Asaas, seu plano Pro será ativado automaticamente.
-            </p>
-          </div>
-
-          <button id="pro-check-payment-btn" class="m3-btn-expressive m3-btn-tonal w-full py-2 px-3 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
-            <span class="material-symbols-rounded text-base">check_circle</span>
-            <span>Já realizei o pagamento</span>
-          </button>
+          <div id="checkout-form"></div>
         </div>
 
         <button id="close-pro-modal-btn" class="mt-4 text-xs text-gray-400 hover:text-gray-600 underline block mx-auto">
@@ -621,6 +549,111 @@ function bindProCheckoutBtn() {
 }
 
 /**
+ * Mount Stripe Embedded Checkout Form
+ */
+let activeCheckoutForm = null;
+
+async function mountStripeEmbeddedForm() {
+  const container = document.getElementById('checkout-form');
+  const loadingEl = document.getElementById('checkout-form-loading');
+  if (!container) return;
+
+  const publishableKey = window.STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder';
+
+  if (!window.Stripe) {
+    if (loadingEl) {
+      loadingEl.innerHTML = `
+        <span class="material-symbols-rounded text-2xl text-red-500">error</span>
+        <span class="text-xs text-red-600 font-medium">Stripe.js não pôde ser carregado. Verifique sua conexão com a internet.</span>
+      `;
+    }
+    return;
+  }
+
+  try {
+    const stripe = window.Stripe(publishableKey);
+
+    const appearance = {
+      "theme": "flat",
+      "labels": "auto",
+      "inputs": "spaced",
+      "variables": {
+        "borderRadius": "4px",
+        "colorBackground": "#ffffff",
+        "colorDanger": "#df1b41",
+        "colorPrimary": "#3b82f7",
+        "colorSuccess": "#00c853",
+        "colorText": "#30313d",
+        "fontFamily": "Open Sans",
+        "fontSizeBase": "16px",
+        "spacingUnit": "4px"
+      }
+    };
+
+    const token = await getCurrentUserToken().catch(() => null);
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const apiEndpoint = (typeof BACKEND_URL !== 'undefined' && BACKEND_URL)
+      ? `${BACKEND_URL}/api/create-checkout-session`
+      : '/api/create-checkout-session';
+
+    const clientSecret = fetch(apiEndpoint, { method: 'POST', headers })
+      .then((response) => response.json())
+      .then((json) => {
+        if (json.error) {
+          throw new Error(json.message || json.error);
+        }
+        return json.client_secret;
+      });
+
+    const checkout = await stripe.initCheckoutFormSdk({ clientSecret, appearance });
+
+    if (loadingEl) loadingEl.classList.add('hidden');
+
+    const form = checkout.createForm({ layout: 'expanded' });
+    activeCheckoutForm = form;
+    form.mount('#checkout-form');
+
+    const loadActionsResult = await checkout.loadActions();
+    if (loadActionsResult.type === 'success') {
+      form.on('confirm', async (event) => {
+        try {
+          const actionResult = await loadActionsResult.actions.confirm({ formConfirmEvent: event });
+          console.log('[Stripe] Confirmação de pagamento:', actionResult);
+          setTimeout(async () => {
+            await refreshUserProStatus();
+            renderProModalContent();
+            renderModalContent();
+          }, 2000);
+        } catch (error) {
+          console.error('Payment confirmation error:', error);
+        }
+      });
+    }
+  } catch (err) {
+    console.error('[Stripe Form Error]:', err);
+    if (loadingEl) {
+      loadingEl.classList.remove('hidden');
+      loadingEl.innerHTML = `
+        <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-left space-y-1">
+          <div class="flex items-center gap-1.5 text-xs font-bold text-blue-900">
+            <span class="material-symbols-rounded text-base text-blue-600">info</span>
+            <span>Configuração do Stripe</span>
+          </div>
+          <p class="text-[11px] text-blue-800 leading-tight">
+            ${err.message || 'Defina suas chaves públicas e secretas do Stripe para ativar o formulário de pagamento.'}
+          </p>
+          <p class="text-[10px] text-blue-700">
+            Consulte o arquivo <code>STRIPE_INTEGRATION_TODO.md</code> para obter instruções.
+          </p>
+        </div>
+      `;
+    }
+  }
+}
+
+/**
  * Render Pro Modal View according to user status
  */
 export function renderProModalContent() {
@@ -674,49 +707,17 @@ export function renderProModalContent() {
     return;
   }
 
-  // Logged in but not Pro
+  // Logged in but not Pro -> Render Embedded Stripe Checkout Form
   container.innerHTML = `
-    <div class="space-y-1 text-left">
-      <label for="pro-cpf-input" class="block text-[11px] font-bold text-[var(--md-sys-color-on-surface)]">
-        CPF do Titular (obrigatório para emissão)
-      </label>
-      <input type="text" id="pro-cpf-input" placeholder="000.000.000-00" maxlength="14" class="w-full text-xs p-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 bg-white text-gray-900" />
-    </div>
-
-    <div class="space-y-1 text-left">
-      <label class="block text-[11px] font-bold text-[var(--md-sys-color-on-surface)]">
-        Forma de pagamento
-      </label>
-      <div class="grid grid-cols-2 gap-2" id="pro-payment-method-selector">
-        <label id="opt-method-pix" class="flex items-center gap-2 p-2.5 border-2 rounded-xl cursor-pointer transition border-blue-600 bg-blue-50/50">
-          <input type="radio" name="pro-payment-method" value="PIX" checked class="accent-blue-600" />
-          <div class="min-w-0">
-            <div class="text-xs font-bold text-gray-900 flex items-center gap-1">
-              <span class="material-symbols-rounded text-sm text-blue-600">qr_code_2</span>
-              <span>Pix</span>
-            </div>
-            <span class="text-[10px] text-gray-500 block leading-tight">Instantâneo</span>
-          </div>
-        </label>
-
-        <label id="opt-method-card" class="flex items-center gap-2 p-2.5 border-2 rounded-xl cursor-pointer transition border-gray-200 hover:border-gray-300 bg-white">
-          <input type="radio" name="pro-payment-method" value="CREDIT_CARD" class="accent-blue-600" />
-          <div class="min-w-0">
-            <div class="text-xs font-bold text-gray-900 flex items-center gap-1">
-              <span class="material-symbols-rounded text-sm text-gray-700">credit_card</span>
-              <span>Cartão</span>
-            </div>
-            <span class="text-[10px] text-gray-500 block leading-tight">Crédito ou Débito</span>
-          </div>
-        </label>
+    <div id="stripe-checkout-wrapper" class="space-y-3">
+      <div id="checkout-form-loading" class="flex flex-col items-center justify-center p-6 text-gray-500 text-xs gap-2">
+        <span class="material-symbols-rounded text-2xl animate-spin text-blue-600">sync</span>
+        <span>Carregando formulário seguro do Stripe...</span>
       </div>
+      <div id="checkout-form"></div>
     </div>
-
-    <button id="pro-generate-pix-btn" class="m3-btn-expressive m3-btn-filled w-full py-3 px-4 font-bold text-sm flex items-center justify-center shadow cursor-pointer">
-      <span>Assinar agora</span>
-    </button>
   `;
-  bindProCheckoutBtn();
+  mountStripeEmbeddedForm();
 }
 
 /**

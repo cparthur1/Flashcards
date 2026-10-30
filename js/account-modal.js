@@ -181,7 +181,7 @@ async function renderAccountModalContent() {
             <span>Flashcards Pro (Mensal)</span>
           </div>
           <span class="text-xs font-black text-blue-700 bg-blue-100/80 px-2.5 py-0.5 rounded-full border border-blue-300">
-            R$ 5,00 / mês
+            R$ 4,99 / mês
           </span>
         </div>
 
@@ -232,7 +232,7 @@ async function renderAccountModalContent() {
         <div class="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl space-y-2">
           <p class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
             <span class="material-symbols-rounded text-base text-blue-600">workspace_premium</span>
-            Vantagens do Plano Pro (R$ 5,00/mês):
+            Vantagens do Plano Pro (R$ 4,99/mês):
           </p>
           <ul class="text-[11px] text-blue-950/90 space-y-1 pl-1">
             <li class="flex items-center gap-1.5"><span class="material-symbols-rounded text-sm text-green-600">check_circle</span> Gerar flashcards com IA usando materiais</li>

@@ -40,7 +40,7 @@ export async function getUserStatus() {
 }
 
 /**
- * Request Pro Subscription checkout / Pix (R$ 5,00/mês)
+ * Request Pro Subscription checkout / Pix (R$ 4,99/mês)
  */
 export async function createProSubscription(params = {}) {
   const res = await fetchWithAuth('/api/payment/subscribe', {
@@ -50,6 +50,20 @@ export async function createProSubscription(params = {}) {
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.message || 'Erro ao gerar assinatura Pro');
+  }
+  return await res.json();
+}
+
+/**
+ * Create Stripe Checkout Session for Embedded Form (R$ 4,99/mês)
+ */
+export async function createCheckoutSession() {
+  const res = await fetchWithAuth('/api/create-checkout-session', {
+    method: 'POST'
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Erro ao criar sessão de checkout no Stripe');
   }
   return await res.json();
 }

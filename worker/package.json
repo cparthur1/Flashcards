@@ -1,0 +1,8 @@
+{
+  "name": "worker",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "stripe": "^23.1.0"
+  }
+}

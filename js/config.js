@@ -23,3 +23,5 @@ window.tailwind.config = {
     }
 };
 
+// Stripe Client Configuration
+window.STRIPE_PUBLISHABLE_KEY = window.STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder';
