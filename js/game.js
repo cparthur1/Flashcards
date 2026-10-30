@@ -4260,9 +4260,37 @@ goToEditorBtn.addEventListener('click', () => {
     }
     const cleanCards = (allQuestions || []).map(sanitizeCardForStorage);
     localStorage.setItem('editing_deck', JSON.stringify(cleanCards));
-    localStorage.setItem('editing_deck_title', deckTitle.textContent);
+    const title = (deckTitle && deckTitle.textContent) ? deckTitle.textContent : (activeMode === 'exam' ? 'Semana de Provas' : 'Baralho');
+    localStorage.setItem('editing_deck_title', title);
+    localStorage.setItem('editing_deck_mode', activeMode || 'normal');
+
     let savedState = null;
-    try { savedState = JSON.parse(localStorage.getItem('flashcardsSave') || '{}'); } catch (e) {}
+    const storageKey = activeMode === 'exam' ? 'flashcardsExam' : 'flashcardsSave';
+    try { savedState = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch (e) {}
+
+    if (activeMode === 'exam') {
+        localStorage.setItem('editing_deck_exam_data', localStorage.getItem('flashcardsExam') || '{}');
+    } else {
+        localStorage.removeItem('editing_deck_exam_data');
+    }
+
+    try {
+        const slots = getLocalSlots();
+        let targetSlotIdx = -1;
+        if (activeMode === 'exam') {
+            targetSlotIdx = slots.findIndex(s => s.isCurrent && (s.isExam || s.mode === 'exam'));
+            if (targetSlotIdx === -1) targetSlotIdx = slots.findIndex(s => s.isExam || s.mode === 'exam');
+        } else {
+            targetSlotIdx = slots.findIndex(s => s.isCurrent && !s.isExam);
+            if (targetSlotIdx === -1) targetSlotIdx = slots.findIndex(s => !s.isExam && s.title === title);
+        }
+        if (targetSlotIdx !== -1) {
+            localStorage.setItem('editing_deck_slot_index', String(targetSlotIdx));
+        } else {
+            localStorage.removeItem('editing_deck_slot_index');
+        }
+    } catch (e) {}
+
     if (savedState?.isFreeAiTrial || cleanCards.some(c => c && c.isFreeAiTrial)) {
         localStorage.setItem('editing_deck_is_free_trial', 'true');
     } else {

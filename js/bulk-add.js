@@ -8,6 +8,7 @@
 import { renderMathAndMarkdown, escapeHtml, sanitizeImageUrl, generateSecureId, stripHtml, ROUTES } from './utils.js';
 import { triggerHaptic } from './engine/effects.js';
 import { isPlayableCard } from './engine/scheduler.js';
+import { debouncedSyncSlotsToCloud } from './slot-manager.js';
 
 // --- DOM ELEMENTS ---
 const bulkFileInput = document.getElementById('bulk-file-input');
@@ -112,6 +113,7 @@ function saveNotebookDataToStorage(data) {
     try {
         localStorage.setItem('flashcardsNotebook', JSON.stringify(data));
         updateNotebookHeaderBadge();
+        debouncedSyncSlotsToCloud(1200);
     } catch (e) {
         console.error("[BulkAdd] Erro ao salvar flashcardsNotebook:", e);
         showNotification("Erro ao salvar no armazenamento local", "warning");
@@ -1292,8 +1294,21 @@ function renderNotebookOverviewModalContent() {
         containerFragment.appendChild(deckSection);
     });
 
-    notebookModalCardsContainer.innerHTML = '';
-    notebookModalCardsContainer.appendChild(containerFragment);
+    const prevScroll = notebookModalCardsContainer ? notebookModalCardsContainer.scrollTop : 0;
+    if (typeof notebookModalCardsContainer.replaceChildren === 'function') {
+        notebookModalCardsContainer.replaceChildren(containerFragment);
+    } else {
+        notebookModalCardsContainer.innerHTML = '';
+        notebookModalCardsContainer.appendChild(containerFragment);
+    }
+    if (notebookModalCardsContainer) {
+        notebookModalCardsContainer.scrollTop = prevScroll;
+    }
+    requestAnimationFrame(() => {
+        if (notebookModalCardsContainer) {
+            notebookModalCardsContainer.scrollTop = prevScroll;
+        }
+    });
 
     if (notebookModalFooterInfo) {
         notebookModalFooterInfo.textContent = `Mostrando ${visibleCardsCount} de ${totalCardsCount} ${totalCardsCount === 1 ? 'cartão' : 'cartões'}`;

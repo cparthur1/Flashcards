@@ -78,6 +78,12 @@ export function initExploreModal() {
   injectModalHtml();
   attachModalEventListeners();
 
+  // Listen to cross-device sync updates
+  window.addEventListener('flashcards:sync-updated', () => {
+    renderDeckSlots();
+    renderNotebookSlot();
+  });
+
   // Listen to Auth State
   let handlingSessionId = false;
   onAuthChange(async (user) => {
@@ -142,6 +148,13 @@ export function openExploreModal() {
   if (modal) {
     modal.classList.remove('hidden');
     modal.classList.add('flex');
+  }
+  if (isUserPro()) {
+    loadSlotsFromCloud().then(hasChanges => {
+      if (hasChanges) {
+        renderModalContent();
+      }
+    }).catch(() => {});
   }
 }
 
@@ -1123,12 +1136,17 @@ function renderDeckSlots() {
           <p class="text-xs ${isExam ? 'text-purple-700 font-medium' : 'text-gray-500'} mt-1">${slot.cardCount} cards${isExam && deckCount > 0 ? ` • ${deckCount} baralhos` : ''}</p>
         </div>
 
-        <!-- Action Bar: Red Delete & Share -->
+        <!-- Action Bar: Edit, Delete & Share -->
         <div class="pt-2 mt-1 border-t border-gray-100 flex items-center justify-between">
-          <button class="p-1.5 rounded-lg text-red-500 hover:bg-red-50 active:bg-red-100 transition" title="Excluir do Slot" onclick="window.flashcardsDeleteSlot(${idx})">
-            <span class="material-symbols-rounded text-lg">delete</span>
-          </button>
-          <button class="p-1.5 rounded-lg ${isExam ? 'text-purple-600 hover:bg-purple-50 active:bg-purple-100' : 'text-blue-600 hover:bg-blue-50 active:bg-blue-100'} transition" title="Compartilhar & Fixar no Slot" onclick="window.flashcardsShareSlot(${idx})">
+          <div class="flex items-center gap-1">
+            <button class="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition cursor-pointer" title="Editar Baralho" onclick="window.flashcardsEditSlot(${idx})">
+              <span class="material-symbols-rounded text-lg">edit</span>
+            </button>
+            <button class="p-1.5 rounded-lg text-red-500 hover:bg-red-50 active:bg-red-100 transition cursor-pointer" title="Excluir do Slot" onclick="window.flashcardsDeleteSlot(${idx})">
+              <span class="material-symbols-rounded text-lg">delete</span>
+            </button>
+          </div>
+          <button class="p-1.5 rounded-lg ${isExam ? 'text-purple-600 hover:bg-purple-50 active:bg-purple-100' : 'text-blue-600 hover:bg-blue-50 active:bg-blue-100'} transition cursor-pointer" title="Compartilhar & Fixar no Slot" onclick="window.flashcardsShareSlot(${idx})">
             <span class="material-symbols-rounded text-lg">share</span>
           </button>
         </div>
@@ -1215,6 +1233,52 @@ window.flashcardsOpenSlot = function(slotIdx) {
     closeExploreModal();
     window.location.href = ROUTES.GAME;
   }
+};
+
+window.flashcardsEditSlot = function(slotIdx) {
+  const slots = getLocalSlots();
+  const slot = slots[slotIdx];
+  if (!slot?.deckData) return;
+
+  const isExam = Boolean(slot.isExam || slot.mode === 'exam' || (slot.deckData && slot.deckData.decks));
+  const rawCards = slot.deckData.allQuestions || slot.deckData.questionsPool || [];
+  const cleanCards = rawCards.map(c => {
+    if (!c || typeof c !== 'object') return c;
+    const copy = { ...c };
+    delete copy.isBeingCorrected;
+    delete copy._lastUserAnswer;
+    delete copy.apiKey;
+    delete copy.api_key;
+    delete copy.key;
+    delete copy.token;
+    delete copy.secret;
+    delete copy.credential;
+    return copy;
+  });
+
+  localStorage.setItem('editing_deck', JSON.stringify(cleanCards));
+  localStorage.setItem('editing_deck_title', slot.title || (isExam ? 'Semana de Provas' : 'Baralho'));
+  localStorage.setItem('editing_deck_mode', isExam ? 'exam' : 'normal');
+  localStorage.setItem('editing_deck_slot_index', String(slotIdx));
+
+  if (isExam) {
+    localStorage.setItem('editing_deck_exam_data', JSON.stringify(slot.deckData));
+  } else {
+    localStorage.removeItem('editing_deck_exam_data');
+  }
+
+  if (slot.deckData?.isFreeAiTrial || cleanCards.some(c => c && c.isFreeAiTrial)) {
+    localStorage.setItem('editing_deck_is_free_trial', 'true');
+  } else {
+    localStorage.removeItem('editing_deck_is_free_trial');
+  }
+
+  // Set as current active slot
+  slots.forEach((s, idx) => { s.isCurrent = (idx === slotIdx); });
+  saveLocalSlots(slots);
+
+  closeExploreModal();
+  window.location.href = ROUTES.GENERATE;
 };
 
 window.flashcardsDeleteSlot = function(slotIdx) {

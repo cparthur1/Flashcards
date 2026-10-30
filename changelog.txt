@@ -1,3 +1,33 @@
+CHANGELOG: REAL-TIME DECK EDITING SYNC FOR REGULAR DECKS & EXAM WEEK MIXES (v14.6)
+Date: 2026-10-30
+
+OVERVIEW:
+1. Cross-Device & Explore Files Real-Time Synchronization for Deck Edits:
+   - Synchronized deck edits (card updates, deletions, creations, title changes, AI modifications) in real-time across devices and in the Explore Files modal (`pages/generate.html`, `js/generate.js`, `js/explore-modal.js`).
+   - Full Exam Week ("Semana de Provas") Mix Support: Edits to Exam Week mixes preserve `isExam: true`, `mode: 'exam'`, associated deck IDs, and mix structure, updating `flashcardsExam`, the allocated deck slot, and cloud storage seamlessly.
+   - Slot State & Cloud Integration: Automatically updates `flashcards_deck_slots` with new card counts, titles, and `deckData`, triggering debounced cloud sync (`debouncedSyncSlotsToCloud`) to Firestore and Cloudflare Worker backend for Pro users.
+   - Explore Files Action Bar: Added an explicit "Editar Baralho" button (edit icon) to each slot card in Explore Files (`js/explore-modal.js`), enabling direct transitions into the editor while preserving slot index and mode.
+   - Event-driven Reactive UI: Added listener for `flashcards:sync-updated` in `explore-modal.js` and background cloud refreshes upon opening Explore Files so edits made on one device are instantly visible on other devices.
+   - Continuous SRS Notebook: Added debounced cloud sync on card additions, removals, and edits in `js/bulk-add.js`.
+2. Bumped Service Worker cache version to `flashcards-v14.6`.
+
+--------------------------------------------------------------------------------
+
+CHANGELOG: DECK EDITOR SCROLL POSITION PRESERVATION (v14.5)
+Date: 2026-10-30
+
+OVERVIEW:
+1. Fixed unwanted automatic scrolling to top when updating or deleting cards on the deck editing page (`pages/generate.html` & `js/generate.js`):
+   - DOM Height Collapse Prevention: Switched `cardsList` re-rendering to atomic `replaceChildren(fragment)` instead of `innerHTML = ''`, preserving the scroll container geometry and preventing browser height clamping.
+   - Dual-Phase Scroll State Restoration: Synchronously and asynchronously (via `requestAnimationFrame`) restores both container scroll (`cardsList.scrollTop`) and document viewport (`window.scrollY`) across card updates, deletions, and inline edits.
+   - Focus Shift Mitigation: Explicitly blurred active elements (`document.activeElement.blur()`) prior to modal dismissal or card deletion, preventing browser default focus-jump to document body.
+   - Suppressed Redundant Re-render Animation: Disabled `card-enter-anim` during full re-renders to eliminate vertical geometric shifting during layout recalculation.
+   - Divisor & Comment Support: Preserved scroll positions when editing or deleting comment dividers.
+   - Notebook Modal Defense (`js/bulk-add.js`): Preserved scroll position in `notebookModalCardsContainer` via `replaceChildren(containerFragment)`.
+2. Bumped Service Worker cache version to `flashcards-v14.5`.
+
+--------------------------------------------------------------------------------
+
 CHANGELOG: CODEQL SECURITY AUDIT & HARDENING (v14.4)
 Date: 2026-10-30
 

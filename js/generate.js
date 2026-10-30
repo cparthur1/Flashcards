@@ -4,7 +4,7 @@ import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemember
 import { initExploreModal, openProModal, isUserPro } from './explore-modal.js';
 import { onAuthChange, getCurrentUserToken, signInWithGoogle } from './firebase-client.js';
 import { BACKEND_URL } from './backend-api.js';
-import { openDeckInSlots, syncSlotsToCloud } from './slot-manager.js';
+import { openDeckInSlots, syncSlotsToCloud, debouncedSyncSlotsToCloud, getLocalSlots, saveLocalSlots } from './slot-manager.js';
 
 function compressPDFWithWorker(file) {
     return new Promise((resolve, reject) => {
@@ -168,6 +168,130 @@ const inlineEditAnsImageUrl = document.getElementById('inline-edit-ans-image-url
 let deckCards = [];
 let geminiChatSession = null;
 let currentGenModel = null;
+let inlineEditSavedScrollTop = 0;
+let inlineEditSavedWindowY = 0;
+let currentEditingMode = 'normal'; // 'normal' | 'exam'
+let currentEditingSlotIndex = null; // number | null
+let currentEditingExamData = null; // object | null
+
+function syncCurrentDeckToSlotAndCloud() {
+    if (!Array.isArray(deckCards)) return;
+
+    const title = (deckTitleDisplay?.value || '').trim() || (currentEditingMode === 'exam' ? 'Semana de Provas' : 'Meu Baralho');
+    const playableCards = deckCards.filter(c => c.type !== 'divisor' && c.type !== 'divider' && c.type !== 'note');
+
+    const sanitizeCard = (card) => {
+        if (!card || typeof card !== 'object') return card;
+        const copy = { ...card };
+        delete copy.isBeingCorrected;
+        delete copy._lastUserAnswer;
+        delete copy.apiKey;
+        delete copy.api_key;
+        delete copy.key;
+        delete copy.token;
+        delete copy.secret;
+        delete copy.credential;
+        return copy;
+    };
+
+    const isFreeTrial = Boolean(
+        window.currentDeckIsFreeAiTrial || 
+        deckCards.some(c => c && c.isFreeAiTrial) || 
+        localStorage.getItem('editing_deck_is_free_trial') === 'true'
+    );
+
+    const isExam = currentEditingMode === 'exam';
+    const now = Date.now();
+
+    const gameState = {
+        deckTitle: title,
+        questionsPool: playableCards.map(sanitizeCard),
+        allQuestions: deckCards.map(c => {
+            const sc = sanitizeCard(c);
+            if (isFreeTrial && sc && typeof sc === 'object') {
+                sc.isFreeAiTrial = true;
+            }
+            return sc;
+        }),
+        score: 0,
+        isFreeAiTrial: isFreeTrial,
+        updatedAt: now
+    };
+
+    if (isExam) {
+        let existingExam = currentEditingExamData;
+        if (!existingExam) {
+            try { existingExam = JSON.parse(localStorage.getItem('flashcardsExam') || '{}'); } catch(e){}
+        }
+        gameState.decks = existingExam?.decks || [];
+        gameState.deckId = existingExam?.deckId || `exam_${now}`;
+        gameState.isExam = true;
+        gameState.mode = 'exam';
+        currentEditingExamData = gameState;
+
+        localStorage.setItem('flashcardsExam', JSON.stringify(gameState));
+        localStorage.setItem('flashcardsActiveMode', 'exam');
+    } else {
+        localStorage.setItem('flashcardsSave', JSON.stringify(gameState));
+        localStorage.setItem('flashcardsActiveMode', 'normal');
+    }
+
+    try {
+        const slots = getLocalSlots();
+        let targetIdx = currentEditingSlotIndex;
+
+        if (targetIdx === null || targetIdx < 0 || targetIdx >= slots.length) {
+            if (isExam) {
+                targetIdx = slots.findIndex(s => s.isCurrent && (s.isExam || s.mode === 'exam'));
+                if (targetIdx === -1) targetIdx = slots.findIndex(s => s.isExam || s.mode === 'exam');
+            } else {
+                targetIdx = slots.findIndex(s => s.isCurrent && !s.isExam);
+                if (targetIdx === -1) targetIdx = slots.findIndex(s => !s.isExam && s.deckData);
+            }
+        }
+
+        if (targetIdx !== -1 && slots[targetIdx]) {
+            slots[targetIdx].deckData = gameState;
+            slots[targetIdx].title = title;
+            slots[targetIdx].cardCount = deckCards.length;
+            slots[targetIdx].isExam = isExam;
+            slots[targetIdx].mode = isExam ? 'exam' : 'normal';
+            slots[targetIdx].updatedAt = now;
+            slots.forEach((s, idx) => { s.isCurrent = (idx === targetIdx); });
+            saveLocalSlots(slots);
+            currentEditingSlotIndex = targetIdx;
+        } else {
+            const allocatedIdx = openDeckInSlots(gameState, title, isExam ? 'exam' : 'normal', targetIdx);
+            currentEditingSlotIndex = allocatedIdx;
+        }
+    } catch (e) {
+        console.warn('Erro ao atualizar slots do baralho:', e);
+    }
+
+    debouncedSyncSlotsToCloud(1200);
+    try {
+        window.dispatchEvent(new CustomEvent('flashcards:sync-updated', { detail: { hasSlotChanges: true } }));
+    } catch (e) {}
+}
+
+function closeInlineEditModal() {
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+    }
+    if (inlineEditModal) {
+        inlineEditModal.classList.add('hidden');
+    }
+    if (cardsList) {
+        cardsList.scrollTop = inlineEditSavedScrollTop;
+    }
+    window.scrollTo({ top: inlineEditSavedWindowY, behavior: 'instant' });
+    requestAnimationFrame(() => {
+        if (cardsList) {
+            cardsList.scrollTop = inlineEditSavedScrollTop;
+        }
+        window.scrollTo({ top: inlineEditSavedWindowY, behavior: 'instant' });
+    });
+}
 let currentEditorModel = "gemini-flash-lite-latest";
 let promptQueue = [];
 let isProcessingPromptQueue = false;
@@ -446,6 +570,7 @@ const toolFunctions = {
             const merged = { ...deckCards[index], ...updates };
             deckCards[index] = normalizeCard(merged) || merged;
             renderCardsList(true);
+            syncCurrentDeckToSlotAndCloud();
             return { success: true, message: `Card no índice ${index} foi editado.` };
         }
         return { success: false, message: `Erro: Card no índice ${index} não encontrado.` };
@@ -455,6 +580,7 @@ const toolFunctions = {
         if (deckCards[index]) {
             const removed = deckCards.splice(index, 1);
             renderCardsList(true);
+            syncCurrentDeckToSlotAndCloud();
             return { success: true, message: `Card "${removed[0].description.substring(0, 20)}..." removido.` };
         }
         return { success: false, message: `Erro: Card no índice ${index} não encontrado.` };
@@ -470,6 +596,7 @@ const toolFunctions = {
             }
         });
         renderCardsList(true);
+        syncCurrentDeckToSlotAndCloud();
         return { success: true, message: `${count} cards foram removidos com sucesso.` };
     },
     adicionar_varios_cards: (args) => {
@@ -2112,7 +2239,13 @@ if (retryGeminiBtn) {
 [modal12, modal21, modal22, geminiDownModal, inlineEditModal].forEach(modal => {
     if (modal) {
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) modal.classList.add('hidden');
+            if (e.target === modal) {
+                if (modal === inlineEditModal) {
+                    closeInlineEditModal();
+                } else {
+                    modal.classList.add('hidden');
+                }
+            }
         });
     }
 });
@@ -2123,7 +2256,11 @@ document.addEventListener('keydown', (e) => {
         const modals = [modal12, modal21, modal22, geminiDownModal, inlineEditModal];
         const openModal = modals.find(m => m && !m.classList.contains('hidden'));
         if (openModal) {
-            openModal.classList.add('hidden');
+            if (openModal === inlineEditModal) {
+                closeInlineEditModal();
+            } else {
+                openModal.classList.add('hidden');
+            }
         }
     }
 });
@@ -2605,6 +2742,10 @@ function finishGeneratingAnimation(success = true, count = 0) {
     }
     deckSizeBadge.classList.remove('badge-generating-pulse');
 
+    if (success && count > 0) {
+        syncCurrentDeckToSlotAndCloud();
+    }
+
     const bannerContainer = document.getElementById('generation-banner-container');
     const titleText = document.getElementById('generation-title-text');
     const statusText = document.getElementById('generation-status-text');
@@ -2727,6 +2868,7 @@ function appendNewCardWithElasticCollision(cardItem) {
 
     // Recalculate dynamic border radius so first, mid, and last shapes morph seamlessly
     updateCardsBorderRadius();
+    syncCurrentDeckToSlotAndCloud();
 
     // Smoothly scroll down so the user clearly sees the physical collision and damping unfold
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2747,7 +2889,7 @@ function appendNewCardWithElasticCollision(cardItem) {
 }
 
 // --- RENDER CARDS LIST IN EDITOR VIEW ---
-function renderCardsList(fullReRender = false) {
+function renderCardsList(fullReRender = false, preserveScroll = true) {
     const playableCount = deckCards.filter(c => c.type !== 'divisor' && c.type !== 'divider' && c.type !== 'note').length;
     deckSizeBadge.textContent = playableCount;
 
@@ -2806,32 +2948,61 @@ function renderCardsList(fullReRender = false) {
     // Clean up skeleton or empty state if present
     const skeleton = document.getElementById('cards-skeleton-loader');
     if (skeleton) skeleton.remove();
-    if (cardsList.querySelector('.text-center')) {
-        cardsList.innerHTML = '';
-    }
+    const emptyState = cardsList.querySelector('.text-center');
+    if (emptyState) emptyState.remove();
+
+    // Capture current scroll positions before DOM changes
+    const prevScrollTop = cardsList ? cardsList.scrollTop : 0;
+    const prevWindowY = window.scrollY || document.documentElement.scrollTop || 0;
 
     if (fullReRender) {
-        cardsList.innerHTML = '';
-    }
-
-    const currentCount = cardsList.children.length;
-    for (let i = currentCount; i < deckCards.length; i++) {
-        const item = deckCards[i];
-        if (item.type === 'divisor' || item.type === 'divider' || item.type === 'note') {
-            const divisorEl = createDivisorElement(item, i);
-            cardsList.appendChild(divisorEl);
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < deckCards.length; i++) {
+            const item = deckCards[i];
+            let el;
+            if (item.type === 'divisor' || item.type === 'divider' || item.type === 'note') {
+                el = createDivisorElement(item, i, false);
+            } else {
+                el = createCardElement(item, i, false);
+            }
+            fragment.appendChild(el);
+        }
+        if (typeof cardsList.replaceChildren === 'function') {
+            cardsList.replaceChildren(fragment);
         } else {
-            const cardEl = createCardElement(item, i);
-            cardsList.appendChild(cardEl);
+            cardsList.innerHTML = '';
+            cardsList.appendChild(fragment);
+        }
+    } else {
+        const currentCount = cardsList.children.length;
+        for (let i = currentCount; i < deckCards.length; i++) {
+            const item = deckCards[i];
+            let el;
+            if (item.type === 'divisor' || item.type === 'divider' || item.type === 'note') {
+                el = createDivisorElement(item, i, true);
+            } else {
+                el = createCardElement(item, i, true);
+            }
+            cardsList.appendChild(el);
         }
     }
 
     updateCardsBorderRadius();
+
+    if (preserveScroll && fullReRender) {
+        if (cardsList) cardsList.scrollTop = prevScrollTop;
+        window.scrollTo({ top: prevWindowY, behavior: 'instant' });
+        requestAnimationFrame(() => {
+            if (cardsList) cardsList.scrollTop = prevScrollTop;
+            window.scrollTo({ top: prevWindowY, behavior: 'instant' });
+        });
+    }
 }
 
-function createDivisorElement(divisor, index) {
+function createDivisorElement(divisor, index, withAnimation = true) {
     const divisorEl = document.createElement('div');
-    divisorEl.className = "py-2 px-1 flex items-center gap-3 relative group transition select-none deck-divisor-item card-enter-anim";
+    const animClass = withAnimation ? ' card-enter-anim' : '';
+    divisorEl.className = "py-2 px-1 flex items-center gap-3 relative group transition select-none deck-divisor-item" + animClass;
     divisorEl.dataset.index = index;
 
     const leftLine = document.createElement('div');
@@ -2860,26 +3031,60 @@ function createDivisorElement(divisor, index) {
     actionsDiv.className = "flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-1 flex-shrink-0";
 
     const editBtn = document.createElement('button');
+    editBtn.type = "button";
     editBtn.className = "p-1.5 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition";
     editBtn.title = "Editar comentário";
     editBtn.innerHTML = '<img src="../assets/img/edit.svg" class="w-3.5 h-3.5" alt="Editar">';
-    editBtn.onclick = () => {
+    editBtn.onclick = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        const currentScroll = cardsList ? cardsList.scrollTop : 0;
+        const currentWindowY = window.scrollY || document.documentElement.scrollTop || 0;
         const currentText = divisor.text || divisor.description || '';
         const newText = prompt('Editar texto do comentário:', currentText);
         if (newText !== null && newText.trim() !== '') {
+            if (document.activeElement && typeof document.activeElement.blur === 'function') {
+                document.activeElement.blur();
+            }
             divisor.text = newText.trim();
             divisor.description = newText.trim();
             renderCardsList(true);
+            syncCurrentDeckToSlotAndCloud();
+            if (cardsList) cardsList.scrollTop = currentScroll;
+            window.scrollTo({ top: currentWindowY, behavior: 'instant' });
+            requestAnimationFrame(() => {
+                if (cardsList) cardsList.scrollTop = currentScroll;
+                window.scrollTo({ top: currentWindowY, behavior: 'instant' });
+            });
         }
     };
 
     const delBtn = document.createElement('button');
+    delBtn.type = "button";
     delBtn.className = "p-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition";
     delBtn.title = "Excluir comentário";
     delBtn.innerHTML = '<img src="../assets/img/delete.svg" class="w-3.5 h-3.5" alt="Excluir">';
-    delBtn.onclick = () => {
+    delBtn.onclick = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        const currentScroll = cardsList ? cardsList.scrollTop : 0;
+        const currentWindowY = window.scrollY || document.documentElement.scrollTop || 0;
+        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+            document.activeElement.blur();
+        }
         deckCards.splice(index, 1);
         renderCardsList(true);
+        syncCurrentDeckToSlotAndCloud();
+        if (cardsList) cardsList.scrollTop = currentScroll;
+        window.scrollTo({ top: currentWindowY, behavior: 'instant' });
+        requestAnimationFrame(() => {
+            if (cardsList) cardsList.scrollTop = currentScroll;
+            window.scrollTo({ top: currentWindowY, behavior: 'instant' });
+        });
     };
 
     actionsDiv.appendChild(editBtn);
@@ -2893,9 +3098,10 @@ function createDivisorElement(divisor, index) {
     return divisorEl;
 }
 
-function createCardElement(card, index) {
+function createCardElement(card, index, withAnimation = true) {
     const cardEl = document.createElement('div');
-    cardEl.className = "bg-white border border-gray-200 p-4 relative group shadow-sm flex flex-col gap-2 transition flashcard-item card-enter-anim";
+    const animClass = withAnimation ? ' card-enter-anim' : '';
+    cardEl.className = "bg-white border border-gray-200 p-4 relative group shadow-sm flex flex-col gap-2 transition flashcard-item" + animClass;
     cardEl.dataset.index = index;
 
     const typeBadge = document.createElement('span');
@@ -2997,17 +3203,41 @@ function createCardElement(card, index) {
     actionsDiv.className = "absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity";
 
     const editBtn = document.createElement('button');
+    editBtn.type = "button";
     editBtn.className = "p-1.5 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg";
     editBtn.innerHTML = '<img src="../assets/img/edit.svg" class="w-4 h-4" alt="Editar">';
-    editBtn.onclick = () => openInlineEditModal(index);
+    editBtn.onclick = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        openInlineEditModal(index);
+    };
 
     const delBtn = document.createElement('button');
+    delBtn.type = "button";
     delBtn.className = "p-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg";
     delBtn.innerHTML = '<img src="../assets/img/delete.svg" class="w-4 h-4" alt="Excluir">';
-    delBtn.onclick = () => {
+    delBtn.onclick = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        const currentScroll = cardsList ? cardsList.scrollTop : 0;
+        const currentWindowY = window.scrollY || document.documentElement.scrollTop || 0;
         if (confirm('Excluir este flashcard permanentemente?')) {
+            if (document.activeElement && typeof document.activeElement.blur === 'function') {
+                document.activeElement.blur();
+            }
             deckCards.splice(index, 1);
             renderCardsList(true);
+            syncCurrentDeckToSlotAndCloud();
+            if (cardsList) cardsList.scrollTop = currentScroll;
+            window.scrollTo({ top: currentWindowY, behavior: 'instant' });
+            requestAnimationFrame(() => {
+                if (cardsList) cardsList.scrollTop = currentScroll;
+                window.scrollTo({ top: currentWindowY, behavior: 'instant' });
+            });
         }
     };
 
@@ -3027,6 +3257,10 @@ addCardBtn.addEventListener('click', () => {
 function openInlineEditModal(index) {
     const card = deckCards[index];
     if (!card) return;
+
+    // Save scroll state before opening modal
+    inlineEditSavedScrollTop = cardsList ? cardsList.scrollTop : 0;
+    inlineEditSavedWindowY = window.scrollY || document.documentElement.scrollTop || 0;
 
     editCardIndex.value = index;
     editCardType.value = card.type || 'open';
@@ -3173,12 +3407,17 @@ inlineEditRemoveAnsImageBtn.addEventListener('click', () => {
     inlineEditAnsImagePreviewContainer.classList.add('hidden');
 });
 
-closeInlineEditBtn.addEventListener('click', () => inlineEditModal.classList.add('hidden'));
-cancelInlineEditBtn.addEventListener('click', () => inlineEditModal.classList.add('hidden'));
+closeInlineEditBtn.addEventListener('click', closeInlineEditModal);
+cancelInlineEditBtn.addEventListener('click', closeInlineEditModal);
 
-saveInlineEditBtn.addEventListener('click', () => {
+saveInlineEditBtn.addEventListener('click', (e) => {
+    if (e) e.preventDefault();
     const idx = parseInt(editCardIndex.value);
     if (idx < 0 || !deckCards[idx]) return;
+
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+    }
 
     const card = deckCards[idx];
     card.description = editCardDesc.value.trim();
@@ -3209,8 +3448,16 @@ saveInlineEditBtn.addEventListener('click', () => {
         card.answer = answers.join('; ');
     }
 
-    renderCardsList(true);
     inlineEditModal.classList.add('hidden');
+    renderCardsList(true);
+    syncCurrentDeckToSlotAndCloud();
+
+    if (cardsList) cardsList.scrollTop = inlineEditSavedScrollTop;
+    window.scrollTo({ top: inlineEditSavedWindowY, behavior: 'instant' });
+    requestAnimationFrame(() => {
+        if (cardsList) cardsList.scrollTop = inlineEditSavedScrollTop;
+        window.scrollTo({ top: inlineEditSavedWindowY, behavior: 'instant' });
+    });
 });
 
 // --- AI CHAT INTEGRATION ---
@@ -3617,6 +3864,11 @@ chatInput.addEventListener('keyup', (e) => {
 });
 
 // --- SAVE & PLAY DECK ---
+deckTitleDisplay.addEventListener('input', () => {
+    document.title = `${deckTitleDisplay.value.trim() || 'Flashcards'} | Editor`;
+    syncCurrentDeckToSlotAndCloud();
+});
+
 downloadDeckBtn.addEventListener('click', () => {
     if (deckCards.length === 0) return;
     const isFreeTrial = Boolean(
@@ -3629,6 +3881,7 @@ downloadDeckBtn.addEventListener('click', () => {
         openProModal();
         return;
     }
+    syncCurrentDeckToSlotAndCloud();
     const jsonStr = JSON.stringify(deckCards, null, 4);
     const blob = new Blob([jsonStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -3669,7 +3922,8 @@ playDeckBtn.addEventListener('click', () => {
         localStorage.getItem('editing_deck_is_free_trial') === 'true'
     );
 
-    const title = deckTitleDisplay.value;
+    const title = deckTitleDisplay.value.trim() || (currentEditingMode === 'exam' ? 'Semana de Provas' : 'Meu Baralho');
+    const now = Date.now();
     const gameState = {
         questionsPool: playableCards.map(sanitizeCard),
         allQuestions: deckCards.map(c => {
@@ -3681,7 +3935,8 @@ playDeckBtn.addEventListener('click', () => {
         }),
         score: 0,
         deckTitle: title,
-        isFreeAiTrial: isFreeTrial
+        isFreeAiTrial: isFreeTrial,
+        updatedAt: now
     };
 
     try {
@@ -3689,8 +3944,24 @@ playDeckBtn.addEventListener('click', () => {
             localStorage.setItem('flashcardsNotebook', JSON.stringify(gameState));
             localStorage.setItem('flashcardsActiveMode', 'notebook');
             syncSlotsToCloud();
+        } else if (currentEditingMode === 'exam') {
+            let existingExam = currentEditingExamData;
+            if (!existingExam) {
+                try { existingExam = JSON.parse(localStorage.getItem('flashcardsExam') || '{}'); } catch(e){}
+            }
+            gameState.decks = existingExam?.decks || [];
+            gameState.deckId = existingExam?.deckId || `exam_${now}`;
+            gameState.isExam = true;
+            gameState.mode = 'exam';
+            openDeckInSlots(gameState, title, 'exam', currentEditingSlotIndex);
+            localStorage.setItem('flashcardsExam', JSON.stringify(gameState));
+            localStorage.setItem('flashcardsActiveMode', 'exam');
+            syncSlotsToCloud();
         } else {
-            openDeckInSlots(gameState, title);
+            openDeckInSlots(gameState, title, 'normal', currentEditingSlotIndex);
+            localStorage.setItem('flashcardsSave', JSON.stringify(gameState));
+            localStorage.setItem('flashcardsActiveMode', 'normal');
+            syncSlotsToCloud();
         }
         window.location.href = 'game.html';
     } catch (err) {
@@ -3711,15 +3982,41 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Check if loading an existing deck for editing
     const savedDeck = localStorage.getItem('editing_deck');
     const savedTitle = localStorage.getItem('editing_deck_title');
+    const savedMode = localStorage.getItem('editing_deck_mode');
+    const savedSlotIndex = localStorage.getItem('editing_deck_slot_index');
+    const savedExamData = localStorage.getItem('editing_deck_exam_data');
 
     if (savedDeck) {
         try {
             deckCards = JSON.parse(savedDeck);
+            currentEditingMode = (savedMode === 'exam') ? 'exam' : 'normal';
+            if (savedSlotIndex !== null && savedSlotIndex !== undefined && savedSlotIndex !== '') {
+                currentEditingSlotIndex = parseInt(savedSlotIndex, 10);
+            } else {
+                try {
+                    const slots = getLocalSlots();
+                    if (currentEditingMode === 'exam') {
+                        const examSlotIdx = slots.findIndex(s => s.isCurrent && (s.isExam || s.mode === 'exam'));
+                        currentEditingSlotIndex = examSlotIdx !== -1 ? examSlotIdx : slots.findIndex(s => s.isExam || s.mode === 'exam');
+                    } else {
+                        const normalSlotIdx = slots.findIndex(s => s.isCurrent && !s.isExam);
+                        currentEditingSlotIndex = normalSlotIdx !== -1 ? normalSlotIdx : slots.findIndex(s => !s.isExam && s.title === savedTitle);
+                    }
+                    if (currentEditingSlotIndex === -1) currentEditingSlotIndex = null;
+                } catch (e) {}
+            }
+
+            if (savedExamData) {
+                try { currentEditingExamData = JSON.parse(savedExamData); } catch (e) {}
+            } else if (currentEditingMode === 'exam') {
+                try { currentEditingExamData = JSON.parse(localStorage.getItem('flashcardsExam') || '{}'); } catch (e) {}
+            }
+
             const isSavedTrial = localStorage.getItem('editing_deck_is_free_trial') === 'true';
             if (isSavedTrial || deckCards.some(c => c && c.isFreeAiTrial)) {
                 window.currentDeckIsFreeAiTrial = true;
             }
-            const displayTitle = savedTitle || "Flashcards";
+            const displayTitle = savedTitle || (currentEditingMode === 'exam' ? "Semana de Provas" : "Flashcards");
             deckTitleDisplay.value = displayTitle;
             document.title = `${displayTitle} | Editor`;
 
@@ -3727,6 +4024,9 @@ window.addEventListener('DOMContentLoaded', async () => {
 
             localStorage.removeItem('editing_deck');
             localStorage.removeItem('editing_deck_title');
+            localStorage.removeItem('editing_deck_mode');
+            localStorage.removeItem('editing_deck_slot_index');
+            localStorage.removeItem('editing_deck_exam_data');
         } catch (e) {
             console.error("Erro ao carregar deck salvo:", e);
         }
