@@ -148,7 +148,7 @@ export default {
           integration_identifier: "custom_embedded_web_0001",
           line_items: [
             {
-              price: env.STRIPE_PRICE_ID || "price_1Q_PLACEHOLDER",
+              price: env.STRIPE_PRICE_ID || "price_1UWEb0Rynl9tIFFYF2cvZ3RB",
               quantity: 1
             }
           ]
