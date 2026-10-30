@@ -27,39 +27,14 @@ async function init() {
         });
     }
 
-    const openNotebookBtn = document.getElementById('open-notebook-btn');
-    const notebookCount = document.getElementById('notebook-count');
-    if (openNotebookBtn && notebookCount) {
-        try {
-            const notebookData = JSON.parse(localStorage.getItem('flashcardsNotebook'));
-            if (notebookData && notebookData.allQuestions && notebookData.allQuestions.length > 0) {
-                const count = notebookData.allQuestions.length;
-                notebookCount.textContent = count;
-                const notebookCountLabel = document.getElementById('notebook-count-label');
-                if (notebookCountLabel) {
-                    notebookCountLabel.textContent = count === 1 ? 'card' : 'cards';
-                }
-                openNotebookBtn.classList.remove('hidden');
-                openNotebookBtn.addEventListener('click', () => {
-                    localStorage.setItem('flashcardsActiveMode', 'notebook');
-                    window.location.href = ROUTES.GAME;
-                });
-
-                const homeStreak = document.getElementById('home-notebook-streak');
-                const homeStreakCount = document.getElementById('home-notebook-streak-count');
-                if (homeStreak && homeStreakCount) {
-                    const streakData = getDailyStreak();
-                    if (streakData.streak > 0) {
-                        homeStreakCount.textContent = streakData.streak;
-                        homeStreak.classList.remove('hidden');
-                        homeStreak.classList.add('flex');
-                    }
-                }
-            }
-        } catch (e) {
-            console.error("Erro ao carregar contador do Caderno:", e);
+    // 4. Update Daily Streak Count above "Explorar arquivos"
+    updateHomeDailyStreak();
+    window.addEventListener('focus', updateHomeDailyStreak);
+    window.addEventListener('storage', (e) => {
+        if (!e.key || e.key.includes('streak') || e.key.includes('flashcards')) {
+            updateHomeDailyStreak();
         }
-    }
+    });
 
     // --- Check Saved Exam Week Session ---
     const examSavedBadge = document.getElementById('exam-saved-badge');
@@ -504,6 +479,46 @@ async function init() {
             if (modalDecks.length === 0) return;
             startExamWeek(modalDecks);
         });
+    }
+}
+
+/**
+ * Updates daily streak badge and fire icon on landing screen above "Explorar arquivos"
+ */
+export function updateHomeDailyStreak() {
+    const streakBadge = document.getElementById('home-daily-streak-badge');
+    const streakCount = document.getElementById('home-streak-count');
+    const streakLabel = document.getElementById('home-streak-label');
+    const streakFire = document.getElementById('home-streak-fire-icon');
+    if (!streakCount) return;
+
+    try {
+        const streakData = getDailyStreak();
+        const count = Number(streakData?.streak) || 0;
+        const isToday = Boolean(streakData?.isTodayStudied);
+
+        streakCount.textContent = count;
+        if (streakLabel) {
+            streakLabel.textContent = count === 1 ? 'dia seguido' : 'dias seguidos';
+        }
+
+        if (count > 0) {
+            streakFire?.classList.remove('grayscale', 'opacity-60');
+            streakBadge?.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-600');
+            streakBadge?.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-900');
+            streakCount?.classList.remove('text-gray-700');
+            streakCount?.classList.add('text-amber-700');
+            streakBadge?.setAttribute('title', isToday ? 'Sequência ativa mantida hoje!' : 'Estude hoje para manter sua sequência diária!');
+        } else {
+            streakFire?.classList.add('grayscale', 'opacity-60');
+            streakBadge?.classList.remove('bg-amber-50', 'border-amber-200', 'text-amber-900');
+            streakBadge?.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-600');
+            streakCount?.classList.remove('text-amber-700');
+            streakCount?.classList.add('text-gray-700');
+            streakBadge?.setAttribute('title', 'Estude hoje para iniciar sua sequência diária!');
+        }
+    } catch (e) {
+        console.warn('Erro ao atualizar streak na tela inicial:', e);
     }
 }
 

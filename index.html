@@ -4,31 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-    <title>Flashcards</title>
+    <title>Spaiq Flashcards</title>
     <meta name="description" content="Estude de forma eficiente com flashcards inteligentes e interativos.">
     <link rel="canonical" href="https://flashcards.camblu.org/">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://flashcards.camblu.org/">
-    <meta property="og:site_name" content="Flashcards">
+    <meta property="og:site_name" content="Spaiq Flashcards">
     <meta property="og:locale" content="pt_BR">
-    <meta property="og:title" content="Flashcards webapp">
+    <meta property="og:title" content="Spaiq Flashcards">
     <meta property="og:description" content="Estude de forma eficiente com flashcards inteligentes e interativos.">
     <meta property="og:image" content="https://flashcards.camblu.org/assets/img/og-image.png">
     <meta property="og:image:secure_url" content="https://flashcards.camblu.org/assets/img/og-image.png">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="627">
-    <meta property="og:image:alt" content="Flashcards webapp">
+    <meta property="og:image:alt" content="Spaiq Flashcards">
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://flashcards.camblu.org/">
-    <meta name="twitter:title" content="Flashcards webapp">
+    <meta name="twitter:title" content="Spaiq Flashcards">
     <meta name="twitter:description" content="Estude de forma eficiente com flashcards inteligentes e interativos.">
     <meta name="twitter:image" content="https://flashcards.camblu.org/assets/img/og-image.png">
-    <meta name="twitter:image:alt" content="Flashcards webapp">
+    <meta name="twitter:image:alt" content="Spaiq Flashcards">
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-6JNRDNHL0N"></script>
@@ -78,8 +78,19 @@
     <!-- TELA PRINCIPAL (INICIAL) -->
     <div id="upload-screen"
         class="w-full max-w-md mx-auto m3-card-expressive p-8 text-center transition-all duration-300">
-        <h1 class="brand-page-title text-3xl font-extrabold mb-1 tracking-tight">Flashcards</h1>
-        <p class="text-[var(--md-sys-color-on-surface-variant)] mb-8 text-sm">Abra um arquivo ou crie um novo baralho agora mesmo.</p>
+        <h1 class="brand-page-title text-3xl font-extrabold mb-1 tracking-tight">Spaiq Flashcards</h1>
+        <p class="text-[var(--md-sys-color-on-surface-variant)] mb-6 text-sm">Abra um arquivo ou crie um novo baralho agora mesmo.</p>
+
+        <!-- Streak Diário (Em cima de Explorar arquivos) -->
+        <div id="home-daily-streak-container" class="mb-5 flex items-center justify-center">
+            <div id="home-daily-streak-badge" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-900 shadow-2xs transition-all select-none" title="Sequência diária de estudos">
+                <img src="assets/img/fire.svg" id="home-streak-fire-icon" class="w-4 h-4 flex-shrink-0" alt="" aria-hidden="true" width="16" height="16">
+                <span class="text-xs font-bold leading-none flex items-center gap-1">
+                    <span id="home-streak-count" class="font-black text-amber-700">0</span>
+                    <span id="home-streak-label" class="text-amber-900/90 font-semibold">dias seguidos</span>
+                </span>
+            </div>
+        </div>
 
         <div class="flex flex-col gap-3.5">
             <!-- Botão Explorar Arquivos (Abre o Modal com Slots e Caderno) -->
