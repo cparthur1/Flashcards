@@ -3,7 +3,7 @@
  * Copyright (C) 2026 Arthur <arthur.paludo.c@gmail.com>
  */
 
-const CACHE_NAME = 'flashcards-v12.9'; // Increment version to trigger update
+const CACHE_NAME = 'flashcards-v13.0'; // Increment version to trigger update
 
 const BASE_PATH = self.registration && self.registration.scope 
   ? new URL(self.registration.scope).pathname.replace(/\/$/, '') 
@@ -72,7 +72,9 @@ const RAW_ASSETS = [
   '/assets/img/comment.svg',
   '/assets/img/settings.svg',
   '/assets/img/notifications.svg',
-  '/assets/img/paywall.svg'
+  '/assets/img/paywall.svg',
+  '/assets/img/open_folder.svg',
+  '/assets/img/criar_novo.svg'
 ];
 
 const ASSETS_TO_CACHE = RAW_ASSETS.map(p => p === '/' ? (BASE_PATH || '/') : `${BASE_PATH}${p}`);

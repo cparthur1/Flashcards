@@ -45,6 +45,8 @@
     <meta name="theme-color" content="#2563eb" />
     <link rel="icon" type="image/png" href="assets/img/favicon.png">
     <link rel="apple-touch-icon" href="assets/img/favicon.png">
+    <link rel="preload" href="assets/img/open_folder.svg" as="image" type="image/svg+xml">
+    <link rel="preload" href="assets/img/criar_novo.svg" as="image" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -83,7 +85,7 @@
             <!-- Botão Explorar Arquivos (Abre o Modal com Slots e Caderno) -->
             <button id="open-explore-btn"
                 class="m3-btn-expressive m3-btn-filled w-full py-4 px-4 text-base font-bold shadow-md flex items-center justify-center gap-2.5">
-                <span class="material-symbols-rounded text-2xl">folder_open</span>
+                <img src="assets/img/open_folder.svg" class="w-6 h-6 flex-shrink-0" alt="" aria-hidden="true" width="24" height="24">
                 <span>Explorar arquivos</span>
             </button>
 
@@ -96,7 +98,7 @@
             <!-- Botão Criar Baralho -->
             <a href="pages/generate.html" id="open-create-btn"
                 class="m3-btn-expressive m3-btn-tonal w-full py-3.5 px-4 text-base font-bold shadow-sm flex items-center justify-center gap-2">
-                <span class="material-symbols-rounded text-xl">add_circle</span>
+                <img src="assets/img/criar_novo.svg" class="w-5 h-5 flex-shrink-0" alt="" aria-hidden="true" width="20" height="20">
                 <span>Criar Baralho</span>
             </a>
 
