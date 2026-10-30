@@ -27,7 +27,8 @@ const ALLOWED_ORIGINS = [
 
 export const LIFETIME_PRO_EMAILS = [
   'arthur.paludo.c@gmail.com',
-  'clarazanchett@gmail.com'
+  'clarazanchett@gmail.com',
+  'manuelapinhadias@gmail.com'
 ];
 
 function getCorsHeaders(request) {
@@ -389,12 +390,15 @@ export default {
             deckSlots: [],
             notebookSlot: null,
             stats: null,
+            settings: null,
+            dailyStreak: null,
+            activeMode: null,
             message: 'A sincronização em nuvem está desativada para usuários não-Pro.'
           }, 200, corsHeaders);
         }
 
         if (!userDoc) {
-          return jsonResponse({ isPro: true, deckSlots: null, notebookSlot: null, stats: null }, 200, corsHeaders);
+          return jsonResponse({ isPro: true, deckSlots: null, notebookSlot: null, stats: null, settings: null, dailyStreak: null, activeMode: null }, 200, corsHeaders);
         }
 
         const deckSlots = userDoc.deckSlots || [];
@@ -426,6 +430,9 @@ export default {
             deletedAt: userDoc.notebookSlot?.deletedAt || null
           },
           stats: userDoc.stats || null,
+          settings: userDoc.settings || null,
+          dailyStreak: userDoc.dailyStreak || null,
+          activeMode: userDoc.activeMode || null,
           lastSyncedAt: userDoc.lastSyncedAt || 0
         }, 200, corsHeaders);
       }
@@ -451,7 +458,14 @@ export default {
         }
 
         const body = await request.json().catch(() => ({}));
-        const { slots = [], notebookData = null, stats = {} } = body;
+        const {
+          slots = [],
+          notebookData = null,
+          stats = {},
+          settings = {},
+          dailyStreak = null,
+          activeMode = null
+        } = body;
 
         // Clean up any previously saved deck documents that were removed or cleared
         const prevSlots = userDoc?.deckSlots || [];
@@ -464,16 +478,21 @@ export default {
 
         // Prepare lightweight metadata for user doc, preserving deletion timestamps
         const now = Date.now();
-        const deckSlotsMeta = slots.map(s => ({
-          slotIndex: s.slotIndex,
-          deckId: s.deckId || null,
-          title: s.title,
-          cardCount: s.cardCount || 0,
-          isFixed: Boolean(s.isFixed),
-          isCurrent: Boolean(s.isCurrent),
-          updatedAt: s.updatedAt || now,
-          deletedAt: s.deletedAt || (s.deckData ? null : now)
-        }));
+        const deckSlotsMeta = slots.map(s => {
+          const isExam = Boolean(s.isExam || s.mode === 'exam' || (s.deckData && s.deckData.decks));
+          return {
+            slotIndex: s.slotIndex,
+            deckId: s.deckId || null,
+            title: s.title,
+            cardCount: s.cardCount || 0,
+            isFixed: Boolean(s.isFixed),
+            isCurrent: Boolean(s.isCurrent),
+            isExam,
+            mode: isExam ? 'exam' : 'normal',
+            updatedAt: s.updatedAt || now,
+            deletedAt: s.deletedAt || (s.deckData ? null : now)
+          };
+        });
 
         // 1. Update user document
         await updateUserDocument(serviceAccount, user.uid, {
@@ -485,17 +504,23 @@ export default {
             deletedAt: notebookData?.deckData ? null : (notebookData?.deletedAt || now)
           },
           stats: stats || {},
+          settings: settings || {},
+          dailyStreak: dailyStreak || null,
+          activeMode: activeMode || null,
           lastSyncedAt: now
         }).catch(err => console.warn('Erro ao atualizar user doc:', err));
 
         // 2. Save full deck documents
         for (const slot of slots) {
           if (slot.deckId && slot.deckData) {
+            const isExam = Boolean(slot.isExam || slot.mode === 'exam' || (slot.deckData && slot.deckData.decks));
             await setDocument(serviceAccount, 'decks', slot.deckId, {
               ownerUid: user.uid,
               title: slot.title,
               cardCount: slot.cardCount,
               isFixed: Boolean(slot.isFixed),
+              isExam,
+              mode: isExam ? 'exam' : 'normal',
               deckData: slot.deckData,
               updatedAt: slot.updatedAt || Date.now()
             }).catch(err => console.warn(`Erro ao salvar deck ${slot.deckId}:`, err));

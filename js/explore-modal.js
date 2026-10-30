@@ -19,7 +19,7 @@ import {
 import { shareDeckToCloud } from './share-manager.js';
 import { getUserStatus, createProSubscription, createCheckoutSession, buyExtraGeneration, deleteAccountAndCancelSubscription, verifyPaymentStatus, BACKEND_URL } from './backend-api.js';
 import { triggerProUnlockCelebration } from './engine/pro-unlock-celebration.js';
-import { ROUTES } from './utils.js';
+import { ROUTES, shuffleArray } from './utils.js';
 
 let modalInitialized = false;
 let currentUser = null;
@@ -27,7 +27,8 @@ let userProStatus = null;
 
 export const LIFETIME_PRO_EMAILS = [
   'arthur.paludo.c@gmail.com',
-  'clarazanchett@gmail.com'
+  'clarazanchett@gmail.com',
+  'manuelapinhadias@gmail.com'
 ];
 
 export function isLifetime(user) {
@@ -372,9 +373,18 @@ function attachModalEventListeners() {
   document.getElementById('close-extra-deck-modal-btn')?.addEventListener('click', closeExtraDeckModal);
 
   // File Upload inside modal
+  let pendingTargetSlotIndex = null;
+  window.flashcardsUploadToSlot = function(slotIdx) {
+    pendingTargetSlotIndex = slotIdx;
+    document.getElementById('modal-hidden-file-input')?.click();
+  };
+
   const uploadBtn = document.getElementById('modal-upload-btn');
   const hiddenInput = document.getElementById('modal-hidden-file-input');
-  uploadBtn?.addEventListener('click', () => hiddenInput?.click());
+  uploadBtn?.addEventListener('click', () => {
+    pendingTargetSlotIndex = null;
+    hiddenInput?.click();
+  });
 
   hiddenInput?.addEventListener('change', async (e) => {
     const file = e.target.files?.[0];
@@ -392,6 +402,23 @@ function attachModalEventListeners() {
           alert(`Backup do Caderno restaurado com sucesso! (${importedCount} cards carregados)`);
           return;
         }
+      }
+
+      if (parsed && parsed.__flashcards_watermark__ === "exam_week_backup_v1") {
+        const playable = (parsed.cards || []).filter(q => q && q.type !== 'divisor' && q.type !== 'divider' && q.type !== 'note');
+        const examState = {
+          deckTitle: parsed.deckTitle || "Semana de Provas",
+          score: 0,
+          decks: parsed.decks || [],
+          allQuestions: parsed.cards || [],
+          questionsPool: shuffleArray(playable)
+        };
+        openDeckInSlots(examState, examState.deckTitle, 'exam', pendingTargetSlotIndex);
+        pendingTargetSlotIndex = null;
+        renderModalContent();
+        hiddenInput.value = '';
+        window.location.href = ROUTES.GAME;
+        return;
       }
 
       const deckName = file.name.replace(/\.[^/.]+$/, '');
@@ -424,7 +451,8 @@ function attachModalEventListeners() {
         deckTitle: deckTitle
       };
 
-      openDeckInSlots(gameState, deckTitle);
+      openDeckInSlots(gameState, deckTitle, 'normal', pendingTargetSlotIndex);
+      pendingTargetSlotIndex = null;
       renderModalContent();
       // Reset input to allow selecting same file again
       hiddenInput.value = '';
@@ -471,6 +499,8 @@ function attachModalEventListeners() {
     if (examModal) {
       examModal.classList.remove('hidden');
       examModal.classList.add('flex');
+    } else {
+      window.location.href = `${ROUTES.HOME}?openExam=1`;
     }
   });
 
@@ -1056,10 +1086,11 @@ function renderDeckSlots() {
     const hasData = Boolean(slot.deckData && slot.cardCount > 0);
     const isCurrent = Boolean(slot.isCurrent);
     const isFixed = Boolean(slot.isFixed);
+    const isExam = Boolean(slot.isExam || slot.mode === 'exam' || (slot.deckData && slot.deckData.decks));
 
     if (!hasData) {
       return `
-        <div class="slot-card-empty border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-2xl p-4 flex flex-col items-center justify-center text-center min-h-[140px] cursor-pointer transition-colors bg-[var(--md-sys-color-surface-container-low)]" onclick="document.getElementById('modal-hidden-file-input').click()">
+        <div class="slot-card-empty border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-2xl p-4 flex flex-col items-center justify-center text-center min-h-[140px] cursor-pointer transition-colors bg-[var(--md-sys-color-surface-container-low)]" onclick="window.flashcardsUploadToSlot(${idx})">
           <span class="material-symbols-rounded text-3xl text-gray-400 mb-1">add_circle</span>
           <span class="text-xs font-bold text-gray-600">Slot ${idx + 1} Vazio</span>
           <span class="text-[10px] text-gray-400 mt-0.5">Clique para carregar</span>
@@ -1067,27 +1098,36 @@ function renderDeckSlots() {
       `;
     }
 
+    const deckCount = (slot.deckData && Array.isArray(slot.deckData.decks)) ? slot.deckData.decks.length : 0;
+    const deckNames = (slot.deckData && Array.isArray(slot.deckData.decks)) ? slot.deckData.decks.map(d => d.name).join(', ') : '';
+
     return `
-      <div class="slot-card relative bg-white border ${isCurrent ? 'border-blue-500 shadow-md ring-2 ring-blue-100' : 'border-gray-200'} rounded-2xl p-3 flex flex-col justify-between min-h-[140px] transition-all hover:shadow-lg">
+      <div class="slot-card relative bg-white border ${isCurrent ? (isExam ? 'border-purple-500 shadow-md ring-2 ring-purple-100' : 'border-blue-500 shadow-md ring-2 ring-blue-100') : (isExam ? 'border-purple-200 hover:border-purple-300' : 'border-gray-200')} rounded-2xl p-3 flex flex-col justify-between min-h-[140px] transition-all hover:shadow-lg">
         
         <!-- Top Status Indicators -->
         <div class="flex items-center justify-between gap-1 mb-2">
-          ${isCurrent ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">Aberto agora</span>` : `<span class="text-[10px] text-gray-400 font-semibold">Slot ${idx + 1}</span>`}
-          ${isFixed ? `<span class="material-symbols-rounded text-sm text-blue-600" title="Fixado: protegido contra sobrescrita">lock</span>` : `<span class="text-[10px] text-gray-400" title="Sobrescritível ao abrir novos decks">Sobrescritível</span>`}
+          ${isCurrent 
+            ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isExam ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}">Aberto agora</span>` 
+            : `<span class="text-[10px] ${isExam ? 'text-purple-700 font-semibold bg-purple-50 px-2 py-0.5 rounded-full' : 'text-gray-400 font-semibold'}">Slot ${idx + 1}${isExam ? ' • Mistura' : ''}</span>`
+          }
+          <div class="flex items-center gap-1">
+            ${isExam ? `<span class="material-symbols-rounded text-sm text-purple-600" title="Semana de Provas (Mistura)">bolt</span>` : ''}
+            ${isFixed ? `<span class="material-symbols-rounded text-sm ${isExam ? 'text-purple-600' : 'text-blue-600'}" title="Fixado: protegido contra sobrescrita">lock</span>` : `<span class="text-[10px] text-gray-400" title="Sobrescritível ao abrir novos baralhos">Sobrescritível</span>`}
+          </div>
         </div>
 
         <!-- Deck Content / Title -->
         <div class="cursor-pointer flex-1 my-1" onclick="window.flashcardsOpenSlot(${idx})">
-          <h4 class="text-sm font-bold text-gray-900 line-clamp-2 leading-tight" title="${slot.title}">${slot.title}</h4>
-          <p class="text-xs text-gray-500 mt-1">${slot.cardCount} cards</p>
+          <h4 class="text-sm font-bold text-gray-900 line-clamp-2 leading-tight" title="${deckNames ? `Mistura: ${deckNames}` : slot.title}">${slot.title}</h4>
+          <p class="text-xs ${isExam ? 'text-purple-700 font-medium' : 'text-gray-500'} mt-1">${slot.cardCount} cards${isExam && deckCount > 0 ? ` • ${deckCount} baralhos` : ''}</p>
         </div>
 
-        <!-- Action Bar: Red Delete & Blue Share (Matching Mockup) -->
+        <!-- Action Bar: Red Delete & Share -->
         <div class="pt-2 mt-1 border-t border-gray-100 flex items-center justify-between">
           <button class="p-1.5 rounded-lg text-red-500 hover:bg-red-50 active:bg-red-100 transition" title="Excluir do Slot" onclick="window.flashcardsDeleteSlot(${idx})">
             <span class="material-symbols-rounded text-lg">delete</span>
           </button>
-          <button class="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition" title="Compartilhar & Fixar no Slot" onclick="window.flashcardsShareSlot(${idx})">
+          <button class="p-1.5 rounded-lg ${isExam ? 'text-purple-600 hover:bg-purple-50 active:bg-purple-100' : 'text-blue-600 hover:bg-blue-50 active:bg-blue-100'} transition" title="Compartilhar & Fixar no Slot" onclick="window.flashcardsShareSlot(${idx})">
             <span class="material-symbols-rounded text-lg">share</span>
           </button>
         </div>
@@ -1163,8 +1203,14 @@ window.flashcardsOpenSlot = function(slotIdx) {
   if (slot?.deckData) {
     slots.forEach((s, idx) => { s.isCurrent = (idx === slotIdx); });
     localStorage.setItem('flashcards_deck_slots', JSON.stringify(slots));
-    localStorage.setItem('flashcardsSave', JSON.stringify(slot.deckData));
-    localStorage.setItem('flashcardsActiveMode', 'normal');
+    const isExam = Boolean(slot.isExam || slot.mode === 'exam' || (slot.deckData && slot.deckData.decks));
+    if (isExam) {
+      localStorage.setItem('flashcardsExam', JSON.stringify(slot.deckData));
+      localStorage.setItem('flashcardsActiveMode', 'exam');
+    } else {
+      localStorage.setItem('flashcardsSave', JSON.stringify(slot.deckData));
+      localStorage.setItem('flashcardsActiveMode', 'normal');
+    }
     closeExploreModal();
     window.location.href = ROUTES.GAME;
   }

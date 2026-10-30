@@ -166,11 +166,14 @@ export async function clearUserCloudData(serviceAccountConfig, uid) {
     // Delete notebook deck
     await deleteDeckDocument(serviceAccountConfig, `notebook_${uid}`).catch(() => {});
 
-    // Clear cloud slots on user document
+    // Clear cloud slots and data on user document
     await updateUserDocument(serviceAccountConfig, uid, {
       deckSlots: [],
       notebookSlot: null,
       stats: null,
+      settings: null,
+      dailyStreak: null,
+      activeMode: null,
       lastSyncedAt: 0
     });
     return true;

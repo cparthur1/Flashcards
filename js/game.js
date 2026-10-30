@@ -24,7 +24,7 @@ import { initExploreModal, openExploreModal, openProModal, isUserPro } from './e
 import { openAccountModal } from './account-modal.js';
 import { onAuthChange, auth } from './firebase-client.js';
 import { checkAndLoadSharedDeck } from './share-manager.js';
-import { debouncedSyncSlotsToCloud, syncSlotsToCloud } from './slot-manager.js';
+import { debouncedSyncSlotsToCloud, syncSlotsToCloud, openDeckInSlots, getLocalSlots, saveLocalSlots } from './slot-manager.js';
 import { initPwaInstallBanner } from './engine/pwa-install.js';
 
 // --- DOM ELEMENTS ---
@@ -2349,6 +2349,7 @@ function setNotebookDailyGoal(goal) {
         } else {
             localStorage.setItem('flashcards_notebook_daily_goal', String(goal));
         }
+        debouncedSyncSlotsToCloud();
     } catch (e) {
         console.error("Erro ao salvar meta diária:", e);
     }
@@ -2567,6 +2568,7 @@ function savePinnedHeaderStats(pinnedList, mode = activeMode) {
         if (targetMode === 'deck') {
             localStorage.setItem(LEGACY_HEADER_PINNED_STORAGE_KEY, JSON.stringify(pinnedList));
         }
+        debouncedSyncSlotsToCloud();
     } catch (e) {
         console.warn("[HeaderStats] Erro ao salvar estatísticas fixadas:", e);
     }
@@ -4396,6 +4398,7 @@ if (aiSwitch) {
                 initializeAi();
                 initBackgroundCategorization();
                 showNotificationPill("Recursos de IA ativados", "enabled_ai.svg");
+                debouncedSyncSlotsToCloud();
             } else {
                 aiSwitch.selected = false;
                 closeHamburgerMenu();
@@ -4407,6 +4410,7 @@ if (aiSwitch) {
             disableTutor();
             updateAiUI();
             showNotificationPill("Recursos de IA desativados", "config_ai.svg");
+            debouncedSyncSlotsToCloud();
         }
     });
 }
@@ -4729,6 +4733,7 @@ if (settingAiSwitch) {
                 if (aiSwitch) aiSwitch.selected = true;
                 updateSettingsModalState();
                 showNotificationPill("Recursos de IA ativados", "enabled_ai.svg");
+                debouncedSyncSlotsToCloud();
             } else {
                 settingAiSwitch.selected = false;
                 if (aiSwitch) aiSwitch.selected = false;
@@ -4743,6 +4748,7 @@ if (settingAiSwitch) {
             if (aiSwitch) aiSwitch.selected = false;
             updateSettingsModalState();
             showNotificationPill("Recursos de IA desativados", "config_ai.svg");
+            debouncedSyncSlotsToCloud();
         }
     });
 }
@@ -5597,6 +5603,7 @@ function removeDeckFromExamMix(deckId) {
     examData.allQuestions = allQuestions;
     examData.questionsPool = questionsPool;
     localStorage.setItem('flashcardsExam', JSON.stringify(examData));
+    debouncedSyncSlotsToCloud();
 
     updateScoreDisplay();
 
@@ -5670,6 +5677,7 @@ if (dropdownAddDeckBtn && dropdownAddDeckInput) {
         examData.allQuestions = allQuestions;
         examData.questionsPool = questionsPool;
         localStorage.setItem('flashcardsExam', JSON.stringify(examData));
+        debouncedSyncSlotsToCloud();
 
         updateScoreDisplay();
         renderExamDecksInDropdown(examData);
@@ -5741,6 +5749,25 @@ function switchActiveMode(newMode) {
         };
         localStorage.setItem('flashcardsNotebook', JSON.stringify(data));
     }
+
+    try {
+        const slots = getLocalSlots();
+        if (newMode === 'exam') {
+            const examSlotIdx = slots.findIndex(s => s.isExam || s.mode === 'exam' || (s.deckData && s.deckData.decks));
+            if (examSlotIdx !== -1) {
+                slots.forEach((s, idx) => { s.isCurrent = (idx === examSlotIdx); });
+                saveLocalSlots(slots);
+            } else if (data && data.allQuestions && data.allQuestions.length > 0) {
+                openDeckInSlots(data, data.deckTitle || "Semana de Provas", 'exam');
+            }
+        } else if (newMode === 'normal') {
+            const normalSlotIdx = slots.findIndex(s => !s.isExam && s.mode !== 'exam');
+            if (normalSlotIdx !== -1) {
+                slots.forEach((s, idx) => { s.isCurrent = (idx === normalSlotIdx); });
+                saveLocalSlots(slots);
+            }
+        }
+    } catch (e) {}
     
     allQuestions = data.allQuestions || [];
     if (newMode === 'notebook') {
@@ -5913,6 +5940,20 @@ async function initGame() {
     }
 
     allQuestions = data.allQuestions || [];
+    if (activeMode === 'exam' && data && (data.allQuestions || []).length > 0) {
+        try {
+            const slots = getLocalSlots();
+            const examSlotIdx = slots.findIndex(s => s.isExam || s.mode === 'exam' || (s.deckData && s.deckData.decks));
+            if (examSlotIdx !== -1) {
+                if (!slots[examSlotIdx].isCurrent) {
+                    slots.forEach((s, idx) => { s.isCurrent = (idx === examSlotIdx); });
+                    saveLocalSlots(slots);
+                }
+            } else {
+                openDeckInSlots(data, data.deckTitle || "Semana de Provas", 'exam');
+            }
+        } catch (e) {}
+    }
     if (activeMode === 'notebook') {
         questionsPool = (allQuestions || []).filter(isPlayableCard);
         notebookReviewsCount = data.notebookReviewsCount || 0;
@@ -6114,4 +6155,25 @@ if (document.readyState === 'loading') {
 
 window.addEventListener('resize', resizeCanvas);
 window.addMsg = addMsg;
+
+// Listen for cross-device Pro cloud sync updates
+window.addEventListener('flashcards:sync-updated', (event) => {
+    try {
+        updateDailyStreakUI();
+        renderHeaderPinnedStats();
+        const isAiOn = localStorage.getItem('flashcards_ai_enabled') === 'true';
+        if (aiSwitch) aiSwitch.selected = isAiOn;
+        if (settingAiSwitch) settingAiSwitch.selected = isAiOn;
+        updateAiUI();
+        updateScoreDisplay();
+        if (appSettingsModal && !appSettingsModal.classList.contains('hidden')) {
+            updateSettingsModalState();
+        }
+        if (headerStatsDropdown && !headerStatsDropdown.classList.contains('hidden')) {
+            renderHeaderStatsDropdown();
+        }
+    } catch (e) {
+        console.warn('Erro ao atualizar UI após sincronização:', e);
+    }
+});
 

@@ -10,6 +10,7 @@
  */
 
 import { getTodayDateString, getDailyStreak } from './notebook-scheduler.js';
+import { debouncedSyncSlotsToCloud } from '../slot-manager.js';
 
 export const NOTIFICATIONS_STORAGE_KEY = 'flashcards_notifications_settings';
 
@@ -66,6 +67,7 @@ export function saveNotificationSettings(settings) {
     try {
         localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(settings));
         updateNotificationsUI();
+        debouncedSyncSlotsToCloud();
     } catch (e) {
         console.warn("[Notifications] Erro ao salvar configurações:", e);
     }
@@ -264,4 +266,10 @@ export function updateNotificationsUI() {
 
     if (nightSwitch) nightSwitch.selected = settings.night.enabled;
     if (nightTimeInput) nightTimeInput.value = settings.night.time || '21:00';
+}
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('flashcards:sync-updated', () => {
+        updateNotificationsUI();
+    });
 }

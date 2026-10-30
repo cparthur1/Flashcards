@@ -5,6 +5,8 @@
  * física de bolinhas no Canvas de fundo, confetes de comemoração e ondas de choque (Shockwave).
  */
 
+import { debouncedSyncSlotsToCloud } from '../slot-manager.js';
+
 // --- HAPTIC FEEDBACK (VIBRATION API) ---
 const HAPTIC_STORAGE_KEY = 'flashcardsHapticEnabled';
 
@@ -32,6 +34,7 @@ export function setHapticEnabled(enabled) {
     if (enabled) {
         triggerHaptic('tap');
     }
+    debouncedSyncSlotsToCloud();
 }
 
 export function triggerHaptic(type) {
@@ -185,6 +188,7 @@ export function setSoundEnabled(enabled) {
     if (enabled) {
         playFeedbackSound('confirm');
     }
+    debouncedSyncSlotsToCloud();
 }
 
 export function updateSoundUI() {
@@ -216,6 +220,7 @@ export function setAnimationsEnabled(enabled) {
     if (enabled) {
         triggerHaptic('tap');
     }
+    debouncedSyncSlotsToCloud();
 }
 
 export function updateAnimationsUI() {
@@ -230,6 +235,13 @@ export function updateAccessibilityUI() {
     updateHapticUI();
     updateSoundUI();
     updateAnimationsUI();
+}
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('flashcards:sync-updated', () => {
+        applyAnimationsPreference();
+        updateAccessibilityUI();
+    });
 }
 
 // --- CANVAS ANIMATION & VISUAL EFFECTS ---

@@ -6,6 +6,7 @@
 
 import { getCardSignature, getStoredAiCategories } from './stats-ai.js';
 import { stripHtml } from './utils.js';
+import { debouncedSyncSlotsToCloud } from './slot-manager.js';
 
 const STATS_KEY = 'flashcards_stats';
 
@@ -49,7 +50,13 @@ export function getStatsStorage() {
 
 export function saveStatsStorage(data) {
     try {
-        localStorage.setItem(STATS_KEY, JSON.stringify(data));
+        if (data && typeof data === 'object') {
+            data.updatedAt = Date.now();
+        }
+        const json = JSON.stringify(data);
+        localStorage.setItem(STATS_KEY, json);
+        localStorage.setItem('flashcardsStats', json);
+        debouncedSyncSlotsToCloud();
     } catch (e) {
         console.error("Erro ao salvar flashcards_stats:", e);
     }

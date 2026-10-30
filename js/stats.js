@@ -1911,3 +1911,8 @@ document.addEventListener('visibilitychange', () => {
         scheduleLiveStatsUpdate();
     }
 });
+
+// React to cloud synchronization for Pro users
+window.addEventListener('flashcards:sync-updated', () => {
+    scheduleLiveStatsUpdate();
+});

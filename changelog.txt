@@ -1,3 +1,48 @@
+CHANGELOG: COMPLETE CROSS-DEVICE SYNC FOR PRO USERS (v14.3)
+Date: 2026-10-30
+
+OVERVIEW:
+1. Full Cross-Device Cloud Synchronization for Flashcards Pro users:
+   - Progress: Deck and exam mix slots (`flashcards_deck_slots`), continuous SRS Notebook (`flashcardsNotebook`), game state (`flashcardsSave`, `flashcardsExam`), active study mode (`flashcardsActiveMode`), and notebook daily goal (`flashcards_notebook_daily_goal`).
+   - Settings: AI features enabled (`flashcards_ai_enabled`), haptic vibration feedback (`flashcardsHapticEnabled`), sound feedback (`flashcardsSoundEnabled`), reduced motion animations (`flashcardsAnimationsEnabled`), Pomodoro settings and toggle (`flashcards_pomodoro_enabled`, `flashcards_pomodoro_settings`), daily notification schedules (`flashcards_notifications_settings`), pinned header statistics for both standard game and notebook (`flashcards_header_pinned_stats_deck`, `flashcards_header_pinned_stats_notebook`), and AI categorizations (`flashcards_ai_categories`).
+   - Statistics: Study session history (`flashcards_stats` and `flashcardsStats`) intelligently merged by session ID to preserve all sessions without losing data from either device, with recalculated allTime metrics (cards answered, correct answers, total study time, and best streak).
+   - Daily Streaks: Consecutive day streak tracking (`flashcards_daily_streak`) with union-based activity heatmap reconciliation, best streak conservation, freeze protection reconciliation, and cloud date tracking.
+2. Architecture & Backend:
+   - Cloudflare Worker backend (`worker/src/index.js`, `worker/src/firestore.js`): Updated `/api/user/slots` (GET and POST) to persist and deliver `settings`, `dailyStreak`, and `activeMode` alongside `deckSlots`, `notebookSlot`, and `stats`. Updated non-Pro wipe logic to cleanly scrub settings and daily streak fields.
+   - Frontend Slot Manager (`js/slot-manager.js`): Added `getLocalSettings`, `applyCloudSettings`, `mergeDailyStreaks`, `mergeStatsData`, and debounced cloud synchronization (`debouncedSyncSlotsToCloud`).
+   - Event-driven reactive UI: Broadcasts `flashcards:sync-updated` upon cloud load to seamlessly update switches, streak fire badges, header stats tickers, and statistics charts in real-time without page reloads.
+3. Bumped Service Worker cache version to `flashcards-v14.3`.
+
+--------------------------------------------------------------------------------
+
+CHANGELOG: SLOTS & CLOUD SYNC FOR EXAM WEEK MIXES (v14.2)
+Date: 2026-10-30
+
+OVERVIEW:
+1. Exam Week mixes ("Semana de Provas") now occupy a slot in the 3-slot system (`flashcards_deck_slots`) and are fully synchronized to the cloud for Pro users via the Cloudflare Worker backend and Firestore.
+2. Updated `openDeckInSlots` to support `mode: 'exam'` and automatically detect multi-deck mixes. Mixes record `isExam: true`, `mode: 'exam'`, and their full deck configuration.
+3. Updated Explore Files modal (`explore-modal.js`):
+   - Mix slots display a distinct Material 3 styling with purple accent, `bolt` icon, and subtitle indicating both total cards and number of decks in the mix.
+   - Clicking an exam mix slot restores `flashcardsExam` and launches the game directly in `exam` mode.
+   - Mix slots can be shared (`shareDeckToCloud`) and pinned (`fixSlot`), as well as deleted (`deleteSlot`), propagating deletions to the cloud.
+4. Updated in-game sync (`game.js`):
+   - In-game updates to exam mixes (answering cards, toggling decks, or adding/removing decks from the mix dropdown) update the corresponding slot and trigger debounced cloud synchronization (`debouncedSyncSlotsToCloud`).
+   - Mode switching (`switchActiveMode`) updates slot `isCurrent` flags dynamically.
+5. Cloudflare Worker backend (`worker/src/index.js`):
+   - Saves `isExam` and `mode` attributes on `deckSlotsMeta` and sets complete mix documents in `decks/${slot.deckId}`.
+6. Bumped Service Worker cache version to `flashcards-v14.2`.
+
+--------------------------------------------------------------------------------
+
+CHANGELOG: WHITELIST MANUELA PINHA DIAS AS LIFETIME PRO USER (v14.1)
+Date: 2026-10-30
+
+OVERVIEW:
+1. Whitelisted `manuelapinhadias@gmail.com` as a lifetime PRO user (`LIFETIME_PRO_EMAILS`) alongside Arthur and Clara across both client-side (`js/explore-modal.js`) and Cloudflare Worker backend (`worker/src/index.js`).
+2. Bumped Service Worker cache version to `flashcards-v14.1`.
+
+--------------------------------------------------------------------------------
+
 CHANGELOG: POMODORO PAUSE MODAL REFINEMENTS & BITCOUNT CLOCK FONT (v10.10)
 Date: 2026-10-29
 

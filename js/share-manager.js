@@ -100,9 +100,10 @@ export async function checkAndLoadSharedDeck() {
 
       const deckData = shareData.deckData;
       const title = shareData.title || 'Baralho Compartilhado';
+      const isExam = Boolean(shareData.isExam || (deckData && deckData.decks && Array.isArray(deckData.decks)));
 
       // Load into slots and fix it
-      const slotIdx = openDeckInSlots(deckData, title);
+      const slotIdx = openDeckInSlots(deckData, title, isExam ? 'exam' : 'normal');
       fixSlot(slotIdx, true);
       const slots = getLocalSlots();
       if (slots[slotIdx]) {

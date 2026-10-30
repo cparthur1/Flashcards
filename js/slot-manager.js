@@ -30,9 +30,9 @@ const NOTEBOOK_KEY = 'flashcardsNotebook';
  */
 function createDefaultSlots() {
   return [
-    { slotIndex: 0, deckId: null, title: 'Slot 1 (Vazio)', cardCount: 0, isFixed: false, isCurrent: false, deckData: null, updatedAt: 0 },
-    { slotIndex: 1, deckId: null, title: 'Slot 2 (Vazio)', cardCount: 0, isFixed: false, isCurrent: false, deckData: null, updatedAt: 0 },
-    { slotIndex: 2, deckId: null, title: 'Slot 3 (Vazio)', cardCount: 0, isFixed: false, isCurrent: false, deckData: null, updatedAt: 0 }
+    { slotIndex: 0, deckId: null, title: 'Slot 1 (Vazio)', cardCount: 0, isFixed: false, isCurrent: false, isExam: false, mode: 'normal', deckData: null, updatedAt: 0 },
+    { slotIndex: 1, deckId: null, title: 'Slot 2 (Vazio)', cardCount: 0, isFixed: false, isCurrent: false, isExam: false, mode: 'normal', deckData: null, updatedAt: 0 },
+    { slotIndex: 2, deckId: null, title: 'Slot 3 (Vazio)', cardCount: 0, isFixed: false, isCurrent: false, isExam: false, mode: 'normal', deckData: null, updatedAt: 0 }
   ];
 }
 
@@ -84,49 +84,57 @@ export function getNotebookSlotData() {
 }
 
 /**
- * Put a deck into the 3-slot system
- * Rule 1.1: Save 3 latest decks.
+ * Put a deck or exam mix into the 3-slot system
+ * Rule 1.1: Save 3 latest decks / mixes.
  * - If sharing the file: fixed on the slot without being overwritten.
  * - The currently opened slot is always overwritable.
  */
-export function openDeckInSlots(deckData, deckName = 'Baralho') {
+export function openDeckInSlots(deckData, deckName = 'Baralho', mode = 'normal', preferredSlotIndex = null) {
   const slots = getLocalSlots();
   const cardCount = (deckData.allQuestions || []).length;
-  const newDeckId = deckData.deckId || `deck_${Date.now()}`;
+  const isExam = mode === 'exam' || Boolean(deckData.decks && Array.isArray(deckData.decks));
+  const newDeckId = deckData.deckId || (isExam ? `exam_${Date.now()}` : `deck_${Date.now()}`);
   deckData.deckId = newDeckId;
   deckData.deckName = deckName;
 
-  // 1. Check if this deck is already in one of the slots (matching ID or title & questions length)
-  const existingIndex = slots.findIndex(s => s.deckData && (s.deckId === newDeckId || s.title === deckName));
+  let targetIndex = -1;
 
-  let targetIndex = 0;
-
-  if (existingIndex !== -1) {
-    // Deck already in a slot, make it active
-    targetIndex = existingIndex;
+  if (preferredSlotIndex !== null && preferredSlotIndex >= 0 && preferredSlotIndex < slots.length) {
+    targetIndex = preferredSlotIndex;
   } else {
-    // Find slot to overwrite:
-    // First priority: The currently active slot IF not fixed
-    const currentActiveIndex = slots.findIndex(s => s.isCurrent && !s.isFixed);
-    if (currentActiveIndex !== -1) {
-      targetIndex = currentActiveIndex;
+    // 1. Check if this deck or mix is already in one of the slots
+    const existingIndex = slots.findIndex(s => s.deckData && (
+      s.deckId === newDeckId ||
+      (isExam ? ((s.isExam || s.mode === 'exam') && (s.deckId === newDeckId || s.title === deckName)) : (!s.isExam && s.mode !== 'exam' && s.title === deckName))
+    ));
+
+    if (existingIndex !== -1) {
+      // Deck/mix already in a slot, make it active
+      targetIndex = existingIndex;
     } else {
-      // Second priority: Any empty slot
+      // Find slot to overwrite:
+      // First priority: Any empty slot
       const emptyIndex = slots.findIndex(s => !s.deckData);
       if (emptyIndex !== -1) {
         targetIndex = emptyIndex;
       } else {
-        // Third priority: Oldest slot that is not fixed
-        const unfixedSlots = slots
-          .map((s, idx) => ({ ...s, originalIdx: idx }))
-          .filter(s => !s.isFixed);
-
-        if (unfixedSlots.length > 0) {
-          unfixedSlots.sort((a, b) => a.updatedAt - b.updatedAt);
-          targetIndex = unfixedSlots[0].originalIdx;
+        // Second priority: The currently active slot IF not fixed
+        const currentActiveIndex = slots.findIndex(s => s.isCurrent && !s.isFixed);
+        if (currentActiveIndex !== -1) {
+          targetIndex = currentActiveIndex;
         } else {
-          // If all 3 slots are fixed, overwrite slot 0
-          targetIndex = 0;
+          // Third priority: Oldest slot that is not fixed
+          const unfixedSlots = slots
+            .map((s, idx) => ({ ...s, originalIdx: idx }))
+            .filter(s => !s.isFixed);
+
+          if (unfixedSlots.length > 0) {
+            unfixedSlots.sort((a, b) => a.updatedAt - b.updatedAt);
+            targetIndex = unfixedSlots[0].originalIdx;
+          } else {
+            // If all 3 slots are fixed, overwrite slot 0
+            targetIndex = 0;
+          }
         }
       }
     }
@@ -144,6 +152,8 @@ export function openDeckInSlots(deckData, deckName = 'Baralho') {
     cardCount,
     isFixed: slots[targetIndex].isFixed || false,
     isCurrent: true,
+    isExam,
+    mode: isExam ? 'exam' : 'normal',
     deckData,
     updatedAt: Date.now()
   };
@@ -151,8 +161,13 @@ export function openDeckInSlots(deckData, deckName = 'Baralho') {
   saveLocalSlots(slots);
 
   // Save to active game session
-  localStorage.setItem(SAVE_KEY, JSON.stringify(deckData));
-  localStorage.setItem(ACTIVE_MODE_KEY, 'normal');
+  if (isExam) {
+    localStorage.setItem('flashcardsExam', JSON.stringify(deckData));
+    localStorage.setItem(ACTIVE_MODE_KEY, 'exam');
+  } else {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(deckData));
+    localStorage.setItem(ACTIVE_MODE_KEY, 'normal');
+  }
 
   // Trigger cloud sync
   syncSlotsToCloud();
@@ -179,6 +194,8 @@ export function deleteSlot(slotIndex) {
   const slots = getLocalSlots();
   if (slots[slotIndex]) {
     const wasCurrent = slots[slotIndex].isCurrent;
+    const isExam = Boolean(slots[slotIndex].isExam || slots[slotIndex].mode === 'exam' || (slots[slotIndex].deckData && slots[slotIndex].deckData.decks));
+    const targetDeckId = slots[slotIndex].deckId;
     const shareSlug = slots[slotIndex].shareSlug;
 
     // If deck was shared, mark share as deleted in Firestore
@@ -197,6 +214,8 @@ export function deleteSlot(slotIndex) {
       cardCount: 0,
       isFixed: false,
       isCurrent: false,
+      isExam: false,
+      mode: 'normal',
       deckData: null,
       updatedAt: now,
       deletedAt: now
@@ -205,8 +224,19 @@ export function deleteSlot(slotIndex) {
     localStorage.setItem(`flashcards_slot_${slotIndex}_deleted_at`, String(now));
 
     if (wasCurrent) {
-      localStorage.removeItem(SAVE_KEY);
+      if (isExam) {
+        localStorage.removeItem('flashcardsExam');
+      } else {
+        localStorage.removeItem(SAVE_KEY);
+      }
       localStorage.removeItem(ACTIVE_MODE_KEY);
+    } else if (isExam) {
+      try {
+        const savedExam = JSON.parse(localStorage.getItem('flashcardsExam') || '{}');
+        if (savedExam?.deckId === targetDeckId) {
+          localStorage.removeItem('flashcardsExam');
+        }
+      } catch (e) {}
     }
 
     saveLocalSlots(slots);
@@ -266,7 +296,249 @@ export function importNotebookBackupData(parsedData) {
 }
 
 /**
- * Synchronize slots and user progress to Firestore via Backend Admin API
+ * Collect all user settings to sync
+ */
+export function getLocalSettings() {
+  let pomodoroSettings = null;
+  try {
+    const raw = localStorage.getItem('flashcards_pomodoro_settings');
+    if (raw) pomodoroSettings = JSON.parse(raw);
+  } catch (e) {}
+
+  let notificationsSettings = null;
+  try {
+    const raw = localStorage.getItem('flashcards_notifications_settings');
+    if (raw) notificationsSettings = JSON.parse(raw);
+  } catch (e) {}
+
+  let pinnedStatsDeck = null;
+  try {
+    const raw = localStorage.getItem('flashcards_header_pinned_stats_deck');
+    if (raw) pinnedStatsDeck = JSON.parse(raw);
+  } catch (e) {}
+
+  let pinnedStatsNotebook = null;
+  try {
+    const raw = localStorage.getItem('flashcards_header_pinned_stats_notebook');
+    if (raw) pinnedStatsNotebook = JSON.parse(raw);
+  } catch (e) {}
+
+  let aiCategories = null;
+  try {
+    const raw = localStorage.getItem('flashcards_ai_categories');
+    if (raw) aiCategories = JSON.parse(raw);
+  } catch (e) {}
+
+  return {
+    aiEnabled: localStorage.getItem('flashcards_ai_enabled') !== 'false',
+    hapticEnabled: localStorage.getItem('flashcardsHapticEnabled') !== 'false',
+    soundEnabled: localStorage.getItem('flashcardsSoundEnabled') !== 'false',
+    animationsEnabled: localStorage.getItem('flashcardsAnimationsEnabled') !== 'false',
+    pomodoroEnabled: localStorage.getItem('flashcards_pomodoro_enabled') === 'true',
+    pomodoroSettings,
+    notificationsSettings,
+    pinnedStatsDeck,
+    pinnedStatsNotebook,
+    aiCategories,
+    notebookDailyGoal: Number(localStorage.getItem('flashcards_notebook_daily_goal')) || 0,
+    freeAiDeckUsed: localStorage.getItem('spaiq_free_ai_deck_used') === 'true',
+    updatedAt: Number(localStorage.getItem('flashcards_settings_updated_at')) || Date.now()
+  };
+}
+
+/**
+ * Apply settings received from cloud
+ */
+export function applyCloudSettings(cloudSettings) {
+  if (!cloudSettings || typeof cloudSettings !== 'object') return false;
+
+  let changed = false;
+
+  if (cloudSettings.aiEnabled !== undefined) {
+    const val = cloudSettings.aiEnabled ? 'true' : 'false';
+    if (localStorage.getItem('flashcards_ai_enabled') !== val) {
+      localStorage.setItem('flashcards_ai_enabled', val);
+      changed = true;
+    }
+  }
+  if (cloudSettings.hapticEnabled !== undefined) {
+    const val = cloudSettings.hapticEnabled ? 'true' : 'false';
+    if (localStorage.getItem('flashcardsHapticEnabled') !== val) {
+      localStorage.setItem('flashcardsHapticEnabled', val);
+      changed = true;
+    }
+  }
+  if (cloudSettings.soundEnabled !== undefined) {
+    const val = cloudSettings.soundEnabled ? 'true' : 'false';
+    if (localStorage.getItem('flashcardsSoundEnabled') !== val) {
+      localStorage.setItem('flashcardsSoundEnabled', val);
+      changed = true;
+    }
+  }
+  if (cloudSettings.animationsEnabled !== undefined) {
+    const val = cloudSettings.animationsEnabled ? 'true' : 'false';
+    if (localStorage.getItem('flashcardsAnimationsEnabled') !== val) {
+      localStorage.setItem('flashcardsAnimationsEnabled', val);
+      changed = true;
+    }
+  }
+  if (cloudSettings.pomodoroEnabled !== undefined) {
+    const val = cloudSettings.pomodoroEnabled ? 'true' : 'false';
+    if (localStorage.getItem('flashcards_pomodoro_enabled') !== val) {
+      localStorage.setItem('flashcards_pomodoro_enabled', val);
+      changed = true;
+    }
+  }
+  if (cloudSettings.pomodoroSettings && typeof cloudSettings.pomodoroSettings === 'object') {
+    localStorage.setItem('flashcards_pomodoro_settings', JSON.stringify(cloudSettings.pomodoroSettings));
+    changed = true;
+  }
+  if (cloudSettings.notificationsSettings && typeof cloudSettings.notificationsSettings === 'object') {
+    localStorage.setItem('flashcards_notifications_settings', JSON.stringify(cloudSettings.notificationsSettings));
+    changed = true;
+  }
+  if (cloudSettings.pinnedStatsDeck && Array.isArray(cloudSettings.pinnedStatsDeck)) {
+    localStorage.setItem('flashcards_header_pinned_stats_deck', JSON.stringify(cloudSettings.pinnedStatsDeck));
+    localStorage.setItem('flashcards_header_pinned_stats', JSON.stringify(cloudSettings.pinnedStatsDeck));
+    changed = true;
+  }
+  if (cloudSettings.pinnedStatsNotebook && Array.isArray(cloudSettings.pinnedStatsNotebook)) {
+    localStorage.setItem('flashcards_header_pinned_stats_notebook', JSON.stringify(cloudSettings.pinnedStatsNotebook));
+    changed = true;
+  }
+  if (cloudSettings.aiCategories && typeof cloudSettings.aiCategories === 'object') {
+    let localCategories = {};
+    try {
+      const raw = localStorage.getItem('flashcards_ai_categories');
+      if (raw) localCategories = JSON.parse(raw);
+    } catch (e) {}
+    const mergedCategories = { ...localCategories, ...cloudSettings.aiCategories };
+    localStorage.setItem('flashcards_ai_categories', JSON.stringify(mergedCategories));
+    changed = true;
+  }
+  if (cloudSettings.notebookDailyGoal !== undefined) {
+    const val = String(cloudSettings.notebookDailyGoal);
+    if (localStorage.getItem('flashcards_notebook_daily_goal') !== val) {
+      localStorage.setItem('flashcards_notebook_daily_goal', val);
+      changed = true;
+    }
+  }
+  if (cloudSettings.freeAiDeckUsed) {
+    localStorage.setItem('spaiq_free_ai_deck_used', 'true');
+    changed = true;
+  }
+  if (cloudSettings.updatedAt) {
+    localStorage.setItem('flashcards_settings_updated_at', String(cloudSettings.updatedAt));
+  }
+
+  return changed;
+}
+
+/**
+ * Merge local daily streak and cloud daily streak intelligently
+ */
+export function mergeDailyStreaks(local, cloud) {
+  if (!cloud) return local;
+  if (!local) return cloud;
+
+  const mergedHistory = { ...(local.history || {}) };
+  for (const [dateStr, count] of Object.entries(cloud.history || {})) {
+    mergedHistory[dateStr] = Math.max(mergedHistory[dateStr] || 0, Number(count) || 0);
+  }
+
+  const mergedFrozenDates = Array.from(new Set([...(local.frozenDates || []), ...(cloud.frozenDates || [])]));
+  
+  const localUpdated = Number(local.updatedAt) || 0;
+  const cloudUpdated = Number(cloud.updatedAt) || 0;
+  const useCloudAsBase = cloudUpdated >= localUpdated;
+
+  const streak = Math.max(Number(local.streak) || 0, Number(cloud.streak) || 0);
+  const bestStreak = Math.max(Number(local.bestStreak) || 0, Number(cloud.bestStreak) || 0, streak);
+  const lastStudiedDate = (String(local.lastStudiedDate || '') > String(cloud.lastStudiedDate || '')) 
+    ? local.lastStudiedDate 
+    : (cloud.lastStudiedDate || local.lastStudiedDate || '');
+
+  return {
+    streak,
+    bestStreak,
+    lastStudiedDate,
+    freezesAvailable: useCloudAsBase ? cloud.freezesAvailable : local.freezesAvailable,
+    frozenDates: mergedFrozenDates,
+    history: mergedHistory,
+    lastFreezeAwardedStreak: Math.max(Number(local.lastFreezeAwardedStreak) || 0, Number(cloud.lastFreezeAwardedStreak) || 0),
+    updatedAt: Math.max(localUpdated, cloudUpdated, Date.now())
+  };
+}
+
+/**
+ * Merge local and cloud study statistics
+ */
+export function mergeStatsData(local, cloud) {
+  if (!cloud) return local;
+  if (!local) return cloud;
+
+  const sessionMap = new Map();
+  for (const sess of (local.history || [])) {
+    if (sess && (sess.id || sess.startTime)) {
+      sessionMap.set(sess.id || `sess_${sess.startTime}`, sess);
+    }
+  }
+  for (const sess of (cloud.history || [])) {
+    if (sess && (sess.id || sess.startTime)) {
+      const key = sess.id || `sess_${sess.startTime}`;
+      if (!sessionMap.has(key)) {
+        sessionMap.set(key, sess);
+      } else {
+        const existing = sessionMap.get(key);
+        if ((sess.cardsAnswered || 0) > (existing.cardsAnswered || 0) || (sess.lastActiveTime || 0) > (existing.lastActiveTime || 0)) {
+          sessionMap.set(key, sess);
+        }
+      }
+    }
+  }
+
+  const mergedHistory = Array.from(sessionMap.values()).sort((a, b) => (a.startTime || 0) - (b.startTime || 0));
+
+  let totalCardsAnswered = 0;
+  let totalCorrect = 0;
+  let totalTimeSeconds = 0;
+  let bestStreakAllTime = 0;
+
+  for (const s of mergedHistory) {
+    totalCardsAnswered += Number(s.cardsAnswered) || 0;
+    totalCorrect += Number(s.correctAnswers) || 0;
+    totalTimeSeconds += Number(s.durationSeconds) || 0;
+    if ((Number(s.bestStreak) || 0) > bestStreakAllTime) {
+      bestStreakAllTime = Number(s.bestStreak) || 0;
+    }
+  }
+
+  bestStreakAllTime = Math.max(bestStreakAllTime, Number(local.allTime?.bestStreakAllTime) || 0, Number(cloud.allTime?.bestStreakAllTime) || 0);
+
+  const localUpdated = Number(local.updatedAt) || Number(local.currentSession?.lastActiveTime) || 0;
+  const cloudUpdated = Number(cloud.updatedAt) || Number(cloud.currentSession?.lastActiveTime) || 0;
+  
+  let currentSession = local.currentSession;
+  if (cloud.currentSession && (!currentSession || (cloudUpdated > localUpdated && !cloud.currentSession.completed))) {
+    currentSession = cloud.currentSession;
+  }
+
+  return {
+    currentSession,
+    history: mergedHistory.slice(-200), // Cap at 200 sessions to keep payload nimble
+    allTime: {
+      totalSessions: mergedHistory.length,
+      totalCardsAnswered,
+      totalCorrect,
+      totalTimeSeconds,
+      bestStreakAllTime
+    },
+    updatedAt: Math.max(localUpdated, cloudUpdated, Date.now())
+  };
+}
+
+/**
+ * Synchronize slots, settings, daily streak, and user progress to Firestore via Backend Admin API
  */
 export async function syncSlotsToCloud() {
   if (syncTimeout) {
@@ -285,19 +557,44 @@ export async function syncSlotsToCloud() {
   try {
     const slots = getLocalSlots();
 
-    // Keep active slot updated with the latest normal game session if active
+    // Keep active slot updated with the latest normal game session or exam session if active
     const activeMode = localStorage.getItem(ACTIVE_MODE_KEY) || 'normal';
     const activeSave = localStorage.getItem(SAVE_KEY);
+    const activeExam = localStorage.getItem('flashcardsExam');
+
     if (activeMode === 'normal' && activeSave) {
       try {
         const parsedSave = JSON.parse(activeSave);
-        const currentSlotIndex = slots.findIndex(s => s.isCurrent);
+        let currentSlotIndex = slots.findIndex(s => s.isCurrent && !s.isExam);
+        if (currentSlotIndex === -1) currentSlotIndex = slots.findIndex(s => s.isCurrent);
         if (currentSlotIndex !== -1 && slots[currentSlotIndex]) {
           slots[currentSlotIndex].deckData = parsedSave;
           slots[currentSlotIndex].cardCount = (parsedSave.allQuestions || []).length;
           slots[currentSlotIndex].title = parsedSave.deckTitle || slots[currentSlotIndex].title;
+          slots[currentSlotIndex].isExam = false;
+          slots[currentSlotIndex].mode = 'normal';
           slots[currentSlotIndex].updatedAt = Date.now();
           saveLocalSlots(slots);
+        }
+      } catch (e) {}
+    } else if (activeMode === 'exam' && activeExam) {
+      try {
+        const parsedExam = JSON.parse(activeExam);
+        let currentSlotIndex = slots.findIndex(s => s.isCurrent && (s.isExam || s.mode === 'exam'));
+        if (currentSlotIndex === -1) currentSlotIndex = slots.findIndex(s => s.isExam || s.mode === 'exam');
+        if (currentSlotIndex === -1) currentSlotIndex = slots.findIndex(s => s.isCurrent);
+        if (currentSlotIndex !== -1 && slots[currentSlotIndex]) {
+          slots[currentSlotIndex].deckData = parsedExam;
+          slots[currentSlotIndex].cardCount = (parsedExam.allQuestions || []).length;
+          slots[currentSlotIndex].title = parsedExam.deckTitle || slots[currentSlotIndex].title || 'Semana de Provas';
+          slots[currentSlotIndex].isExam = true;
+          slots[currentSlotIndex].mode = 'exam';
+          slots[currentSlotIndex].updatedAt = Date.now();
+          saveLocalSlots(slots);
+        } else {
+          // No slot allocated for this exam mix yet: allocate one
+          openDeckInSlots(parsedExam, parsedExam.deckTitle || 'Semana de Provas', 'exam');
+          return;
         }
       } catch (e) {}
     }
@@ -324,17 +621,30 @@ export async function syncSlotsToCloud() {
       deletedAt: notebookDeletedAt
     };
 
-    // Stats
+    // Stats (supports both flashcards_stats and legacy flashcardsStats)
     let stats = {};
     try {
-      const statsRaw = localStorage.getItem('flashcardsStats');
+      const statsRaw = localStorage.getItem('flashcards_stats') || localStorage.getItem('flashcardsStats');
       if (statsRaw) stats = JSON.parse(statsRaw);
     } catch (e) {}
+
+    // Daily streak
+    let dailyStreak = null;
+    try {
+      const streakRaw = localStorage.getItem('flashcards_daily_streak');
+      if (streakRaw) dailyStreak = JSON.parse(streakRaw);
+    } catch (e) {}
+
+    // Settings
+    const settings = getLocalSettings();
 
     await saveCloudSlots({
       slots,
       notebookData: notebookPayload,
-      stats
+      stats,
+      settings,
+      dailyStreak,
+      activeMode
     });
   } catch (err) {
     console.warn('Erro ao sincronizar com nuvem via backend:', err);
@@ -371,8 +681,9 @@ export async function loadSlotsFromCloud() {
           const cloudDeletedAt = cloudSlot.deletedAt || (cloudSlot.deckData ? 0 : cloudUpdatedAt);
 
           if (cloudSlot.deckData) {
-            // Cloud has an active deck: load if local is empty or cloud is newer/equal
+            // Cloud has an active deck or exam mix: load if local is empty or cloud is newer/equal
             if (!localSlot?.deckData || cloudUpdatedAt >= localUpdatedAt) {
+              const isExam = Boolean(cloudSlot.isExam || cloudSlot.mode === 'exam' || (cloudSlot.deckData && cloudSlot.deckData.decks));
               localSlots[i] = {
                 slotIndex: i,
                 deckId: cloudSlot.deckId,
@@ -380,6 +691,8 @@ export async function loadSlotsFromCloud() {
                 cardCount: cloudSlot.cardCount,
                 isFixed: Boolean(cloudSlot.isFixed),
                 isCurrent: Boolean(cloudSlot.isCurrent),
+                isExam,
+                mode: isExam ? 'exam' : 'normal',
                 deckData: cloudSlot.deckData,
                 updatedAt: cloudUpdatedAt
               };
@@ -387,15 +700,25 @@ export async function loadSlotsFromCloud() {
               hasSlotChanges = true;
 
               if (cloudSlot.isCurrent) {
-                localStorage.setItem(SAVE_KEY, JSON.stringify(cloudSlot.deckData));
-                localStorage.setItem(ACTIVE_MODE_KEY, 'normal');
+                if (isExam) {
+                  localStorage.setItem('flashcardsExam', JSON.stringify(cloudSlot.deckData));
+                  localStorage.setItem(ACTIVE_MODE_KEY, 'exam');
+                } else {
+                  localStorage.setItem(SAVE_KEY, JSON.stringify(cloudSlot.deckData));
+                  localStorage.setItem(ACTIVE_MODE_KEY, 'normal');
+                }
               }
             }
           } else {
-            // Cloud slot is EMPTY or DELETED: propagate deletion if local has a deck!
+            // Cloud slot is EMPTY or DELETED: propagate deletion if local has a deck/mix!
             if (localSlot?.deckData && cloudDeletedAt >= localUpdatedAt) {
+              const wasExam = Boolean(localSlot.isExam || localSlot.mode === 'exam');
               if (localSlot.isCurrent) {
-                localStorage.removeItem(SAVE_KEY);
+                if (wasExam) {
+                  localStorage.removeItem('flashcardsExam');
+                } else {
+                  localStorage.removeItem(SAVE_KEY);
+                }
                 localStorage.removeItem(ACTIVE_MODE_KEY);
               }
               localSlots[i] = {
@@ -406,6 +729,8 @@ export async function loadSlotsFromCloud() {
                 cardCount: 0,
                 isFixed: false,
                 isCurrent: false,
+                isExam: false,
+                mode: 'normal',
                 deckData: null,
                 updatedAt: cloudDeletedAt,
                 deletedAt: cloudDeletedAt
@@ -421,10 +746,11 @@ export async function loadSlotsFromCloud() {
         saveLocalSlots(localSlots);
       }
     } else {
-      // If cloud has no slots yet, but local device has decks or notebook, push local to cloud!
+      // If cloud has no slots yet, but local device has decks or exam or notebook, push local to cloud!
       const hasLocalDecks = localSlots.some(s => s.deckData);
       const localNotebook = getNotebookSlotData();
-      if (hasLocalDecks || localNotebook?.deckData) {
+      const hasLocalExam = Boolean(localStorage.getItem('flashcardsExam'));
+      if (hasLocalDecks || localNotebook?.deckData || hasLocalExam) {
         await syncSlotsToCloud();
       }
     }
@@ -450,16 +776,69 @@ export async function loadSlotsFromCloud() {
       }
     }
 
-    // Load cloud stats
+    // Synchronize Daily Streak
+    if (cloudData.dailyStreak && typeof cloudData.dailyStreak === 'object') {
+      try {
+        let localStreak = null;
+        const streakRaw = localStorage.getItem('flashcards_daily_streak');
+        if (streakRaw) localStreak = JSON.parse(streakRaw);
+
+        const mergedStreak = mergeDailyStreaks(localStreak, cloudData.dailyStreak);
+        localStorage.setItem('flashcards_daily_streak', JSON.stringify(mergedStreak));
+        hasSlotChanges = true;
+      } catch (e) {
+        console.warn('Erro ao sincronizar streak diário:', e);
+      }
+    } else if (localStorage.getItem('flashcards_daily_streak')) {
+      syncSlotsToCloud();
+    }
+
+    // Synchronize Stats (merging history and allTime)
     if (cloudData.stats && typeof cloudData.stats === 'object' && Object.keys(cloudData.stats).length > 0) {
       try {
-        const localStatsRaw = localStorage.getItem('flashcardsStats');
-        const localStats = localStatsRaw ? JSON.parse(localStatsRaw) : null;
-        if (!localStats || (cloudData.lastSyncedAt && cloudData.lastSyncedAt >= (localStats.updatedAt || 0))) {
-          localStorage.setItem('flashcardsStats', JSON.stringify(cloudData.stats));
-        }
-      } catch (e) {}
+        let localStats = null;
+        const statsRaw = localStorage.getItem('flashcards_stats') || localStorage.getItem('flashcardsStats');
+        if (statsRaw) localStats = JSON.parse(statsRaw);
+
+        const mergedStats = mergeStatsData(localStats, cloudData.stats);
+        localStorage.setItem('flashcards_stats', JSON.stringify(mergedStats));
+        localStorage.setItem('flashcardsStats', JSON.stringify(mergedStats));
+        hasSlotChanges = true;
+      } catch (e) {
+        console.warn('Erro ao sincronizar estatísticas:', e);
+      }
+    } else if (localStorage.getItem('flashcards_stats') || localStorage.getItem('flashcardsStats')) {
+      syncSlotsToCloud();
     }
+
+    // Synchronize Settings
+    if (cloudData.settings && typeof cloudData.settings === 'object') {
+      try {
+        const settingsChanged = applyCloudSettings(cloudData.settings);
+        if (settingsChanged) hasSlotChanges = true;
+      } catch (e) {
+        console.warn('Erro ao aplicar configurações da nuvem:', e);
+      }
+    }
+
+    // Synchronize Active Mode
+    if (cloudData.activeMode && (cloudData.activeMode === 'normal' || cloudData.activeMode === 'exam' || cloudData.activeMode === 'notebook')) {
+      const currentActive = localStorage.getItem(ACTIVE_MODE_KEY);
+      if (!currentActive) {
+        localStorage.setItem(ACTIVE_MODE_KEY, cloudData.activeMode);
+        hasSlotChanges = true;
+      }
+    }
+
+    // Broadcast sync update event across page
+    try {
+      window.dispatchEvent(new CustomEvent('flashcards:sync-updated', {
+        detail: {
+          hasChanges: hasSlotChanges,
+          lastSyncedAt: cloudData.lastSyncedAt || Date.now()
+        }
+      }));
+    } catch (e) {}
 
     return hasSlotChanges;
   } catch (e) {

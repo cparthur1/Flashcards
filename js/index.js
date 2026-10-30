@@ -30,6 +30,9 @@ async function init() {
     // 4. Update Daily Streak Count above "Explorar arquivos"
     updateHomeDailyStreak();
     window.addEventListener('focus', updateHomeDailyStreak);
+    window.addEventListener('flashcards:sync-updated', () => {
+        updateHomeDailyStreak();
+    });
     window.addEventListener('storage', (e) => {
         if (!e.key || e.key.includes('streak') || e.key.includes('flashcards')) {
             updateHomeDailyStreak();
@@ -66,7 +69,11 @@ async function init() {
 
     if (examContinueBtn) {
         examContinueBtn.addEventListener('click', () => {
-            localStorage.setItem('flashcardsActiveMode', 'exam');
+            if (savedExamData) {
+                openDeckInSlots(savedExamData, savedExamData.deckTitle || "Semana de Provas", 'exam');
+            } else {
+                localStorage.setItem('flashcardsActiveMode', 'exam');
+            }
             window.location.href = ROUTES.GAME;
         });
     }
@@ -122,8 +129,7 @@ async function init() {
         };
 
         try {
-            localStorage.setItem('flashcardsExam', JSON.stringify(examState));
-            localStorage.setItem('flashcardsActiveMode', 'exam');
+            openDeckInSlots(examState, "Semana de Provas", 'exam');
             window.location.href = ROUTES.GAME;
         } catch (err) {
             if (err.name === 'QuotaExceededError') {
@@ -193,8 +199,7 @@ async function init() {
                                 allQuestions: parsed.cards || [],
                                 questionsPool: shuffleArray((parsed.cards || []).filter(q => q && q.type !== 'divisor' && q.type !== 'divider' && q.type !== 'note'))
                             };
-                            localStorage.setItem('flashcardsExam', JSON.stringify(examState));
-                            localStorage.setItem('flashcardsActiveMode', 'exam');
+                            openDeckInSlots(examState, examState.deckTitle, 'exam');
                             window.location.href = ROUTES.GAME;
                             return;
                         } else if (Array.isArray(parsed)) {
@@ -245,8 +250,7 @@ async function init() {
                         allQuestions: parsed.cards || [],
                         questionsPool: shuffleArray(playable)
                     };
-                    localStorage.setItem('flashcardsExam', JSON.stringify(examState));
-                    localStorage.setItem('flashcardsActiveMode', 'exam');
+                    openDeckInSlots(examState, examState.deckTitle, 'exam');
                     window.location.href = ROUTES.GAME;
                     return;
                 } else if (Array.isArray(parsed)) {
@@ -329,6 +333,13 @@ async function init() {
         if (examModal) {
             examModal.classList.remove('hidden');
         }
+    }
+
+    // Deep-link check to open exam modal if redirected from another page
+    const examUrlParam = new URLSearchParams(window.location.search).get('openExam');
+    if (examUrlParam === '1') {
+        openExamModal();
+        window.history.replaceState({}, document.title, window.location.pathname);
     }
 
     function closeExamModal() {

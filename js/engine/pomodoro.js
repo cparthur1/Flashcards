@@ -5,6 +5,7 @@
  */
 
 import { triggerHaptic, isSoundEnabled } from './effects.js';
+import { debouncedSyncSlotsToCloud } from '../slot-manager.js';
 
 const POMODORO_STORAGE_KEY = 'flashcards_pomodoro_enabled';
 const POMODORO_SETTINGS_KEY = 'flashcards_pomodoro_settings';
@@ -61,6 +62,7 @@ export function savePomodoroSettings(settings) {
         const payload = { focusMinutes: focus, breakMinutes: rest };
         localStorage.setItem(POMODORO_SETTINGS_KEY, JSON.stringify(payload));
         console.log("[Pomodoro] Novas configurações salvas:", payload);
+        debouncedSyncSlotsToCloud();
         return payload;
     } catch (e) {
         console.warn("[Pomodoro] Erro ao salvar configurações do Pomodoro:", e);
@@ -83,6 +85,7 @@ export function setPomodoroEnabled(enabled) {
         stopPomodoro();
     }
     updatePomodoroUI();
+    debouncedSyncSlotsToCloud();
 }
 
 function startStudyCycle() {
@@ -381,6 +384,18 @@ export function updatePomodoroUI() {
     if (pomodoroSubtitleEl) {
         pomodoroSubtitleEl.textContent = `${settings.focusMinutes} min foco • ${settings.breakMinutes} min pausa`;
     }
+}
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('flashcards:sync-updated', () => {
+        updatePomodoroUI();
+        const enabled = isPomodoroEnabled();
+        if (enabled && !isRunning) {
+            startStudyCycle();
+        } else if (!enabled && isRunning) {
+            stopPomodoro();
+        }
+    });
 }
 
 export function initPomodoro() {

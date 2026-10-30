@@ -8,6 +8,7 @@
 import { stripHtml } from './utils.js';
 import { BACKEND_URL } from './backend-api.js';
 import { getCurrentUserToken } from './firebase-client.js';
+import { debouncedSyncSlotsToCloud } from './slot-manager.js';
 
 const AI_CATEGORIES_KEY = 'flashcards_ai_categories';
 const DEFAULT_MODEL = 'gemini-flash-lite-latest';
@@ -67,6 +68,7 @@ export function getStoredAiCategories() {
 export function saveStoredAiCategories(data) {
     try {
         localStorage.setItem(AI_CATEGORIES_KEY, JSON.stringify(data));
+        debouncedSyncSlotsToCloud();
     } catch (e) {
         console.error("Erro ao salvar categorias de IA no localStorage:", e);
     }

@@ -9,6 +9,7 @@
 
 import { secureRandom, stripHtml } from '../utils.js';
 import { isLeechCard } from './scheduler.js';
+import { debouncedSyncSlotsToCloud } from '../slot-manager.js';
 
 const DAILY_STREAK_KEY = 'flashcards_daily_streak';
 const MAX_FREEZES = 2;
@@ -169,6 +170,7 @@ export function getDailyStreak() {
                 data.lastStudiedDate = lastDate;
                 data.updatedAt = Date.now();
                 localStorage.setItem(DAILY_STREAK_KEY, JSON.stringify(data));
+                debouncedSyncSlotsToCloud();
 
                 return {
                     streak,
@@ -244,6 +246,7 @@ export function recordDailyCardAnswered() {
             data.history = history;
             data.updatedAt = Date.now();
             localStorage.setItem(DAILY_STREAK_KEY, JSON.stringify(data));
+            debouncedSyncSlotsToCloud();
 
             return {
                 isFirstCardToday: false,
@@ -307,6 +310,7 @@ export function recordDailyCardAnswered() {
         };
 
         localStorage.setItem(DAILY_STREAK_KEY, JSON.stringify(payload));
+        debouncedSyncSlotsToCloud();
 
         return {
             isFirstCardToday: true,

@@ -15,7 +15,27 @@ O motor de jogo do Flashcards WebApp é centralizado no arquivo [`js/game.js`](f
 A aplicação opera em três modos distintos controlados via `activeMode` e sincronizados no `localStorage`:
 1. **Normal (`flashcardsSave`)**: Baralho padrão selecionado pelo usuário.
 2. **Caderno de Erros (`flashcardsNotebook`)**: Deck dinâmico contendo apenas cartões favoritados ou marcados para estudo de recuperação.
-3. **Semana de Provas (`flashcardsExam`)**: Modo multi-deck agregador que mescla cartões de múltiplos baralhos habilitados.
+3. **Semana de Provas (`flashcardsExam`)**: Modo multi-deck agregador que mescla cartões de múltiplos baralhos habilitados. As misturas criadas ocupam um slot no sistema de 3 slots (`flashcards_deck_slots`) e são sincronizadas na nuvem para assinantes Pro, com metadados próprios (`isExam: true`, `mode: 'exam'`).
+
+---
+
+### 1.2 Sistema de Slots e Sincronização em Nuvem (Pro)
+A aplicação adota um sistema de slots gerenciado por [`js/slot-manager.js`](file:///home/chief_arthur/apps/Flashcards/js/slot-manager.js):
+1. **3 Slots de Baralhos e Misturas**:
+   - Os slots armazenam os baralhos recentes ou misturas de "Semana de Provas" criadas pelo usuário.
+   - Cada slot registra `slotIndex`, `deckId`, `title`, `cardCount`, `isFixed`, `isCurrent`, `isExam`, `mode` e `deckData`.
+   - Se o slot for uma mistura da Semana de Provas (`isExam: true`), ao ser aberto ele restaura o estado em `flashcardsExam` e ativa `activeMode = 'exam'`.
+   - Durante a partida no modo exame, alterações na mistura (resposta de cards, adição ou remoção de baralhos) atualizam o slot correspondente e disparam `debouncedSyncSlotsToCloud()`.
+2. **Slot Dedicado do Caderno**:
+   - Armazenado separadamente em `flashcardsNotebook` e sincronizado na nuvem como documento independente (`notebook_{uid}`).
+3. **Sincronização Total em Nuvem (Backend Worker + Firestore)**:
+   - Exclusiva para usuários Pro (assinantes ativos e emails whitelistados).
+   - Preserva `deletedAt` para propagar exclusões de slots entre múltiplos dispositivos.
+   - **Progresso**: Sincroniza os 3 slots de baralhos/misturas, o slot do Caderno, estado de jogo (`flashcardsSave`, `flashcardsExam`), modo ativo e meta diária do Caderno.
+   - **Configurações**: Sincroniza preferências de IA (`flashcards_ai_enabled`), resposta tátil (`flashcardsHapticEnabled`), efeitos sonoros (`flashcardsSoundEnabled`), animações reduzidas (`flashcardsAnimationsEnabled`), temporizador Pomodoro (`flashcards_pomodoro_enabled`, `flashcards_pomodoro_settings`), agendamento de notificações (`flashcards_notifications_settings`), estatísticas fixadas no cabeçalho (`flashcards_header_pinned_stats_deck`, `flashcards_header_pinned_stats_notebook`) e categorização IA de matérias/assuntos (`flashcards_ai_categories`).
+   - **Estatísticas**: Histórico de sessões (`flashcards_stats`) unificado por ID sem perda de sessões entre dispositivos, recalculando métricas agregadas (`allTime`).
+   - **Streaks Diários**: Sequência diária consecutiva (`flashcards_daily_streak`) sincronizada com mesclagem inteligente de mapa de calor (Heatmap), melhor streak (`bestStreak`) e créditos de proteção (`freezesAvailable`, `frozenDates`).
+   - Disparo do evento customizado `flashcards:sync-updated` para atualização reativa em tempo real da interface em todas as telas abertas.
 
 ---
 
