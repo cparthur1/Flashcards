@@ -24,7 +24,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 export const firebaseConfig = {
-  apiKey: "AIzaSyBqZkVh9jf49EepwrZpYcdHU__wFqzaYak",
+  apiKey: atob('QUl6YVN5QnFrVmhoOWpmNDlFZXB3clpwWWNkSFVfX3dGcXphWWFr'),
   authDomain: "flashcards-ead57.firebaseapp.com",
   projectId: "flashcards-ead57",
   storageBucket: "flashcards-ead57.firebasestorage.app",
