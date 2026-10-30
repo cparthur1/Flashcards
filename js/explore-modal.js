@@ -518,7 +518,7 @@ function renderAuthHeader() {
             <span class="material-symbols-rounded text-sm">logout</span> Sair
           </button>
           ${isPro 
-            ? (!lifetime ? `<button id="modal-manage-sub-btn" class="text-xs text-gray-500 hover:text-red-600 font-medium underline cursor-pointer" title="Cancelar assinatura e apagar dados">Cancelar assinatura</button>` : '') 
+            ? `<button id="modal-manage-account-btn" class="text-xs text-blue-600 hover:text-blue-700 font-bold underline cursor-pointer">Gerenciar assinatura</button>` 
             : `<button id="modal-upgrade-pro-btn" class="text-xs text-blue-600 hover:text-blue-700 font-bold underline cursor-pointer">Assinar Pro</button>`}
         </div>
       </div>
@@ -528,35 +528,11 @@ function renderAuthHeader() {
       await signOutUser();
     });
     document.getElementById('modal-upgrade-pro-btn')?.addEventListener('click', openProModal);
-
-    document.getElementById('modal-manage-sub-btn')?.addEventListener('click', async () => {
-      const confirmed = confirm(
-        "Atenção: Ao cancelar sua assinatura Pro, a cobrança no Asaas será encerrada imediatamente e sua conta e todos os seus baralhos sincronizados na nuvem serão excluídos permanentemente.\n\nDeseja prosseguir com o cancelamento e exclusão dos dados?"
-      );
-      if (!confirmed) return;
-
-      const doubleCheck = prompt('Para confirmar a exclusão definitiva, digite CANCELAR:');
-      if (doubleCheck !== 'CANCELAR') {
-        alert('Ação abortada. Sua assinatura permanece ativa.');
-        return;
-      }
-
-      try {
-        const btn = document.getElementById('modal-manage-sub-btn');
-        if (btn) btn.textContent = 'Cancelando...';
-        await deleteAccountAndCancelSubscription();
-
-        // Clear local storage slots & save
-        localStorage.removeItem('flashcards_deck_slots');
-        localStorage.removeItem('flashcardsSave');
-        localStorage.removeItem('flashcardsActiveMode');
-
-        await signOutUser();
-        closeExploreModal();
-        alert('Sua assinatura foi cancelada e todos os seus dados foram apagados com sucesso.');
-        window.location.reload();
-      } catch (err) {
-        alert('Erro ao cancelar assinatura: ' + (err.message || 'Erro inesperado'));
+    document.getElementById('modal-manage-account-btn')?.addEventListener('click', () => {
+      if (typeof window !== 'undefined' && window.flashcardsOpenAccountModal) {
+        window.flashcardsOpenAccountModal();
+      } else {
+        import('./account-modal.js').then(m => m.openAccountModal());
       }
     });
 

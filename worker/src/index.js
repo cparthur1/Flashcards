@@ -9,7 +9,7 @@
  */
 
 import { verifyFirebaseIdToken, setFirebaseUserProClaim, deleteFirebaseUser } from './google-auth.js';
-import { getOrCreateCustomer, createSubscription, createExtraGenerationPayment, cancelSubscription } from './asaas.js';
+import { getOrCreateCustomer, createSubscription, createExtraGenerationPayment, cancelSubscription, getSubscriptionDetails } from './asaas.js';
 import { callGemini } from './gemini.js';
 import { getUserDocument, updateUserDocument, deleteUserDocument } from './firestore.js';
 
@@ -239,6 +239,87 @@ export default {
         return jsonResponse({
           success: true,
           message: 'Assinatura cancelada e conta excluída permanentemente com sucesso.'
+        }, 200, corsHeaders);
+      }
+
+      // 5.2 Get Subscription Details from Asaas (for manage modal)
+      if (path === '/api/subscription/details' && request.method === 'GET') {
+        const user = await authenticateUser();
+        const isLifetime = LIFETIME_PRO_EMAILS.includes((user.email || '').toLowerCase().trim());
+        if (isLifetime) {
+          return jsonResponse({
+            isPro: true,
+            isLifetime: true,
+            status: 'active',
+            plan: 'pro_lifetime'
+          }, 200, corsHeaders);
+        }
+
+        let userDoc = null;
+        let serviceAccount = null;
+        try {
+          serviceAccount = getServiceAccount(env);
+          userDoc = await getUserDocument(serviceAccount, user.uid);
+        } catch (e) {
+          console.warn('[Subscription] Erro ao buscar Firestore:', e.message);
+        }
+
+        const subId = userDoc?.subscription?.subscriptionId;
+        if (!subId) {
+          return jsonResponse({
+            isPro: Boolean(userDoc?.subscription?.status === 'active' || user.pro),
+            isLifetime: false,
+            status: userDoc?.subscription?.status || 'inactive'
+          }, 200, corsHeaders);
+        }
+
+        const details = await getSubscriptionDetails({
+          subscriptionId: subId,
+          apiKey: env.ASAAS_API_KEY,
+          isProduction: env.ASAAS_ENV !== 'sandbox'
+        });
+
+        return jsonResponse({
+          isPro: details ? (details.status === 'ACTIVE') : Boolean(userDoc?.subscription?.status === 'active'),
+          isLifetime: false,
+          ...(details || {}),
+          storedStatus: userDoc?.subscription?.status || 'inactive'
+        }, 200, corsHeaders);
+      }
+
+      // 5.3 Cancel Asaas Subscription Only (keeps account and decks intact)
+      if (path === '/api/subscription/cancel' && request.method === 'POST') {
+        const user = await authenticateUser();
+        let serviceAccount = null;
+        let userDoc = null;
+        try {
+          serviceAccount = getServiceAccount(env);
+          userDoc = await getUserDocument(serviceAccount, user.uid);
+        } catch (e) {
+          console.warn('[Subscription] Erro ao acessar Firestore no cancelamento:', e.message);
+        }
+
+        const subId = userDoc?.subscription?.subscriptionId;
+        if (subId) {
+          await cancelSubscription({
+            subscriptionId: subId,
+            apiKey: env.ASAAS_API_KEY,
+            isProduction: env.ASAAS_ENV !== 'sandbox'
+          }).catch(err => console.warn('Falha ao cancelar assinatura Asaas:', err));
+        }
+
+        if (serviceAccount) {
+          await updateUserDocument(serviceAccount, user.uid, {
+            'subscription.status': 'canceled',
+            'subscription.canceledAt': new Date().toISOString()
+          }).catch(err => console.warn('Falha ao atualizar Firestore:', err));
+
+          await setFirebaseUserProClaim(serviceAccount, user.uid, false).catch(() => {});
+        }
+
+        return jsonResponse({
+          success: true,
+          message: 'Assinatura cancelada com sucesso.'
         }, 200, corsHeaders);
       }
 

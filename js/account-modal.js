@@ -1,0 +1,398 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/**
+ * account-modal.js
+ * Modal de Gerenciamento de Conta, Assinatura e Pagamentos (Material Design 3 Expressive)
+ */
+
+import { auth, signInWithGoogle, signOutUser, onAuthChange } from './firebase-client.js';
+import { isLifetime, isUserPro, openProModal } from './explore-modal.js';
+import { getSubscriptionDetails, cancelSubscriptionOnly, deleteAccountAndCancelSubscription } from './backend-api.js';
+
+let accountModalInitialized = false;
+let subDetailsCache = null;
+let isLoadingSubDetails = false;
+
+/**
+ * Injeta o HTML base do modal de conta se ainda não existir no DOM
+ */
+function injectAccountModalHtml() {
+  if (document.getElementById('account-subscription-modal')) return;
+
+  const modalEl = document.createElement('div');
+  modalEl.id = 'account-subscription-modal';
+  modalEl.className = 'hidden fixed inset-0 modal-overlay z-[120] items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm';
+  modalEl.setAttribute('role', 'dialog');
+  modalEl.setAttribute('aria-modal', 'true');
+  modalEl.setAttribute('aria-labelledby', 'account-modal-title');
+
+  modalEl.innerHTML = `
+    <div class="m3-dialog-card w-full max-w-md bg-[var(--md-sys-color-surface-container-lowest)] rounded-[28px] shadow-2xl border border-[var(--md-sys-color-outline-variant)] overflow-hidden flex flex-col max-h-[90vh] animate-fadeIn">
+      <!-- Header -->
+      <div class="px-5 sm:px-6 py-4 border-b border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface-container-low)] flex justify-between items-center flex-shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-blue-100 text-[var(--md-sys-color-primary)] flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-rounded text-xl">manage_accounts</span>
+          </div>
+          <div>
+            <h3 id="account-modal-title" class="font-bold text-base sm:text-lg text-[var(--md-sys-color-on-surface)] leading-tight">Minha Conta & Assinatura</h3>
+            <p class="text-[11px] text-[var(--md-sys-color-on-surface-variant)]">Gerencie seu perfil, plano e pagamentos</p>
+          </div>
+        </div>
+        <button id="close-account-modal-btn" type="button" class="p-1.5 rounded-full hover:bg-[var(--md-sys-color-surface-container-high)] text-[var(--md-sys-color-on-surface-variant)] transition cursor-pointer" aria-label="Fechar">
+          <span class="material-symbols-rounded text-xl">close</span>
+        </button>
+      </div>
+
+      <!-- Content Body -->
+      <div id="account-modal-body" class="p-5 sm:p-6 overflow-y-auto custom-scrollbar space-y-5">
+        <!-- Renderizado dinamicamente via renderAccountModalContent() -->
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modalEl);
+
+  // Close handlers
+  modalEl.addEventListener('click', (e) => {
+    if (e.target === modalEl) closeAccountModal();
+  });
+  document.getElementById('close-account-modal-btn')?.addEventListener('click', closeAccountModal);
+}
+
+/**
+ * Renderiza o conteúdo do modal de acordo com o status do usuário
+ */
+async function renderAccountModalContent() {
+  const container = document.getElementById('account-modal-body');
+  if (!container) return;
+
+  const user = auth.currentUser;
+
+  // ESTADO 1: Usuário NÃO autenticado
+  if (!user) {
+    container.innerHTML = `
+      <div class="text-center py-4 space-y-4">
+        <div class="w-16 h-16 rounded-3xl bg-blue-50 text-[var(--md-sys-color-primary)] flex items-center justify-center mx-auto border border-blue-100 shadow-sm">
+          <span class="material-symbols-rounded text-3xl">account_circle</span>
+        </div>
+        <div>
+          <h4 class="font-bold text-base text-[var(--md-sys-color-on-surface)]">Conecte sua conta Google</h4>
+          <p class="text-xs text-[var(--md-sys-color-on-surface-variant)] mt-1 max-w-xs mx-auto">
+            Faça login para sincronizar seus baralhos na nuvem, acessar as ferramentas de IA e gerenciar sua assinatura Pro.
+          </p>
+        </div>
+
+        <button id="account-login-google-btn" type="button"
+          class="m3-btn-expressive m3-btn-filled w-full py-3 px-4 font-bold text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow cursor-pointer transition">
+          <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span>Entrar com Google</span>
+        </button>
+      </div>
+    `;
+
+    document.getElementById('account-login-google-btn')?.addEventListener('click', async () => {
+      try {
+        const loggedUser = await signInWithGoogle();
+        if (loggedUser) {
+          subDetailsCache = null;
+          renderAccountModalContent();
+        }
+      } catch (err) {
+        console.error('Falha no login:', err);
+      }
+    });
+    return;
+  }
+
+  // ESTADO 2: Usuário autenticado
+  const photo = user.photoURL || '';
+  const name = user.displayName || user.email.split('@')[0];
+  const email = user.email || '';
+  const lifetime = isLifetime(user);
+  const pro = isUserPro(user);
+
+  let planBadge = '';
+  if (lifetime) {
+    planBadge = `<span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+      <span class="material-symbols-rounded text-xs">star</span> PRO VITALÍCIO
+    </span>`;
+  } else if (pro) {
+    planBadge = `<span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+      <span class="material-symbols-rounded text-xs">verified</span> PRO ATIVO
+    </span>`;
+  } else {
+    planBadge = `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 border border-gray-200">
+      GRATUITO
+    </span>`;
+  }
+
+  // Bloco do Perfil
+  let html = `
+    <!-- Perfil do Usuário -->
+    <div class="flex items-center gap-3.5 p-3.5 rounded-2xl bg-[var(--md-sys-color-surface-container-low)] border border-[var(--md-sys-color-outline-variant)]">
+      <div class="relative flex-shrink-0">
+        ${photo ? `<img src="${photo}" class="w-12 h-12 rounded-full object-cover border-2 border-blue-400" alt="Avatar">`
+                : `<span class="material-symbols-rounded text-5xl text-blue-600">account_circle</span>`}
+        ${pro ? `<span class="absolute -bottom-1 -right-1 bg-amber-500 text-white rounded-full p-0.5 text-[10px]" title="Assinante Pro"><span class="material-symbols-rounded text-xs block">star</span></span>` : ''}
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <p class="font-bold text-sm text-[var(--md-sys-color-on-surface)] truncate">${name}</p>
+          ${planBadge}
+        </div>
+        <p class="text-xs text-[var(--md-sys-color-on-surface-variant)] truncate mt-0.5">${email}</p>
+      </div>
+    </div>
+  `;
+
+  // Bloco da Assinatura
+  if (lifetime) {
+    // 2.1 PRO VITALÍCIO
+    html += `
+      <div class="p-4 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-2">
+        <div class="flex items-center gap-2 text-amber-900 font-bold text-xs sm:text-sm">
+          <span class="material-symbols-rounded text-lg text-amber-600">verified</span>
+          <span>Acesso Vitalício Garantido</span>
+        </div>
+        <p class="text-xs text-amber-800/90 leading-relaxed">
+          Sua conta possui acesso irrestrito e vitalício a todas as ferramentas de IA, gerações de baralho, tutor interativo e sincronização contínua na nuvem sem mensalidades.
+        </p>
+      </div>
+    `;
+  } else if (pro) {
+    // 2.2 PRO MENSAL (Ativo via Asaas)
+    const nextDateFormatted = subDetailsCache?.nextDueDate 
+      ? new Date(subDetailsCache.nextDueDate + 'T12:00:00Z').toLocaleDateString('pt-BR') 
+      : 'Mensal';
+
+    const invoiceUrl = subDetailsCache?.invoiceUrl || '';
+
+    html += `
+      <div class="p-4 rounded-2xl bg-blue-50/60 border border-blue-200 space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 text-blue-950 font-bold text-xs sm:text-sm">
+            <span class="material-symbols-rounded text-lg text-blue-600">workspace_premium</span>
+            <span>Flashcards Pro (Mensal)</span>
+          </div>
+          <span class="text-xs font-black text-blue-700 bg-blue-100/80 px-2.5 py-0.5 rounded-full border border-blue-300">
+            R$ 5,00 / mês
+          </span>
+        </div>
+
+        <div class="space-y-1.5 text-xs text-blue-900/90 pt-1">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-rounded text-base text-blue-600">calendar_month</span>
+            <span>Próxima renovação: <strong>${nextDateFormatted}</strong></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-rounded text-base text-blue-600">bolt</span>
+            <span>Tutor de IA ilimitado + 3 gerações de decks por mês</span>
+          </div>
+        </div>
+
+        <!-- Ações do Asaas: Fatura / Trocar Cartão -->
+        <div class="pt-2 border-t border-blue-200/80 space-y-2">
+          ${invoiceUrl ? `
+            <a href="${invoiceUrl}" target="_blank" rel="noopener noreferrer"
+              class="m3-btn-expressive m3-btn-tonal w-full py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-blue-700 bg-white hover:bg-blue-50 border border-blue-200 transition cursor-pointer shadow-xs">
+              <span class="material-symbols-rounded text-base">credit_card</span>
+              <span>Trocar Cartão ou Ver Fatura no Asaas</span>
+              <span class="material-symbols-rounded text-sm">open_in_new</span>
+            </a>
+          ` : `
+            <div id="account-loading-details" class="text-[11px] text-blue-700 font-medium text-center">
+              ${isLoadingSubDetails ? 'Carregando opções de pagamento...' : 'Assinatura ativa via Asaas.'}
+            </div>
+          `}
+
+          <!-- Botão Cancelar Assinatura -->
+          <button type="button" id="account-cancel-sub-btn"
+            class="w-full py-2 px-3 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer">
+            <span class="material-symbols-rounded text-base">block</span>
+            <span>Cancelar assinatura</span>
+          </button>
+        </div>
+      </div>
+    `;
+  } else {
+    // 2.3 USUÁRIO GRATUITO
+    html += `
+      <div class="p-4 rounded-2xl bg-[var(--md-sys-color-surface-container-low)] border border-[var(--md-sys-color-outline-variant)] space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Plano Atual: Gratuito</span>
+          <span class="text-xs font-bold text-[var(--md-sys-color-primary)]">R$ 0,00</span>
+        </div>
+
+        <div class="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl space-y-2">
+          <p class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+            <span class="material-symbols-rounded text-base text-blue-600">workspace_premium</span>
+            Vantagens do Plano Pro (R$ 5,00/mês):
+          </p>
+          <ul class="text-[11px] text-blue-950/90 space-y-1 pl-1">
+            <li class="flex items-center gap-1.5"><span class="material-symbols-rounded text-sm text-green-600">check_circle</span> Gerar flashcards com IA usando materiais</li>
+            <li class="flex items-center gap-1.5"><span class="material-symbols-rounded text-sm text-green-600">check_circle</span> Tutor de IA que explica seu card</li>
+            <li class="flex items-center gap-1.5"><span class="material-symbols-rounded text-sm text-green-600">check_circle</span> Corretor de respostas com sinônimos</li>
+            <li class="flex items-center gap-1.5"><span class="material-symbols-rounded text-sm text-green-600">check_circle</span> Sincronização em nuvem e links públicos</li>
+          </ul>
+        </div>
+
+        <button type="button" id="account-upgrade-pro-btn"
+          class="m3-btn-expressive m3-btn-filled w-full py-2.5 px-4 font-bold text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
+          <span class="material-symbols-rounded text-base">star</span>
+          <span>Assinar Flashcards Pro</span>
+        </button>
+      </div>
+    `;
+  }
+
+  // Rodapé com ações de conta (Sair e Excluir)
+  html += `
+    <div class="pt-2 border-t border-[var(--md-sys-color-outline-variant)] flex items-center justify-between gap-3">
+      <button type="button" id="account-logout-btn"
+        class="px-3 py-1.5 rounded-xl hover:bg-gray-100 text-xs font-bold text-[var(--md-sys-color-on-surface-variant)] hover:text-red-600 transition cursor-pointer flex items-center gap-1.5">
+        <span class="material-symbols-rounded text-base">logout</span>
+        <span>Sair da conta</span>
+      </button>
+
+      <button type="button" id="account-delete-account-btn"
+        class="text-[11px] text-gray-400 hover:text-red-600 transition underline cursor-pointer"
+        title="Excluir conta e todos os dados">
+        Excluir conta
+      </button>
+    </div>
+  `;
+
+  container.innerHTML = html;
+
+  // Listeners
+  document.getElementById('account-upgrade-pro-btn')?.addEventListener('click', () => {
+    closeAccountModal();
+    openProModal();
+  });
+
+  document.getElementById('account-logout-btn')?.addEventListener('click', async () => {
+    try {
+      await signOutUser();
+      subDetailsCache = null;
+      closeAccountModal();
+      window.location.reload();
+    } catch (err) {
+      console.error('Erro ao sair:', err);
+    }
+  });
+
+  // Cancelar Assinatura (mantém conta e dados)
+  document.getElementById('account-cancel-sub-btn')?.addEventListener('click', async () => {
+    const confirmed = confirm(
+      "Deseja realmente cancelar sua assinatura do Flashcards Pro?\n\nAs próximas cobranças no Asaas serão canceladas imediatamente e seus baralhos continuarão salvos na nuvem."
+    );
+    if (!confirmed) return;
+
+    try {
+      const btn = document.getElementById('account-cancel-sub-btn');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="material-symbols-rounded text-base animate-spin">refresh</span> Cancelando...`;
+      }
+
+      await cancelSubscriptionOnly();
+      subDetailsCache = null;
+      alert("Assinatura cancelada com sucesso. Você não terá novas cobranças.");
+      renderAccountModalContent();
+    } catch (err) {
+      alert("Erro ao cancelar assinatura: " + (err.message || "Tente novamente mais tarde"));
+      renderAccountModalContent();
+    }
+  });
+
+  // Exclusão definitiva de conta
+  document.getElementById('account-delete-account-btn')?.addEventListener('click', async () => {
+    const confirmed = confirm(
+      "Atenção: Esta ação é definitiva e irreversível.\n\nSua conta, baralhos sincronizados na nuvem e eventual assinatura no Asaas serão cancelados e apagados permanentemente.\n\nDeseja continuar?"
+    );
+    if (!confirmed) return;
+
+    const check = prompt("Para confirmar a exclusão definitiva de sua conta, digite EXCLUIR:");
+    if (check !== 'EXCLUIR') {
+      alert("Ação cancelada. Sua conta permanece ativa.");
+      return;
+    }
+
+    try {
+      await deleteAccountAndCancelSubscription();
+      localStorage.removeItem('flashcards_deck_slots');
+      localStorage.removeItem('flashcardsSave');
+      localStorage.removeItem('flashcardsActiveMode');
+      await signOutUser();
+      closeAccountModal();
+      alert("Sua conta e todos os seus dados foram excluídos com sucesso.");
+      window.location.reload();
+    } catch (err) {
+      alert("Erro ao excluir conta: " + (err.message || "Erro inesperado"));
+    }
+  });
+
+  // Busca detalhes da assinatura em segundo plano se ainda não cacheados
+  if (pro && !lifetime && !subDetailsCache && !isLoadingSubDetails) {
+    isLoadingSubDetails = true;
+    getSubscriptionDetails().then(details => {
+      subDetailsCache = details;
+      isLoadingSubDetails = false;
+      renderAccountModalContent();
+    }).catch(e => {
+      console.warn("Falha ao carregar detalhes de assinatura do Asaas:", e);
+      isLoadingSubDetails = false;
+    });
+  }
+}
+
+/**
+ * Inicializa o modal de conta
+ */
+export function initAccountModal() {
+  if (accountModalInitialized) return;
+  accountModalInitialized = true;
+  injectAccountModalHtml();
+
+  onAuthChange(() => {
+    subDetailsCache = null;
+    const modal = document.getElementById('account-subscription-modal');
+    if (modal && !modal.classList.contains('hidden')) {
+      renderAccountModalContent();
+    }
+  });
+}
+
+/**
+ * Abre o modal de conta & assinatura
+ */
+export function openAccountModal() {
+  initAccountModal();
+  renderAccountModalContent();
+  const modal = document.getElementById('account-subscription-modal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+}
+
+/**
+ * Fecha o modal de conta & assinatura
+ */
+export function closeAccountModal() {
+  const modal = document.getElementById('account-subscription-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+}
+
+// Expõe globalmente caso necessário
+if (typeof window !== 'undefined') {
+  window.flashcardsOpenAccountModal = openAccountModal;
+}

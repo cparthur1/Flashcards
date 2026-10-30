@@ -21,6 +21,7 @@ import { initTransfer } from './transfer.js';
 import { initStatsSession, recordStatsAnswer, recordStatsAiCorrection, archiveCurrentSession, completeCurrentSession, getCurrentSessionMetrics } from './stats-tracker.js';
 import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
 import { initExploreModal, openExploreModal, openProModal, isUserPro } from './explore-modal.js';
+import { openAccountModal } from './account-modal.js';
 import { onAuthChange, auth } from './firebase-client.js';
 import { checkAndLoadSharedDeck } from './share-manager.js';
 
@@ -4730,7 +4731,7 @@ if (settingAiRow && settingAiSwitch) {
 const settingProBtn = document.getElementById('setting-pro-btn');
 settingProBtn?.addEventListener('click', () => {
     closeAppSettingsModal();
-    openProModal();
+    openAccountModal();
 });
 
 // Notebook Goal Select in Settings Modal
@@ -5782,7 +5783,7 @@ if (menuAccountBtn) {
     menuAccountBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         closeHamburgerMenu();
-        openExploreModal();
+        openAccountModal();
     });
 }
 

@@ -158,6 +158,49 @@ export async function createExtraGenerationPayment({ customerId, uid, apiKey, is
 }
 
 /**
+ * Get details and latest payment of an Asaas Subscription
+ */
+export async function getSubscriptionDetails({ subscriptionId, apiKey, isProduction = true }) {
+  if (!subscriptionId) return null;
+  const baseUrl = getAsaasBaseUrl(isProduction);
+  const headers = {
+    'Content-Type': 'application/json',
+    'access_token': apiKey
+  };
+
+  try {
+    const subRes = await fetch(`${baseUrl}/subscriptions/${subscriptionId}`, { headers });
+    if (!subRes.ok) return null;
+    const subData = await subRes.json();
+
+    let invoiceUrl = null;
+    let bankSlipUrl = null;
+    const paymentsRes = await fetch(`${baseUrl}/subscriptions/${subscriptionId}/payments?limit=1&order=desc`, { headers });
+    if (paymentsRes.ok) {
+      const pData = await paymentsRes.json();
+      if (pData.data && pData.data.length > 0) {
+        invoiceUrl = pData.data[0].invoiceUrl;
+        bankSlipUrl = pData.data[0].bankSlipUrl;
+      }
+    }
+
+    return {
+      id: subData.id,
+      status: subData.status,
+      billingType: subData.billingType,
+      value: subData.value,
+      nextDueDate: subData.nextDueDate,
+      cycle: subData.cycle,
+      invoiceUrl,
+      bankSlipUrl
+    };
+  } catch (e) {
+    console.warn(`Erro ao buscar detalhes da assinatura Asaas (${subscriptionId}):`, e);
+    return null;
+  }
+}
+
+/**
  * Cancel an existing Asaas Subscription
  */
 export async function cancelSubscription({ subscriptionId, apiKey, isProduction = true }) {

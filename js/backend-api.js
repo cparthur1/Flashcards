@@ -167,6 +167,34 @@ export async function getStatsAIInsights(statsPrompt) {
 }
 
 /**
+ * Get detailed subscription info from backend / Asaas
+ */
+export async function getSubscriptionDetails() {
+  const res = await fetchWithAuth('/api/subscription/details');
+  if (!res.ok) {
+    if (res.status === 401) return null;
+    throw new Error('Falha ao obter detalhes da assinatura');
+  }
+  return await res.json();
+}
+
+/**
+ * Cancel only the Asaas recurring subscription (keeps user account and decks)
+ */
+export async function cancelSubscriptionOnly() {
+  const res = await fetchWithAuth('/api/subscription/cancel', {
+    method: 'POST'
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Erro ao cancelar assinatura');
+  }
+
+  return await res.json();
+}
+
+/**
  * Cancel Pro Subscription and Permanently Delete User Account & All Data
  */
 export async function deleteAccountAndCancelSubscription() {
