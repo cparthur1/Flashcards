@@ -35,6 +35,7 @@ export function updateTutorUI(elements = {}) {
     const aiIconOn = elements.aiIconOn || document.getElementById('ai-icon-on');
     const aiSwitch = elements.aiSwitch || document.getElementById('ai-switch');
 
+    const isAiEnabled = isTutorEnabled();
     if (isAiEnabled) {
         if (menuAiIcon) menuAiIcon.src = '../assets/img/enabled_ai.svg';
         if (menuAiStatusBadge) {
@@ -67,7 +68,6 @@ export function getLastUserAnswerForChat() {
 }
 
 export function resetTutorChatSession() {
-    currentChatSession = null;
     currentBackendChatHistory = [];
 }
 
