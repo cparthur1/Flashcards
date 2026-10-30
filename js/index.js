@@ -3,7 +3,6 @@ import { ROUTES, shuffleArray, generateSecureId } from './utils.js';
 import { getDailyStreak } from './engine/notebook-scheduler.js';
 import { initExploreModal, openExploreModal } from './explore-modal.js';
 import { checkAndLoadSharedDeck } from './share-manager.js';
-import { signInWithGoogle, onAuthChange, auth } from './firebase-client.js';
 
 async function init() {
     // 1. Check for shared deck via deep-link (?share=...)
@@ -15,34 +14,6 @@ async function init() {
     const openExploreBtn = document.getElementById('open-explore-btn');
     if (openExploreBtn) {
         openExploreBtn.addEventListener('click', openExploreModal);
-    }
-
-    // 2.1 Landing Google Login Button
-    const landingGoogleLoginBtn = document.getElementById('landing-google-login-btn');
-    if (landingGoogleLoginBtn) {
-        landingGoogleLoginBtn.addEventListener('click', async () => {
-            if (auth.currentUser) {
-                openExploreModal();
-            } else {
-                try {
-                    await signInWithGoogle();
-                } catch (e) {
-                    console.error('Erro ao fazer login com Google:', e);
-                }
-            }
-        });
-
-        onAuthChange((user) => {
-            const label = document.getElementById('landing-login-label');
-            if (user) {
-                const name = user.displayName || user.email.split('@')[0];
-                if (label) label.textContent = `Conectado como ${name}`;
-                landingGoogleLoginBtn.title = "Clique para abrir seus baralhos e conta";
-            } else {
-                if (label) label.textContent = "Fazer login com Google";
-                landingGoogleLoginBtn.title = "Fazer login com Google";
-            }
-        });
     }
 
     // 3. Continue Active Session Button
