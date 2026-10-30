@@ -182,7 +182,7 @@ function injectModalHtml() {
   container.id = 'explore-modal-wrapper';
   container.innerHTML = `
     <!-- EXPLORAR ARQUIVOS MODAL -->
-    <div id="explore-modal" class="hidden fixed inset-0 modal-overlay z-[100] items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-sm">
+    <div id="explore-modal" class="hidden fixed inset-0 modal-overlay z-[100] items-center justify-center p-3 sm:p-4 bg-black/50">
       <div class="m3-dialog-card w-full max-w-2xl bg-[var(--md-sys-color-surface-container-lowest)] rounded-[28px] shadow-2xl border border-[var(--md-sys-color-outline-variant)] overflow-hidden flex flex-col max-h-[92vh] animate-fadeIn">
         
         <!-- HEADER (Matches Mockup) -->
@@ -241,7 +241,7 @@ function injectModalHtml() {
     </div>
 
     <!-- PRO SUBSCRIPTION MODAL (R$ 4,99/MÊS) -->
-    <div id="pro-subscription-modal" class="hidden fixed inset-0 modal-overlay z-[110] items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm">
+    <div id="pro-subscription-modal" class="hidden fixed inset-0 modal-overlay z-[110] items-center justify-center p-3 sm:p-4 bg-black/60">
       <div class="m3-dialog-card w-full max-w-md bg-[var(--md-sys-color-surface-container-lowest)] rounded-[28px] shadow-2xl border border-[var(--md-sys-color-outline-variant)] p-6 text-center animate-fadeIn max-h-[92vh] overflow-y-auto custom-scrollbar">
         <div class="w-12 h-12 rounded-2xl bg-blue-100 text-[var(--md-sys-color-primary)] flex items-center justify-center mx-auto mb-3">
           <span class="material-symbols-rounded text-2xl">workspace_premium</span>
@@ -293,7 +293,7 @@ function injectModalHtml() {
     </div>
 
     <!-- EXTRA DECK PURCHASE MODAL (R$ 0,99) -->
-    <div id="extra-deck-modal" class="hidden fixed inset-0 modal-overlay z-[120] items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm">
+    <div id="extra-deck-modal" class="hidden fixed inset-0 modal-overlay z-[120] items-center justify-center p-3 sm:p-4 bg-black/60">
       <div class="m3-dialog-card w-full max-w-md bg-[var(--md-sys-color-surface-container-lowest)] rounded-[28px] shadow-2xl border border-[var(--md-sys-color-outline-variant)] p-6 text-center animate-fadeIn max-h-[92vh] overflow-y-auto custom-scrollbar">
         <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center mx-auto mb-3">
           <span class="material-symbols-rounded text-2xl">add_circle</span>
@@ -633,7 +633,7 @@ async function mountStripeEmbeddedForm() {
         "colorPrimary": "#3b82f7",
         "colorSuccess": "#00c853",
         "colorText": "#30313d",
-        "fontFamily": "Open Sans",
+        "fontFamily": "'Roboto Flex', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         "fontSizeBase": "16px",
         "spacingUnit": "4px"
       }
@@ -805,7 +805,7 @@ async function mountExtraDeckEmbeddedForm() {
         "colorPrimary": "#3b82f7",
         "colorSuccess": "#00c853",
         "colorText": "#30313d",
-        "fontFamily": "Open Sans",
+        "fontFamily": "'Roboto Flex', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         "fontSizeBase": "16px",
         "spacingUnit": "4px"
       }

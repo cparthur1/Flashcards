@@ -664,9 +664,7 @@ body {
 }
 
 .modal-overlay {
-    background-color: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 /* Modal Inner Card Physical Entrance Animation (M3 Shared Axis Z / Elevate) */

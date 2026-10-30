@@ -20,7 +20,7 @@ function injectAccountModalHtml() {
 
   const modalEl = document.createElement('div');
   modalEl.id = 'account-subscription-modal';
-  modalEl.className = 'hidden fixed inset-0 modal-overlay z-[120] items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm';
+  modalEl.className = 'hidden fixed inset-0 modal-overlay z-[120] items-center justify-center p-3 sm:p-4 bg-black/60';
   modalEl.setAttribute('role', 'dialog');
   modalEl.setAttribute('aria-modal', 'true');
   modalEl.setAttribute('aria-labelledby', 'account-modal-title');
