@@ -683,10 +683,8 @@ async function mountStripeEmbeddedForm() {
     if (loadActionsResult.type === 'success') {
       form.on('confirm', async (event) => {
         try {
-          const returnUrl = window.location.href.split('#')[0];
           const actionResult = await loadActionsResult.actions.confirm({
-            formConfirmEvent: event,
-            returnUrl
+            formConfirmEvent: event
           });
           console.log('[Stripe] Confirmação de pagamento:', actionResult);
           if (actionResult && actionResult.error) {
@@ -863,10 +861,8 @@ async function mountExtraDeckEmbeddedForm() {
     if (loadActionsResult.type === 'success') {
       form.on('confirm', async (event) => {
         try {
-          const returnUrl = window.location.href.split('#')[0];
           const actionResult = await loadActionsResult.actions.confirm({
-            formConfirmEvent: event,
-            returnUrl
+            formConfirmEvent: event
           });
           console.log('[Stripe Extra Deck] Confirmação:', actionResult);
           if (actionResult && actionResult.error) {
