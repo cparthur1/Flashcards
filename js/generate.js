@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { callWithRetry, checkAndResetModelFallback, sanitizeChatHistory, renderMathAndMarkdown, stripHtml, escapeHtml, sanitizeImageUrl } from './utils.js';
 import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
 import { initExploreModal, openProModal, isUserPro } from './explore-modal.js';
-import { onAuthChange, getCurrentUserToken } from './firebase-client.js';
+import { onAuthChange, getCurrentUserToken, signInWithGoogle } from './firebase-client.js';
 import { BACKEND_URL } from './backend-api.js';
 import { openDeckInSlots, syncSlotsToCloud } from './slot-manager.js';
 
@@ -1305,25 +1305,123 @@ tabAiChatBtn.addEventListener('click', () => {
     switchSidebarTab('ai');
 });
 
+export function hasUsedFreeAiDeck() {
+    return localStorage.getItem('spaiq_free_ai_deck_used') === 'true';
+}
+
+export function markFreeAiDeckUsed() {
+    localStorage.setItem('spaiq_free_ai_deck_used', 'true');
+    window.currentDeckIsFreeAiTrial = true;
+}
+
+export function canGenerateWithAi() {
+    if (isUserPro()) return true;
+    return !hasUsedFreeAiDeck();
+}
+
 function updateProPaywalledUI() {
     initExploreModal();
     const isPro = isUserPro();
+    const usedTrial = hasUsedFreeAiDeck();
+
     [cardMode21, cardMode22].forEach(card => {
         if (!card) return;
         const existingBadge = card.querySelector('.paywall-badge-pill');
         if (!isPro) {
-            card.classList.add('is-paywalled');
-            if (!existingBadge) {
-                const badge = document.createElement('div');
-                badge.className = 'paywall-badge-pill';
-                badge.innerHTML = `<img src="../assets/img/PRO.svg" alt="Pro"><span>PRO</span>`;
-                card.appendChild(badge);
+            if (usedTrial) {
+                card.classList.add('is-paywalled');
+                if (!existingBadge) {
+                    const badge = document.createElement('div');
+                    badge.className = 'paywall-badge-pill';
+                    badge.innerHTML = `<img src="../assets/img/PRO.svg" alt="Pro"><span>PRO</span>`;
+                    card.appendChild(badge);
+                } else {
+                    existingBadge.className = 'paywall-badge-pill';
+                    existingBadge.innerHTML = `<img src="../assets/img/PRO.svg" alt="Pro"><span>PRO</span>`;
+                }
+            } else {
+                card.classList.remove('is-paywalled');
+                if (!existingBadge) {
+                    const badge = document.createElement('div');
+                    badge.className = 'paywall-badge-pill trial-badge-pill';
+                    badge.innerHTML = `<img src="../assets/img/PRO.svg" alt="Trial"><span>1 GRÁTIS</span>`;
+                    card.appendChild(badge);
+                } else {
+                    existingBadge.className = 'paywall-badge-pill trial-badge-pill';
+                    existingBadge.innerHTML = `<img src="../assets/img/PRO.svg" alt="Trial"><span>1 GRÁTIS</span>`;
+                }
             }
         } else {
             card.classList.remove('is-paywalled');
             existingBadge?.remove();
         }
     });
+
+    const modal21Badge = document.getElementById('modal-2-1-badge-container');
+    const modal22Badge = document.getElementById('modal-2-2-badge-container');
+    if (!isPro && !usedTrial) {
+        if (modal21Badge) {
+            modal21Badge.className = 'p-3.5 bg-blue-50 rounded-xl border border-blue-200 flex items-center justify-between';
+            modal21Badge.innerHTML = `
+                <div class="flex items-center gap-2.5">
+                    <img src="../assets/img/PRO.svg" class="w-5 h-5 flex-shrink-0" alt="Pro">
+                    <div>
+                        <span class="text-xs font-bold text-blue-900 block">Teste Gratuito: 1 Baralho com IA</span>
+                        <span class="text-[11px] text-blue-700">Gere 1 baralho com IA antes de precisar assinar</span>
+                    </div>
+                </div>
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full border border-blue-200">
+                    1 Grátis
+                </span>
+            `;
+        }
+        if (modal22Badge) {
+            modal22Badge.className = 'p-3.5 bg-blue-50 rounded-xl border border-blue-200 flex items-center justify-between';
+            modal22Badge.innerHTML = `
+                <div class="flex items-center gap-2.5">
+                    <img src="../assets/img/PRO.svg" class="w-5 h-5 flex-shrink-0" alt="Pro">
+                    <div>
+                        <span class="text-xs font-bold text-blue-900 block">Teste Gratuito: 1 Baralho com IA</span>
+                        <span class="text-[11px] text-blue-700">Aprimoramento por IA liberado no seu teste inicial</span>
+                    </div>
+                </div>
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full border border-blue-200">
+                    1 Grátis
+                </span>
+            `;
+        }
+    } else if (isPro) {
+        if (modal21Badge) {
+            modal21Badge.className = 'p-3.5 bg-purple-50 rounded-xl border border-purple-200 flex items-center justify-between';
+            modal21Badge.innerHTML = `
+                <div class="flex items-center gap-2.5">
+                    <img src="../assets/img/PRO.svg" class="w-5 h-5 flex-shrink-0" alt="Pro">
+                    <div>
+                        <span class="text-xs font-bold text-purple-900 block">Recurso Spaiq Pro</span>
+                        <span class="text-[11px] text-purple-700">Geração de IA com Gemini integrada ao seu plano</span>
+                    </div>
+                </div>
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-200">
+                    <span class="material-symbols-rounded text-xs">check_circle</span> Ativo
+                </span>
+            `;
+        }
+        if (modal22Badge) {
+            modal22Badge.className = 'p-3.5 bg-purple-50 rounded-xl border border-purple-200 flex items-center justify-between';
+            modal22Badge.innerHTML = `
+                <div class="flex items-center gap-2.5">
+                    <img src="../assets/img/PRO.svg" class="w-5 h-5 flex-shrink-0" alt="Pro">
+                    <div>
+                        <span class="text-xs font-bold text-purple-900 block">Recurso Spaiq Pro</span>
+                        <span class="text-[11px] text-purple-700">Aprimoramento de IA com Gemini integrado ao seu plano</span>
+                    </div>
+                </div>
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-200">
+                    <span class="material-symbols-rounded text-xs">check_circle</span> Ativo
+                </span>
+            `;
+        }
+    }
 
     if (tabAiChatBtn) {
         const tabBadge = tabAiChatBtn.querySelector('.paywall-tab-icon');
@@ -1404,7 +1502,7 @@ submitModal12Btn.addEventListener('click', async () => {
 
 // 2.1 Crie de materiais — Transforme slides, pdf, fotos... em cards
 cardMode21.addEventListener('click', () => {
-    if (!isUserPro()) {
+    if (!isUserPro() && hasUsedFreeAiDeck()) {
         openProModal();
         return;
     }
@@ -1453,7 +1551,7 @@ modal21Files.addEventListener('change', () => {
 
 submitModal21Btn.addEventListener('click', async () => {
     modal21Error.textContent = '';
-    if (!isUserPro()) {
+    if (!isUserPro() && hasUsedFreeAiDeck()) {
         openProModal();
         return;
     }
@@ -1537,8 +1635,22 @@ Retorne EXCLUSIVAMENTE o array JSON ([]) contendo os flashcards estruturados con
         const seenSignatures = new Set();
 
         if (!apiKey) {
-            const token = await getCurrentUserToken();
-            if (!token) throw new Error("Usuário não autenticado. Faça login para usar o Gemini via plano Pro.");
+            let token = await getCurrentUserToken();
+            if (!token) {
+                updateGeneratingStatus("Conectando com o Google para liberar sua geração gratuita...");
+                try {
+                    const user = await signInWithGoogle();
+                    if (!user) throw new Error("Login necessário para gerar baralho com IA.");
+                    token = await getCurrentUserToken();
+                } catch (authErr) {
+                    throw new Error("Faça login com sua conta Google para liberar sua geração gratuita com IA.");
+                }
+            }
+
+            const isTrial = !isUserPro() && !hasUsedFreeAiDeck();
+            if (isTrial) {
+                window.currentDeckIsFreeAiTrial = true;
+            }
 
             const res = await fetch(`${BACKEND_URL}/api/ai/generate`, {
                 method: 'POST',
@@ -1679,6 +1791,18 @@ Retorne EXCLUSIVAMENTE o array JSON ([]) contendo os flashcards estruturados con
         }
 
         if (deckCards.length > 0) {
+            if (window.currentDeckIsFreeAiTrial) {
+                markFreeAiDeckUsed();
+                deckCards.forEach(c => { if (c && typeof c === 'object') c.isFreeAiTrial = true; });
+                localStorage.setItem('editing_deck_is_free_trial', 'true');
+                updateProPaywalledUI();
+            }
+            if (window.currentDeckIsFreeAiTrial) {
+                markFreeAiDeckUsed();
+                deckCards.forEach(c => { if (c && typeof c === 'object') c.isFreeAiTrial = true; });
+                localStorage.setItem('editing_deck_is_free_trial', 'true');
+                updateProPaywalledUI();
+            }
             finishGeneratingAnimation(true, deckCards.length);
             removeAiChatGeneratingBubble();
             addChatMessage('model', `✓ Baralho gerado com sucesso! Criei ${deckCards.length} flashcards técnicos com base no material enviado. Quer que eu ajuste algo, adicione mais perguntas ou altere alguma alternativa?`);
@@ -1713,7 +1837,7 @@ Retorne EXCLUSIVAMENTE o array JSON ([]) contendo os flashcards estruturados con
 
 // 2.2 Aprimore um doc — A partir de um txt ou word, aprimore cartões
 cardMode22.addEventListener('click', () => {
-    if (!isUserPro()) {
+    if (!isUserPro() && hasUsedFreeAiDeck()) {
         openProModal();
         return;
     }
@@ -1734,7 +1858,7 @@ modal22File.addEventListener('change', () => {
 
 submitModal22Btn.addEventListener('click', async () => {
     modal22Error.textContent = '';
-    if (!isUserPro()) {
+    if (!isUserPro() && hasUsedFreeAiDeck()) {
         openProModal();
         return;
     }
@@ -1800,8 +1924,22 @@ JSON:
 ${JSON.stringify(localCards, null, 2)}`;
 
         if (!apiKey) {
-            const token = await getCurrentUserToken();
-            if (!token) throw new Error("Usuário não autenticado. Faça login para usar o Gemini via plano Pro.");
+            let token = await getCurrentUserToken();
+            if (!token) {
+                updateGeneratingStatus("Conectando com o Google para liberar sua geração gratuita...");
+                try {
+                    const user = await signInWithGoogle();
+                    if (!user) throw new Error("Login necessário para gerar baralho com IA.");
+                    token = await getCurrentUserToken();
+                } catch (authErr) {
+                    throw new Error("Faça login com sua conta Google para liberar sua geração gratuita com IA.");
+                }
+            }
+
+            const isTrial = !isUserPro() && !hasUsedFreeAiDeck();
+            if (isTrial) {
+                window.currentDeckIsFreeAiTrial = true;
+            }
 
             const res = await fetch(`${BACKEND_URL}/api/ai/generate`, {
                 method: 'POST',
@@ -1845,6 +1983,18 @@ ${JSON.stringify(localCards, null, 2)}`;
                 }
             }
             geminiChatSession = { _history: [] };
+            if (window.currentDeckIsFreeAiTrial) {
+                markFreeAiDeckUsed();
+                deckCards.forEach(c => { if (c && typeof c === 'object') c.isFreeAiTrial = true; });
+                localStorage.setItem('editing_deck_is_free_trial', 'true');
+                updateProPaywalledUI();
+            }
+            if (window.currentDeckIsFreeAiTrial) {
+                markFreeAiDeckUsed();
+                deckCards.forEach(c => { if (c && typeof c === 'object') c.isFreeAiTrial = true; });
+                localStorage.setItem('editing_deck_is_free_trial', 'true');
+                updateProPaywalledUI();
+            }
             finishGeneratingAnimation(true, deckCards.length);
             removeAiChatGeneratingBubble();
             addChatMessage('model', `✓ Documento aprimorado com sucesso! ${deckCards.length} cartões foram enriquecidos com opções e rótulos pelo Gemini.`);
@@ -1883,6 +2033,12 @@ ${JSON.stringify(localCards, null, 2)}`;
                 response = result.response;
             }
 
+            if (window.currentDeckIsFreeAiTrial) {
+                markFreeAiDeckUsed();
+                deckCards.forEach(c => { if (c && typeof c === 'object') c.isFreeAiTrial = true; });
+                localStorage.setItem('editing_deck_is_free_trial', 'true');
+                updateProPaywalledUI();
+            }
             finishGeneratingAnimation(true, deckCards.length);
             removeAiChatGeneratingBubble();
             addChatMessage('model', `✓ Flashcards aprimorados com sucesso! ${deckCards.length} cartões foram enriquecidos com alternativas e detalhes.`);
@@ -3463,6 +3619,16 @@ chatInput.addEventListener('keyup', (e) => {
 // --- SAVE & PLAY DECK ---
 downloadDeckBtn.addEventListener('click', () => {
     if (deckCards.length === 0) return;
+    const isFreeTrial = Boolean(
+        window.currentDeckIsFreeAiTrial || 
+        deckCards.some(c => c && c.isFreeAiTrial) || 
+        localStorage.getItem('editing_deck_is_free_trial') === 'true'
+    );
+    if (!isUserPro() && isFreeTrial) {
+        alert("Baralhos gerados no teste gratuito com IA não podem ser exportados como arquivo JSON.\n\nAssine o Spaiq Pro para exportar seus baralhos e ter acesso ilimitado!");
+        openProModal();
+        return;
+    }
     const jsonStr = JSON.stringify(deckCards, null, 4);
     const blob = new Blob([jsonStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -3497,12 +3663,25 @@ playDeckBtn.addEventListener('click', () => {
         return copy;
     };
 
+    const isFreeTrial = Boolean(
+        window.currentDeckIsFreeAiTrial || 
+        deckCards.some(c => c && c.isFreeAiTrial) || 
+        localStorage.getItem('editing_deck_is_free_trial') === 'true'
+    );
+
     const title = deckTitleDisplay.value;
     const gameState = {
         questionsPool: playableCards.map(sanitizeCard),
-        allQuestions: deckCards.map(sanitizeCard),
+        allQuestions: deckCards.map(c => {
+            const sc = sanitizeCard(c);
+            if (isFreeTrial && sc && typeof sc === 'object') {
+                sc.isFreeAiTrial = true;
+            }
+            return sc;
+        }),
         score: 0,
-        deckTitle: title
+        deckTitle: title,
+        isFreeAiTrial: isFreeTrial
     };
 
     try {
@@ -3536,6 +3715,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (savedDeck) {
         try {
             deckCards = JSON.parse(savedDeck);
+            const isSavedTrial = localStorage.getItem('editing_deck_is_free_trial') === 'true';
+            if (isSavedTrial || deckCards.some(c => c && c.isFreeAiTrial)) {
+                window.currentDeckIsFreeAiTrial = true;
+            }
             const displayTitle = savedTitle || "Flashcards";
             deckTitleDisplay.value = displayTitle;
             document.title = `${displayTitle} | Editor`;

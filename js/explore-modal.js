@@ -61,6 +61,9 @@ export async function refreshUserProStatus(user = (currentUser || auth.currentUs
     await user.getIdToken(true).catch(() => {});
   }
   userProStatus = await getUserStatus().catch(() => null);
+  if (userProStatus?.freeAiDeckUsed) {
+    localStorage.setItem('spaiq_free_ai_deck_used', 'true');
+  }
   return userProStatus;
 }
 

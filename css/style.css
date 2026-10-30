@@ -3158,6 +3158,12 @@ body.reduce-motion #header-shimmer-beam {
     height: 14px;
 }
 
+.trial-badge-pill {
+    background: #eff6ff !important;
+    border-color: #93c5fd !important;
+    color: #1d4ed8 !important;
+}
+
 
 
 

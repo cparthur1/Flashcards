@@ -359,6 +359,7 @@ export default {
           email: user.email,
           isPro,
           isLifetimePro: isLifetime,
+          freeAiDeckUsed: Boolean(userDoc?.freeAiDeckUsed),
           monthlyGenerationsUsed: monthlyUsed,
           monthlyIncluded: isLifetime ? 9999 : 3,
           extraGenerations,
@@ -922,16 +923,21 @@ export default {
         }
 
         const isPro = Boolean(isLifetime || user.pro || userDoc?.subscription?.status === 'active');
-        if (!isPro) {
+        const hasUsedFreeTrial = Boolean(userDoc?.freeAiDeckUsed);
+
+        // Allow 1 free deck generation for new/non-pro users before requiring subscription
+        if (!isPro && hasUsedFreeTrial) {
           return jsonResponse({
             error: 'subscription_required',
-            message: 'A geração de baralhos por IA é exclusiva para assinantes Pro (R$ 4,99/mês).'
+            message: 'Você já utilizou sua geração gratuita de 1 baralho com IA. Assine o Spaiq Pro (R$ 4,99/mês) para ter acesso completo!'
           }, 403, corsHeaders);
         }
 
-        // Quota check (bypassed for lifetime Pro or non-new deck operations)
+        const isFreeTrial = !isPro && !hasUsedFreeTrial;
+
+        // Quota check (bypassed for lifetime Pro, non-new deck operations, or free trial)
         const isNewDeck = reqBody.isNewDeck !== false;
-        if (isNewDeck && !isLifetime) {
+        if (isNewDeck && !isLifetime && !isFreeTrial) {
           const currentMonth = new Date().toISOString().slice(0, 7);
           const lastReset = userDoc?.quotaLastResetMonth || '';
           let monthlyUsed = userDoc?.monthlyGenerationsUsed || 0;
@@ -963,6 +969,11 @@ export default {
               extraGenerations: extraGens
             }).catch(() => {});
           }
+        } else if (isFreeTrial && serviceAccount) {
+          await updateUserDocument(serviceAccount, user.uid, {
+            freeAiDeckUsed: true,
+            freeAiDeckUsedAt: new Date().toISOString()
+          }).catch((err) => console.warn('[Generate] Erro ao registrar freeAiDeckUsed:', err.message));
         }
 
         // Proxy Gemini call

@@ -4209,6 +4209,21 @@ if (completionRestartBtn) {
     });
 }
 exportBtn.addEventListener('click', () => {
+    let savedState = null;
+    try { savedState = JSON.parse(localStorage.getItem('flashcardsSave') || '{}'); } catch (e) {}
+    const isFreeTrial = Boolean(
+        activeMode !== 'notebook' && (
+            savedState?.isFreeAiTrial ||
+            (allQuestions || []).some(q => q && q.isFreeAiTrial)
+        )
+    );
+
+    if (!isUserPro() && isFreeTrial) {
+        showNotificationPill("Baralhos do teste gratuito não podem ser exportados. Assine o Spaiq Pro!", "PRO.svg", true);
+        openProModal();
+        return;
+    }
+
     let exportData;
     let filename;
     if (activeMode === 'notebook') {
@@ -4244,6 +4259,13 @@ goToEditorBtn.addEventListener('click', () => {
     const cleanCards = (allQuestions || []).map(sanitizeCardForStorage);
     localStorage.setItem('editing_deck', JSON.stringify(cleanCards));
     localStorage.setItem('editing_deck_title', deckTitle.textContent);
+    let savedState = null;
+    try { savedState = JSON.parse(localStorage.getItem('flashcardsSave') || '{}'); } catch (e) {}
+    if (savedState?.isFreeAiTrial || cleanCards.some(c => c && c.isFreeAiTrial)) {
+        localStorage.setItem('editing_deck_is_free_trial', 'true');
+    } else {
+        localStorage.removeItem('editing_deck_is_free_trial');
+    }
     window.location.href = ROUTES.GENERATE;
 });
 
