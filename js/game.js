@@ -5525,11 +5525,13 @@ function renderExamDecksInDropdown(examData) {
         
         const isEnabled = deck.enabled !== false;
         const cardCount = allQuestions.filter(q => q.deckId === deck.id || q.sourceDeck === deck.name).length;
+        const safeDeckName = escapeHtml(deck.name || 'Baralho');
+        const safeDeckId = escapeHtml(deck.id || '');
 
         item.innerHTML = `
             <label class="flex items-center gap-2 min-w-0 flex-1 cursor-pointer select-none">
-                <input type="checkbox" class="exam-deck-toggle rounded text-purple-600 focus:ring-purple-500" ${isEnabled ? 'checked' : ''} data-deck-id="${deck.id}">
-                <span class="font-medium text-gray-800 truncate ${isEnabled ? '' : 'line-through opacity-50'}" title="${deck.name}">${deck.name}</span>
+                <input type="checkbox" class="exam-deck-toggle rounded text-purple-600 focus:ring-purple-500" ${isEnabled ? 'checked' : ''} data-deck-id="${safeDeckId}">
+                <span class="font-medium text-gray-800 truncate ${isEnabled ? '' : 'line-through opacity-50'}" title="${safeDeckName}">${safeDeckName}</span>
             </label>
             <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
                 <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 font-semibold">${cardCount}</span>

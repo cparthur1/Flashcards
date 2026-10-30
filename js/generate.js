@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { callWithRetry, checkAndResetModelFallback, sanitizeChatHistory, renderMathAndMarkdown, stripHtml, escapeHtml, sanitizeImageUrl } from './utils.js';
+import { callWithRetry, checkAndResetModelFallback, sanitizeChatHistory, renderMathAndMarkdown, stripHtml, escapeHtml, sanitizeImageUrl, generateSecureId } from './utils.js';
 import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
 import { initExploreModal, openProModal, isUserPro } from './explore-modal.js';
 import { onAuthChange, getCurrentUserToken, signInWithGoogle } from './firebase-client.js';
@@ -3603,7 +3603,7 @@ chatSendBtn.addEventListener('click', () => {
     chatInput.value = '';
     console.log('[AI Agent Queue] Prompt recebido e enfileirado:', text);
     promptQueue.push({
-        id: 'p_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+        id: generateSecureId('p'),
         text: text,
         status: 'queued'
     });

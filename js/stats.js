@@ -828,12 +828,14 @@ function renderTopicItem(t, idx, topicsList = []) {
         }
     }
 
+    const safeTopic = escapeHtml(t.topic || 'Geral');
+
     return `
         <div class="p-3.5 rounded-xl bg-gray-50/80 border border-gray-200/70 transition hover:border-purple-300 shadow-xs">
             <div class="flex items-start justify-between gap-2 mb-2">
                 <div class="min-w-0 flex-1">
-                    <h4 class="text-xs sm:text-sm font-bold text-gray-900 truncate" title="${t.topic}">
-                        ${t.topic}
+                    <h4 class="text-xs sm:text-sm font-bold text-gray-900 truncate" title="${safeTopic}">
+                        ${safeTopic}
                     </h4>
                     <p class="text-[11px] text-gray-500">
                         ${t.cardsCount} card${t.cardsCount !== 1 ? 's' : ''} ${isAnswered ? `• ${t.correctCount}/${t.answeredCount} certos` : '• Não respondido nesta rodada'}
@@ -876,17 +878,18 @@ function renderSubjectItem(s, idx, totalSubjects) {
         barColor = 'bg-emerald-500';
     }
 
-    const deckNames = s.decks.join(', ');
+    const safeSubject = escapeHtml(s.subject || 'Geral');
+    const safeDeckNames = escapeHtml(s.decks.join(', '));
 
     return `
         <div class="p-3.5 rounded-xl bg-gray-50/80 border border-gray-200/70 transition hover:border-purple-300 shadow-xs">
             <div class="flex items-start justify-between gap-2 mb-2">
                 <div class="min-w-0 flex-1">
-                    <h4 class="text-xs sm:text-sm font-bold text-gray-900 truncate" title="${s.subject}">
-                        ${s.subject}
+                    <h4 class="text-xs sm:text-sm font-bold text-gray-900 truncate" title="${safeSubject}">
+                        ${safeSubject}
                     </h4>
-                    <p class="text-[11px] text-gray-500 truncate max-w-[200px]" title="${deckNames}">
-                        ${s.decks.length} baralho${s.decks.length !== 1 ? 's' : ''}: ${deckNames}
+                    <p class="text-[11px] text-gray-500 truncate max-w-[200px]" title="${safeDeckNames}">
+                        ${s.decks.length} baralho${s.decks.length !== 1 ? 's' : ''}: ${safeDeckNames}
                     </p>
                 </div>
                 <div class="flex items-center gap-1.5 flex-shrink-0">
@@ -1707,8 +1710,8 @@ function renderStrugglingCards(sess) {
                         Última avaliação: ${item.lastRating || 'errei'}
                     </span>
                 </div>
-                <p class="text-sm font-semibold text-gray-800 leading-snug">${item.description}</p>
-                <p class="text-xs text-emerald-600 font-medium">Resposta: ${item.answer || 'Consultar cartão'}</p>
+                <p class="text-sm font-semibold text-gray-800 leading-snug">${escapeHtml(item.description || '')}</p>
+                <p class="text-xs text-emerald-600 font-medium">Resposta: ${escapeHtml(item.answer || 'Consultar cartão')}</p>
             </div>
             <div class="flex flex-col items-center sm:items-end gap-1.5 flex-shrink-0 self-end sm:self-center">
                 <button class="add-single-notebook-btn w-full sm:w-auto px-3.5 py-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 text-xs font-semibold transition shadow-xs flex items-center justify-center gap-1"

@@ -6,7 +6,7 @@
 
 import { db, doc, getDoc, setDoc, updateDoc } from './firebase-client.js';
 import { openDeckInSlots, fixSlot, getLocalSlots, saveLocalSlots } from './slot-manager.js';
-import { ROUTES } from './utils.js';
+import { ROUTES, generateSecureId } from './utils.js';
 
 const DELETED_NOTICE_KEY = 'flashcards_deleted_deck_notice';
 
@@ -19,7 +19,7 @@ export async function shareDeckToCloud(deckData, deckName = 'Baralho Compartilha
     throw new Error('Baralho vazio não pode ser compartilhado');
   }
 
-  const shareSlug = `deck_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 6)}`;
+  const shareSlug = generateSecureId('deck');
   const shareDocRef = doc(db, 'shares', shareSlug);
 
   await setDoc(shareDocRef, {

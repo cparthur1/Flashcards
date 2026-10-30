@@ -1,3 +1,25 @@
+CHANGELOG: CODEQL SECURITY AUDIT & HARDENING (v14.4)
+Date: 2026-10-30
+
+OVERVIEW:
+1. Resolved all potential and newly identified GitHub CodeQL security issues:
+   - DOM XSS Prevention (`js/xss-through-dom`):
+     - `js/explore-modal.js`: Sanitized user avatar with `sanitizeImageUrl` and escaped account names, deck titles, and mix lists with `escapeHtml`.
+     - `js/account-modal.js`: Sanitized profile avatar and escaped user display name and email address.
+     - `js/game.js`: Escaped deck names and deck IDs in the Exam Week dropdown mixer.
+     - `js/stats.js`: Escaped subject names, topic labels, and struggling card descriptions and answers.
+     - `js/index.js`: Escaped deck names in the Exam Week modal deck list.
+   - Exception-based DOM XSS (`js/xss-through-exception`):
+     - `js/index.js`: Replaced raw `.innerHTML` exception string concatenations (`${e.message}`, `${err.message}`) with safe text nodes via `setUploadError()`.
+   - Insecure Randomness (`js/insecure-randomness`):
+     - `js/share-manager.js`: Replaced `Math.random()` in share slug generation with cryptographically secure `generateSecureId('deck')`.
+     - `js/generate.js`: Replaced `Math.random()` in AI agent prompt queue IDs with `generateSecureId('p')`.
+   - Webhook Signature Hardening:
+     - `worker/src/index.js`: Enforced mandatory Stripe webhook signature verification (`stripe.webhooks.constructEventAsync`), eliminating any fallback to unverified JSON payloads.
+2. Bumped Service Worker cache version to `flashcards-v14.4`.
+
+--------------------------------------------------------------------------------
+
 CHANGELOG: COMPLETE CROSS-DEVICE SYNC FOR PRO USERS (v14.3)
 Date: 2026-10-30
 

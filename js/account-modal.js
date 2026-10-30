@@ -7,6 +7,7 @@
 import { auth, signInWithGoogle, signOutUser, onAuthChange } from './firebase-client.js';
 import { isLifetime, isUserPro, openProModal, refreshUserProStatus } from './explore-modal.js';
 import { getSubscriptionDetails, cancelSubscriptionOnly, reactivateSubscription, deleteAccountAndCancelSubscription } from './backend-api.js';
+import { escapeHtml, sanitizeImageUrl } from './utils.js';
 
 let accountModalInitialized = false;
 let subDetailsCache = null;
@@ -111,9 +112,9 @@ async function renderAccountModalContent() {
   }
 
   // ESTADO 2: Usuário autenticado
-  const photo = user.photoURL || '';
-  const name = user.displayName || user.email.split('@')[0];
-  const email = user.email || '';
+  const photo = sanitizeImageUrl(user.photoURL || '');
+  const name = escapeHtml(user.displayName || user.email.split('@')[0]);
+  const email = escapeHtml(user.email || '');
   const lifetime = isLifetime(user);
   const pro = isUserPro(user);
 

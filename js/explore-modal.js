@@ -19,7 +19,7 @@ import {
 import { shareDeckToCloud } from './share-manager.js';
 import { getUserStatus, createProSubscription, createCheckoutSession, buyExtraGeneration, deleteAccountAndCancelSubscription, verifyPaymentStatus, BACKEND_URL } from './backend-api.js';
 import { triggerProUnlockCelebration } from './engine/pro-unlock-celebration.js';
-import { ROUTES, shuffleArray } from './utils.js';
+import { ROUTES, shuffleArray, escapeHtml, sanitizeImageUrl } from './utils.js';
 
 let modalInitialized = false;
 let currentUser = null;
@@ -1011,8 +1011,8 @@ function renderAuthHeader() {
   if (!container) return;
 
   if (currentUser) {
-    const photo = currentUser.photoURL || '';
-    const name = currentUser.displayName || currentUser.email.split('@')[0];
+    const photo = sanitizeImageUrl(currentUser.photoURL || '');
+    const name = escapeHtml(currentUser.displayName || currentUser.email.split('@')[0]);
     const lifetime = isLifetime(currentUser);
     const isPro = Boolean(lifetime || userProStatus?.isPro || currentUser.pro);
 
@@ -1099,7 +1099,8 @@ function renderDeckSlots() {
     }
 
     const deckCount = (slot.deckData && Array.isArray(slot.deckData.decks)) ? slot.deckData.decks.length : 0;
-    const deckNames = (slot.deckData && Array.isArray(slot.deckData.decks)) ? slot.deckData.decks.map(d => d.name).join(', ') : '';
+    const deckNames = (slot.deckData && Array.isArray(slot.deckData.decks)) ? slot.deckData.decks.map(d => escapeHtml(d.name)).join(', ') : '';
+    const safeTitle = escapeHtml(slot.title || 'Baralho');
 
     return `
       <div class="slot-card relative bg-white border ${isCurrent ? (isExam ? 'border-purple-500 shadow-md ring-2 ring-purple-100' : 'border-blue-500 shadow-md ring-2 ring-blue-100') : (isExam ? 'border-purple-200 hover:border-purple-300' : 'border-gray-200')} rounded-2xl p-3 flex flex-col justify-between min-h-[140px] transition-all hover:shadow-lg">
@@ -1118,7 +1119,7 @@ function renderDeckSlots() {
 
         <!-- Deck Content / Title -->
         <div class="cursor-pointer flex-1 my-1" onclick="window.flashcardsOpenSlot(${idx})">
-          <h4 class="text-sm font-bold text-gray-900 line-clamp-2 leading-tight" title="${deckNames ? `Mistura: ${deckNames}` : slot.title}">${slot.title}</h4>
+          <h4 class="text-sm font-bold text-gray-900 line-clamp-2 leading-tight" title="${deckNames ? `Mistura: ${deckNames}` : safeTitle}">${safeTitle}</h4>
           <p class="text-xs ${isExam ? 'text-purple-700 font-medium' : 'text-gray-500'} mt-1">${slot.cardCount} cards${isExam && deckCount > 0 ? ` • ${deckCount} baralhos` : ''}</p>
         </div>
 

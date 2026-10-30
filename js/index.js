@@ -1,5 +1,5 @@
 // Handles landing page functionality: redirects, single deck and Semana de Provas multi-deck uploads.
-import { ROUTES, shuffleArray, generateSecureId } from './utils.js';
+import { ROUTES, shuffleArray, generateSecureId, escapeHtml } from './utils.js';
 import { getDailyStreak } from './engine/notebook-scheduler.js';
 import { initExploreModal, openExploreModal } from './explore-modal.js';
 import { checkAndLoadSharedDeck } from './share-manager.js';
@@ -82,6 +82,18 @@ async function init() {
     const startBtn = document.getElementById('start-btn');
     const uploadError = document.getElementById('upload-error');
     let selectedFiles = [];
+
+    function setUploadError(msg) {
+        if (!uploadError) return;
+        uploadError.replaceChildren();
+        const img = document.createElement('img');
+        img.src = 'assets/img/error.svg';
+        img.className = 'w-5 h-5 inline-block mr-1';
+        img.alt = 'Erro';
+        const textNode = document.createTextNode(` ${msg}`);
+        uploadError.appendChild(img);
+        uploadError.appendChild(textNode);
+    }
 
 
     // Helper: Read single file as text
@@ -221,7 +233,7 @@ async function init() {
 
                     startExamWeek(loadedDecks);
                 } catch (e) {
-                    uploadError.innerHTML = `<img src="assets/img/error.svg" class="w-5 h-5 inline-block mr-1" alt="Erro"> Erro ao carregar baralhos: ${e.message}`;
+                    setUploadError(`Erro ao carregar baralhos: ${e.message}`);
                 }
                 return;
             }
@@ -278,9 +290,9 @@ async function init() {
                         window.location.href = ROUTES.GAME;
                     } catch (err) {
                         if (err.name === 'QuotaExceededError') {
-                            uploadError.innerHTML = `<img src="assets/img/error.svg" class="w-5 h-5 inline-block mr-1" alt="Erro"> O backup do Caderno é grande demais para salvar no navegador.`;
+                            setUploadError('O backup do Caderno é grande demais para salvar no navegador.');
                         } else {
-                            uploadError.innerHTML = `<img src="assets/img/error.svg" class="w-5 h-5 inline-block mr-1" alt="Erro"> Erro ao salvar Caderno: ${err.message}`;
+                            setUploadError(`Erro ao salvar Caderno: ${err.message}`);
                         }
                     }
                 } else {
@@ -288,7 +300,7 @@ async function init() {
                     saveAndRedirect(questions, deckTitle);
                 }
             } catch (e) {
-                uploadError.innerHTML = `<img src="assets/img/error.svg" class="w-5 h-5 inline-block mr-1" alt="Erro"> Erro ao ler o arquivo: ${e.message}`;
+                setUploadError(`Erro ao ler o arquivo: ${e.message}`);
             }
         });
     }
@@ -306,9 +318,9 @@ async function init() {
             window.location.href = ROUTES.GAME;
         } catch (err) {
             if (err.name === 'QuotaExceededError') {
-                uploadError.innerHTML = `<img src="assets/img/error.svg" class="w-5 h-5 inline-block mr-1" alt="Erro"> Este baralho é grande demais para salvar no navegador. Converta imagens para links da web.`;
+                setUploadError('Este baralho é grande demais para salvar no navegador. Converta imagens para links da web.');
             } else {
-                uploadError.innerHTML = `<img src="assets/img/error.svg" class="w-5 h-5 inline-block mr-1" alt="Erro"> Erro ao salvar baralho: ${err.message}`;
+                setUploadError(`Erro ao salvar baralho: ${err.message}`);
             }
         }
     }
@@ -462,7 +474,7 @@ async function init() {
             item.innerHTML = `
                 <div class="flex items-center gap-2.5 min-w-0 flex-1">
                     <svg class="w-4 h-4 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                    <span class="text-sm font-semibold text-gray-800 truncate flex-1 text-left" title="${deck.name}">${deck.name}</span>
+                    <span class="text-sm font-semibold text-gray-800 truncate flex-1 text-left" title="${escapeHtml(deck.name)}">${escapeHtml(deck.name)}</span>
                     <span class="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-medium flex-shrink-0">${deck.cards.length} cards</span>
                 </div>
                 <button type="button" class="remove-deck-btn ml-2 p-1 text-gray-400 hover:text-red-500 transition" title="Remover baralho">

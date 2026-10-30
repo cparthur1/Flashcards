@@ -95,7 +95,7 @@ export function stripHtml(input) {
     let prev;
     do {
         prev = sanitized;
-        sanitized = sanitized.replace(/<[^>]*>/g, '');
+        sanitized = sanitized.replace(/<[^<>]*>/g, '');
     } while (sanitized !== prev);
     return sanitized.trim();
 }

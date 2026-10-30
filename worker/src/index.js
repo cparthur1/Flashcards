@@ -1261,19 +1261,16 @@ async function handleStripeWebhook(request, env) {
 
   const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' });
 
-  if (env.STRIPE_WEBHOOK_SECRET && sig) {
-    try {
-      event = await stripe.webhooks.constructEventAsync(bodyText, sig, env.STRIPE_WEBHOOK_SECRET);
-    } catch (err) {
-      console.warn('[Stripe Webhook] Erro ao validar assinatura:', err.message);
-      return new Response(`Webhook Error: ${err.message}`, { status: 400 });
-    }
-  } else {
-    try {
-      event = JSON.parse(bodyText);
-    } catch (err) {
-      return new Response('Invalid JSON payload', { status: 400 });
-    }
+  if (!sig || !env.STRIPE_WEBHOOK_SECRET) {
+    console.warn('[Stripe Webhook] Assinatura stripe-signature ou STRIPE_WEBHOOK_SECRET ausente');
+    return new Response('Webhook signature required', { status: 400 });
+  }
+
+  try {
+    event = await stripe.webhooks.constructEventAsync(bodyText, sig, env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    console.warn('[Stripe Webhook] Erro ao validar assinatura:', err.message);
+    return new Response(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
   const serviceAccount = getServiceAccount(env);
