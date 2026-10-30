@@ -6013,11 +6013,53 @@ async function initBackgroundCategorization() {
         }
     }
 
+    function updateHamburgerUserUI(user) {
+        const hamburgerIcon = document.getElementById('hamburger-icon');
+        const hamburgerAvatar = document.getElementById('hamburger-avatar');
+        const menuAccountIcon = document.getElementById('menu-account-icon');
+        const menuAccountAvatar = document.getElementById('menu-account-avatar');
+        const menuAccountTitle = document.getElementById('menu-account-title');
+        const menuAccountSubtitle = document.getElementById('menu-account-subtitle');
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+
+        if (user && user.photoURL) {
+            if (hamburgerIcon) hamburgerIcon.classList.add('hidden');
+            if (hamburgerAvatar) {
+                hamburgerAvatar.src = user.photoURL;
+                hamburgerAvatar.classList.remove('hidden');
+            }
+            if (menuAccountIcon) menuAccountIcon.classList.add('hidden');
+            if (menuAccountAvatar) {
+                menuAccountAvatar.src = user.photoURL;
+                menuAccountAvatar.classList.remove('hidden');
+            }
+            if (menuAccountTitle) {
+                menuAccountTitle.textContent = user.displayName || user.email.split('@')[0];
+            }
+            if (menuAccountSubtitle) {
+                menuAccountSubtitle.textContent = isUserPro() ? 'Plano Pro Ativo' : 'Conectado com Google';
+            }
+            if (hamburgerBtn) {
+                hamburgerBtn.title = user.displayName || user.email || 'Menu Principal';
+            }
+        } else {
+            if (hamburgerAvatar) hamburgerAvatar.classList.add('hidden');
+            if (hamburgerIcon) hamburgerIcon.classList.remove('hidden');
+            if (menuAccountAvatar) menuAccountAvatar.classList.add('hidden');
+            if (menuAccountIcon) menuAccountIcon.classList.remove('hidden');
+            if (menuAccountTitle) menuAccountTitle.textContent = 'Minha Conta';
+            if (menuAccountSubtitle) menuAccountSubtitle.textContent = 'Sincronização e Plano Pro';
+            if (hamburgerBtn) hamburgerBtn.title = 'Abrir Menu Principal';
+        }
+    }
+
     onAuthChange((user) => {
         updateAiUI();
         updateSyncButtonsVisibility(user);
+        updateHamburgerUserUI(user);
     });
     updateSyncButtonsVisibility(auth.currentUser);
+    updateHamburgerUserUI(auth.currentUser);
 }
 
 if (document.readyState === 'loading') {

@@ -114,6 +114,7 @@
                 title="Minha Conta e Sincronização">
                 <div class="flex items-center gap-3 min-w-0">
                     <span id="menu-account-icon" class="material-symbols-rounded text-2xl text-[var(--md-sys-color-primary)] flex-shrink-0 transition-transform group-hover:scale-110">account_circle</span>
+                    <img id="menu-account-avatar" class="hidden w-7 h-7 rounded-full object-cover border border-blue-400 flex-shrink-0" alt="Avatar">
                     <div class="flex-1 min-w-0">
                         <p id="menu-account-title" class="text-sm font-semibold text-[var(--md-sys-color-on-surface)]">Minha Conta</p>
                         <p id="menu-account-subtitle" class="text-xs text-[var(--md-sys-color-on-surface-variant)] truncate">Sincronização e Plano Pro</p>
@@ -262,7 +263,8 @@
             <button id="hamburger-btn"
                 class="cursor-pointer hover:bg-gray-100 rounded-full p-2 transition-colors flex items-center justify-center flex-shrink-0 relative z-[65]"
                 title="Abrir Menu Principal" aria-label="Menu Principal" aria-expanded="false">
-                <img src="../assets/img/menu.svg" class="w-6 h-6 pointer-events-none" alt="Menu">
+                <img id="hamburger-icon" src="../assets/img/menu.svg" class="w-6 h-6 pointer-events-none" alt="Menu">
+                <img id="hamburger-avatar" class="hidden w-7 h-7 rounded-full object-cover border-2 border-blue-500 pointer-events-none" alt="Foto de Perfil">
             </button>
 
             <div class="h-6 w-[1px] bg-gray-200 mx-1 flex-shrink-0"></div>
