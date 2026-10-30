@@ -151,6 +151,36 @@ export async function deleteUserDocument(serviceAccountConfig, uid) {
 }
 
 /**
+ * Wipe all saved cloud decks, notebook, and cloud slot metadata for non-Pro users
+ */
+export async function clearUserCloudData(serviceAccountConfig, uid) {
+  try {
+    const userDoc = await getUserDocument(serviceAccountConfig, uid);
+    if (userDoc?.deckSlots && Array.isArray(userDoc.deckSlots)) {
+      for (const slot of userDoc.deckSlots) {
+        if (slot.deckId) {
+          await deleteDeckDocument(serviceAccountConfig, slot.deckId).catch(() => {});
+        }
+      }
+    }
+    // Delete notebook deck
+    await deleteDeckDocument(serviceAccountConfig, `notebook_${uid}`).catch(() => {});
+
+    // Clear cloud slots on user document
+    await updateUserDocument(serviceAccountConfig, uid, {
+      deckSlots: [],
+      notebookSlot: null,
+      stats: null,
+      lastSyncedAt: 0
+    });
+    return true;
+  } catch (err) {
+    console.warn(`[Firestore] Erro ao limpar dados de nuvem do usuário ${uid}:`, err);
+    return false;
+  }
+}
+
+/**
  * Get any document from Firestore
  */
 export async function getDocument(serviceAccountConfig, collectionName, docId) {

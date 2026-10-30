@@ -6,7 +6,7 @@
 
 import { auth, signInWithGoogle, signOutUser, onAuthChange } from './firebase-client.js';
 import { isLifetime, isUserPro, openProModal, refreshUserProStatus } from './explore-modal.js';
-import { getSubscriptionDetails, cancelSubscriptionOnly, deleteAccountAndCancelSubscription } from './backend-api.js';
+import { getSubscriptionDetails, cancelSubscriptionOnly, reactivateSubscription, deleteAccountAndCancelSubscription } from './backend-api.js';
 
 let accountModalInitialized = false;
 let subDetailsCache = null;
@@ -167,8 +167,14 @@ async function renderAccountModalContent() {
     `;
   } else if (pro) {
     // 2.2 PRO MENSAL (Ativo via Stripe)
-    const nextDateFormatted = subDetailsCache?.nextDueDate 
-      ? new Date(subDetailsCache.nextDueDate + 'T12:00:00Z').toLocaleDateString('pt-BR') 
+    const isCanceling = Boolean(
+      subDetailsCache?.cancelAtPeriodEnd || 
+      subDetailsCache?.cancel_at_period_end
+    );
+
+    const rawActiveDate = subDetailsCache?.activeUntil || subDetailsCache?.nextDueDate;
+    const activeUntilDateFormatted = rawActiveDate 
+      ? new Date(rawActiveDate + (rawActiveDate.includes('T') ? '' : 'T12:00:00Z')).toLocaleDateString('pt-BR') 
       : 'Mensal';
 
     const invoiceUrl = subDetailsCache?.invoiceUrl || '';
@@ -185,16 +191,24 @@ async function renderAccountModalContent() {
           </span>
         </div>
 
-        <div class="space-y-1.5 text-xs text-blue-900/90 pt-1">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-rounded text-base text-blue-600">calendar_month</span>
-            <span>Próxima renovação: <strong>${nextDateFormatted}</strong></span>
+        ${isCanceling ? `
+          <!-- Disclaimer de Cancelamento: Assinatura ativa até o dia X -->
+          <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 font-medium flex items-center gap-2">
+            <span class="material-symbols-rounded text-base text-amber-700 flex-shrink-0">info</span>
+            <span>Assinatura ativa até o dia <strong>${activeUntilDateFormatted}</strong></span>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-rounded text-base text-blue-600">bolt</span>
-            <span>Tutor de IA ilimitado + 3 gerações de decks por mês</span>
+        ` : `
+          <div class="space-y-1.5 text-xs text-blue-900/90 pt-1">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-rounded text-base text-blue-600">calendar_month</span>
+              <span>Próxima renovação: <strong>${activeUntilDateFormatted}</strong></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-rounded text-base text-blue-600">bolt</span>
+              <span>Tutor de IA ilimitado + 3 gerações de decks por mês</span>
+            </div>
           </div>
-        </div>
+        `}
 
         <!-- Ações do Stripe: Fatura / Gerenciar -->
         <div class="pt-2 border-t border-blue-200/80 space-y-2">
@@ -207,7 +221,7 @@ async function renderAccountModalContent() {
             </a>
           ` : `
             <div id="account-loading-details" class="text-[11px] text-blue-700 font-medium text-center">
-              ${isLoadingSubDetails ? 'Carregando opções de pagamento...' : 'Assinatura ativa via Stripe.'}
+              ${isLoadingSubDetails ? 'Carregando opções de pagamento...' : (isCanceling ? 'Cancelamento agendado.' : 'Assinatura ativa via Stripe.')}
             </div>
           `}
 
@@ -218,12 +232,21 @@ async function renderAccountModalContent() {
             <span>Comprar Baralho Extra (R$ 0,99)</span>
           </button>
 
-          <!-- Botão Cancelar Assinatura -->
-          <button type="button" id="account-cancel-sub-btn"
-            class="w-full py-2 px-3 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer">
-            <span class="material-symbols-rounded text-base">block</span>
-            <span>Cancelar assinatura</span>
-          </button>
+          ${isCanceling ? `
+            <!-- Botão Voltar a Assinar (substitui Cancelar Assinatura) -->
+            <button type="button" id="account-resubscribe-btn"
+              class="m3-btn-expressive m3-btn-filled w-full py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-white bg-blue-600 hover:bg-blue-700 transition cursor-pointer shadow-xs">
+              <span class="material-symbols-rounded text-base">restart_alt</span>
+              <span>Voltar a assinar</span>
+            </button>
+          ` : `
+            <!-- Botão Cancelar Assinatura -->
+            <button type="button" id="account-cancel-sub-btn"
+              class="w-full py-2 px-3 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer">
+              <span class="material-symbols-rounded text-base">block</span>
+              <span>Cancelar assinatura</span>
+            </button>
+          `}
         </div>
       </div>
     `;
@@ -302,10 +325,10 @@ async function renderAccountModalContent() {
     }
   });
 
-  // Cancelar Assinatura (mantém conta e dados)
+  // Cancelar Assinatura (mantém acesso até o fim do período já pago)
   document.getElementById('account-cancel-sub-btn')?.addEventListener('click', async () => {
     const confirmed = confirm(
-      "Deseja realmente cancelar sua assinatura do Flashcards Pro?\n\nAs próximas cobranças no Stripe serão canceladas imediatamente e seus baralhos continuarão salvos na nuvem."
+      "Deseja realmente cancelar sua assinatura do Flashcards Pro?\n\nAs próximas renovações automáticas serão canceladas e você manterá seu acesso PRO até o final do período já pago."
     );
     if (!confirmed) return;
 
@@ -316,13 +339,41 @@ async function renderAccountModalContent() {
         btn.innerHTML = `<span class="material-symbols-rounded text-base animate-spin">refresh</span> Cancelando...`;
       }
 
-      await cancelSubscriptionOnly();
-      subDetailsCache = null;
-      alert("Assinatura cancelada com sucesso. Você não terá novas cobranças.");
+      const res = await cancelSubscriptionOnly();
+      subDetailsCache = {
+        ...(subDetailsCache || {}),
+        cancelAtPeriodEnd: true,
+        activeUntil: res?.activeUntil || subDetailsCache?.nextDueDate
+      };
+      const formattedDate = (res?.activeUntil || subDetailsCache?.nextDueDate)
+        ? new Date((res?.activeUntil || subDetailsCache?.nextDueDate) + 'T12:00:00Z').toLocaleDateString('pt-BR')
+        : '';
+      alert(`Assinatura cancelada com sucesso. Você não terá novas cobranças e seu acesso continuará ativo até o dia ${formattedDate || 'o final do ciclo'}.`);
       renderAccountModalContent();
     } catch (err) {
       alert("Erro ao cancelar assinatura: " + (err.message || "Tente novamente mais tarde"));
       renderAccountModalContent();
+    }
+  });
+
+  // Voltar a Assinar (Reativar assinatura antes de expirar)
+  document.getElementById('account-resubscribe-btn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('account-resubscribe-btn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span class="material-symbols-rounded text-base animate-spin">refresh</span> Processando...`;
+    }
+
+    try {
+      await reactivateSubscription();
+      subDetailsCache = null;
+      await refreshUserProStatus();
+      alert("Assinatura reativada com sucesso! As renovações automáticas estão ativas novamente.");
+      renderAccountModalContent();
+    } catch (err) {
+      console.warn("Reativação direta falhou, abrindo modal Pro:", err);
+      closeAccountModal();
+      openProModal();
     }
   });
 

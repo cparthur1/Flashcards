@@ -240,6 +240,22 @@ export async function cancelSubscriptionOnly() {
 }
 
 /**
+ * Reactivate canceled recurring subscription
+ */
+export async function reactivateSubscription() {
+  const res = await fetchWithAuth('/api/subscription/reactivate', {
+    method: 'POST'
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || err.error || 'Erro ao reativar assinatura');
+  }
+
+  return await res.json();
+}
+
+/**
  * Get user cloud slots, decks, notebook and stats (Admin bypass)
  */
 export async function getCloudSlots() {

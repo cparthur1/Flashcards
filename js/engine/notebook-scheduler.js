@@ -4,7 +4,7 @@
  * em dias e passos de sessão, inferência automática de dificuldade e rastreador
  * de streak diário consecutivo de estudo.
  *
- * Especializado para o Caderno de Erros (baralho único e massivo para revisão de longo prazo).
+ * Especializado para o Caderno (baralho único e massivo para revisão de longo prazo).
  */
 
 import { secureRandom, stripHtml } from '../utils.js';

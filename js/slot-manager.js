@@ -6,6 +6,7 @@
 
 import { auth, db, doc, getDoc, setDoc, updateDoc, onSnapshot } from './firebase-client.js';
 import { getCloudSlots, saveCloudSlots } from './backend-api.js';
+import { isUserPro } from './explore-modal.js';
 
 let syncTimeout = null;
 
@@ -73,7 +74,7 @@ export function getNotebookSlotData() {
     if (!raw) return { title: 'Caderno', cardCount: 0, deckData: null };
     const data = JSON.parse(raw);
     return {
-      title: 'Caderno de Erros',
+      title: 'Caderno',
       cardCount: (data.allQuestions || []).length,
       deckData: data
     };
@@ -187,6 +188,7 @@ export function deleteSlot(slotIndex) {
       } catch (e) {}
     }
 
+    const now = Date.now();
     slots[slotIndex] = {
       slotIndex,
       deckId: null,
@@ -196,8 +198,11 @@ export function deleteSlot(slotIndex) {
       isFixed: false,
       isCurrent: false,
       deckData: null,
-      updatedAt: 0
+      updatedAt: now,
+      deletedAt: now
     };
+
+    localStorage.setItem(`flashcards_slot_${slotIndex}_deleted_at`, String(now));
 
     if (wasCurrent) {
       localStorage.removeItem(SAVE_KEY);
@@ -213,7 +218,9 @@ export function deleteSlot(slotIndex) {
  * Clear notebook slot
  */
 export function clearNotebookSlot() {
+  const now = Date.now();
   localStorage.removeItem(NOTEBOOK_KEY);
+  localStorage.setItem('flashcards_notebook_deleted_at', String(now));
   syncSlotsToCloud();
 }
 
@@ -270,6 +277,11 @@ export async function syncSlotsToCloud() {
   const user = auth.currentUser;
   if (!user) return;
 
+  // Crucial: Cloud sync is exclusively for Pro users. Non-pro users use only local storage.
+  if (!isUserPro()) {
+    return;
+  }
+
   try {
     const slots = getLocalSlots();
 
@@ -290,7 +302,27 @@ export async function syncSlotsToCloud() {
       } catch (e) {}
     }
 
-    const notebookData = getNotebookSlotData();
+    // Attach deletion timestamps if slot is empty
+    for (let i = 0; i < slots.length; i++) {
+      if (!slots[i].deckData) {
+        const delAt = Number(localStorage.getItem(`flashcards_slot_${i}_deleted_at`)) || slots[i].deletedAt || slots[i].updatedAt || 0;
+        slots[i].deletedAt = delAt;
+      }
+    }
+
+    const localNotebook = getNotebookSlotData();
+    const notebookDeletedAt = Number(localStorage.getItem('flashcards_notebook_deleted_at')) || 0;
+    const notebookPayload = localNotebook?.deckData ? {
+      title: 'Caderno',
+      cardCount: localNotebook.cardCount || 0,
+      deckData: localNotebook.deckData,
+      updatedAt: localNotebook.deckData.updatedAt || Date.now()
+    } : {
+      title: 'Caderno',
+      cardCount: 0,
+      deckData: null,
+      deletedAt: notebookDeletedAt
+    };
 
     // Stats
     let stats = {};
@@ -301,7 +333,7 @@ export async function syncSlotsToCloud() {
 
     await saveCloudSlots({
       slots,
-      notebookData,
+      notebookData: notebookPayload,
       stats
     });
   } catch (err) {
@@ -316,41 +348,75 @@ export async function loadSlotsFromCloud() {
   const user = auth.currentUser;
   if (!user) return false;
 
+  // Crucial: Only load from cloud if user is PRO! Non-pro users use local-only webapp features.
+  if (!isUserPro()) {
+    return false;
+  }
+
   try {
     const cloudData = await getCloudSlots();
-    if (!cloudData) return false;
+    if (!cloudData || cloudData.syncDisabled) return false;
 
     let hasSlotChanges = false;
     const localSlots = getLocalSlots();
 
     if (cloudData.deckSlots && Array.isArray(cloudData.deckSlots) && cloudData.deckSlots.length > 0) {
-      for (const cloudSlot of cloudData.deckSlots) {
-        const idx = cloudSlot.slotIndex;
-        if (idx !== undefined && idx >= 0 && idx < 3) {
-          const localSlot = localSlots[idx];
+      for (let i = 0; i < 3; i++) {
+        const cloudSlot = cloudData.deckSlots.find(s => s.slotIndex === i);
+        const localSlot = localSlots[i];
+        const localUpdatedAt = localSlot?.updatedAt || 0;
+
+        if (cloudSlot) {
           const cloudUpdatedAt = cloudSlot.updatedAt || cloudData.lastSyncedAt || 0;
-          const localUpdatedAt = localSlot?.updatedAt || 0;
+          const cloudDeletedAt = cloudSlot.deletedAt || (cloudSlot.deckData ? 0 : cloudUpdatedAt);
 
-          if (cloudSlot.deckData && (!localSlot?.deckData || cloudUpdatedAt >= localUpdatedAt)) {
-            localSlots[idx] = {
-              slotIndex: idx,
-              deckId: cloudSlot.deckId,
-              title: cloudSlot.title,
-              cardCount: cloudSlot.cardCount,
-              isFixed: Boolean(cloudSlot.isFixed),
-              isCurrent: Boolean(cloudSlot.isCurrent),
-              deckData: cloudSlot.deckData,
-              updatedAt: cloudUpdatedAt
-            };
-            hasSlotChanges = true;
+          if (cloudSlot.deckData) {
+            // Cloud has an active deck: load if local is empty or cloud is newer/equal
+            if (!localSlot?.deckData || cloudUpdatedAt >= localUpdatedAt) {
+              localSlots[i] = {
+                slotIndex: i,
+                deckId: cloudSlot.deckId,
+                title: cloudSlot.title,
+                cardCount: cloudSlot.cardCount,
+                isFixed: Boolean(cloudSlot.isFixed),
+                isCurrent: Boolean(cloudSlot.isCurrent),
+                deckData: cloudSlot.deckData,
+                updatedAt: cloudUpdatedAt
+              };
+              localStorage.removeItem(`flashcards_slot_${i}_deleted_at`);
+              hasSlotChanges = true;
 
-            if (cloudSlot.isCurrent) {
-              localStorage.setItem(SAVE_KEY, JSON.stringify(cloudSlot.deckData));
-              localStorage.setItem(ACTIVE_MODE_KEY, 'normal');
+              if (cloudSlot.isCurrent) {
+                localStorage.setItem(SAVE_KEY, JSON.stringify(cloudSlot.deckData));
+                localStorage.setItem(ACTIVE_MODE_KEY, 'normal');
+              }
+            }
+          } else {
+            // Cloud slot is EMPTY or DELETED: propagate deletion if local has a deck!
+            if (localSlot?.deckData && cloudDeletedAt >= localUpdatedAt) {
+              if (localSlot.isCurrent) {
+                localStorage.removeItem(SAVE_KEY);
+                localStorage.removeItem(ACTIVE_MODE_KEY);
+              }
+              localSlots[i] = {
+                slotIndex: i,
+                deckId: null,
+                shareSlug: null,
+                title: `Slot ${i + 1} (Vazio)`,
+                cardCount: 0,
+                isFixed: false,
+                isCurrent: false,
+                deckData: null,
+                updatedAt: cloudDeletedAt,
+                deletedAt: cloudDeletedAt
+              };
+              localStorage.setItem(`flashcards_slot_${i}_deleted_at`, String(cloudDeletedAt));
+              hasSlotChanges = true;
             }
           }
         }
       }
+
       if (hasSlotChanges) {
         saveLocalSlots(localSlots);
       }
@@ -363,13 +429,24 @@ export async function loadSlotsFromCloud() {
       }
     }
 
-    // Load cloud notebook
+    // Load cloud notebook or propagate notebook deletion
+    const localNotebook = getNotebookSlotData();
+    const localNotebookUpdated = localNotebook?.deckData?.updatedAt || 0;
+
     if (cloudData.notebookSlot?.deckData) {
-      const localNotebook = getNotebookSlotData();
-      const cloudNotebookUpdated = cloudData.notebookSlot.deckData.updatedAt || cloudData.lastSyncedAt || 0;
-      const localNotebookUpdated = localNotebook?.deckData?.updatedAt || 0;
+      const cloudNotebookUpdated = cloudData.notebookSlot.deckData.updatedAt || cloudData.notebookSlot.updatedAt || cloudData.lastSyncedAt || 0;
       if (!localNotebook?.deckData || cloudNotebookUpdated >= localNotebookUpdated) {
         localStorage.setItem(NOTEBOOK_KEY, JSON.stringify(cloudData.notebookSlot.deckData));
+        localStorage.removeItem('flashcards_notebook_deleted_at');
+        hasSlotChanges = true;
+      }
+    } else if (localNotebook?.deckData) {
+      // Cloud notebook is deleted/empty: check deletion timestamp
+      const cloudNotebookDeletedAt = cloudData.notebookSlot?.deletedAt || cloudData.lastSyncedAt || 0;
+      if (cloudNotebookDeletedAt >= localNotebookUpdated) {
+        localStorage.removeItem(NOTEBOOK_KEY);
+        localStorage.setItem('flashcards_notebook_deleted_at', String(cloudNotebookDeletedAt));
+        hasSlotChanges = true;
       }
     }
 

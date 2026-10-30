@@ -11,7 +11,7 @@
 import { verifyFirebaseIdToken, setFirebaseUserProClaim, deleteFirebaseUser, getFirebaseUserByEmail } from './google-auth.js';
 import { getOrCreateCustomer, createSubscription, createExtraGenerationPayment, cancelSubscription, getSubscriptionDetails, checkCustomerProStatusInAsaas } from './asaas.js';
 import { callGemini } from './gemini.js';
-import { getUserDocument, updateUserDocument, deleteUserDocument, getDocument, setDocument } from './firestore.js';
+import { getUserDocument, updateUserDocument, deleteUserDocument, getDocument, setDocument, deleteDeckDocument, clearUserCloudData } from './firestore.js';
 import Stripe from 'stripe';
 
 const ALLOWED_ORIGINS = [
@@ -349,6 +349,9 @@ export default {
               }
             }).catch(() => {})
           ]));
+        } else if (!isPro && serviceAccount && ((userDoc?.deckSlots && userDoc.deckSlots.length > 0) || userDoc?.notebookSlot)) {
+          // User is not Pro: ensure all saved cloud decks & slots are wiped from backend
+          ctx.waitUntil(clearUserCloudData(serviceAccount, user.uid));
         }
 
         return jsonResponse({
@@ -364,13 +367,33 @@ export default {
         }, 200, corsHeaders);
       }
 
-      // 3.1 Cloud Sync: Get User Slots, Decks and Notebook
+      // 3.1 Cloud Sync: Get User Slots, Decks and Notebook (Exclusive to Pro)
       if (path === '/api/user/slots' && request.method === 'GET') {
         const user = await authenticateUser();
         const serviceAccount = getServiceAccount(env);
         const userDoc = await getUserDocument(serviceAccount, user.uid);
+
+        // Check Pro status
+        const isLifetime = LIFETIME_PRO_EMAILS.includes((user.email || '').toLowerCase().trim());
+        const isPro = isLifetime || userDoc?.subscription?.status === 'active' || user.pro === true;
+
+        if (!isPro) {
+          // If non-pro user has any data remaining in Firestore, wipe it!
+          if (serviceAccount && ((userDoc?.deckSlots && userDoc.deckSlots.length > 0) || userDoc?.notebookSlot)) {
+            await clearUserCloudData(serviceAccount, user.uid);
+          }
+          return jsonResponse({
+            isPro: false,
+            syncDisabled: true,
+            deckSlots: [],
+            notebookSlot: null,
+            stats: null,
+            message: 'A sincronização em nuvem está desativada para usuários não-Pro.'
+          }, 200, corsHeaders);
+        }
+
         if (!userDoc) {
-          return jsonResponse({ deckSlots: null, notebookSlot: null, stats: null }, 200, corsHeaders);
+          return jsonResponse({ isPro: true, deckSlots: null, notebookSlot: null, stats: null }, 200, corsHeaders);
         }
 
         const deckSlots = userDoc.deckSlots || [];
@@ -392,45 +415,76 @@ export default {
         }
 
         return jsonResponse({
+          isPro: true,
           deckSlots,
           notebookSlot: {
-            title: userDoc.notebookSlot?.title || 'Caderno de Erros',
+            title: userDoc.notebookSlot?.title || 'Caderno',
             cardCount: userDoc.notebookSlot?.cardCount || 0,
-            deckData: notebookData
+            deckData: notebookData,
+            updatedAt: userDoc.notebookSlot?.updatedAt || 0,
+            deletedAt: userDoc.notebookSlot?.deletedAt || null
           },
           stats: userDoc.stats || null,
           lastSyncedAt: userDoc.lastSyncedAt || 0
         }, 200, corsHeaders);
       }
 
-      // 3.2 Cloud Sync: Save User Slots, Decks and Notebook
+      // 3.2 Cloud Sync: Save User Slots, Decks and Notebook (Exclusive to Pro)
       if (path === '/api/user/slots' && request.method === 'POST') {
         const user = await authenticateUser();
-        const body = await request.json().catch(() => ({}));
         const serviceAccount = getServiceAccount(env);
+        const userDoc = await getUserDocument(serviceAccount, user.uid);
 
+        // Check Pro status
+        const isLifetime = LIFETIME_PRO_EMAILS.includes((user.email || '').toLowerCase().trim());
+        const isPro = isLifetime || userDoc?.subscription?.status === 'active' || user.pro === true;
+
+        if (!isPro) {
+          if (serviceAccount) {
+            await clearUserCloudData(serviceAccount, user.uid);
+          }
+          return jsonResponse({
+            error: 'A sincronização em nuvem é exclusiva para assinantes Pro.',
+            syncDisabled: true
+          }, 403, corsHeaders);
+        }
+
+        const body = await request.json().catch(() => ({}));
         const { slots = [], notebookData = null, stats = {} } = body;
 
-        // Prepare lightweight metadata for user doc
+        // Clean up any previously saved deck documents that were removed or cleared
+        const prevSlots = userDoc?.deckSlots || [];
+        const activeDeckIds = new Set(slots.filter(s => s.deckId && s.deckData).map(s => s.deckId));
+        for (const prev of prevSlots) {
+          if (prev.deckId && !activeDeckIds.has(prev.deckId)) {
+            await deleteDeckDocument(serviceAccount, prev.deckId).catch(() => {});
+          }
+        }
+
+        // Prepare lightweight metadata for user doc, preserving deletion timestamps
+        const now = Date.now();
         const deckSlotsMeta = slots.map(s => ({
           slotIndex: s.slotIndex,
-          deckId: s.deckId,
+          deckId: s.deckId || null,
           title: s.title,
-          cardCount: s.cardCount,
+          cardCount: s.cardCount || 0,
           isFixed: Boolean(s.isFixed),
           isCurrent: Boolean(s.isCurrent),
-          updatedAt: s.updatedAt || Date.now()
+          updatedAt: s.updatedAt || now,
+          deletedAt: s.deletedAt || (s.deckData ? null : now)
         }));
 
         // 1. Update user document
         await updateUserDocument(serviceAccount, user.uid, {
           deckSlots: deckSlotsMeta,
           notebookSlot: {
-            cardCount: notebookData?.cardCount || 0,
-            title: notebookData?.title || 'Caderno de Erros'
+            cardCount: notebookData?.deckData ? (notebookData.cardCount || 0) : 0,
+            title: notebookData?.title || 'Caderno',
+            updatedAt: notebookData?.updatedAt || now,
+            deletedAt: notebookData?.deckData ? null : (notebookData?.deletedAt || now)
           },
           stats: stats || {},
-          lastSyncedAt: Date.now()
+          lastSyncedAt: now
         }).catch(err => console.warn('Erro ao atualizar user doc:', err));
 
         // 2. Save full deck documents
@@ -447,15 +501,18 @@ export default {
           }
         }
 
-        // 3. Save notebook deck document
+        // 3. Save or delete notebook deck document
         if (notebookData?.deckData) {
           await setDocument(serviceAccount, 'decks', `notebook_${user.uid}`, {
             ownerUid: user.uid,
-            title: 'Caderno de Erros',
+            title: 'Caderno',
             cardCount: notebookData.cardCount || 0,
             deckData: notebookData.deckData,
             updatedAt: Date.now()
           }).catch(err => console.warn('Erro ao salvar notebook:', err));
+        } else {
+          // Notebook was cleared: delete from decks collection
+          await deleteDeckDocument(serviceAccount, `notebook_${user.uid}`).catch(() => {});
         }
 
         return jsonResponse({ success: true, syncedAt: Date.now() }, 200, corsHeaders);
@@ -719,12 +776,15 @@ export default {
           try {
             const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' });
             const sub = await stripe.subscriptions.retrieve(subId);
-            const nextDueDate = sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString().slice(0, 10) : null;
+            const isCanceling = Boolean(sub.cancel_at_period_end || userDoc?.subscription?.cancelAtPeriodEnd);
+            const activeUntil = sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString().slice(0, 10) : null;
             return jsonResponse({
               isPro: sub.status === 'active' || sub.status === 'trialing',
               isLifetime: false,
               status: sub.status.toUpperCase(),
-              nextDueDate,
+              cancelAtPeriodEnd: isCanceling,
+              activeUntil: activeUntil || userDoc?.subscription?.cancelAt || null,
+              nextDueDate: activeUntil,
               provider: 'stripe',
               storedStatus: userDoc?.subscription?.status || 'inactive'
             }, 200, corsHeaders);
@@ -755,7 +815,7 @@ export default {
         }, 200, corsHeaders);
       }
 
-      // 5.3 Cancel Subscription Only (keeps account and decks intact)
+      // 5.3 Cancel Subscription Only (cancels renewal at period end so user keeps remaining paid days)
       if (path === '/api/subscription/cancel' && request.method === 'POST') {
         const user = await authenticateUser();
         let serviceAccount = null;
@@ -769,13 +829,15 @@ export default {
 
         const subId = userDoc?.subscription?.subscriptionId;
         const provider = userDoc?.subscription?.provider;
+        let activeUntil = null;
 
         if (subId) {
           if (provider === 'stripe' || subId.startsWith('sub_')) {
             if (env.STRIPE_SECRET_KEY) {
               try {
                 const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' });
-                await stripe.subscriptions.cancel(subId);
+                const sub = await stripe.subscriptions.update(subId, { cancel_at_period_end: true });
+                activeUntil = sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString().slice(0, 10) : null;
               } catch (stripeErr) {
                 console.warn('Falha ao cancelar assinatura Stripe:', stripeErr.message);
               }
@@ -789,19 +851,59 @@ export default {
           }
         }
 
+        if (!activeUntil && userDoc?.subscription?.currentPeriodEnd) {
+          activeUntil = userDoc.subscription.currentPeriodEnd;
+        }
+
         if (serviceAccount) {
           await updateUserDocument(serviceAccount, user.uid, {
-            'subscription.status': 'canceled',
+            'subscription.cancelAtPeriodEnd': true,
+            'subscription.cancelAt': activeUntil,
+            'subscription.currentPeriodEnd': activeUntil,
             'subscription.canceledAt': new Date().toISOString()
           }).catch(err => console.warn('Falha ao atualizar Firestore:', err));
-
-          await setFirebaseUserProClaim(serviceAccount, user.uid, false).catch(() => {});
         }
 
         return jsonResponse({
           success: true,
-          message: 'Assinatura cancelada com sucesso.'
+          cancelAtPeriodEnd: true,
+          activeUntil,
+          nextDueDate: activeUntil,
+          message: 'Assinatura cancelada com sucesso. O plano permanecerá ativo até o fim do período já pago.'
         }, 200, corsHeaders);
+      }
+
+      // 5.4 Reactivate Subscription (removes cancel_at_period_end)
+      if (path === '/api/subscription/reactivate' && request.method === 'POST') {
+        const user = await authenticateUser();
+        const serviceAccount = getServiceAccount(env);
+        const userDoc = await getUserDocument(serviceAccount, user.uid);
+        const subId = userDoc?.subscription?.subscriptionId;
+
+        if (subId && env.STRIPE_SECRET_KEY) {
+          try {
+            const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' });
+            const sub = await stripe.subscriptions.update(subId, { cancel_at_period_end: false });
+            const nextDueDate = sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString().slice(0, 10) : null;
+            await updateUserDocument(serviceAccount, user.uid, {
+              'subscription.cancelAtPeriodEnd': false,
+              'subscription.cancelAt': null,
+              'subscription.status': 'active'
+            });
+            await setFirebaseUserProClaim(serviceAccount, user.uid, true);
+            return jsonResponse({
+              success: true,
+              cancelAtPeriodEnd: false,
+              nextDueDate,
+              message: 'Assinatura reativada com sucesso! As renovações automáticas continuam ativas.'
+            }, 200, corsHeaders);
+          } catch (stripeErr) {
+            console.warn('[Subscription] Erro ao reativar assinatura no Stripe:', stripeErr.message);
+            return jsonResponse({ error: stripeErr.message }, 400, corsHeaders);
+          }
+        }
+
+        return jsonResponse({ error: 'Nenhuma assinatura ativa encontrada para reativar.' }, 400, corsHeaders);
       }
 
       // 6. Gemini AI - Deck Generation (Requires Pro & Quota Check)
@@ -1209,9 +1311,12 @@ async function handleStripeWebhook(request, env) {
       await setFirebaseUserProClaim(serviceAccount, uid, false);
       await updateUserDocument(serviceAccount, uid, {
         'subscription.status': 'canceled',
+        'subscription.cancelAtPeriodEnd': false,
         'subscription.canceledAt': new Date().toISOString()
       });
-      console.log(`[Stripe Webhook] Pro desativado para UID: ${uid}`);
+      // Non-Pro user: wipe all saved cloud decks & notebook from backend database
+      await clearUserCloudData(serviceAccount, uid);
+      console.log(`[Stripe Webhook] Pro desativado e dados de nuvem apagados para UID: ${uid}`);
     }
   }
 

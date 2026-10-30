@@ -109,7 +109,9 @@ export function initExploreModal() {
 
       try {
         await refreshUserProStatus(user);
-        await loadSlotsFromCloud();
+        if (isUserPro(user)) {
+          await loadSlotsFromCloud();
+        }
       } catch (e) {
         console.warn('Erro ao atualizar dados Pro do usuário:', e);
       }
@@ -247,7 +249,7 @@ function injectModalHtml() {
           <!-- ROW 2: NOTEBOOK (CADERNO) -->
           <div>
             <div class="flex items-center justify-between mb-3">
-              <span class="text-xs font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Caderno de Erros</span>
+              <span class="text-xs font-bold uppercase tracking-wider text-[var(--md-sys-color-on-surface-variant)]">Caderno</span>
               <span class="text-[11px] text-[var(--md-sys-color-on-surface-variant)]">Slot permanente</span>
             </div>
             <div id="notebook-slot-container">
@@ -379,7 +381,7 @@ function attachModalEventListeners() {
       const parsed = JSON.parse(text);
 
       if (parsed && parsed.__flashcards_watermark__ === "notebook_backup_v1") {
-        const importAsNotebook = confirm('Este arquivo é um backup do Caderno de Erros.\n\nDeseja restaurá-lo diretamente no seu Caderno de Erros?');
+        const importAsNotebook = confirm('Este arquivo é um backup do Caderno.\n\nDeseja restaurá-lo diretamente no seu Caderno?');
         if (importAsNotebook) {
           const importedCount = importNotebookBackupData(parsed);
           renderNotebookSlot();
@@ -451,7 +453,7 @@ function attachModalEventListeners() {
       }
 
       renderNotebookSlot();
-      alert(`Backup do Caderno importado com sucesso!\n${importedCount} cards carregados no Caderno de Erros.`);
+      alert(`Backup do Caderno importado com sucesso!\n${importedCount} cards carregados no Caderno.`);
     } catch (err) {
       alert('Erro ao importar backup do caderno: ' + (err.message || 'Arquivo corrompido'));
     } finally {
@@ -1110,7 +1112,7 @@ function renderNotebookSlot() {
             <span class="material-symbols-rounded text-2xl">bookmark</span>
           </div>
           <div class="text-left">
-            <p class="text-sm font-bold text-gray-800">Caderno de Erros</p>
+            <p class="text-sm font-bold text-gray-800">Caderno</p>
             <p class="text-xs text-gray-400">Nenhum card salvo no caderno ainda</p>
           </div>
         </div>
@@ -1130,7 +1132,7 @@ function renderNotebookSlot() {
           <span class="material-symbols-rounded text-2xl">bookmark</span>
         </div>
         <div class="text-left min-w-0">
-          <p class="text-sm font-bold text-gray-900 truncate">Caderno de Erros</p>
+          <p class="text-sm font-bold text-gray-900 truncate">Caderno</p>
           <p class="text-xs text-gray-500">${notebook.cardCount} cards para revisão</p>
         </div>
       </div>
@@ -1216,7 +1218,7 @@ window.flashcardsShareNotebook = async function() {
   const notebook = getNotebookSlotData();
   if (!notebook.deckData) return;
   try {
-    const { shareUrl } = await shareDeckToCloud(notebook.deckData, 'Caderno de Erros', null);
+    const { shareUrl } = await shareDeckToCloud(notebook.deckData, 'Caderno', null);
     alert(`Caderno compartilhado!\n\nLink copiado para a área de transferência:\n${shareUrl}`);
   } catch (e) {
     alert('Erro ao compartilhar caderno.');

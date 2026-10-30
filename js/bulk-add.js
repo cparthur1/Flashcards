@@ -1,6 +1,6 @@
 /**
  * js/bulk-add.js
- * Módulo de importação em lote de decks para o Caderno de Erros / Revisão Contínua.
+ * Módulo de importação em lote de decks para o Caderno / Revisão Contínua.
  * Exibe dois painéis de deck preview, seleção individual/geral por checkbox,
  * transferência direta com animações de física Material You Expressive, e edição/exclusão.
  */
