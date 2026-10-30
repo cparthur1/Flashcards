@@ -3,7 +3,7 @@
  * Copyright (C) 2026 Arthur <arthur.paludo.c@gmail.com>
  */
 
-const CACHE_NAME = 'flashcards-v13.2'; // Increment version to trigger update
+const CACHE_NAME = 'flashcards-v13.3'; // Increment version to trigger update
 
 const BASE_PATH = self.registration && self.registration.scope 
   ? new URL(self.registration.scope).pathname.replace(/\/$/, '') 
@@ -81,9 +81,17 @@ const ASSETS_TO_CACHE = RAW_ASSETS.map(p => p === '/' ? (BASE_PATH || '/') : `${
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE).catch(err => {
-      console.warn('SW cache.addAll warning:', err);
-    }))
+    caches.open(CACHE_NAME).then(async (cache) => {
+      await Promise.allSettled(
+        ASSETS_TO_CACHE.map(async (url) => {
+          try {
+            await cache.add(url);
+          } catch (e) {
+            console.warn(`[SW] Aviso ao cachear ${url}:`, e);
+          }
+        })
+      );
+    })
   );
   self.skipWaiting();
 });
