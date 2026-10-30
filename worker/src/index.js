@@ -100,16 +100,30 @@ export default {
         }
         const token = authHeader.substring(7);
         const projectId = env.FIREBASE_PROJECT_ID || 'flashcards-ead57';
-        return await verifyFirebaseIdToken(token, projectId);
+        try {
+          return await verifyFirebaseIdToken(token, projectId);
+        } catch (authErr) {
+          throw new Response(JSON.stringify({ error: 'unauthorized', message: authErr.message || 'Token inválido ou expirado' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          });
+        }
       }
 
       // 3. User Pro Status & Quota
       if (path === '/api/user/status' && request.method === 'GET') {
         const user = await authenticateUser();
-        const serviceAccount = getServiceAccount(env);
-        const userDoc = await getUserDocument(serviceAccount, user.uid);
-
         const isLifetime = LIFETIME_PRO_EMAILS.includes((user.email || '').toLowerCase().trim());
+        let userDoc = null;
+        let serviceAccount = null;
+
+        try {
+          serviceAccount = getServiceAccount(env);
+          userDoc = await getUserDocument(serviceAccount, user.uid);
+        } catch (docErr) {
+          console.warn('[Status] Falha ao ler documento do Firestore:', docErr.message);
+        }
+
         const isPro = Boolean(isLifetime || user.pro || userDoc?.subscription?.status === 'active');
         const currentMonth = new Date().toISOString().slice(0, 7); // e.g. "2026-10"
         const lastReset = userDoc?.quotaLastResetMonth || '';
@@ -121,7 +135,7 @@ export default {
         const remainingIncluded = isLifetime ? 9999 : Math.max(0, 3 - monthlyUsed);
         const totalRemaining = isPro ? (isLifetime ? 9999 : remainingIncluded + extraGenerations) : 0;
 
-        if (isLifetime) {
+        if (isLifetime && serviceAccount) {
           ctx.waitUntil(Promise.all([
             setFirebaseUserProClaim(serviceAccount, user.uid, true).catch(() => {}),
             updateUserDocument(serviceAccount, user.uid, {
@@ -231,10 +245,18 @@ export default {
       // 6. Gemini AI - Deck Generation (Requires Pro & Quota Check)
       if (path === '/api/ai/generate' && request.method === 'POST') {
         const user = await authenticateUser();
-        const serviceAccount = getServiceAccount(env);
-        const userDoc = await getUserDocument(serviceAccount, user.uid);
+        const reqBody = await request.json();
 
         const isLifetime = LIFETIME_PRO_EMAILS.includes((user.email || '').toLowerCase().trim());
+        let userDoc = null;
+        let serviceAccount = null;
+        try {
+          serviceAccount = getServiceAccount(env);
+          userDoc = await getUserDocument(serviceAccount, user.uid);
+        } catch (e) {
+          console.warn('[Generate] Falha ao ler Firestore:', e.message);
+        }
+
         const isPro = Boolean(isLifetime || user.pro || userDoc?.subscription?.status === 'active');
         if (!isPro) {
           return jsonResponse({
@@ -269,16 +291,17 @@ export default {
             }, 402, corsHeaders);
           }
 
-          // Update quota in Firestore
-          await updateUserDocument(serviceAccount, user.uid, {
-            monthlyGenerationsUsed: monthlyUsed,
-            quotaLastResetMonth: currentMonth,
-            extraGenerations: extraGens
-          });
+          // Update quota in Firestore if serviceAccount available
+          if (serviceAccount) {
+            await updateUserDocument(serviceAccount, user.uid, {
+              monthlyGenerationsUsed: monthlyUsed,
+              quotaLastResetMonth: currentMonth,
+              extraGenerations: extraGens
+            }).catch(() => {});
+          }
         }
 
         // Proxy Gemini call
-        const reqBody = await request.json();
         const geminiRes = await callGemini({
           model: reqBody.model || 'gemini-flash-latest',
           contents: reqBody.contents,
@@ -302,11 +325,21 @@ export default {
       // 7. Gemini AI - Tutor Feedback during study (Unlimited for Pro)
       if (path === '/api/ai/tutor' && request.method === 'POST') {
         const user = await authenticateUser();
-        const serviceAccount = getServiceAccount(env);
-        const userDoc = await getUserDocument(serviceAccount, user.uid);
-
         const isLifetime = LIFETIME_PRO_EMAILS.includes((user.email || '').toLowerCase().trim());
-        const isPro = Boolean(isLifetime || user.pro || userDoc?.subscription?.status === 'active');
+        let isPro = isLifetime || Boolean(user.pro);
+
+        if (!isPro) {
+          try {
+            const serviceAccount = getServiceAccount(env);
+            const userDoc = await getUserDocument(serviceAccount, user.uid);
+            if (userDoc?.subscription?.status === 'active') {
+              isPro = true;
+            }
+          } catch (e) {
+            console.warn('[Tutor] Falha ao checar assinatura no Firestore:', e.message);
+          }
+        }
+
         if (!isPro) {
           return jsonResponse({
             error: 'subscription_required',
@@ -337,11 +370,21 @@ export default {
       // 8. Gemini AI - Stats Diagnostic Insights (Unlimited for Pro)
       if (path === '/api/ai/stats' && request.method === 'POST') {
         const user = await authenticateUser();
-        const serviceAccount = getServiceAccount(env);
-        const userDoc = await getUserDocument(serviceAccount, user.uid);
-
         const isLifetime = LIFETIME_PRO_EMAILS.includes((user.email || '').toLowerCase().trim());
-        const isPro = Boolean(isLifetime || user.pro || userDoc?.subscription?.status === 'active');
+        let isPro = isLifetime || Boolean(user.pro);
+
+        if (!isPro) {
+          try {
+            const serviceAccount = getServiceAccount(env);
+            const userDoc = await getUserDocument(serviceAccount, user.uid);
+            if (userDoc?.subscription?.status === 'active') {
+              isPro = true;
+            }
+          } catch (e) {
+            console.warn('[Stats] Falha ao checar assinatura no Firestore:', e.message);
+          }
+        }
+
         if (!isPro) {
           return jsonResponse({
             error: 'subscription_required',

@@ -4,9 +4,9 @@
  * Implemented using Web Cryptography API (crypto.subtle) without external dependencies.
  */
 
-// Cached Google public keys for verifying client Firebase ID Tokens
-let cachedPublicKeys = null;
-let keysExpiry = 0;
+// Cached Google JWKS for verifying client Firebase ID Tokens
+let cachedJwks = null;
+let jwksExpiry = 0;
 
 // Cached Google OAuth2 Admin access token
 let cachedAdminToken = null;
@@ -27,106 +27,47 @@ function base64UrlEncode(strOrBuffer) {
   return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-function base64UrlDecode(str) {
+function base64UrlDecodeUtf8(str) {
   str = str.replace(/-/g, '+').replace(/_/g, '/');
   while (str.length % 4) {
     str += '=';
   }
-  return atob(str);
+  const binary = atob(str);
+  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function base64UrlDecodeBytes(str) {
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (str.length % 4) {
+    str += '=';
+  }
+  const binary = atob(str);
+  return Uint8Array.from(binary, c => c.charCodeAt(0));
 }
 
 /**
- * Fetch and cache Google Firebase Auth public x509 certs
+ * Fetch and cache Google Firebase Auth JWKS
  */
-async function getGooglePublicKeys() {
+async function getGoogleJwks() {
   const now = Date.now();
-  if (cachedPublicKeys && now < keysExpiry) {
-    return cachedPublicKeys;
+  if (cachedJwks && now < jwksExpiry) {
+    return cachedJwks;
   }
 
-  const res = await fetch('https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com');
+  const res = await fetch('https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com');
   if (!res.ok) {
     throw new Error('Falha ao obter chaves públicas do Firebase');
   }
 
-  // Check Cache-Control max-age
   const cacheControl = res.headers.get('cache-control') || '';
   const maxAgeMatch = cacheControl.match(/max-age=(\d+)/);
   const maxAge = maxAgeMatch ? parseInt(maxAgeMatch[1], 10) : 3600;
-  keysExpiry = now + maxAge * 1000;
+  jwksExpiry = now + maxAge * 1000;
 
-  cachedPublicKeys = await res.json();
-  return cachedPublicKeys;
-}
-
-/**
- * Convert PEM certificate to CryptoKey
- */
-async function importCertToKey(certPem) {
-  const cleanPem = certPem
-    .replace(/-----BEGIN CERTIFICATE-----/, '')
-    .replace(/-----END CERTIFICATE-----/, '')
-    .replace(/\s+/g, '');
-  const derBuffer = Uint8Array.from(atob(cleanPem), c => c.charCodeAt(0));
-
-  // In Web Crypto, importing x509 cert directly or SPKI:
-  // Using subtle crypto with x509 certificate import or public key parsing
-  return await crypto.subtle.importKey(
-    'spki',
-    extractSpkiFromCert(derBuffer),
-    {
-      name: 'RSASSA-PKCS1-v1_5',
-      hash: 'SHA-256'
-    },
-    false,
-    ['verify']
-  );
-}
-
-/**
- * Extract SubjectPublicKeyInfo from X.509 certificate DER
- */
-function extractSpkiFromCert(certDer) {
-  // A simplistic ASN.1 parser to extract the subjectPublicKeyInfo field
-  // X.509: SEQUENCE { TBSCertificate SEQUENCE { ... subjectPublicKeyInfo SEQUENCE { ... } ... } ... }
-  // We locate the algorithm identifier for rsaEncryption (1.2.840.113549.1.1.1)
-  const rsaOid = [0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01];
-  for (let i = 0; i < certDer.length - rsaOid.length; i++) {
-    let match = true;
-    for (let j = 0; j < rsaOid.length; j++) {
-      if (certDer[i + j] !== rsaOid[j]) {
-        match = false;
-        break;
-      }
-    }
-    if (match) {
-      // Step back to the start of the SEQUENCE containing the AlgorithmIdentifier
-      // Look back for tag 0x30
-      let seqStart = i - 1;
-      while (seqStart > 0 && certDer[seqStart] !== 0x30) {
-        seqStart--;
-      }
-      if (seqStart >= 0) {
-        // Return from seqStart to the end of the public key
-        // Determine length of SPKI sequence
-        let lenByte = certDer[seqStart + 1];
-        let offset = 2;
-        let totalLen = 0;
-        if (lenByte < 0x80) {
-          totalLen = lenByte + 2;
-        } else {
-          const numLenBytes = lenByte & 0x7f;
-          totalLen = 0;
-          for (let k = 0; k < numLenBytes; k++) {
-            totalLen = (totalLen << 8) | certDer[seqStart + 2 + k];
-          }
-          totalLen += 2 + numLenBytes;
-        }
-        return certDer.slice(seqStart, seqStart + totalLen).buffer;
-      }
-    }
-  }
-  throw new Error('Não foi possível extrair a chave pública do certificado');
+  const data = await res.json();
+  cachedJwks = data.keys || [];
+  return cachedJwks;
 }
 
 /**
@@ -141,8 +82,8 @@ export async function verifyFirebaseIdToken(token, projectId) {
   if (parts.length !== 3) throw new Error('Formato JWT inválido');
 
   const [headerB64, payloadB64, signatureB64] = parts;
-  const header = JSON.parse(base64UrlDecode(headerB64));
-  const payload = JSON.parse(base64UrlDecode(payloadB64));
+  const header = JSON.parse(base64UrlDecodeUtf8(headerB64));
+  const payload = JSON.parse(base64UrlDecodeUtf8(payloadB64));
 
   // Check timing
   const now = Math.floor(Date.now() / 1000);
@@ -156,15 +97,25 @@ export async function verifyFirebaseIdToken(token, projectId) {
     throw new Error('Emissor (iss) do token inválido');
   }
 
-  const publicKeys = await getGooglePublicKeys();
-  const certPem = publicKeys[header.kid];
-  if (!certPem) {
+  const jwks = await getGoogleJwks();
+  const jwk = jwks.find(k => k.kid === header.kid);
+  if (!jwk) {
     throw new Error('Chave pública do Firebase não encontrada para o kid fornecido');
   }
 
-  const cryptoKey = await importCertToKey(certPem);
+  const cryptoKey = await crypto.subtle.importKey(
+    'jwk',
+    jwk,
+    {
+      name: 'RSASSA-PKCS1-v1_5',
+      hash: 'SHA-256'
+    },
+    false,
+    ['verify']
+  );
+
   const data = new TextEncoder().encode(`${headerB64}.${payloadB64}`);
-  const signature = Uint8Array.from(base64UrlDecode(signatureB64), c => c.charCodeAt(0));
+  const signature = base64UrlDecodeBytes(signatureB64);
 
   const valid = await crypto.subtle.verify(
     'RSASSA-PKCS1-v1_5',
