@@ -21,6 +21,7 @@ function getAsaasHeaders(apiKey) {
 export async function getOrCreateCustomer({ name, email, cpfCnpj = null, apiKey, isProduction = true }) {
   const baseUrl = getAsaasBaseUrl(isProduction);
   const headers = getAsaasHeaders(apiKey);
+  const cleanCpf = cpfCnpj ? String(cpfCnpj).replace(/\D/g, '') : undefined;
 
   // Search existing customer by email
   const searchUrl = `${baseUrl}/customers?email=${encodeURIComponent(email)}`;
@@ -28,7 +29,22 @@ export async function getOrCreateCustomer({ name, email, cpfCnpj = null, apiKey,
   if (searchRes.ok) {
     const data = await searchRes.json();
     if (data.data && data.data.length > 0) {
-      return data.data[0];
+      const existing = data.data[0];
+      // If customer has no CPF on record but cleanCpf was provided, update it in Asaas via PUT
+      if (cleanCpf && (!existing.cpfCnpj || existing.cpfCnpj !== cleanCpf)) {
+        const updateRes = await fetch(`${baseUrl}/customers/${existing.id}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({ cpfCnpj: cleanCpf })
+        });
+        if (!updateRes.ok) {
+          const updateErr = await updateRes.text();
+          console.warn('Erro ao atualizar CPF do cliente existente no Asaas:', updateErr);
+          throw new Error(`Erro ao atualizar CPF no Asaas: ${updateErr}`);
+        }
+        existing.cpfCnpj = cleanCpf;
+      }
+      return existing;
     }
   }
 
@@ -39,7 +55,7 @@ export async function getOrCreateCustomer({ name, email, cpfCnpj = null, apiKey,
     body: JSON.stringify({
       name: name || email.split('@')[0],
       email,
-      cpfCnpj: cpfCnpj || undefined,
+      cpfCnpj: cleanCpf,
       notificationDisabled: false
     })
   });

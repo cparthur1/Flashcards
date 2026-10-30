@@ -12,7 +12,9 @@ const FIRESTORE_BASE = 'https://firestore.googleapis.com/v1';
 function toFirestoreFields(obj) {
   const fields = {};
   for (const [key, val] of Object.entries(obj)) {
-    if (val === null || val === undefined) {
+    if (val === undefined) {
+      continue;
+    } else if (val === null) {
       fields[key] = { nullValue: null };
     } else if (typeof val === 'boolean') {
       fields[key] = { booleanValue: val };
@@ -48,7 +50,11 @@ function fromFirestoreFields(fields) {
     else if ('booleanValue' in val) obj[key] = val.booleanValue;
     else if ('integerValue' in val) obj[key] = parseInt(val.integerValue, 10);
     else if ('doubleValue' in val) obj[key] = val.doubleValue;
-    else if ('nullValue' in val) obj[key] = null;
+    else if ('nullValue' in val) {
+      if (key !== 'dueStep') {
+        obj[key] = null;
+      }
+    }
     else if ('mapValue' in val) obj[key] = fromFirestoreFields(val.mapValue.fields);
     else if ('arrayValue' in val) {
       obj[key] = (val.arrayValue.values || []).map(v => fromFirestoreFields({ v }).v);
@@ -104,6 +110,11 @@ export async function updateUserDocument(serviceAccountConfig, uid, fieldsToUpda
     body: JSON.stringify({ fields: firestoreFields })
   });
 
+  if (res.status === 404) {
+    // Document does not exist yet; create it directly
+    return await setDocument(serviceAccountConfig, 'users', uid, fieldsToUpdate);
+  }
+
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Erro ao atualizar usuário no Firestore: ${err}`);
@@ -137,6 +148,54 @@ export async function deleteUserDocument(serviceAccountConfig, uid) {
   });
 
   return true;
+}
+
+/**
+ * Get any document from Firestore
+ */
+export async function getDocument(serviceAccountConfig, collectionName, docId) {
+  const token = await getGoogleAdminAccessToken(serviceAccountConfig);
+  const projectId = serviceAccountConfig.project_id;
+  const url = `${FIRESTORE_BASE}/projects/${projectId}/databases/(default)/documents/${collectionName}/${docId}`;
+
+  const res = await fetch(url, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Erro ao buscar documento no Firestore (${collectionName}/${docId}): ${err}`);
+  }
+
+  const data = await res.json();
+  return fromFirestoreFields(data.fields);
+}
+
+/**
+ * Set or replace any document in Firestore
+ */
+export async function setDocument(serviceAccountConfig, collectionName, docId, fieldsToSet) {
+  const token = await getGoogleAdminAccessToken(serviceAccountConfig);
+  const projectId = serviceAccountConfig.project_id;
+  const url = `${FIRESTORE_BASE}/projects/${projectId}/databases/(default)/documents/${collectionName}/${docId}`;
+  const firestoreFields = toFirestoreFields(fieldsToSet);
+
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ fields: firestoreFields })
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Erro ao gravar documento no Firestore (${collectionName}/${docId}): ${err}`);
+  }
+
+  return await res.json();
 }
 
 /**

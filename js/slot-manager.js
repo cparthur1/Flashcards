@@ -5,6 +5,19 @@
  */
 
 import { auth, db, doc, getDoc, setDoc, updateDoc, onSnapshot } from './firebase-client.js';
+import { getCloudSlots, saveCloudSlots } from './backend-api.js';
+
+let syncTimeout = null;
+
+/**
+ * Debounced sync to avoid excessive requests during rapid card review
+ */
+export function debouncedSyncSlotsToCloud(delay = 2500) {
+  if (syncTimeout) clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(() => {
+    syncSlotsToCloud();
+  }, delay);
+}
 
 const SLOTS_STORAGE_KEY = 'flashcards_deck_slots';
 const ACTIVE_MODE_KEY = 'flashcardsActiveMode';
@@ -246,70 +259,53 @@ export function importNotebookBackupData(parsedData) {
 }
 
 /**
- * Synchronize slots and user progress to Firestore
+ * Synchronize slots and user progress to Firestore via Backend Admin API
  */
 export async function syncSlotsToCloud() {
+  if (syncTimeout) {
+    clearTimeout(syncTimeout);
+    syncTimeout = null;
+  }
+
   const user = auth.currentUser;
   if (!user) return;
 
   try {
     const slots = getLocalSlots();
+
+    // Keep active slot updated with the latest normal game session if active
+    const activeMode = localStorage.getItem(ACTIVE_MODE_KEY) || 'normal';
+    const activeSave = localStorage.getItem(SAVE_KEY);
+    if (activeMode === 'normal' && activeSave) {
+      try {
+        const parsedSave = JSON.parse(activeSave);
+        const currentSlotIndex = slots.findIndex(s => s.isCurrent);
+        if (currentSlotIndex !== -1 && slots[currentSlotIndex]) {
+          slots[currentSlotIndex].deckData = parsedSave;
+          slots[currentSlotIndex].cardCount = (parsedSave.allQuestions || []).length;
+          slots[currentSlotIndex].title = parsedSave.deckTitle || slots[currentSlotIndex].title;
+          slots[currentSlotIndex].updatedAt = Date.now();
+          saveLocalSlots(slots);
+        }
+      } catch (e) {}
+    }
+
     const notebookData = getNotebookSlotData();
 
-    // Prepare lightweight metadata for user doc
-    const deckSlotsMeta = slots.map(s => ({
-      slotIndex: s.slotIndex,
-      deckId: s.deckId,
-      title: s.title,
-      cardCount: s.cardCount,
-      isFixed: s.isFixed,
-      isCurrent: s.isCurrent,
-      updatedAt: s.updatedAt
-    }));
-
     // Stats
-    const statsRaw = localStorage.getItem('flashcardsStats');
-    const stats = statsRaw ? JSON.parse(statsRaw) : {};
+    let stats = {};
+    try {
+      const statsRaw = localStorage.getItem('flashcardsStats');
+      if (statsRaw) stats = JSON.parse(statsRaw);
+    } catch (e) {}
 
-    const userDocRef = doc(db, 'users', user.uid);
-    await setDoc(userDocRef, {
-      deckSlots: deckSlotsMeta,
-      notebookSlot: {
-        cardCount: notebookData.cardCount,
-        title: notebookData.title
-      },
-      stats,
-      lastSyncedAt: Date.now()
-    }, { merge: true });
-
-    // Save full deck data to decks/{deckId}
-    for (const slot of slots) {
-      if (slot.deckId && slot.deckData) {
-        const deckDocRef = doc(db, 'decks', slot.deckId);
-        await setDoc(deckDocRef, {
-          ownerUid: user.uid,
-          title: slot.title,
-          cardCount: slot.cardCount,
-          isFixed: slot.isFixed,
-          deckData: slot.deckData,
-          updatedAt: slot.updatedAt
-        }, { merge: true });
-      }
-    }
-
-    // Save full notebook data to decks/notebook_{user.uid}
-    if (notebookData.deckData) {
-      const notebookDocRef = doc(db, 'decks', `notebook_${user.uid}`);
-      await setDoc(notebookDocRef, {
-        ownerUid: user.uid,
-        title: 'Caderno de Erros',
-        cardCount: notebookData.cardCount,
-        deckData: notebookData.deckData,
-        updatedAt: Date.now()
-      }, { merge: true });
-    }
+    await saveCloudSlots({
+      slots,
+      notebookData,
+      stats
+    });
   } catch (err) {
-    console.warn('Erro ao sincronizar com Firestore:', err);
+    console.warn('Erro ao sincronizar com nuvem via backend:', err);
   }
 }
 
@@ -318,59 +314,79 @@ export async function syncSlotsToCloud() {
  */
 export async function loadSlotsFromCloud() {
   const user = auth.currentUser;
-  if (!user) return;
+  if (!user) return false;
 
   try {
-    const userDocRef = doc(db, 'users', user.uid);
-    const snap = await getDoc(userDocRef);
-    if (!snap.exists()) return;
+    const cloudData = await getCloudSlots();
+    if (!cloudData) return false;
 
-    const cloudData = snap.data();
-    if (cloudData.deckSlots && Array.isArray(cloudData.deckSlots)) {
-      const localSlots = getLocalSlots();
+    let hasSlotChanges = false;
+    const localSlots = getLocalSlots();
+
+    if (cloudData.deckSlots && Array.isArray(cloudData.deckSlots) && cloudData.deckSlots.length > 0) {
       for (const cloudSlot of cloudData.deckSlots) {
         const idx = cloudSlot.slotIndex;
-        if (cloudSlot.deckId && (!localSlots[idx]?.deckData || cloudSlot.updatedAt > localSlots[idx].updatedAt)) {
-          // Fetch deck data
-          const deckSnap = await getDoc(doc(db, 'decks', cloudSlot.deckId));
-          if (deckSnap.exists()) {
-            const fullDeck = deckSnap.data();
+        if (idx !== undefined && idx >= 0 && idx < 3) {
+          const localSlot = localSlots[idx];
+          const cloudUpdatedAt = cloudSlot.updatedAt || cloudData.lastSyncedAt || 0;
+          const localUpdatedAt = localSlot?.updatedAt || 0;
+
+          if (cloudSlot.deckData && (!localSlot?.deckData || cloudUpdatedAt >= localUpdatedAt)) {
             localSlots[idx] = {
               slotIndex: idx,
               deckId: cloudSlot.deckId,
               title: cloudSlot.title,
               cardCount: cloudSlot.cardCount,
-              isFixed: cloudSlot.isFixed || false,
-              isCurrent: cloudSlot.isCurrent || false,
-              deckData: fullDeck.deckData,
-              updatedAt: cloudSlot.updatedAt || Date.now()
+              isFixed: Boolean(cloudSlot.isFixed),
+              isCurrent: Boolean(cloudSlot.isCurrent),
+              deckData: cloudSlot.deckData,
+              updatedAt: cloudUpdatedAt
             };
+            hasSlotChanges = true;
+
             if (cloudSlot.isCurrent) {
-              localStorage.setItem(SAVE_KEY, JSON.stringify(fullDeck.deckData));
+              localStorage.setItem(SAVE_KEY, JSON.stringify(cloudSlot.deckData));
               localStorage.setItem(ACTIVE_MODE_KEY, 'normal');
             }
           }
         }
       }
-      saveLocalSlots(localSlots);
+      if (hasSlotChanges) {
+        saveLocalSlots(localSlots);
+      }
+    } else {
+      // If cloud has no slots yet, but local device has decks or notebook, push local to cloud!
+      const hasLocalDecks = localSlots.some(s => s.deckData);
+      const localNotebook = getNotebookSlotData();
+      if (hasLocalDecks || localNotebook?.deckData) {
+        await syncSlotsToCloud();
+      }
     }
 
     // Load cloud notebook
-    try {
-      const notebookSnap = await getDoc(doc(db, 'decks', `notebook_${user.uid}`));
-      if (notebookSnap.exists()) {
-        const cloudNotebook = notebookSnap.data();
-        const localNotebook = getNotebookSlotData();
-        if (!localNotebook.deckData || (cloudNotebook.updatedAt && cloudNotebook.updatedAt > (localNotebook.deckData.updatedAt || 0))) {
-          if (cloudNotebook.deckData) {
-            localStorage.setItem(NOTEBOOK_KEY, JSON.stringify(cloudNotebook.deckData));
-          }
-        }
+    if (cloudData.notebookSlot?.deckData) {
+      const localNotebook = getNotebookSlotData();
+      const cloudNotebookUpdated = cloudData.notebookSlot.deckData.updatedAt || cloudData.lastSyncedAt || 0;
+      const localNotebookUpdated = localNotebook?.deckData?.updatedAt || 0;
+      if (!localNotebook?.deckData || cloudNotebookUpdated >= localNotebookUpdated) {
+        localStorage.setItem(NOTEBOOK_KEY, JSON.stringify(cloudData.notebookSlot.deckData));
       }
-    } catch (e) {
-      console.warn('Erro ao carregar caderno da nuvem:', e);
     }
+
+    // Load cloud stats
+    if (cloudData.stats && typeof cloudData.stats === 'object' && Object.keys(cloudData.stats).length > 0) {
+      try {
+        const localStatsRaw = localStorage.getItem('flashcardsStats');
+        const localStats = localStatsRaw ? JSON.parse(localStatsRaw) : null;
+        if (!localStats || (cloudData.lastSyncedAt && cloudData.lastSyncedAt >= (localStats.updatedAt || 0))) {
+          localStorage.setItem('flashcardsStats', JSON.stringify(cloudData.stats));
+        }
+      } catch (e) {}
+    }
+
+    return hasSlotChanges;
   } catch (e) {
     console.warn('Erro ao carregar slots da nuvem:', e);
+    return false;
   }
 }

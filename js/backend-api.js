@@ -195,6 +195,33 @@ export async function cancelSubscriptionOnly() {
 }
 
 /**
+ * Get user cloud slots, decks, notebook and stats (Admin bypass)
+ */
+export async function getCloudSlots() {
+  const res = await fetchWithAuth('/api/user/slots');
+  if (!res.ok) {
+    if (res.status === 401) return null;
+    throw new Error('Falha ao buscar slots na nuvem');
+  }
+  return await res.json();
+}
+
+/**
+ * Save user cloud slots, decks, notebook and stats (Admin bypass)
+ */
+export async function saveCloudSlots(payload) {
+  const res = await fetchWithAuth('/api/user/slots', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Falha ao salvar slots na nuvem');
+  }
+  return await res.json();
+}
+
+/**
  * Cancel Pro Subscription and Permanently Delete User Account & All Data
  */
 export async function deleteAccountAndCancelSubscription() {

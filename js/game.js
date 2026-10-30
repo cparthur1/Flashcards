@@ -24,6 +24,7 @@ import { initExploreModal, openExploreModal, openProModal, isUserPro } from './e
 import { openAccountModal } from './account-modal.js';
 import { onAuthChange, auth } from './firebase-client.js';
 import { checkAndLoadSharedDeck } from './share-manager.js';
+import { debouncedSyncSlotsToCloud, syncSlotsToCloud } from './slot-manager.js';
 
 // --- DOM ELEMENTS ---
 const deckTitle = document.getElementById('deck-title');
@@ -2289,6 +2290,7 @@ function executeSaveGameState() {
                 deckTitle: deckTitle.textContent
             }));
         }
+        debouncedSyncSlotsToCloud();
     } catch (e) {
         console.error("Erro ao salvar estado do jogo no localStorage:", e);
     }
@@ -2316,12 +2318,14 @@ window.addEventListener('beforeunload', () => {
         clearTimeout(saveStateTimeout);
         executeSaveGameState();
     }
+    syncSlotsToCloud();
 });
 window.addEventListener('pagehide', () => {
     if (saveStateTimeout) {
         clearTimeout(saveStateTimeout);
         executeSaveGameState();
     }
+    syncSlotsToCloud();
 });
 
 function getNotebookDailyGoal() {

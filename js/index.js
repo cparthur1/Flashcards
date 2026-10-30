@@ -3,6 +3,7 @@ import { ROUTES, shuffleArray, generateSecureId } from './utils.js';
 import { getDailyStreak } from './engine/notebook-scheduler.js';
 import { initExploreModal, openExploreModal } from './explore-modal.js';
 import { checkAndLoadSharedDeck } from './share-manager.js';
+import { openDeckInSlots, syncSlotsToCloud } from './slot-manager.js';
 
 async function init() {
     // 1. Check for shared deck via deep-link (?share=...)
@@ -294,6 +295,7 @@ async function init() {
                     try {
                         localStorage.setItem('flashcardsNotebook', JSON.stringify(notebookState));
                         localStorage.setItem('flashcardsActiveMode', 'notebook');
+                        syncSlotsToCloud();
                         window.location.href = ROUTES.GAME;
                     } catch (err) {
                         if (err.name === 'QuotaExceededError') {
@@ -321,7 +323,7 @@ async function init() {
             deckTitle: title
         };
         try {
-            localStorage.setItem('flashcardsSave', JSON.stringify(gameState));
+            openDeckInSlots(gameState, title);
             window.location.href = ROUTES.GAME;
         } catch (err) {
             if (err.name === 'QuotaExceededError') {

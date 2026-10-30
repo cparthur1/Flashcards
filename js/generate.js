@@ -4,6 +4,7 @@ import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemember
 import { initExploreModal, openProModal, isUserPro } from './explore-modal.js';
 import { onAuthChange, getCurrentUserToken } from './firebase-client.js';
 import { BACKEND_URL } from './backend-api.js';
+import { openDeckInSlots, syncSlotsToCloud } from './slot-manager.js';
 
 function compressPDFWithWorker(file) {
     return new Promise((resolve, reject) => {
@@ -3494,9 +3495,9 @@ playDeckBtn.addEventListener('click', () => {
         if (title === "Caderno") {
             localStorage.setItem('flashcardsNotebook', JSON.stringify(gameState));
             localStorage.setItem('flashcardsActiveMode', 'notebook');
+            syncSlotsToCloud();
         } else {
-            localStorage.setItem('flashcardsSave', JSON.stringify(gameState));
-            localStorage.setItem('flashcardsActiveMode', 'normal');
+            openDeckInSlots(gameState, title);
         }
         window.location.href = 'game.html';
     } catch (err) {

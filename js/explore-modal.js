@@ -253,10 +253,14 @@ function injectModalHtml() {
 
         <!-- Checkout View -->
         <div id="pro-checkout-container" class="space-y-3">
-          <input type="text" id="pro-cpf-input" placeholder="CPF para NF (opcional)" class="w-full text-xs p-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500" />
-          <button id="pro-generate-pix-btn" class="m3-btn-expressive m3-btn-filled w-full py-3 px-4 font-bold text-sm flex items-center justify-center gap-2 shadow">
-            <span class="material-symbols-rounded text-lg">pix</span>
-            <span>Assinar via Pix ou Cartão</span>
+          <div class="space-y-1 text-left">
+            <label for="pro-cpf-input" class="block text-[11px] font-bold text-[var(--md-sys-color-on-surface)]">
+              CPF do Titular (obrigatório para emissão)
+            </label>
+            <input type="text" id="pro-cpf-input" placeholder="000.000.000-00" maxlength="14" class="w-full text-xs p-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 bg-white text-gray-900" />
+          </div>
+          <button id="pro-generate-pix-btn" class="m3-btn-expressive m3-btn-filled w-full py-3 px-4 font-bold text-sm flex items-center justify-center shadow cursor-pointer">
+            <span>Assinar agora</span>
           </button>
         </div>
 
@@ -396,16 +400,39 @@ function attachModalEventListeners() {
   bindProCheckoutBtn();
 }
 
+function formatCpf(v) {
+  const digits = String(v || '').replace(/\D/g, '').slice(0, 11);
+  if (digits.length > 9) return digits.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2})$/, '$1.$2.$3-$4');
+  if (digits.length > 6) return digits.replace(/^(\d{3})(\d{3})(\d{1,3})$/, '$1.$2.$3');
+  if (digits.length > 3) return digits.replace(/^(\d{3})(\d{1,3})$/, '$1.$2');
+  return digits;
+}
+
 function bindProCheckoutBtn() {
-  document.getElementById('pro-generate-pix-btn')?.addEventListener('click', async () => {
-    const btn = document.getElementById('pro-generate-pix-btn');
-    const cpfInput = document.getElementById('pro-cpf-input');
+  const btn = document.getElementById('pro-generate-pix-btn');
+  const cpfInput = document.getElementById('pro-cpf-input');
+
+  if (cpfInput && !cpfInput.dataset.maskBound) {
+    cpfInput.dataset.maskBound = 'true';
+    cpfInput.addEventListener('input', (e) => {
+      e.target.value = formatCpf(e.target.value);
+    });
+  }
+
+  btn?.addEventListener('click', async () => {
+    const cleanCpf = cpfInput?.value?.replace(/\D/g, '') || '';
+    if (cleanCpf.length !== 11) {
+      alert('Por favor, informe um CPF válido (11 dígitos) para emissão da assinatura.');
+      cpfInput?.focus();
+      return;
+    }
+
     btn.disabled = true;
     btn.textContent = 'Gerando cobrança...';
 
     try {
       const result = await createProSubscription({
-        cpfCnpj: cpfInput?.value?.trim() || undefined
+        cpfCnpj: cleanCpf
       });
 
       if (result.pix?.encodedImage) {
@@ -435,7 +462,7 @@ function bindProCheckoutBtn() {
     } catch (e) {
       alert(e.message || 'Erro ao gerar assinatura. Tente novamente.');
       btn.disabled = false;
-      btn.textContent = 'Assinar via Pix ou Cartão';
+      btn.textContent = 'Assinar agora';
     }
   });
 }
@@ -495,10 +522,14 @@ export function renderProModalContent() {
 
   // Logged in but not Pro
   container.innerHTML = `
-    <input type="text" id="pro-cpf-input" placeholder="CPF para NF (opcional)" class="w-full text-xs p-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500" />
-    <button id="pro-generate-pix-btn" class="m3-btn-expressive m3-btn-filled w-full py-3 px-4 font-bold text-sm flex items-center justify-center gap-2 shadow">
-      <span class="material-symbols-rounded text-lg">pix</span>
-      <span>Assinar via Pix ou Cartão</span>
+    <div class="space-y-1 text-left">
+      <label for="pro-cpf-input" class="block text-[11px] font-bold text-[var(--md-sys-color-on-surface)]">
+        CPF do Titular (obrigatório para emissão)
+      </label>
+      <input type="text" id="pro-cpf-input" placeholder="000.000.000-00" maxlength="14" class="w-full text-xs p-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 bg-white text-gray-900" />
+    </div>
+    <button id="pro-generate-pix-btn" class="m3-btn-expressive m3-btn-filled w-full py-3 px-4 font-bold text-sm flex items-center justify-center shadow cursor-pointer">
+      <span>Assinar agora</span>
     </button>
   `;
   bindProCheckoutBtn();

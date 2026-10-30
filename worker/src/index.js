@@ -11,7 +11,7 @@
 import { verifyFirebaseIdToken, setFirebaseUserProClaim, deleteFirebaseUser } from './google-auth.js';
 import { getOrCreateCustomer, createSubscription, createExtraGenerationPayment, cancelSubscription, getSubscriptionDetails } from './asaas.js';
 import { callGemini } from './gemini.js';
-import { getUserDocument, updateUserDocument, deleteUserDocument } from './firestore.js';
+import { getUserDocument, updateUserDocument, deleteUserDocument, getDocument, setDocument } from './firestore.js';
 
 const ALLOWED_ORIGINS = [
   'https://flashcards.camblu.org',
@@ -164,6 +164,103 @@ export default {
         }, 200, corsHeaders);
       }
 
+      // 3.1 Cloud Sync: Get User Slots, Decks and Notebook
+      if (path === '/api/user/slots' && request.method === 'GET') {
+        const user = await authenticateUser();
+        const serviceAccount = getServiceAccount(env);
+        const userDoc = await getUserDocument(serviceAccount, user.uid);
+        if (!userDoc) {
+          return jsonResponse({ deckSlots: null, notebookSlot: null, stats: null }, 200, corsHeaders);
+        }
+
+        const deckSlots = userDoc.deckSlots || [];
+        // Populate full deckData for each slot if present
+        for (const slot of deckSlots) {
+          if (slot.deckId) {
+            const deckDoc = await getDocument(serviceAccount, 'decks', slot.deckId).catch(() => null);
+            if (deckDoc) {
+              slot.deckData = deckDoc.deckData;
+            }
+          }
+        }
+
+        // Get notebook deckData
+        let notebookData = null;
+        const notebookDoc = await getDocument(serviceAccount, 'decks', `notebook_${user.uid}`).catch(() => null);
+        if (notebookDoc) {
+          notebookData = notebookDoc.deckData;
+        }
+
+        return jsonResponse({
+          deckSlots,
+          notebookSlot: {
+            title: userDoc.notebookSlot?.title || 'Caderno de Erros',
+            cardCount: userDoc.notebookSlot?.cardCount || 0,
+            deckData: notebookData
+          },
+          stats: userDoc.stats || null,
+          lastSyncedAt: userDoc.lastSyncedAt || 0
+        }, 200, corsHeaders);
+      }
+
+      // 3.2 Cloud Sync: Save User Slots, Decks and Notebook
+      if (path === '/api/user/slots' && request.method === 'POST') {
+        const user = await authenticateUser();
+        const body = await request.json().catch(() => ({}));
+        const serviceAccount = getServiceAccount(env);
+
+        const { slots = [], notebookData = null, stats = {} } = body;
+
+        // Prepare lightweight metadata for user doc
+        const deckSlotsMeta = slots.map(s => ({
+          slotIndex: s.slotIndex,
+          deckId: s.deckId,
+          title: s.title,
+          cardCount: s.cardCount,
+          isFixed: Boolean(s.isFixed),
+          isCurrent: Boolean(s.isCurrent),
+          updatedAt: s.updatedAt || Date.now()
+        }));
+
+        // 1. Update user document
+        await updateUserDocument(serviceAccount, user.uid, {
+          deckSlots: deckSlotsMeta,
+          notebookSlot: {
+            cardCount: notebookData?.cardCount || 0,
+            title: notebookData?.title || 'Caderno de Erros'
+          },
+          stats: stats || {},
+          lastSyncedAt: Date.now()
+        }).catch(err => console.warn('Erro ao atualizar user doc:', err));
+
+        // 2. Save full deck documents
+        for (const slot of slots) {
+          if (slot.deckId && slot.deckData) {
+            await setDocument(serviceAccount, 'decks', slot.deckId, {
+              ownerUid: user.uid,
+              title: slot.title,
+              cardCount: slot.cardCount,
+              isFixed: Boolean(slot.isFixed),
+              deckData: slot.deckData,
+              updatedAt: slot.updatedAt || Date.now()
+            }).catch(err => console.warn(`Erro ao salvar deck ${slot.deckId}:`, err));
+          }
+        }
+
+        // 3. Save notebook deck document
+        if (notebookData?.deckData) {
+          await setDocument(serviceAccount, 'decks', `notebook_${user.uid}`, {
+            ownerUid: user.uid,
+            title: 'Caderno de Erros',
+            cardCount: notebookData.cardCount || 0,
+            deckData: notebookData.deckData,
+            updatedAt: Date.now()
+          }).catch(err => console.warn('Erro ao salvar notebook:', err));
+        }
+
+        return jsonResponse({ success: true, syncedAt: Date.now() }, 200, corsHeaders);
+      }
+
       // 4. Create Pro Subscription (R$ 5,00/mês)
       if (path === '/api/payment/subscribe' && request.method === 'POST') {
         const user = await authenticateUser();
@@ -171,10 +268,15 @@ export default {
         const apiKey = env.ASAAS_API_KEY;
         const isProduction = env.ASAAS_ENV !== 'sandbox';
 
+        const cleanCpf = body.cpfCnpj ? String(body.cpfCnpj).replace(/\D/g, '') : '';
+        if (cleanCpf.length !== 11) {
+          return jsonResponse({ error: 'Para assinar, é obrigatório informar um CPF válido de 11 dígitos.' }, 400, corsHeaders);
+        }
+
         const customer = await getOrCreateCustomer({
           name: body.name || user.name || user.email.split('@')[0],
           email: user.email,
-          cpfCnpj: body.cpfCnpj,
+          cpfCnpj: cleanCpf,
           apiKey,
           isProduction
         });
