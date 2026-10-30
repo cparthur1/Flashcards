@@ -213,7 +213,7 @@ export async function setFirebaseUserProClaim(serviceAccountConfig, uid, isPro =
   const accessToken = await getGoogleAdminAccessToken(serviceAccountConfig);
   const projectId = serviceAccountConfig.project_id;
 
-  const url = `https://identitytoolkit.googleapis.com/v1/projects/${projectId}/accounts/${uid}:setCustomUserClaims`;
+  const url = `https://identitytoolkit.googleapis.com/v1/projects/${projectId}/accounts:update`;
   const res = await fetch(url, {
     method: 'POST',
     headers: {
@@ -221,6 +221,7 @@ export async function setFirebaseUserProClaim(serviceAccountConfig, uid, isPro =
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
+      localId: uid,
       customAttributes: JSON.stringify({ pro: isPro })
     })
   });

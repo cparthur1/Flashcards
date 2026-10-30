@@ -258,7 +258,46 @@ export default {
 
         let isPro = Boolean(isLifetime || user.pro || userDoc?.subscription?.status === 'active');
 
-        // If not recognized as Pro in Firestore/claims, verify directly with Asaas
+        // If not recognized as Pro or if Firestore doc is pending/out of sync, verify directly with Stripe first
+        if ((!isPro || userDoc?.subscription?.status !== 'active') && env.STRIPE_SECRET_KEY && user.email) {
+          try {
+            const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' });
+            const customers = await stripe.customers.list({ email: user.email.toLowerCase().trim(), limit: 1 });
+            if (customers.data.length > 0) {
+              const customerId = customers.data[0].id;
+              const subs = await stripe.subscriptions.list({
+                customer: customerId,
+                status: 'active',
+                limit: 1
+              });
+              if (subs.data.length > 0) {
+                const sub = subs.data[0];
+                isPro = true;
+                userDoc = userDoc || {};
+                userDoc.subscription = {
+                  status: 'active',
+                  plan: 'pro_monthly',
+                  provider: 'stripe',
+                  subscriptionId: sub.id,
+                  customerId: customerId,
+                  updatedAt: new Date().toISOString()
+                };
+                if (serviceAccount) {
+                  ctx.waitUntil(Promise.all([
+                    setFirebaseUserProClaim(serviceAccount, user.uid, true).catch(() => {}),
+                    updateUserDocument(serviceAccount, user.uid, {
+                      subscription: userDoc.subscription
+                    }).catch(() => {})
+                  ]));
+                }
+              }
+            }
+          } catch (stripeErr) {
+            console.warn('[Status] Falha ao checar Stripe por e-mail:', stripeErr.message);
+          }
+        }
+
+        // Fallback: If still not Pro, verify directly with Asaas
         if (!isPro && env.ASAAS_API_KEY && user.email) {
           const asaasCheck = await checkCustomerProStatusInAsaas({
             email: user.email,
@@ -481,27 +520,71 @@ export default {
           return jsonResponse({ isPro: true, status: 'active', plan: 'pro_lifetime' }, 200, corsHeaders);
         }
 
+        const body = await request.json().catch(() => ({}));
+        const sessionId = body.session_id || url.searchParams.get('session_id') || userDoc?.subscription?.id;
+
         // Check Stripe subscription / session if applicable
-        if (env.STRIPE_SECRET_KEY && (userDoc?.subscription?.provider === 'stripe' || userDoc?.subscription?.id?.startsWith('cs_'))) {
+        if (env.STRIPE_SECRET_KEY) {
           try {
             const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' });
-            if (userDoc.subscription.id && userDoc.subscription.id.startsWith('cs_')) {
-              const session = await stripe.checkout.sessions.retrieve(userDoc.subscription.id);
+
+            // 1. If session_id (cs_...) is provided
+            if (sessionId && typeof sessionId === 'string' && sessionId.startsWith('cs_')) {
+              const session = await stripe.checkout.sessions.retrieve(sessionId);
               if (session && (session.status === 'complete' || session.payment_status === 'paid')) {
-                await Promise.all([
-                  setFirebaseUserProClaim(serviceAccount, user.uid, true).catch(() => {}),
-                  updateUserDocument(serviceAccount, user.uid, {
-                    subscription: {
-                      status: 'active',
-                      plan: 'pro_monthly',
-                      provider: 'stripe',
-                      subscriptionId: session.subscription || '',
-                      customerId: session.customer || '',
-                      updatedAt: new Date().toISOString()
-                    }
-                  }).catch(() => {})
-                ]);
-                return jsonResponse({ isPro: true, status: 'active', plan: 'pro_monthly' }, 200, corsHeaders);
+                if (session.mode === 'payment' || session.metadata?.type === 'extra_deck') {
+                  const currentExtras = userDoc?.extraGenerations || 0;
+                  await updateUserDocument(serviceAccount, user.uid, {
+                    extraGenerations: currentExtras + 1,
+                    updatedAt: new Date().toISOString()
+                  });
+                  return jsonResponse({ isPro: Boolean(user.pro || userDoc?.subscription?.status === 'active'), extraGenerations: currentExtras + 1, type: 'extra_deck' }, 200, corsHeaders);
+                } else {
+                  await Promise.all([
+                    setFirebaseUserProClaim(serviceAccount, user.uid, true).catch(() => {}),
+                    updateUserDocument(serviceAccount, user.uid, {
+                      subscription: {
+                        status: 'active',
+                        plan: 'pro_monthly',
+                        provider: 'stripe',
+                        subscriptionId: session.subscription || '',
+                        customerId: session.customer || '',
+                        updatedAt: new Date().toISOString()
+                      }
+                    }).catch(() => {})
+                  ]);
+                  return jsonResponse({ isPro: true, status: 'active', plan: 'pro_monthly' }, 200, corsHeaders);
+                }
+              }
+            }
+
+            // 2. Direct customer check by email in Stripe
+            if (user.email) {
+              const customers = await stripe.customers.list({ email: user.email.toLowerCase().trim(), limit: 1 });
+              if (customers.data.length > 0) {
+                const customerId = customers.data[0].id;
+                const subs = await stripe.subscriptions.list({
+                  customer: customerId,
+                  status: 'active',
+                  limit: 1
+                });
+                if (subs.data.length > 0) {
+                  const sub = subs.data[0];
+                  await Promise.all([
+                    setFirebaseUserProClaim(serviceAccount, user.uid, true).catch(() => {}),
+                    updateUserDocument(serviceAccount, user.uid, {
+                      subscription: {
+                        status: 'active',
+                        plan: 'pro_monthly',
+                        provider: 'stripe',
+                        subscriptionId: sub.id,
+                        customerId: customerId,
+                        updatedAt: new Date().toISOString()
+                      }
+                    }).catch(() => {})
+                  ]);
+                  return jsonResponse({ isPro: true, status: 'active', plan: 'pro_monthly' }, 200, corsHeaders);
+                }
               }
             }
           } catch (stripeErr) {
@@ -1020,10 +1103,12 @@ async function handleStripeWebhook(request, env) {
     let uid = dataObject.client_reference_id || dataObject.metadata?.uid || null;
 
     if (!uid && (dataObject.customer_details?.email || dataObject.customer_email)) {
-      const email = dataObject.customer_details?.email || dataObject.customer_email;
-      const userRecord = await getFirebaseUserByEmail(serviceAccount, email).catch(() => null);
-      if (userRecord?.uid) {
-        uid = userRecord.uid;
+      const email = (dataObject.customer_details?.email || dataObject.customer_email || '').toLowerCase().trim();
+      if (email) {
+        const userRecord = await getFirebaseUserByEmail(serviceAccount, email).catch(() => null);
+        if (userRecord?.uid) {
+          uid = userRecord.uid;
+        }
       }
     }
 
@@ -1062,9 +1147,12 @@ async function handleStripeWebhook(request, env) {
       try {
         const customer = await stripe.customers.retrieve(dataObject.customer);
         if (customer && customer.email) {
-          const userRecord = await getFirebaseUserByEmail(serviceAccount, customer.email).catch(() => null);
-          if (userRecord?.uid) {
-            uid = userRecord.uid;
+          const email = (customer.email || '').toLowerCase().trim();
+          if (email) {
+            const userRecord = await getFirebaseUserByEmail(serviceAccount, email).catch(() => null);
+            if (userRecord?.uid) {
+              uid = userRecord.uid;
+            }
           }
         }
       } catch (e) {

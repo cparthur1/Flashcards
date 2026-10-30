@@ -71,10 +71,14 @@ export async function createCheckoutSession() {
 /**
  * Verify payment status with backend and activate Pro
  */
-export async function verifyPaymentStatus() {
-  const res = await fetchWithAuth('/api/payment/verify', {
+export async function verifyPaymentStatus(sessionId = null) {
+  const options = {
     method: 'POST'
-  });
+  };
+  if (sessionId) {
+    options.body = JSON.stringify({ session_id: sessionId });
+  }
+  const res = await fetchWithAuth('/api/payment/verify', options);
   if (!res.ok) {
     return { isPro: false, status: 'unknown' };
   }

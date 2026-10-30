@@ -47,7 +47,7 @@ export function isUserPro(user = (currentUser || auth.currentUser), status = use
 /**
  * Refreshes Pro status from backend for a specific user
  */
-export async function refreshUserProStatus(user = (currentUser || auth.currentUser)) {
+export async function refreshUserProStatus(user = (currentUser || auth.currentUser), forceTokenRefresh = false) {
   if (!user) {
     userProStatus = null;
     return null;
@@ -55,6 +55,9 @@ export async function refreshUserProStatus(user = (currentUser || auth.currentUs
   if (isLifetime(user)) {
     userProStatus = { uid: user.uid, isPro: true, isLifetimePro: true };
     return userProStatus;
+  }
+  if (forceTokenRefresh && typeof user.getIdToken === 'function') {
+    await user.getIdToken(true).catch(() => {});
   }
   userProStatus = await getUserStatus().catch(() => null);
   return userProStatus;
@@ -70,29 +73,39 @@ export function initExploreModal() {
   injectModalHtml();
   attachModalEventListeners();
 
-  // Check if returning from Stripe redirect confirmation
-  if (typeof window !== 'undefined' && window.location && window.location.search.includes('session_id=')) {
-    (async () => {
-      try {
-        await verifyPaymentStatus();
-        await refreshUserProStatus();
-        const url = new URL(window.location.href);
-        url.searchParams.delete('session_id');
-        window.history.replaceState({}, document.title, url.toString());
-      } catch (err) {
-        console.warn('[Stripe Return] Erro ao verificar pagamento após retorno:', err);
-      }
-    })();
-  }
-
   // Listen to Auth State
+  let handlingSessionId = false;
   onAuthChange(async (user) => {
     const prevUid = currentUser?.uid;
     currentUser = user;
+
+    const urlParams = (typeof window !== 'undefined' && window.location) ? new URLSearchParams(window.location.search) : null;
+    const sessionId = urlParams ? urlParams.get('session_id') : null;
+
     if (user) {
       if (prevUid !== user.uid) {
         userProStatus = isLifetime(user) ? { uid: user.uid, isPro: true, isLifetimePro: true } : null;
       }
+
+      if (sessionId && !handlingSessionId) {
+        handlingSessionId = true;
+        try {
+          const verifyResult = await verifyPaymentStatus(sessionId);
+          await refreshUserProStatus(user, true);
+          const cleanUrl = new URL(window.location.href);
+          cleanUrl.searchParams.delete('session_id');
+          window.history.replaceState({}, document.title, cleanUrl.toString());
+
+          if (verifyResult?.type === 'extra_deck') {
+            alert('Compra de geração extra concluída com sucesso!');
+          } else {
+            alert('Assinatura Pro ativada com sucesso! Aproveite seus benefícios.');
+          }
+        } catch (err) {
+          console.warn('[Stripe Return] Erro ao verificar pagamento após retorno:', err);
+        }
+      }
+
       try {
         await refreshUserProStatus(user);
         await loadSlotsFromCloud();
@@ -101,6 +114,12 @@ export function initExploreModal() {
       }
     } else {
       userProStatus = null;
+      if (sessionId) {
+        alert('Pagamento identificado. Faça login com sua conta Google para vincular seu plano Pro.');
+        if (typeof window.flashcardsOpenAccountModal === 'function') {
+          window.flashcardsOpenAccountModal();
+        }
+      }
     }
     renderModalContent();
   });
