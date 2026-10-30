@@ -21,7 +21,7 @@ import { initTransfer } from './transfer.js';
 import { initStatsSession, recordStatsAnswer, recordStatsAiCorrection, archiveCurrentSession, completeCurrentSession, getCurrentSessionMetrics } from './stats-tracker.js';
 import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
 import { initExploreModal, openExploreModal, openProModal, isUserPro } from './explore-modal.js';
-import { onAuthChange } from './firebase-client.js';
+import { onAuthChange, auth } from './firebase-client.js';
 import { checkAndLoadSharedDeck } from './share-manager.js';
 
 // --- DOM ELEMENTS ---
@@ -6002,9 +6002,22 @@ async function initBackgroundCategorization() {
     } catch (e) {
         console.warn("[Algorithm] Falha ao verificar categorização em segundo plano:", e);
     }
-    onAuthChange(() => {
+    function updateSyncButtonsVisibility(user) {
+        const isUserLoggedIn = Boolean(user || auth.currentUser);
+        if (isUserLoggedIn) {
+            if (transferSessionBtn) transferSessionBtn.classList.add('hidden');
+            if (receiveSessionBtn) receiveSessionBtn.classList.add('hidden');
+        } else {
+            if (transferSessionBtn) transferSessionBtn.classList.remove('hidden');
+            if (receiveSessionBtn) receiveSessionBtn.classList.remove('hidden');
+        }
+    }
+
+    onAuthChange((user) => {
         updateAiUI();
+        updateSyncButtonsVisibility(user);
     });
+    updateSyncButtonsVisibility(auth.currentUser);
 }
 
 if (document.readyState === 'loading') {

@@ -13,6 +13,7 @@ import {
   deleteSlot,
   fixSlot,
   clearNotebookSlot,
+  importNotebookBackupData,
   loadSlotsFromCloud
 } from './slot-manager.js';
 import { shareDeckToCloud } from './share-manager.js';
@@ -172,6 +173,7 @@ function injectModalHtml() {
               <span>Carregar Arquivo (.json)</span>
             </button>
             <input type="file" id="modal-hidden-file-input" accept=".json" class="hidden" />
+            <input type="file" id="modal-hidden-notebook-file-input" accept=".json" class="hidden" />
 
             <button id="modal-exam-btn" class="m3-btn-expressive m3-btn-outlined text-xs py-2.5 px-4 font-bold flex items-center gap-2 text-purple-700 border-purple-300 hover:bg-purple-50">
               <span class="material-symbols-rounded text-lg text-purple-600">bolt</span>
@@ -274,6 +276,18 @@ function attachModalEventListeners() {
     try {
       const text = await file.text();
       const parsed = JSON.parse(text);
+
+      if (parsed && parsed.__flashcards_watermark__ === "notebook_backup_v1") {
+        const importAsNotebook = confirm('Este arquivo é um backup do Caderno de Erros.\n\nDeseja restaurá-lo diretamente no seu Caderno de Erros?');
+        if (importAsNotebook) {
+          const importedCount = importNotebookBackupData(parsed);
+          renderNotebookSlot();
+          hiddenInput.value = '';
+          alert(`Backup do Caderno restaurado com sucesso! (${importedCount} cards carregados)`);
+          return;
+        }
+      }
+
       const deckName = file.name.replace(/\.[^/.]+$/, '');
       let cards = [];
       let deckTitle = deckName;
@@ -312,6 +326,35 @@ function attachModalEventListeners() {
       window.location.href = ROUTES.GAME;
     } catch (err) {
       alert('Erro ao ler o arquivo JSON selecionado: ' + (err.message || 'formato inválido'));
+    }
+  });
+
+  // Notebook Backup File Upload inside modal
+  const hiddenNotebookInput = document.getElementById('modal-hidden-notebook-file-input');
+  hiddenNotebookInput?.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const importedCount = importNotebookBackupData(parsed);
+
+      // Update landing page badge if present
+      const notebookCountEl = document.getElementById('notebook-count');
+      const notebookCountLabel = document.getElementById('notebook-count-label');
+      if (notebookCountEl) {
+        notebookCountEl.textContent = importedCount;
+        if (notebookCountLabel) {
+          notebookCountLabel.textContent = importedCount === 1 ? 'card' : 'cards';
+        }
+      }
+
+      renderNotebookSlot();
+      alert(`Backup do Caderno importado com sucesso!\n${importedCount} cards carregados no Caderno de Erros.`);
+    } catch (err) {
+      alert('Erro ao importar backup do caderno: ' + (err.message || 'Arquivo corrompido'));
+    } finally {
+      if (hiddenNotebookInput) hiddenNotebookInput.value = '';
     }
   });
 
@@ -616,6 +659,10 @@ function renderNotebookSlot() {
             <p class="text-xs text-gray-400">Nenhum card salvo no caderno ainda</p>
           </div>
         </div>
+        <button id="import-notebook-btn" class="p-2 sm:px-3 sm:py-1.5 rounded-xl text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer" title="Importar Backup do Caderno" onclick="window.flashcardsImportNotebookBackup()">
+          <span class="material-symbols-rounded text-lg">file_upload</span>
+          <span class="hidden sm:inline">Importar Backup</span>
+        </button>
       </div>
     `;
     return;
@@ -633,12 +680,15 @@ function renderNotebookSlot() {
         </div>
       </div>
 
-      <!-- Action Bar: Red Delete & Blue Share -->
-      <div class="flex items-center gap-1.5 flex-shrink-0">
-        <button class="p-2 rounded-xl text-red-500 hover:bg-red-50 transition" title="Limpar Caderno" onclick="window.flashcardsClearNotebook()">
+      <!-- Action Bar: Import, Delete, Share -->
+      <div class="flex items-center gap-1 flex-shrink-0">
+        <button class="p-2 rounded-xl text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition cursor-pointer" title="Importar Backup do Caderno" onclick="window.flashcardsImportNotebookBackup()">
+          <span class="material-symbols-rounded text-xl">file_upload</span>
+        </button>
+        <button class="p-2 rounded-xl text-red-500 hover:bg-red-50 active:bg-red-100 transition cursor-pointer" title="Limpar Caderno" onclick="window.flashcardsClearNotebook()">
           <span class="material-symbols-rounded text-xl">delete</span>
         </button>
-        <button class="p-2 rounded-xl text-blue-600 hover:bg-blue-50 transition" title="Compartilhar Caderno" onclick="window.flashcardsShareNotebook()">
+        <button class="p-2 rounded-xl text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition cursor-pointer" title="Compartilhar Caderno" onclick="window.flashcardsShareNotebook()">
           <span class="material-symbols-rounded text-xl">share</span>
         </button>
       </div>
@@ -697,6 +747,10 @@ window.flashcardsClearNotebook = function() {
     clearNotebookSlot();
     renderNotebookSlot();
   }
+};
+
+window.flashcardsImportNotebookBackup = function() {
+  document.getElementById('modal-hidden-notebook-file-input')?.click();
 };
 
 window.flashcardsShareNotebook = async function() {

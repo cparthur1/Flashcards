@@ -205,6 +205,47 @@ export function clearNotebookSlot() {
 }
 
 /**
+ * Import a notebook backup into localStorage
+ */
+export function importNotebookBackupData(parsedData) {
+  let cards = [];
+
+  if (parsedData && parsedData.__flashcards_watermark__ === "notebook_backup_v1" && Array.isArray(parsedData.cards)) {
+    cards = parsedData.cards;
+  } else if (parsedData && Array.isArray(parsedData.allQuestions)) {
+    cards = parsedData.allQuestions;
+  } else if (parsedData && Array.isArray(parsedData.cards)) {
+    cards = parsedData.cards;
+  } else if (Array.isArray(parsedData)) {
+    cards = parsedData;
+  } else {
+    throw new Error('O arquivo não possui o formato esperado de backup de caderno.');
+  }
+
+  if (cards.length === 0) {
+    throw new Error('O arquivo está vazio ou não contém cartões válidos.');
+  }
+
+  const playable = cards.filter(q => q && q.type !== 'divisor' && q.type !== 'divider' && q.type !== 'note');
+  const notebookState = {
+    deckTitle: "Caderno",
+    score: parsedData.score || 0,
+    notebookReviewsCount: parsedData.notebookReviewsCount || 0,
+    currentStreak: parsedData.currentStreak || 0,
+    currentStep: parsedData.currentStep || 0,
+    consecutiveDueCardsCount: parsedData.consecutiveDueCardsCount || 0,
+    consecutiveNewCardsCount: parsedData.consecutiveNewCardsCount || 0,
+    allQuestions: cards,
+    questionsPool: Array.isArray(parsedData.questionsPool) && parsedData.questionsPool.length > 0 ? parsedData.questionsPool : [...playable],
+    updatedAt: Date.now()
+  };
+
+  localStorage.setItem(NOTEBOOK_KEY, JSON.stringify(notebookState));
+  syncSlotsToCloud();
+  return cards.length;
+}
+
+/**
  * Synchronize slots and user progress to Firestore
  */
 export async function syncSlotsToCloud() {
@@ -255,6 +296,18 @@ export async function syncSlotsToCloud() {
         }, { merge: true });
       }
     }
+
+    // Save full notebook data to decks/notebook_{user.uid}
+    if (notebookData.deckData) {
+      const notebookDocRef = doc(db, 'decks', `notebook_${user.uid}`);
+      await setDoc(notebookDocRef, {
+        ownerUid: user.uid,
+        title: 'Caderno de Erros',
+        cardCount: notebookData.cardCount,
+        deckData: notebookData.deckData,
+        updatedAt: Date.now()
+      }, { merge: true });
+    }
   } catch (err) {
     console.warn('Erro ao sincronizar com Firestore:', err);
   }
@@ -300,6 +353,22 @@ export async function loadSlotsFromCloud() {
         }
       }
       saveLocalSlots(localSlots);
+    }
+
+    // Load cloud notebook
+    try {
+      const notebookSnap = await getDoc(doc(db, 'decks', `notebook_${user.uid}`));
+      if (notebookSnap.exists()) {
+        const cloudNotebook = notebookSnap.data();
+        const localNotebook = getNotebookSlotData();
+        if (!localNotebook.deckData || (cloudNotebook.updatedAt && cloudNotebook.updatedAt > (localNotebook.deckData.updatedAt || 0))) {
+          if (cloudNotebook.deckData) {
+            localStorage.setItem(NOTEBOOK_KEY, JSON.stringify(cloudNotebook.deckData));
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar caderno da nuvem:', e);
     }
   } catch (e) {
     console.warn('Erro ao carregar slots da nuvem:', e);
