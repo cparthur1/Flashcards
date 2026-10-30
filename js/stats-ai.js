@@ -6,6 +6,8 @@
  */
 
 import { stripHtml } from './utils.js';
+import { BACKEND_URL } from './backend-api.js';
+import { getCurrentUserToken } from './firebase-client.js';
 
 const AI_CATEGORIES_KEY = 'flashcards_ai_categories';
 const DEFAULT_MODEL = 'gemini-flash-lite-latest';
@@ -119,8 +121,9 @@ export async function callGeminiFlashLiteCategorization({
     cards,
     existingCategories
 }) {
-    if (!apiKey) {
-        throw new Error("Gemini API Key não informada.");
+    const token = await getCurrentUserToken().catch(() => null);
+    if (!token) {
+        throw new Error("Recurso exclusivo Flashcards Pro. Faça login com sua conta Pro para categorizar com IA.");
     }
 
     // Clean and truncate cards for prompt efficiency
@@ -160,8 +163,16 @@ REGRAS CRÍTICAS E OBRIGATÓRIAS:
 
     for (const modelName of models) {
         try {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+            const url = apiKey
+                ? `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`
+                : `${BACKEND_URL}/api/ai/stats`;
+            const headers = { "Content-Type": "application/json" };
+            if (!apiKey && token) {
+                headers["Authorization"] = `Bearer ${token}`;
+            }
+
             const requestBody = {
+                model: modelName,
                 contents: [
                     {
                         role: "user",
@@ -179,7 +190,7 @@ REGRAS CRÍTICAS E OBRIGATÓRIAS:
 
             const response = await fetch(url, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers,
                 body: JSON.stringify(requestBody)
             });
 

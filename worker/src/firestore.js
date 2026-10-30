@@ -1,0 +1,179 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/**
+ * firestore.js - Firestore REST helper for Cloudflare Worker
+ */
+import { getGoogleAdminAccessToken } from './google-auth.js';
+
+const FIRESTORE_BASE = 'https://firestore.googleapis.com/v1';
+
+/**
+ * Convert plain JS object to Firestore field format
+ */
+function toFirestoreFields(obj) {
+  const fields = {};
+  for (const [key, val] of Object.entries(obj)) {
+    if (val === null || val === undefined) {
+      fields[key] = { nullValue: null };
+    } else if (typeof val === 'boolean') {
+      fields[key] = { booleanValue: val };
+    } else if (typeof val === 'number') {
+      if (Number.isInteger(val)) {
+        fields[key] = { integerValue: val.toString() };
+      } else {
+        fields[key] = { doubleValue: val };
+      }
+    } else if (typeof val === 'string') {
+      fields[key] = { stringValue: val };
+    } else if (Array.isArray(val)) {
+      fields[key] = {
+        arrayValue: {
+          values: val.map(item => toFirestoreFields({ item }).item)
+        }
+      };
+    } else if (typeof val === 'object') {
+      fields[key] = { mapValue: { fields: toFirestoreFields(val) } };
+    }
+  }
+  return fields;
+}
+
+/**
+ * Convert Firestore field format back to plain JS object
+ */
+function fromFirestoreFields(fields) {
+  if (!fields) return {};
+  const obj = {};
+  for (const [key, val] of Object.entries(fields)) {
+    if ('stringValue' in val) obj[key] = val.stringValue;
+    else if ('booleanValue' in val) obj[key] = val.booleanValue;
+    else if ('integerValue' in val) obj[key] = parseInt(val.integerValue, 10);
+    else if ('doubleValue' in val) obj[key] = val.doubleValue;
+    else if ('nullValue' in val) obj[key] = null;
+    else if ('mapValue' in val) obj[key] = fromFirestoreFields(val.mapValue.fields);
+    else if ('arrayValue' in val) {
+      obj[key] = (val.arrayValue.values || []).map(v => fromFirestoreFields({ v }).v);
+    }
+  }
+  return obj;
+}
+
+/**
+ * Get user document from Firestore
+ */
+export async function getUserDocument(serviceAccountConfig, uid) {
+  const token = await getGoogleAdminAccessToken(serviceAccountConfig);
+  const projectId = serviceAccountConfig.project_id;
+  const url = `${FIRESTORE_BASE}/projects/${projectId}/databases/(default)/documents/users/${uid}`;
+
+  const res = await fetch(url, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+
+  if (res.status === 404) {
+    return null;
+  }
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Erro ao buscar usuário no Firestore: ${err}`);
+  }
+
+  const data = await res.json();
+  return fromFirestoreFields(data.fields);
+}
+
+/**
+ * Update or patch user document in Firestore
+ */
+export async function updateUserDocument(serviceAccountConfig, uid, fieldsToUpdate) {
+  const token = await getGoogleAdminAccessToken(serviceAccountConfig);
+  const projectId = serviceAccountConfig.project_id;
+
+  const updateMask = Object.keys(fieldsToUpdate)
+    .map(key => `updateMask.fieldPaths=${encodeURIComponent(key)}`)
+    .join('&');
+
+  const url = `${FIRESTORE_BASE}/projects/${projectId}/databases/(default)/documents/users/${uid}?${updateMask}`;
+  const firestoreFields = toFirestoreFields(fieldsToUpdate);
+
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ fields: firestoreFields })
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Erro ao atualizar usuário no Firestore: ${err}`);
+  }
+
+  return await res.json();
+}
+
+/**
+ * Delete user document and associated decks/shares from Firestore
+ */
+export async function deleteUserDocument(serviceAccountConfig, uid) {
+  const token = await getGoogleAdminAccessToken(serviceAccountConfig);
+  const projectId = serviceAccountConfig.project_id;
+  const userUrl = `${FIRESTORE_BASE}/projects/${projectId}/databases/(default)/documents/users/${uid}`;
+
+  // First fetch user doc to find deck IDs and shares
+  const userDoc = await getUserDocument(serviceAccountConfig, uid);
+  if (userDoc?.deckSlots && Array.isArray(userDoc.deckSlots)) {
+    for (const slot of userDoc.deckSlots) {
+      if (slot.deckId) {
+        await deleteDeckDocument(serviceAccountConfig, slot.deckId).catch(() => {});
+      }
+    }
+  }
+
+  // Delete the user doc
+  await fetch(userUrl, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+
+  return true;
+}
+
+/**
+ * Delete a specific deck document
+ */
+export async function deleteDeckDocument(serviceAccountConfig, deckId) {
+  const token = await getGoogleAdminAccessToken(serviceAccountConfig);
+  const projectId = serviceAccountConfig.project_id;
+  const url = `${FIRESTORE_BASE}/projects/${projectId}/databases/(default)/documents/decks/${deckId}`;
+
+  return await fetch(url, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+}
+
+/**
+ * Mark a share as deleted or delete it
+ */
+export async function markShareDeleted(serviceAccountConfig, shareSlug) {
+  const token = await getGoogleAdminAccessToken(serviceAccountConfig);
+  const projectId = serviceAccountConfig.project_id;
+  const url = `${FIRESTORE_BASE}/projects/${projectId}/databases/(default)/documents/shares/${shareSlug}`;
+
+  // Mark as deleted: true so client can display "Este baralho foi apagado pelo proprietário"
+  const firestoreFields = toFirestoreFields({
+    deleted: true,
+    deletedAt: Date.now()
+  });
+
+  return await fetch(`${url}?updateMask.fieldPaths=deleted&updateMask.fieldPaths=deletedAt`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ fields: firestoreFields })
+  });
+}
+

@@ -133,9 +133,9 @@
             </a>
 
             <div class="flex items-center gap-3">
-                <button id="open-api-key-modal-btn" class="m3-chip-expressive cursor-pointer">
-                    <span class="material-symbols-rounded text-purple-600 text-base">key</span>
-                    <span id="dashboard-key-status">Chave Gemini API</span>
+                <button id="open-pro-btn" class="m3-chip-expressive cursor-pointer">
+                    <img src="../assets/img/paywall.svg" class="w-4 h-4" alt="Pro">
+                    <span id="dashboard-pro-status">Flashcards Pro</span>
                 </button>
             </div>
         </div>
@@ -361,18 +361,18 @@
             </div>
 
             <div class="p-6 overflow-y-auto space-y-6">
-                <!-- API Key Field -->
-                <div>
-                    <div class="flex items-center justify-between mb-1.5">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500">Sua Gemini API Key</label>
-                        <button class="open-instructions-link text-xs text-blue-500 hover:underline">Como obter chave grátis?</button>
+                <!-- Pro Feature Badge -->
+                <div class="p-3.5 bg-purple-50 rounded-xl border border-purple-200 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <img src="../assets/img/paywall.svg" class="w-5 h-5 flex-shrink-0" alt="Pro">
+                        <div>
+                            <span class="text-xs font-bold text-purple-900 block">Recurso Flashcards Pro</span>
+                            <span class="text-[11px] text-purple-700">Geração de IA com Gemini integrada ao seu plano</span>
+                        </div>
                     </div>
-                    <input type="password" id="modal-2-1-api-key" name="password" autocomplete="current-password" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 text-sm" placeholder="Cole sua Gemini API Key...">
-                    <div class="flex items-center gap-2 mt-2">
-                        <input type="checkbox" id="modal-2-1-remember" class="w-4 h-4 rounded text-purple-600 focus:ring-purple-500 border-gray-300 cursor-pointer">
-                        <label for="modal-2-1-remember" class="text-xs text-gray-600 cursor-pointer select-none">Lembrar chave <span class="text-amber-600 font-semibold">(menos seguro)</span></label>
-                    </div>
-                    <p class="text-[11px] text-gray-500 mt-1">Sua chave é salva apenas localmente no navegador.</p>
+                    <span class="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-200">
+                        <span class="material-symbols-rounded text-xs">check_circle</span> Ativo
+                    </span>
                 </div>
 
                 <!-- Files Upload (Up to 10 files) -->
@@ -443,18 +443,18 @@
                     <p class="text-xs">• Notas e divisores: inicie com <code># Título da Seção</code> (organizam o baralho no editor e são ignorados no jogo).</p>
                 </div>
 
-                <!-- API Key Field -->
-                <div>
-                    <div class="flex items-center justify-between mb-1.5">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500">Sua Gemini API Key</label>
-                        <button class="open-instructions-link text-xs text-blue-500 hover:underline">Como obter chave grátis?</button>
+                <!-- Pro Feature Badge -->
+                <div class="p-3.5 bg-purple-50 rounded-xl border border-purple-200 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <img src="../assets/img/paywall.svg" class="w-5 h-5 flex-shrink-0" alt="Pro">
+                        <div>
+                            <span class="text-xs font-bold text-purple-900 block">Recurso Flashcards Pro</span>
+                            <span class="text-[11px] text-purple-700">Aprimoramento de IA com Gemini integrado ao seu plano</span>
+                        </div>
                     </div>
-                    <input type="password" id="modal-2-2-api-key" name="password" autocomplete="current-password" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 text-sm" placeholder="Cole sua Gemini API Key...">
-                    <div class="flex items-center gap-2 mt-2">
-                        <input type="checkbox" id="modal-2-2-remember" class="w-4 h-4 rounded text-purple-600 focus:ring-purple-500 border-gray-300 cursor-pointer">
-                        <label for="modal-2-2-remember" class="text-xs text-gray-600 cursor-pointer select-none">Lembrar chave <span class="text-amber-600 font-semibold">(menos seguro)</span></label>
-                    </div>
-                    <p class="text-[11px] text-gray-500 mt-1">Sua chave é salva apenas localmente no navegador.</p>
+                    <span class="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-200">
+                        <span class="material-symbols-rounded text-xs">check_circle</span> Ativo
+                    </span>
                 </div>
 
                 <!-- File Upload -->
@@ -491,39 +491,7 @@
         </div>
     </div>
 
-    <!-- QUICK API KEY MODAL -->
-    <div id="quick-api-modal" class="hidden fixed inset-0 modal-overlay bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col p-6">
-            <h3 class="font-bold text-lg text-gray-900 mb-2">Configurar Chave da API Gemini</h3>
-            <p class="text-xs text-gray-600 mb-4">Insira sua chave para habilitar a geração e o assistente inteligente.</p>
-            <form id="quick-api-form" autocomplete="on" onsubmit="return false;" class="m-0 p-0">
-                <input type="text" id="quick-api-username" name="username" autocomplete="username" class="sr-only" tabindex="-1" aria-hidden="true">
-                <div class="mb-3">
-                    <md-outlined-text-field
-                        id="quick-api-input"
-                        name="password"
-                        type="password"
-                        label="Chave da API Gemini"
-                        placeholder="AIzaSy..."
-                        class="w-full"
-                        style="width: 100%;">
-                    </md-outlined-text-field>
-                </div>
-                <div class="flex items-center gap-2 mb-4">
-                    <input type="checkbox" id="quick-api-remember" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer">
-                    <label for="quick-api-remember" class="text-xs text-gray-600 cursor-pointer select-none">Lembrar chave <span class="text-amber-600 font-semibold">(menos seguro)</span></label>
-                </div>
-                <div class="flex justify-between items-center mb-6">
-                    <button type="button" class="open-instructions-link text-xs text-blue-500 hover:underline">Como criar chave grátis?</button>
-                    <button type="button" id="clear-quick-api-btn" class="text-xs text-red-500 hover:underline">Remover chave salva</button>
-                </div>
-                <div class="flex justify-end gap-3">
-                    <button type="button" id="close-quick-api-btn" class="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-200 rounded-xl transition">Cancelar</button>
-                    <button type="submit" id="save-quick-api-btn" class="px-6 py-2 text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition">Salvar Chave</button>
-                </div>
-            </form>
-        </div>
-    </div>
+
 
     <!-- VIEW 2: POST-GENERATION EDITOR -->
     <div id="editor-view" class="w-full max-w-7xl h-full flex flex-col md:flex-row gap-6 hidden flex-grow box-border pb-8 text-gray-800">
@@ -950,53 +918,7 @@
         </div>
     </div>
 
-    <!-- API KEY INSTRUCTIONS MODAL -->
-    <div id="instructions-modal" class="hidden fixed inset-0 modal-overlay bg-black bg-opacity-60 z-[60] flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-                <h3 class="font-bold text-xl text-gray-800">Como criar sua API Key</h3>
-                <button id="close-instructions-btn" class="text-gray-500 hover:text-gray-700">
-                    <img src="../assets/img/close.svg" class="w-8 h-8 opacity-70 hover:opacity-100 transition-opacity" alt="Fechar">
-                </button>
-            </div>
 
-            <div class="p-6 space-y-8 overflow-y-auto">
-                <div class="space-y-3">
-                    <div class="flex items-center gap-3">
-                        <span class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">1</span>
-                        <p class="font-semibold text-lg">Aceite os termos</p>
-                    </div>
-                    <img src="../assets/img/instruction1.png" alt="Passo 1" class="w-full rounded-lg border border-gray-200 shadow-sm">
-                </div>
-
-                <div class="space-y-3">
-                    <div class="flex items-center gap-3">
-                        <span class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">2</span>
-                        <p class="font-semibold text-lg">Aguarde a chave ser criada</p>
-                    </div>
-                    <img src="../assets/img/instruction2.png" alt="Passo 2" class="w-full rounded-lg border border-gray-200 shadow-sm">
-                </div>
-
-                <div class="space-y-3">
-                    <div class="flex items-center gap-3">
-                        <span class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">3</span>
-                        <p class="font-semibold text-lg">Copie a chave</p>
-                    </div>
-                    <img src="../assets/img/instruction3.png" alt="Passo 3" class="w-full rounded-lg border border-gray-200 shadow-sm">
-                </div>
-            </div>
-
-            <div class="px-6 py-5 border-t border-gray-200 flex justify-end gap-4 bg-gray-50">
-                <a href="https://aistudio.google.com/app/api-keys" target="_blank" id="create-key-external-btn" class="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg">
-                    Criar Chave no Google
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                </a>
-                <button id="instructions-ready-btn" class="px-8 py-2.5 bg-gray-200 text-gray-800 font-bold rounded-xl hover:bg-gray-300 transition">
-                    Pronto
-                </button>
-            </div>
-        </div>
-    </div>
 
     <!-- GEMINI API DOWN MODAL -->
     <div id="gemini-down-modal" class="hidden fixed inset-0 modal-overlay bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">

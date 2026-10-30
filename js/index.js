@@ -1,17 +1,29 @@
 // Handles landing page functionality: redirects, single deck and Semana de Provas multi-deck uploads.
 import { ROUTES, shuffleArray, generateSecureId } from './utils.js';
 import { getDailyStreak } from './engine/notebook-scheduler.js';
+import { initExploreModal, openExploreModal } from './explore-modal.js';
+import { checkAndLoadSharedDeck } from './share-manager.js';
 
-function init() {
-    // Redirect to game if active deck session exists
-    const activeMode = localStorage.getItem('flashcardsActiveMode');
-    if (activeMode === 'exam' && localStorage.getItem('flashcardsExam')) {
-        window.location.href = ROUTES.GAME;
-        return;
+async function init() {
+    // 1. Check for shared deck via deep-link (?share=...)
+    const sharedLoaded = await checkAndLoadSharedDeck();
+    if (sharedLoaded) return;
+
+    // 2. Initialize the Explore Files Modal
+    initExploreModal();
+    const openExploreBtn = document.getElementById('open-explore-btn');
+    if (openExploreBtn) {
+        openExploreBtn.addEventListener('click', openExploreModal);
     }
-    if (localStorage.getItem('flashcardsSave')) {
-        window.location.href = ROUTES.GAME;
-        return;
+
+    // 3. Continue Active Session Button
+    const continueSessionBtn = document.getElementById('continue-session-btn');
+    const hasActiveSession = localStorage.getItem('flashcardsSave') || localStorage.getItem('flashcardsExam');
+    if (continueSessionBtn && hasActiveSession) {
+        continueSessionBtn.classList.remove('hidden');
+        continueSessionBtn.addEventListener('click', () => {
+            window.location.href = ROUTES.GAME;
+        });
     }
 
     const openNotebookBtn = document.getElementById('open-notebook-btn');

@@ -1,6 +1,9 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { callWithRetry, checkAndResetModelFallback, sanitizeChatHistory, renderMathAndMarkdown, stripHtml, escapeHtml, sanitizeImageUrl } from './utils.js';
 import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
+import { initExploreModal, openProModal, isUserPro } from './explore-modal.js';
+import { onAuthChange, getCurrentUserToken } from './firebase-client.js';
+import { BACKEND_URL } from './backend-api.js';
 
 function compressPDFWithWorker(file) {
     return new Promise((resolve, reject) => {
@@ -29,16 +32,9 @@ const cardMode12 = document.getElementById('card-mode-1-2');
 const cardMode21 = document.getElementById('card-mode-2-1');
 const cardMode22 = document.getElementById('card-mode-2-2');
 
-// Quick API Key Modal & Button
-const openApiKeyModalBtn = document.getElementById('open-api-key-modal-btn');
-const quickApiModal = document.getElementById('quick-api-modal');
-const quickApiForm = document.getElementById('quick-api-form');
-const quickApiInput = document.getElementById('quick-api-input');
-const quickApiRemember = document.getElementById('quick-api-remember');
-const saveQuickApiBtn = document.getElementById('save-quick-api-btn');
-const closeQuickApiBtn = document.getElementById('close-quick-api-btn');
-const clearQuickApiBtn = document.getElementById('clear-quick-api-btn');
-const dashboardKeyStatus = document.getElementById('dashboard-key-status');
+// Pro Status Button
+const openProBtn = document.getElementById('open-pro-btn');
+const dashboardProStatus = document.getElementById('dashboard-pro-status');
 
 // Modal 1.2 Elements (Convert Doc)
 const modal12 = document.getElementById('modal-1-2');
@@ -54,8 +50,6 @@ const modal21 = document.getElementById('modal-2-1');
 const closeModal21Btn = document.getElementById('close-modal-2-1-btn');
 const cancelModal21Btn = document.getElementById('cancel-modal-2-1-btn');
 const submitModal21Btn = document.getElementById('submit-modal-2-1-btn');
-const modal21ApiKey = document.getElementById('modal-2-1-api-key');
-const modal21Remember = document.getElementById('modal-2-1-remember');
 const modal21Files = document.getElementById('modal-2-1-files');
 const modal21FilesText = document.getElementById('modal-2-1-files-text');
 const modal21FilesCount = document.getElementById('modal-2-1-files-count');
@@ -70,18 +64,11 @@ const modal22 = document.getElementById('modal-2-2');
 const closeModal22Btn = document.getElementById('close-modal-2-2-btn');
 const cancelModal22Btn = document.getElementById('cancel-modal-2-2-btn');
 const submitModal22Btn = document.getElementById('submit-modal-2-2-btn');
-const modal22ApiKey = document.getElementById('modal-2-2-api-key');
-const modal22Remember = document.getElementById('modal-2-2-remember');
 const modal22File = document.getElementById('modal-2-2-file');
 const modal22FileName = document.getElementById('modal-2-2-file-name');
 const modal22Error = document.getElementById('modal-2-2-error');
 const modal22LoadingMsg = document.getElementById('modal-2-2-loading-msg');
 const modal22Spinner = document.getElementById('modal-2-2-spinner');
-
-// Instructions Modal
-const instructionsModal = document.getElementById('instructions-modal');
-const closeInstructionsBtn = document.getElementById('close-instructions-btn');
-const instructionsReadyBtn = document.getElementById('instructions-ready-btn');
 
 // Gemini Down Modal
 const geminiDownModal = document.getElementById('gemini-down-modal');
@@ -506,22 +493,9 @@ async function setApiKey(key, remember = false) {
 }
 
 function updateApiKeyStatusUI() {
-    const key = getApiKey();
-    if (dashboardKeyStatus) {
-        dashboardKeyStatus.textContent = key ? "API Key Configurada ✓" : "Configurar API Key";
-        if (key) {
-            dashboardKeyStatus.classList.add("text-green-600");
-        } else {
-            dashboardKeyStatus.classList.remove("text-green-600");
-        }
+    if (dashboardProStatus) {
+        dashboardProStatus.textContent = isUserPro() ? "Flashcards Pro ✓" : "Flashcards Pro";
     }
-    if (quickApiInput) quickApiInput.value = key;
-    if (modal21ApiKey) modal21ApiKey.value = key;
-    if (modal22ApiKey) modal22ApiKey.value = key;
-    const remembered = isKeyRemembered();
-    if (quickApiRemember) quickApiRemember.checked = remembered;
-    if (modal21Remember) modal21Remember.checked = remembered;
-    if (modal22Remember) modal22Remember.checked = remembered;
 }
 
 function getFileExtension(filename) {
@@ -1254,11 +1228,17 @@ function openEditorView(initialTab = 'creator') {
         renderCardsList(true);
     };
 
-    if (document.startViewTransition) {
-        document.startViewTransition({
-            update: updateDOM,
-            types: ['fade-through']
-        });
+    if (typeof document.startViewTransition === 'function') {
+        try {
+            const vt = document.startViewTransition(updateDOM);
+            if (vt) {
+                if (vt.ready) vt.ready.catch(() => {});
+                if (vt.finished) vt.finished.catch(() => {});
+                if (vt.updateCallbackDone) vt.updateCallbackDone.catch(() => {});
+            }
+        } catch (e) {
+            updateDOM();
+        }
     } else {
         updateDOM();
     }
@@ -1316,7 +1296,55 @@ function switchSidebarTab(tab, force = false) {
 }
 
 tabCreatorBtn.addEventListener('click', () => switchSidebarTab('creator'));
-tabAiChatBtn.addEventListener('click', () => switchSidebarTab('ai'));
+tabAiChatBtn.addEventListener('click', () => {
+    if (!isUserPro()) {
+        openProModal();
+        return;
+    }
+    switchSidebarTab('ai');
+});
+
+function updateProPaywalledUI() {
+    initExploreModal();
+    const isPro = isUserPro();
+    [cardMode21, cardMode22].forEach(card => {
+        if (!card) return;
+        const existingBadge = card.querySelector('.paywall-badge-pill');
+        if (!isPro) {
+            card.classList.add('is-paywalled');
+            if (!existingBadge) {
+                const badge = document.createElement('div');
+                badge.className = 'paywall-badge-pill';
+                badge.innerHTML = `<img src="../assets/img/paywall.svg" alt="Pro"><span>PRO</span>`;
+                card.appendChild(badge);
+            }
+        } else {
+            card.classList.remove('is-paywalled');
+            existingBadge?.remove();
+        }
+    });
+
+    if (tabAiChatBtn) {
+        const tabBadge = tabAiChatBtn.querySelector('.paywall-tab-icon');
+        if (!isPro) {
+            tabAiChatBtn.classList.add('opacity-75');
+            if (!tabBadge) {
+                const icon = document.createElement('img');
+                icon.src = '../assets/img/paywall.svg';
+                icon.className = 'w-3.5 h-3.5 paywall-tab-icon ml-1.5 inline opacity-80';
+                icon.alt = 'Pro';
+                tabAiChatBtn.appendChild(icon);
+            }
+        } else {
+            tabAiChatBtn.classList.remove('opacity-75');
+            tabBadge?.remove();
+        }
+    }
+}
+
+// Listen to auth changes and initialize UI
+onAuthChange(() => updateProPaywalledUI());
+setTimeout(updateProPaywalledUI, 100);
 
 // --- DASHBOARD CARD HANDLERS ---
 
@@ -1375,8 +1403,11 @@ submitModal12Btn.addEventListener('click', async () => {
 
 // 2.1 Crie de materiais — Transforme slides, pdf, fotos... em cards
 cardMode21.addEventListener('click', () => {
+    if (!isUserPro()) {
+        openProModal();
+        return;
+    }
     modal21Error.textContent = '';
-    modal21ApiKey.value = getApiKey();
     modal21Files.value = '';
     modal21FilesCount.textContent = 'Nenhum arquivo selecionado';
     modal21FilesText.classList.remove('hidden');
@@ -1421,13 +1452,10 @@ modal21Files.addEventListener('change', () => {
 
 submitModal21Btn.addEventListener('click', async () => {
     modal21Error.textContent = '';
-    const apiKey = modal21ApiKey.value.trim();
-    if (!apiKey) {
-        modal21Error.textContent = 'Por favor, insira sua Gemini API Key.';
+    if (!isUserPro()) {
+        openProModal();
         return;
     }
-    const remember = Boolean(modal21Remember?.checked);
-    await setApiKey(apiKey, remember);
 
     const files = Array.from(modal21Files.files);
     if (files.length === 0) {
@@ -1504,52 +1532,124 @@ Retorne EXCLUSIVAMENTE o array JSON ([]) contendo os flashcards estruturados con
 
         updateGeneratingStatus("Conectando ao Gemini e gerando os cartões...");
 
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const genModel = genAI.getGenerativeModel({
-            model: currentEditorModel || "gemini-flash-latest",
-            systemInstruction: generationSystemInstruction,
-            generationConfig: {
-                thinkingConfig: {
-                    thinkingLevel: "HIGH"
-                },
-                responseMimeType: "application/json"
-            }
-        });
-
-        const result = await callWithRetry(() => genModel.generateContentStream(parts));
         let fullText = "";
         const seenSignatures = new Set();
 
-        for await (const chunk of result.stream) {
-            let chunkText = "";
-            try {
-                chunkText = chunk.text();
-            } catch (e) {
-                if (chunk.candidates?.[0]?.content?.parts) {
+        if (!apiKey) {
+            const token = await getCurrentUserToken();
+            if (!token) throw new Error("Usuário não autenticado. Faça login para usar o Gemini via plano Pro.");
+
+            const res = await fetch(`${BACKEND_URL}/api/ai/generate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    model: currentEditorModel || "gemini-flash-latest",
+                    contents: [{ role: 'user', parts }],
+                    systemInstruction: { parts: [{ text: generationSystemInstruction }] },
+                    generationConfig: {
+                        thinkingConfig: {
+                            thinkingLevel: "HIGH"
+                        },
+                        responseMimeType: "application/json"
+                    },
+                    stream: true,
+                    isNewDeck: true
+                })
+            });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.message || `Erro no servidor (${res.status})`);
+            }
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            let buffer = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const jsonStr = line.slice(6).trim();
+                        if (jsonStr === '[DONE]') continue;
+                        try {
+                            const parsed = JSON.parse(jsonStr);
+                            const chunkText = parsed.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                            if (chunkText) {
+                                fullText += chunkText;
+                                const streamObjects = extractBalancedJsonObjects(fullText);
+                                for (const rawObj of streamObjects) {
+                                    const card = normalizeCard(rawObj);
+                                    if (card) {
+                                        const sig = `${card.type}::${card.description}::${card.answer}`;
+                                        if (!seenSignatures.has(sig)) {
+                                            seenSignatures.add(sig);
+                                            deckCards.push(card);
+                                            updateGeneratingProgress(deckCards.length);
+                                            renderCardsList();
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (e) {}
+                    }
+                }
+            }
+        } else {
+            const genAI = new GoogleGenerativeAI(apiKey);
+            const genModel = genAI.getGenerativeModel({
+                model: currentEditorModel || "gemini-flash-latest",
+                systemInstruction: generationSystemInstruction,
+                generationConfig: {
+                    thinkingConfig: {
+                        thinkingLevel: "HIGH"
+                    },
+                    responseMimeType: "application/json"
+                }
+            });
+
+            const result = await callWithRetry(() => genModel.generateContentStream(parts));
+
+            for await (const chunk of result.stream) {
+                let chunkText = "";
+                try {
+                    chunkText = chunk.text();
+                } catch (e) {
+                    if (chunk.candidates?.[0]?.content?.parts) {
+                        for (const part of chunk.candidates[0].content.parts) {
+                            if (part.text && !part.thought) chunkText += part.text;
+                        }
+                    }
+                }
+                if (!chunkText && chunk.candidates?.[0]?.content?.parts) {
                     for (const part of chunk.candidates[0].content.parts) {
                         if (part.text && !part.thought) chunkText += part.text;
                     }
                 }
-            }
-            if (!chunkText && chunk.candidates?.[0]?.content?.parts) {
-                for (const part of chunk.candidates[0].content.parts) {
-                    if (part.text && !part.thought) chunkText += part.text;
-                }
-            }
 
-            fullText += chunkText;
+                fullText += chunkText;
 
-            // Extract balanced JSON objects in real-time as stream arrives
-            const streamObjects = extractBalancedJsonObjects(fullText);
-            for (const rawObj of streamObjects) {
-                const card = normalizeCard(rawObj);
-                if (card) {
-                    const sig = `${card.type}::${card.description}::${card.answer}`;
-                    if (!seenSignatures.has(sig)) {
-                        seenSignatures.add(sig);
-                        deckCards.push(card);
-                        updateGeneratingProgress(deckCards.length);
-                        renderCardsList();
+                // Extract balanced JSON objects in real-time as stream arrives
+                const streamObjects = extractBalancedJsonObjects(fullText);
+                for (const rawObj of streamObjects) {
+                    const card = normalizeCard(rawObj);
+                    if (card) {
+                        const sig = `${card.type}::${card.description}::${card.answer}`;
+                        if (!seenSignatures.has(sig)) {
+                            seenSignatures.add(sig);
+                            deckCards.push(card);
+                            updateGeneratingProgress(deckCards.length);
+                            renderCardsList();
+                        }
                     }
                 }
             }
@@ -1605,8 +1705,11 @@ Retorne EXCLUSIVAMENTE o array JSON ([]) contendo os flashcards estruturados con
 
 // 2.2 Aprimore um doc — A partir de um txt ou word, aprimore cartões
 cardMode22.addEventListener('click', () => {
+    if (!isUserPro()) {
+        openProModal();
+        return;
+    }
     modal22Error.textContent = '';
-    modal22ApiKey.value = getApiKey();
     modal22File.value = '';
     modal22FileName.textContent = 'Clique ou arraste o arquivo .txt ou Word';
     modal22.classList.remove('hidden');
@@ -1623,13 +1726,10 @@ modal22File.addEventListener('change', () => {
 
 submitModal22Btn.addEventListener('click', async () => {
     modal22Error.textContent = '';
-    const apiKey = modal22ApiKey.value.trim();
-    if (!apiKey) {
-        modal22Error.textContent = 'Por favor, insira sua Gemini API Key.';
+    if (!isUserPro()) {
+        openProModal();
         return;
     }
-    const remember = Boolean(modal22Remember?.checked);
-    await setApiKey(apiKey, remember);
 
     if (!modal22File.files || modal22File.files.length === 0) {
         modal22Error.textContent = 'Selecione um arquivo .txt ou Word.';
@@ -1660,25 +1760,23 @@ submitModal22Btn.addEventListener('click', async () => {
         renderCardsList(true);
 
         const hasPlaceholders = JSON.stringify(localCards).includes("[GEMINI]");
-        const genAI = new GoogleGenerativeAI(apiKey);
 
         if (!hasPlaceholders) {
-            const model = genAI.getGenerativeModel({ model: currentEditorModel, systemInstruction, tools: deckTools });
-            currentGenModel = model;
-            geminiChatSession = model.startChat({ history: [] });
+            if (apiKey) {
+                const genAI = new GoogleGenerativeAI(apiKey);
+                const model = genAI.getGenerativeModel({ model: currentEditorModel, systemInstruction, tools: deckTools });
+                currentGenModel = model;
+                geminiChatSession = model.startChat({ history: [] });
+            } else {
+                geminiChatSession = { _history: [] };
+            }
             addChatMessage('model', `✓ Documento importado com sucesso! ${deckCards.length} cartões foram carregados no baralho. Como posso ajudar a revisar ou enriquecer seus cards?`);
             return;
         }
 
         // Fill placeholders with Gemini
-        const model = genAI.getGenerativeModel({
-            model: "gemini-flash-latest",
-            generationConfig: { temperature: 0.7, responseMimeType: "text/plain" },
-            tools: deckTools,
-            systemInstruction: systemInstruction + "\nPreencha os placeholders '[GEMINI]' no JSON de flashcards e retorne-os usando a ferramenta 'adicionar_varios_cards'. Preserve cards com type 'anki' (frente e verso), 'fill' (lacunas), 'open' e 'divisor' exatamente como foram fornecidos. REGRA MANDATÓRIA: As perguntas ('description') de todos os cartões podem e devem usar Markdown e LaTeX livremente. Apenas respostas digitadas na gameplay ('open', 'open_double', 'fill') NUNCA devem usar Markdown nem fórmulas matemáticas."
-        });
-
-        currentGenModel = model;
+        showGeneratingAnimation("Aprimorando flashcards e preenchendo detalhes com IA...");
+        addAiChatGeneratingBubble("O Gemini está aprimorando seus flashcards e preenchendo as opções e rótulos...");
 
         const fillPrompt = `Aqui está uma lista de flashcards que precisam que você preencha os campos '[GEMINI]'.
 As perguntas ('description') de todos os tipos de cartões podem usar formatação Markdown e fórmulas LaTeX livremente.
@@ -1693,44 +1791,95 @@ Ao terminar, chame 'adicionar_varios_cards' para enviar o baralho finalizado.
 JSON:
 ${JSON.stringify(localCards, null, 2)}`;
 
-        showGeneratingAnimation("Aprimorando flashcards e preenchendo detalhes com IA...");
-        addAiChatGeneratingBubble("O Gemini está aprimorando seus flashcards e preenchendo as opções e rótulos...");
-        const chat = model.startChat({ history: [] });
-        deckCards = []; // Will be populated via function call
-        renderCardsList(true);
+        if (!apiKey) {
+            const token = await getCurrentUserToken();
+            if (!token) throw new Error("Usuário não autenticado. Faça login para usar o Gemini via plano Pro.");
 
-        let result = await callWithRetry(() => chat.sendMessage(fillPrompt));
-        let response = result.response;
-
-        for (let i = 0; i < 4; i++) {
-            const candidate = response.candidates[0];
-            const calls = candidate.content.parts.filter(p => !!p.functionCall);
-            if (calls.length === 0) break;
-
-            const functionResponses = calls.map(call => {
-                const { name, args } = call.functionCall;
-                const output = toolFunctions[name] ? toolFunctions[name](args) : { error: "Função não encontrada" };
-                return {
-                    functionResponse: { name, response: output }
-                };
+            const res = await fetch(`${BACKEND_URL}/api/ai/generate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    model: "gemini-flash-latest",
+                    contents: [{ role: 'user', parts: [{ text: fillPrompt }] }],
+                    tools: deckTools,
+                    systemInstruction: { parts: [{ text: systemInstruction + "\nPreencha os placeholders '[GEMINI]' no JSON de flashcards e retorne-os usando a ferramenta 'adicionar_varios_cards'. Preserve cards com type 'anki' (frente e verso), 'fill' (lacunas), 'open' e 'divisor' exatamente como foram fornecidos. REGRA MANDATÓRIA: As perguntas ('description') de todos os cartões podem e devem usar Markdown e LaTeX livremente. Apenas respostas digitadas na gameplay ('open', 'open_double', 'fill') NUNCA devem usar Markdown nem fórmulas matemáticas." }] },
+                    generationConfig: { temperature: 0.7, responseMimeType: "text/plain" },
+                    stream: false,
+                    isNewDeck: true
+                })
             });
 
-            result = await callWithRetry(() => chat.sendMessage(functionResponses));
-            sanitizeChatHistory(chat);
-            response = result.response;
-        }
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.message || `Erro no servidor (${res.status})`);
+            }
 
-        finishGeneratingAnimation(true, deckCards.length);
-        removeAiChatGeneratingBubble();
-        addChatMessage('model', `✓ Flashcards aprimorados com sucesso! ${deckCards.length} cartões foram enriquecidos com alternativas e detalhes.`);
-        const editModel = genAI.getGenerativeModel({
-            model: "gemini-flash-lite-latest",
-            systemInstruction,
-            tools: deckToolsWithHandoff
-        });
-        currentGenModel = editModel;
-        currentEditorModel = "gemini-flash-lite-latest";
-        geminiChatSession = editModel.startChat({ history: [] });
+            const fillData = await res.json();
+            deckCards = [];
+            renderCardsList(true);
+
+            const candidate = fillData.candidates?.[0];
+            const calls = candidate?.content?.parts?.filter(p => !!p.functionCall) || [];
+            for (const call of calls) {
+                if (call.functionCall.name === 'adicionar_varios_cards') {
+                    const args = call.functionCall.args;
+                    executeAddMultipleCards(args.cards || args);
+                }
+            }
+            geminiChatSession = { _history: [] };
+            finishGeneratingAnimation(true, deckCards.length);
+            removeAiChatGeneratingBubble();
+            addChatMessage('model', `✓ Documento aprimorado com sucesso! ${deckCards.length} cartões foram enriquecidos com opções e rótulos pelo Gemini.`);
+        } else {
+            const genAI = new GoogleGenerativeAI(apiKey);
+            const model = genAI.getGenerativeModel({
+                model: "gemini-flash-latest",
+                generationConfig: { temperature: 0.7, responseMimeType: "text/plain" },
+                tools: deckTools,
+                systemInstruction: systemInstruction + "\nPreencha os placeholders '[GEMINI]' no JSON de flashcards e retorne-os usando a ferramenta 'adicionar_varios_cards'. Preserve cards com type 'anki' (frente e verso), 'fill' (lacunas), 'open' e 'divisor' exatamente como foram fornecidos. REGRA MANDATÓRIA: As perguntas ('description') de todos os cartões podem e devem usar Markdown e LaTeX livremente. Apenas respostas digitadas na gameplay ('open', 'open_double', 'fill') NUNCA devem usar Markdown nem fórmulas matemáticas."
+            });
+
+            currentGenModel = model;
+            const chat = model.startChat({ history: [] });
+            deckCards = []; // Will be populated via function call
+            renderCardsList(true);
+
+            let result = await callWithRetry(() => chat.sendMessage(fillPrompt));
+            let response = result.response;
+
+            for (let i = 0; i < 4; i++) {
+                const candidate = response.candidates[0];
+                const calls = candidate.content.parts.filter(p => !!p.functionCall);
+                if (calls.length === 0) break;
+
+                const functionResponses = calls.map(call => {
+                    const { name, args } = call.functionCall;
+                    const output = toolFunctions[name] ? toolFunctions[name](args) : { error: "Função não encontrada" };
+                    return {
+                        functionResponse: { name, response: output }
+                    };
+                });
+
+                result = await callWithRetry(() => chat.sendMessage(functionResponses));
+                sanitizeChatHistory(chat);
+                response = result.response;
+            }
+
+            finishGeneratingAnimation(true, deckCards.length);
+            removeAiChatGeneratingBubble();
+            addChatMessage('model', `✓ Flashcards aprimorados com sucesso! ${deckCards.length} cartões foram enriquecidos com alternativas e detalhes.`);
+            const editModel = genAI.getGenerativeModel({
+                model: "gemini-flash-lite-latest",
+                systemInstruction,
+                tools: deckToolsWithHandoff
+            });
+            currentGenModel = editModel;
+            currentEditorModel = "gemini-flash-lite-latest";
+            geminiChatSession = editModel.startChat({ history: [] });
+        }
 
     } catch (err) {
         console.error("Erro na aprimoração 2.2:", err);
@@ -1745,43 +1894,7 @@ ${JSON.stringify(localCards, null, 2)}`;
     }
 });
 
-// Quick API Key Modal Listeners
-openApiKeyModalBtn.addEventListener('click', async () => {
-    quickApiInput.value = await getApiKeyAsync();
-    if (quickApiRemember) quickApiRemember.checked = isKeyRemembered();
-    quickApiModal.classList.remove('hidden');
-    setTimeout(() => quickApiInput.focus(), 50);
-});
-closeQuickApiBtn.addEventListener('click', () => quickApiModal.classList.add('hidden'));
-
-if (quickApiForm) {
-    quickApiForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        saveQuickApiBtn.click();
-    });
-}
-
-saveQuickApiBtn.addEventListener('click', async () => {
-    const remember = Boolean(quickApiRemember?.checked);
-    await setApiKey(quickApiInput.value.trim(), remember);
-    quickApiModal.classList.add('hidden');
-});
-clearQuickApiBtn.addEventListener('click', async () => {
-    await setApiKey('');
-    quickApiInput.value = '';
-    if (quickApiRemember) quickApiRemember.checked = false;
-    quickApiModal.classList.add('hidden');
-});
-
-// Instructions Modal Listeners
-document.querySelectorAll('.open-instructions-link').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        instructionsModal.classList.remove('hidden');
-    });
-});
-closeInstructionsBtn.addEventListener('click', () => instructionsModal.classList.add('hidden'));
-instructionsReadyBtn.addEventListener('click', () => instructionsModal.classList.add('hidden'));
+openProBtn?.addEventListener('click', openProModal);
 
 // Gemini Down Modal Listeners
 function showGeminiDownModal(errorMsg, sourceType, localCards = null) {
@@ -1825,7 +1938,7 @@ if (retryGeminiBtn) {
 }
 
 // Close modals on backdrop click
-[modal12, modal21, modal22, quickApiModal, instructionsModal, geminiDownModal, inlineEditModal].forEach(modal => {
+[modal12, modal21, modal22, geminiDownModal, inlineEditModal].forEach(modal => {
     if (modal) {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) modal.classList.add('hidden');
@@ -1836,7 +1949,7 @@ if (retryGeminiBtn) {
 // Close open modals on Escape key
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        const modals = [modal12, modal21, modal22, quickApiModal, instructionsModal, geminiDownModal, inlineEditModal];
+        const modals = [modal12, modal21, modal22, geminiDownModal, inlineEditModal];
         const openModal = modals.find(m => m && !m.classList.contains('hidden'));
         if (openModal) {
             openModal.classList.add('hidden');
@@ -3000,24 +3113,50 @@ async function analyzePromptCapability(apiKey, userPrompt) {
     console.log('[AI Agent Analysis] Iniciando análise de capacidade com modelo padrão (gemini-flash-lite-latest)...');
     console.log('[AI Agent Analysis] Prompt sob análise:', userPrompt);
     try {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const triageModel = genAI.getGenerativeModel({
-            model: "gemini-flash-lite-latest",
-            systemInstruction: triageSystemInstruction,
-            tools: handoffTools
-        });
-
         const deckBrief = `Baralho atual: ${deckCards.length} cartões.`;
-        const triageResult = await callWithRetry(() => triageModel.generateContent({
-            contents: [
-                {
-                    role: 'user',
-                    parts: [{ text: `${deckBrief}\nComando do usuário: "${userPrompt}"` }]
-                }
-            ]
-        }));
 
-        const candidate = triageResult.response.candidates?.[0];
+        let candidate = null;
+        if (!apiKey) {
+            const token = await getCurrentUserToken().catch(() => null);
+            if (!token) return { handoff: false };
+
+            const res = await fetch(`${BACKEND_URL}/api/ai/generate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    model: "gemini-flash-lite-latest",
+                    systemInstruction: { parts: [{ text: triageSystemInstruction }] },
+                    contents: [{ role: 'user', parts: [{ text: `${deckBrief}\nComando do usuário: "${userPrompt}"` }] }],
+                    tools: handoffTools,
+                    stream: false,
+                    isNewDeck: false
+                })
+            });
+            if (!res.ok) return { handoff: false };
+            const data = await res.json();
+            candidate = data.candidates?.[0];
+        } else {
+            const genAI = new GoogleGenerativeAI(apiKey);
+            const triageModel = genAI.getGenerativeModel({
+                model: "gemini-flash-lite-latest",
+                systemInstruction: triageSystemInstruction,
+                tools: handoffTools
+            });
+
+            const triageResult = await callWithRetry(() => triageModel.generateContent({
+                contents: [
+                    {
+                        role: 'user',
+                        parts: [{ text: `${deckBrief}\nComando do usuário: "${userPrompt}"` }]
+                    }
+                ]
+            }));
+            candidate = triageResult.response.candidates?.[0];
+        }
+
         const calls = candidate?.content?.parts?.filter(p => !!p.functionCall) || [];
         const handoffCall = calls.find(c => c.functionCall.name === 'handoff_to_gemini_flash');
 
@@ -3038,8 +3177,6 @@ async function analyzePromptCapability(apiKey, userPrompt) {
 }
 
 async function executeAgentChatTurn(apiKey, modelName, userPrompt, forceLite = false) {
-    const genAI = new GoogleGenerativeAI(apiKey);
-
     let history = [];
     if (geminiChatSession && geminiChatSession._history) {
         try {
@@ -3055,6 +3192,112 @@ async function executeAgentChatTurn(apiKey, modelName, userPrompt, forceLite = f
         ? deckToolsWithHandoff
         : deckTools;
 
+    const contextLines = deckCards.map((c, i) => {
+        if (c.type === 'divisor' || c.type === 'divider' || c.type === 'note') {
+            return `[${i}] (divisor) # ${c.text || c.description || ''}`;
+        }
+        return `[${i}] (${c.type}) ${(c.description || '').substring(0, 60)}... | R: ${c.answer || ''}`;
+    }).join('\n');
+    const enrichedPrompt = `ATENÇÃO: O estado atual do baralho é:\n${contextLines}\n\nComando do Usuário: ${userPrompt}`;
+
+    if (!apiKey) {
+        const token = await getCurrentUserToken().catch(() => null);
+        if (!token) throw new Error("Usuário não autenticado.");
+
+        currentEditorModel = modelName;
+        history.push({ role: 'user', parts: [{ text: enrichedPrompt }] });
+
+        try {
+            let res = await fetch(`${BACKEND_URL}/api/ai/generate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    model: modelName,
+                    systemInstruction: { parts: [{ text: systemInstruction }] },
+                    tools: toolsForModel,
+                    contents: history,
+                    stream: false,
+                    isNewDeck: false
+                })
+            });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.message || `Erro no assistente (${res.status})`);
+            }
+
+            let data = await res.json();
+            let candidate = data.candidates?.[0];
+
+            for (let i = 0; i < 5; i++) {
+                const calls = candidate?.content?.parts?.filter(p => !!p.functionCall) || [];
+                if (calls.length === 0) break;
+
+                const midHandoff = calls.find(c => c.functionCall.name === 'handoff_to_gemini_flash');
+                if (midHandoff && modelName === "gemini-flash-lite-latest" && !forceLite) {
+                    const reason = midHandoff.functionCall.args?.reason || 'Handoff solicitado durante turn';
+                    console.log('[AI Agent Execution] Lite model acionou handoff_to_gemini_flash durante a execução. Motivo:', reason);
+                    console.log('[AI Agent Execution] Transferindo execução para gemini-flash-latest...');
+                    if (geminiChatSession) geminiChatSession._history = historyBeforeTurn;
+                    return await executeAgentChatTurn(apiKey, "gemini-flash-latest", userPrompt, false);
+                }
+
+                if (candidate?.content) {
+                    history.push(candidate.content);
+                }
+
+                const functionResponses = calls.map(call => {
+                    const { name, args } = call.functionCall;
+                    console.log(`[AI Agent] [Tool Call] Invocando ferramenta '${name}':`, args);
+                    const output = toolFunctions[name] ? toolFunctions[name](args) : { error: "Função não encontrada" };
+                    return {
+                        functionResponse: { name, response: output }
+                    };
+                });
+
+                history.push({ role: 'user', parts: functionResponses });
+
+                res = await fetch(`${BACKEND_URL}/api/ai/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        model: modelName,
+                        systemInstruction: { parts: [{ text: systemInstruction }] },
+                        tools: toolsForModel,
+                        contents: history,
+                        stream: false,
+                        isNewDeck: false
+                    })
+                });
+
+                if (!res.ok) break;
+                data = await res.json();
+                candidate = data.candidates?.[0];
+            }
+
+            if (candidate?.content) {
+                history.push(candidate.content);
+            }
+            if (!geminiChatSession) geminiChatSession = {};
+            geminiChatSession._history = history;
+
+            const textPart = candidate?.content?.parts?.find(p => p.text)?.text || '';
+            return textPart || 'Ação realizada com sucesso.';
+        } catch (turnErr) {
+            if (geminiChatSession) {
+                geminiChatSession._history = historyBeforeTurn;
+            }
+            throw turnErr;
+        }
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
         model: modelName,
         systemInstruction,
@@ -3064,14 +3307,6 @@ async function executeAgentChatTurn(apiKey, modelName, userPrompt, forceLite = f
     currentGenModel = model;
     currentEditorModel = modelName;
     geminiChatSession = model.startChat({ history });
-
-    const contextLines = deckCards.map((c, i) => {
-        if (c.type === 'divisor' || c.type === 'divider' || c.type === 'note') {
-            return `[${i}] (divisor) # ${c.text || c.description || ''}`;
-        }
-        return `[${i}] (${c.type}) ${(c.description || '').substring(0, 60)}... | R: ${c.answer || ''}`;
-    }).join('\n');
-    const enrichedPrompt = `ATENÇÃO: O estado atual do baralho é:\n${contextLines}\n\nComando do Usuário: ${userPrompt}`;
 
     try {
         let result = await callWithRetry(() => geminiChatSession.sendMessage(enrichedPrompt));
@@ -3153,18 +3388,17 @@ async function processPromptQueue() {
         console.log('[AI Agent Queue] Iniciando execução do prompt na fila:', item.text);
         showChatTypingIndicator();
 
-        const apiKey = getApiKey();
-        if (!apiKey) {
+        if (!isUserPro()) {
             hideChatTypingIndicator();
-            addChatMessage('model', 'Por favor, insira sua API Key para usar o assistente.');
-            openApiKeyModalBtn.click();
+            addChatMessage('model', 'Por favor, assine o plano Pro para usar o assistente.');
+            openProModal();
             promptQueue.shift();
             renderPromptQueue();
             break;
         }
 
         try {
-            const responseText = await executePromptWithAnalysisAndFallback(apiKey, item.text);
+            const responseText = await executePromptWithAnalysisAndFallback("", item.text);
             hideChatTypingIndicator();
             // Log on chat the prompt and agent's response
             addChatMessage('user', item.text);
@@ -3189,10 +3423,9 @@ chatSendBtn.addEventListener('click', () => {
     const text = chatInput.value.trim();
     if (!text) return;
 
-    const apiKey = getApiKey();
-    if (!apiKey) {
-        addChatMessage('model', 'Por favor, insira sua API Key para usar o assistente.');
-        openApiKeyModalBtn.click();
+    if (!isUserPro()) {
+        addChatMessage('model', 'O assistente de IA é exclusivo para assinantes Flashcards Pro.');
+        openProModal();
         return;
     }
 

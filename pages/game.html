@@ -108,21 +108,19 @@
                 <span class="material-symbols-rounded text-lg text-[var(--md-sys-color-on-surface-variant)] group-hover:translate-x-0.5 transition-transform">chevron_right</span>
             </button>
 
-            <!-- AI Settings -->
-            <div id="ai-setting-row"
-                class="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-2xl hover:bg-[var(--md-sys-color-surface-container-high)] transition text-left group select-none no-ripple"
-                title="Recursos de IA">
-                <button type="button" id="ai-toggle-btn"
-                    class="flex items-center gap-3 min-w-0 flex-1 text-left cursor-pointer bg-transparent border-0 p-0 m-0 group/trigger"
-                    title="Configurar Recursos de IA">
-                    <img id="menu-ai-icon" src="../assets/img/config_ai.svg" class="w-6 h-6 flex-shrink-0 transition-transform group-hover/trigger:scale-110" alt="IA">
+            <!-- Account / Login Button -->
+            <button type="button" id="menu-account-btn"
+                class="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-2xl hover:bg-[var(--md-sys-color-surface-container-high)] transition text-left cursor-pointer group select-none no-ripple"
+                title="Minha Conta e Sincronização">
+                <div class="flex items-center gap-3 min-w-0">
+                    <span id="menu-account-icon" class="material-symbols-rounded text-2xl text-[var(--md-sys-color-primary)] flex-shrink-0 transition-transform group-hover:scale-110">account_circle</span>
                     <div class="flex-1 min-w-0">
-                        <p id="menu-ai-title" class="text-sm font-semibold text-[var(--md-sys-color-on-surface)]">Recursos de IA</p>
-                        <p id="menu-ai-subtitle" class="text-xs text-[var(--md-sys-color-on-surface-variant)] truncate">Clique para configurar</p>
+                        <p id="menu-account-title" class="text-sm font-semibold text-[var(--md-sys-color-on-surface)]">Minha Conta</p>
+                        <p id="menu-account-subtitle" class="text-xs text-[var(--md-sys-color-on-surface-variant)] truncate">Sincronização e Plano Pro</p>
                     </div>
-                </button>
-                <md-switch id="ai-switch" aria-label="Alternar recursos de IA"></md-switch>
-            </div>
+                </div>
+                <span class="material-symbols-rounded text-lg text-[var(--md-sys-color-on-surface-variant)] group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+            </button>
 
             <!-- Pomodoro Timer Toggle & Settings (Cognitive Rest & Micro-pauses) -->
             <div id="pomodoro-setting-row"
@@ -281,6 +279,12 @@
                     <div class="p-1.5 flex flex-col gap-1">
                         <!-- Modes Section Header -->
                         <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-2 py-1 select-none">Modos de Estudo</span>
+
+                        <!-- Explorar Arquivos Item -->
+                        <button id="deck-item-explore" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-left hover:bg-blue-50 text-[var(--md-sys-color-primary)] font-semibold transition border-b border-gray-100">
+                            <span class="material-symbols-rounded text-xl text-[var(--md-sys-color-primary)] flex-shrink-0">folder_open</span>
+                            <span class="truncate flex-1">Explorar arquivos</span>
+                        </button>
 
                         <!-- Exam Week Item -->
                         <button id="deck-item-exam" class="hidden w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-left hover:bg-gray-100 transition">
@@ -700,55 +704,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE API KEY (IA) -->
-    <div id="api-modal"
-        class="hidden fixed inset-0 modal-overlay z-[70] flex items-center justify-center p-4">
-        <div class="m3-dialog-card w-full max-w-md overflow-hidden flex flex-col">
-            <div
-                class="px-6 py-4 border-b border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface-container-low)] flex justify-between items-center">
-                <h3 class="font-extrabold text-xl text-[var(--md-sys-color-on-surface)] tracking-tight">Recursos de IA</h3>
-                <button id="close-api-modal" type="button" class="p-2 rounded-full hover:bg-[var(--md-sys-color-surface-container-high)] text-[var(--md-sys-color-on-surface-variant)] transition">
-                    <span class="material-symbols-rounded text-xl">close</span>
-                </button>
-            </div>
-            <form id="api-key-form" autocomplete="on" onsubmit="return false;" class="flex flex-col m-0 p-0">
-                <div class="p-6 space-y-4">
-                    <p class="text-sm text-[var(--md-sys-color-on-surface-variant)] leading-relaxed">Ative a verificação inteligente para identificar acertos em caso de erros de digitação.</p>
-                    <div>
-                        <!-- Hidden username field to give Chrome a self-contained credential pair within this form -->
-                        <input type="text" id="api-key-username" name="username" autocomplete="username"
-                            class="sr-only" tabindex="-1" aria-hidden="true">
-                        <md-outlined-text-field
-                            id="api-key-input"
-                            name="password"
-                            type="password"
-                            label="Sua Gemini API Key"
-                            placeholder="AIzaSy..."
-                            supporting-text="Sua chave é salva localmente e usada apenas para conferir suas respostas."
-                            class="w-full"
-                            style="width: 100%;">
-                        </md-outlined-text-field>
-                    </div>
-                    <div class="flex items-center gap-2.5 pt-0.5">
-                        <input type="checkbox" id="api-key-remember" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer">
-                        <label for="api-key-remember" class="text-xs text-[var(--md-sys-color-on-surface-variant)] cursor-pointer select-none">
-                            Lembrar chave <span class="text-amber-600 font-semibold">(menos seguro)</span>
-                        </label>
-                    </div>
-                    <div class="bg-blue-50 p-4 rounded-2xl border border-blue-200">
-                        <p class="text-xs text-blue-700">Não tem uma chave? <button
-                                type="button" id="open-ai-instructions" class="font-bold underline cursor-pointer">Clique aqui para ver o tutorial</button></p>
-                    </div>
-                </div>
-                <div class="px-6 py-4 bg-[var(--md-sys-color-surface-container-low)] border-t border-[var(--md-sys-color-outline-variant)] flex gap-3">
-                    <button type="button" id="disable-ai-btn"
-                        class="m3-btn-expressive m3-btn-text flex-1 font-bold">Desativar</button>
-                    <button type="submit" id="save-api-key-btn"
-                        class="m3-btn-expressive m3-btn-filled flex-1 font-bold shadow-md">Ativar IA</button>
-                </div>
-            </form>
-        </div>
-    </div>
+
 
     <!-- MODAL DE CONFIGURAÇÃO DO POMODORO -->
     <div id="pomodoro-modal"
@@ -1069,13 +1025,13 @@
                         <!-- Botão Gerenciar Chave de API -->
                         <div class="pt-2 border-t border-[var(--md-sys-color-outline-variant)]/60 flex items-center justify-between gap-3">
                             <div>
-                                <span class="text-xs font-semibold text-[var(--md-sys-color-on-surface)] block">Chave de API Gemini</span>
-                                <span id="setting-api-key-status" class="text-[11px] text-[var(--md-sys-color-on-surface-variant)]">Verificando...</span>
+                                <span class="text-xs font-semibold text-[var(--md-sys-color-on-surface)] block">Plano Flashcards Pro</span>
+                                <span id="setting-pro-status" class="text-[11px] text-[var(--md-sys-color-on-surface-variant)]">IA inclusa no plano</span>
                             </div>
-                            <button type="button" id="setting-api-key-btn"
+                            <button type="button" id="setting-pro-btn"
                                 class="px-3 py-1.5 rounded-xl border border-[var(--md-sys-color-outline-variant)] hover:bg-[var(--md-sys-color-surface-container-high)] text-xs font-bold text-[var(--md-sys-color-primary)] transition cursor-pointer flex items-center gap-1.5">
-                                <span class="material-symbols-rounded text-sm">key</span>
-                                <span>Configurar</span>
+                                <img src="../assets/img/paywall.svg" class="w-3.5 h-3.5" alt="Pro">
+                                <span>Gerenciar</span>
                             </button>
                         </div>
                     </div>
@@ -1210,68 +1166,7 @@
         </div>
     </div>
 
-    <!-- API Key Instructions Modal -->
-    <div id="instructions-modal"
-        class="hidden fixed inset-0 modal-overlay z-[80] flex items-center justify-center p-4">
-        <div
-            class="m3-dialog-card w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div
-                class="px-6 py-4 border-b border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface-container-low)] flex justify-between items-center">
-                <h3 class="font-extrabold text-xl text-[var(--md-sys-color-on-surface)] tracking-tight">Como criar sua API Key</h3>
-                <button id="close-instructions-btn" class="p-2 rounded-full hover:bg-[var(--md-sys-color-surface-container-high)] text-[var(--md-sys-color-on-surface-variant)] transition">
-                    <span class="material-symbols-rounded text-xl">close</span>
-                </button>
-            </div>
 
-            <div class="p-6 space-y-8 overflow-y-auto custom-scrollbar">
-                <!-- Step 1 -->
-                <div class="space-y-3">
-                    <div class="flex items-center gap-3">
-                        <span
-                            class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm shadow-xs">1</span>
-                        <p class="font-semibold text-lg text-[var(--md-sys-color-on-surface)]">Aceite os termos</p>
-                    </div>
-                    <img src="../assets/img/instruction1.png" alt="Passo 1"
-                        class="w-full rounded-2xl border border-[var(--md-sys-color-outline-variant)] shadow-sm">
-                </div>
-
-                <!-- Step 2 -->
-                <div class="space-y-3">
-                    <div class="flex items-center gap-3">
-                        <span
-                            class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm shadow-xs">2</span>
-                        <p class="font-semibold text-lg text-[var(--md-sys-color-on-surface)]">Aguarde a chave ser criada</p>
-                    </div>
-                    <img src="../assets/img/instruction2.png" alt="Passo 2"
-                        class="w-full rounded-2xl border border-[var(--md-sys-color-outline-variant)] shadow-sm">
-                </div>
-
-                <!-- Step 3 -->
-                <div class="space-y-3">
-                    <div class="flex items-center gap-3">
-                        <span
-                            class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm shadow-xs">3</span>
-                        <p class="font-semibold text-lg text-[var(--md-sys-color-on-surface)]">Copie a chave</p>
-                    </div>
-                    <img src="../assets/img/instruction3.png" alt="Passo 3"
-                        class="w-full rounded-2xl border border-[var(--md-sys-color-outline-variant)] shadow-sm">
-                </div>
-            </div>
-
-            <div
-                class="px-6 py-4 border-t border-[var(--md-sys-color-outline-variant)] flex justify-end gap-3 bg-[var(--md-sys-color-surface-container-low)]">
-                <a href="https://aistudio.google.com/app/api-keys" target="_blank" id="create-key-external-btn"
-                    class="m3-btn-expressive m3-btn-filled text-sm font-bold shadow-md">
-                    Criar
-                    <span class="material-symbols-rounded text-base">open_in_new</span>
-                </a>
-                <button id="instructions-ready-btn"
-                    class="m3-btn-expressive m3-btn-tonal text-sm font-bold">
-                    Pronto
-                </button>
-            </div>
-        </div>
-    </div>
 
     <!-- AI Chat Container -->
     <div id="ai-chat-container"

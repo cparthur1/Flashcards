@@ -5,46 +5,27 @@
  * e formatação de respostas didáticas com KaTeX/Markdown.
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { callWithRetry, renderMathAndMarkdown, stripHtml } from '../utils.js';
+import { renderMathAndMarkdown, stripHtml } from '../utils.js';
+import { isUserPro } from '../explore-modal.js';
+import { getCurrentUserToken } from '../firebase-client.js';
+import { BACKEND_URL } from '../backend-api.js';
 
-let isAiEnabled = false;
-let geminiApiKey = null;
-let genAI = null;
 let lastUserAnswerForChat = "";
-let currentChatSession = null;
+let currentBackendChatHistory = [];
 let currentChatModel = "gemini-flash-lite-latest";
-let ai503ErrorCount = 0;
-let lastLatencyNotificationTime = 0;
 let hasChatInteraction = false;
 
 export function isTutorEnabled() {
-    return isAiEnabled;
+    return Boolean(isUserPro() && localStorage.getItem('flashcards_ai_enabled') !== 'false');
 }
 
-export function setTutorApiKey(key) {
-    geminiApiKey = key ? String(key).trim() : null;
-    if (geminiApiKey) {
-        genAI = new GoogleGenerativeAI(geminiApiKey);
-        isAiEnabled = true;
-    } else {
-        genAI = null;
-        isAiEnabled = false;
-    }
-}
+export function setTutorApiKey() {}
 
 export function disableTutor() {
-    isAiEnabled = false;
-    geminiApiKey = null;
-    genAI = null;
-    currentChatSession = null;
+    currentBackendChatHistory = [];
 }
 
-export function initTutor({ apiKey } = {}) {
-    if (apiKey) {
-        setTutorApiKey(apiKey);
-    }
-}
+export function initTutor() {}
 
 export function updateTutorUI(elements = {}) {
     const menuAiIcon = elements.menuAiIcon || document.getElementById('menu-ai-icon');
@@ -87,6 +68,7 @@ export function getLastUserAnswerForChat() {
 
 export function resetTutorChatSession() {
     currentChatSession = null;
+    currentBackendChatHistory = [];
 }
 
 export function getHasChatInteraction() {
@@ -109,33 +91,9 @@ export function setHasChatInteraction(val) {
  * @returns {Promise<{correto: boolean, justificativa: string}|null>}
  */
 export async function evaluateAnswerSemantic({ questionObj, actualAnswer, onSlowConnection, onAiDisabledByErrors }) {
-    if (!isAiEnabled || !genAI || !questionObj) return null;
+    if (!isTutorEnabled() || !questionObj) return null;
 
     try {
-        const model = genAI.getGenerativeModel({
-            model: "gemini-flash-lite-latest",
-            generationConfig: {
-                thinkingConfig: {
-                    thinkingLevel: "LOW"
-                },
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: "OBJECT",
-                    properties: {
-                        correto: {
-                            type: "BOOLEAN",
-                            description: "true se a resposta do usuário for semanticamente correta ou variação aceitável, false se estiver incorreta ou contiver erros factuais."
-                        },
-                        justificativa: {
-                            type: "STRING",
-                            description: "Breve explicação do porquê a resposta foi considerada correta ou incorreta."
-                        }
-                    },
-                    required: ["correto", "justificativa"]
-                }
-            }
-        });
-
         const expected = (questionObj.type === 'fill' && questionObj.answers && questionObj.answers.length > 0)
             ? questionObj.answers.join(' ; ')
             : [questionObj.answer, questionObj.answer2].filter(Boolean).join(' / ');
@@ -157,54 +115,30 @@ export async function evaluateAnswerSemantic({ questionObj, actualAnswer, onSlow
             Retorne um JSON com 'correto' (boolean) e 'justificativa' (string).
         `;
 
-        const startTime = Date.now();
-        const result = await callWithRetry(() => model.generateContent(prompt));
-        const latency = Date.now() - startTime;
+        const token = await getCurrentUserToken().catch(() => null);
+        if (!token) return null;
 
-        const modelVersion = result.response.modelVersion || "unknown";
-        console.log(`[Tutor] Chamada Gemini executada com sucesso. Versão: ${modelVersion}, Latência: ${latency}ms`);
-
-        if (latency > 15000) {
-            const now = Date.now();
-            if (now - lastLatencyNotificationTime > 10 * 60 * 1000) {
-                lastLatencyNotificationTime = now;
-                if (onSlowConnection) onSlowConnection();
-            }
-        }
-
-        let responseText = "";
-        try {
-            responseText = result.response.text();
-        } catch (e) {
-            if (result.response?.candidates?.[0]?.content?.parts) {
-                for (const part of result.response.candidates[0].content.parts) {
-                    if (part.text && !part.thought) responseText += part.text;
+        const res = await fetch(`${BACKEND_URL}/api/ai/tutor`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                model: "gemini-flash-lite-latest",
+                contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                generationConfig: {
+                    thinkingConfig: { thinkingLevel: "LOW" },
+                    responseMimeType: "application/json"
                 }
-            }
-        }
-        if (!responseText && result.response?.candidates?.[0]?.content?.parts) {
-            for (const part of result.response.candidates[0].content.parts) {
-                if (part.text && !part.thought) responseText += part.text;
-            }
-        }
-        let evalData = null;
-        try {
-            evalData = JSON.parse(responseText);
-        } catch (parseErr) {
-            console.error("[Tutor] Erro ao analisar JSON da avaliação IA:", parseErr, responseText);
-            return null;
-        }
-
-        return evalData;
+            })
+        });
+        if (!res.ok) return null;
+        const resData = await res.json();
+        const text = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+        return text ? JSON.parse(text) : null;
     } catch (e) {
         console.error("[Tutor] Erro na avaliação IA:", e);
-        if (e.message && e.message.includes("503")) {
-            ai503ErrorCount++;
-            if (ai503ErrorCount >= 10) {
-                isAiEnabled = false;
-                if (onAiDisabledByErrors) onAiDisabledByErrors();
-            }
-        }
         return null;
     }
 }
@@ -260,7 +194,7 @@ export async function sendTutorChatMessage({ msg, currentQuestion, chatInput, ch
     const messagesContainer = chatMessages || document.getElementById('chat-messages');
     const inputElem = chatInput || document.getElementById('chat-input');
 
-    if (!text || !isAiEnabled || !genAI || !currentQuestion) return;
+    if (!text || !isTutorEnabled() || !currentQuestion) return;
 
     hasChatInteraction = true;
     addMsg('user', text, messagesContainer);
@@ -268,41 +202,65 @@ export async function sendTutorChatMessage({ msg, currentQuestion, chatInput, ch
 
     const tid = showTyping(messagesContainer);
     try {
-        if (!currentChatSession) {
-            const correctAnswers = (currentQuestion.type === 'fill' && currentQuestion.answers && currentQuestion.answers.length > 0)
-                ? [currentQuestion.answers.join(' ; ')]
-                : [currentQuestion.answer];
-            if (currentQuestion.type !== 'fill' && currentQuestion.answer2) correctAnswers.push(currentQuestion.answer2);
+        const correctAnswers = (currentQuestion.type === 'fill' && currentQuestion.answers && currentQuestion.answers.length > 0)
+            ? [currentQuestion.answers.join(' ; ')]
+            : [currentQuestion.answer];
+        if (currentQuestion.type !== 'fill' && currentQuestion.answer2) correctAnswers.push(currentQuestion.answer2);
 
-            const systemPrompt = `
-                Você é um professor tutor ajudando um estudante com um flashcard.
-                
-                CONTEXTO DA QUESTÃO:
-                Pergunta: "${currentQuestion.description}"
-                Resposta(s) Correta(s) no Banco: "${correctAnswers.join(' / ')}"
-                Resposta que o Usuário deu inicialmente: "${lastUserAnswerForChat}"
-                
-                Responda de forma didática, objetiva e curta. Se o usuário errou, explique o porquê de forma simples. Use Markdown para listas, tabelas, ênfase e fórmulas matemáticas/químicas em LaTeX ($...$ ou $$...$$).
-                Mantenha o contexto desta questão durante toda a conversa.
-            `;
+        const systemPrompt = `
+            Você é um professor tutor ajudando um estudante com um flashcard.
+            
+            CONTEXTO DA QUESTÃO:
+            Pergunta: "${currentQuestion.description}"
+            Resposta(s) Correta(s) no Banco: "${correctAnswers.join(' / ')}"
+            Resposta que o Usuário deu inicialmente: "${lastUserAnswerForChat}"
+            
+            Responda de forma didática, objetiva e curta. Se o usuário errou, explique o porquê de forma simples. Use Markdown para listas, tabelas, ênfase e fórmulas matemáticas/químicas em LaTeX ($...$ ou $$...$$).
+            Mantenha o contexto desta questão durante toda a conversa.
+        `;
 
-            const model = genAI.getGenerativeModel({ model: currentChatModel, systemInstruction: systemPrompt });
-            currentChatSession = model.startChat();
+        const token = await getCurrentUserToken().catch(() => null);
+        if (!token) {
+            hideTyping(tid);
+            addMsg('ai', "Por favor, faça login com sua conta Pro para usar o Tutor.", messagesContainer);
+            return;
         }
 
-        const result = await callWithRetry(() => currentChatSession.sendMessage(text));
-        hideTyping(tid);
-        addMsg('ai', result.response.text(), messagesContainer);
-    } catch (e) {
-        console.error("[Tutor] Erro no chat:", e);
-        hideTyping(tid);
-        if (e.message && (e.message.includes("429") || e.message.includes("quota"))) {
-            addMsg('ai', "Erro de cota excedida na API do Gemini. Por favor, tente novamente mais tarde.", messagesContainer);
-        } else {
+        if (!currentBackendChatHistory || currentBackendChatHistory.length === 0) {
+            currentBackendChatHistory = [];
+        }
+        currentBackendChatHistory.push({ role: 'user', parts: [{ text }] });
+
+            const res = await fetch(`${BACKEND_URL}/api/ai/tutor`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    model: currentChatModel || 'gemini-flash-lite-latest',
+                    contents: currentBackendChatHistory,
+                    systemInstruction: { parts: [{ text: systemPrompt }] }
+                })
+            });
+
+            hideTyping(tid);
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                addMsg('ai', errData.message || "Erro ao conectar com o Tutor IA.", messagesContainer);
+                return;
+            }
+
+            const data = await res.json();
+            const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            currentBackendChatHistory.push({ role: 'model', parts: [{ text: reply }] });
+            addMsg('ai', reply, messagesContainer);
+        } catch (e) {
+            console.error("[Tutor] Erro no chat:", e);
+            hideTyping(tid);
             addMsg('ai', "Erro ao conectar com a IA.", messagesContainer);
         }
     }
-}
 
 /**
  * Obtém uma definição extremamente resumida do texto selecionado no contexto do flashcard.
@@ -311,7 +269,7 @@ export async function sendTutorChatMessage({ msg, currentQuestion, chatInput, ch
  * @returns {Promise<string>} Definição resumida gerada pelo gemini-flash-lite-latest
  */
 export async function getTermDefinition({ selectedText, currentQuestion }) {
-    if (!isAiEnabled || !genAI || !selectedText) return null;
+    if (!isTutorEnabled() || !selectedText) return null;
 
     try {
         const cleanQuestion = currentQuestion?.description ? stripHtml(currentQuestion.description) : '';
@@ -322,42 +280,37 @@ export async function getTermDefinition({ selectedText, currentQuestion }) {
         const systemPrompt = `Você é um tutor acadêmico de flashcards. Sua tarefa é fornecer uma definição EXTREMAMENTE resumida (no máximo 1 ou 2 frases curtas, direta ao ponto) do termo ou trecho selecionado pelo estudante, considerando estritamente o contexto da pergunta e resposta deste flashcard.
 Não inclua preâmbulos, saudações, nem repita "o termo significa...". Seja direto e conciso.`;
 
-        const model = genAI.getGenerativeModel({
-            model: "gemini-flash-lite-latest",
-            systemInstruction: systemPrompt,
-            generationConfig: {
-                thinkingConfig: {
-                    thinkingLevel: "LOW"
-                }
-            }
-        });
-
         const prompt = `Flashcard:
 Pergunta: "${cleanQuestion}"
 Resposta: "${cleanAnswer}"
 
 Termo selecionado para definir: "${selectedText}"`;
 
-        const result = await callWithRetry(() => model.generateContent(prompt));
-        let definitionText = "";
-        try {
-            definitionText = result.response.text();
-        } catch (e) {
-            if (result.response?.candidates?.[0]?.content?.parts) {
-                for (const part of result.response.candidates[0].content.parts) {
-                    if (part.text && !part.thought) definitionText += part.text;
+        const token = await getCurrentUserToken().catch(() => null);
+        if (!token) return null;
+
+        const res = await fetch(`${BACKEND_URL}/api/ai/tutor`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                model: "gemini-flash-lite-latest",
+                contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: {
+                    thinkingConfig: { thinkingLevel: "LOW" }
                 }
-            }
-        }
-        if (!definitionText && result.response?.candidates?.[0]?.content?.parts) {
-            for (const part of result.response.candidates[0].content.parts) {
-                if (part.text && !part.thought) definitionText += part.text;
-            }
-        }
-        return definitionText.trim();
+            })
+        });
+
+        if (!res.ok) return null;
+        const data = await res.json();
+        return (data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
     } catch (e) {
         console.error("[Tutor] Erro ao obter definição do termo:", e);
-        throw e;
+        return null;
     }
 }
 
@@ -386,53 +339,12 @@ export async function logDefinitionToChat({ term, definition, currentQuestion, c
         inputElem.focus();
     }
 
-    // 3. Atualiza ou inicia a sessão de chat no Gemini com esse histórico prévio
-    if (genAI && currentQuestion) {
-        try {
-            const correctAnswers = (currentQuestion.type === 'fill' && currentQuestion.answers && currentQuestion.answers.length > 0)
-                ? [currentQuestion.answers.join(' ; ')]
-                : [currentQuestion.answer];
-            if (currentQuestion.type !== 'fill' && currentQuestion.answer2) correctAnswers.push(currentQuestion.answer2);
-
-            const systemPrompt = `
-                Você é um professor tutor ajudando um estudante com um flashcard.
-                
-                CONTEXTO DA QUESTÃO:
-                Pergunta: "${currentQuestion.description}"
-                Resposta(s) Correta(s) no Banco: "${correctAnswers.join(' / ')}"
-                Resposta que o Usuário deu inicialmente: "${lastUserAnswerForChat}"
-                
-                Responda de forma didática, objetiva e curta. Se o usuário errou, explique o porquê de forma simples. Use Markdown para listas, tabelas, ênfase e fórmulas matemáticas/químicas em LaTeX ($...$ ou $$...$$).
-                Mantenha o contexto desta questão durante toda a conversa.
-            `;
-
-            let prevHistory = [];
-            if (currentChatSession) {
-                try {
-                    prevHistory = await currentChatSession.getHistory();
-                } catch (e) {
-                    prevHistory = [];
-                }
-            }
-
-            const newHistory = [
-                ...prevHistory,
-                {
-                    role: 'user',
-                    parts: [{ text: userText }]
-                },
-                {
-                    role: 'model',
-                    parts: [{ text: definition }]
-                }
-            ];
-
-            const model = genAI.getGenerativeModel({ model: currentChatModel, systemInstruction: systemPrompt });
-            currentChatSession = model.startChat({ history: newHistory });
-        } catch (sessionErr) {
-            console.warn("[Tutor] Aviso ao sincronizar histórico da sessão de chat:", sessionErr);
-        }
-    }
+    // 3. Atualiza histórico do backend
+    currentBackendChatHistory = [
+        ...(currentBackendChatHistory || []),
+        { role: 'user', parts: [{ text: userText }] },
+        { role: 'model', parts: [{ text: definition }] }
+    ];
 }
 
 

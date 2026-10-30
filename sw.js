@@ -3,7 +3,7 @@
  * Copyright (C) 2026 Arthur <arthur.paludo.c@gmail.com>
  */
 
-const CACHE_NAME = 'flashcards-v10.10'; // Increment version to trigger update
+const CACHE_NAME = 'flashcards-v11.4'; // Increment version to trigger update
 
 const BASE_PATH = self.registration && self.registration.scope 
   ? new URL(self.registration.scope).pathname.replace(/\/$/, '') 
@@ -24,6 +24,11 @@ const RAW_ASSETS = [
   '/assets/vendor/purify.min.js',
   '/js/index.js',
   '/js/game.js',
+  '/js/firebase-client.js',
+  '/js/backend-api.js',
+  '/js/slot-manager.js',
+  '/js/share-manager.js',
+  '/js/explore-modal.js',
   '/js/bulk-add.js',
   '/js/engine/scheduler.js',
   '/js/engine/notebook-scheduler.js',
@@ -65,7 +70,8 @@ const RAW_ASSETS = [
   '/assets/img/multiple choice.svg',
   '/assets/img/comment.svg',
   '/assets/img/settings.svg',
-  '/assets/img/notifications.svg'
+  '/assets/img/notifications.svg',
+  '/assets/img/paywall.svg'
 ];
 
 const ASSETS_TO_CACHE = RAW_ASSETS.map(p => p === '/' ? (BASE_PATH || '/') : `${BASE_PATH}${p}`);

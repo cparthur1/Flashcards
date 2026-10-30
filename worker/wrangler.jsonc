@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "flashcards-backend",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-29",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "vars": {
+    "FIREBASE_PROJECT_ID": "flashcards-ead57",
+    "ASAAS_ENV": "production"
+  }
+}

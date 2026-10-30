@@ -20,12 +20,17 @@ import { isDeckCategorized, callGeminiFlashLiteCategorization, getStoredAiCatego
 import { initTransfer } from './transfer.js';
 import { initStatsSession, recordStatsAnswer, recordStatsAiCorrection, archiveCurrentSession, completeCurrentSession, getCurrentSessionMetrics } from './stats-tracker.js';
 import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
+import { initExploreModal, openExploreModal, openProModal, isUserPro } from './explore-modal.js';
+import { onAuthChange } from './firebase-client.js';
+import { checkAndLoadSharedDeck } from './share-manager.js';
 
 // --- DOM ELEMENTS ---
 const deckTitle = document.getElementById('deck-title');
 const deckSelectTrigger = document.getElementById('deck-select-trigger');
 const deckSelectDropdown = document.getElementById('deck-select-dropdown');
 const deckSelectArrow = document.getElementById('deck-select-arrow');
+const deckItemExplore = document.getElementById('deck-item-explore');
+const menuAccountBtn = document.getElementById('menu-account-btn');
 const deckItemNormal = document.getElementById('deck-item-normal');
 const deckItemNormalName = document.getElementById('deck-item-normal-name');
 const deckItemNotebook = document.getElementById('deck-item-notebook');
@@ -198,17 +203,6 @@ const nextQuestionBtn = document.getElementById('next-question-btn');
 const aiToggleBtn = document.getElementById('ai-toggle-btn');
 const aiIconOff = document.getElementById('ai-icon-off');
 const aiIconOn = document.getElementById('ai-icon-on');
-const apiModal = document.getElementById('api-modal');
-const apiKeyForm = document.getElementById('api-key-form');
-const closeApiModal = document.getElementById('close-api-modal');
-const apiKeyInput = document.getElementById('api-key-input');
-const apiKeyRemember = document.getElementById('api-key-remember');
-const saveApiKeyBtn = document.getElementById('save-api-key-btn');
-const disableAiBtn = document.getElementById('disable-ai-btn');
-const openAiInstructions = document.getElementById('open-ai-instructions');
-const instructionsModal = document.getElementById('instructions-modal');
-const closeInstructionsBtn = document.getElementById('close-instructions-btn');
-const instructionsReadyBtn = document.getElementById('instructions-ready-btn');
 
 const askAiBtn = document.getElementById('ask-ai-btn');
 const aiChatContainer = document.getElementById('ai-chat-container');
@@ -1982,10 +1976,23 @@ function showFeedback(isCorrect, element) {
             }
         }
 
-        if (!isCorrect && isTutorEnabled()) {
+        if (!isCorrect) {
             askAiBtn.classList.remove('hidden');
-            if (userAnswer) {
-                checkAnswerWithAi(currentQuestion, userAnswer, ballIdx);
+            if (isUserPro()) {
+                askAiBtn.classList.remove('is-paywalled');
+                askAiBtn.querySelector('.paywall-tab-icon')?.remove();
+                if (userAnswer && isTutorEnabled()) {
+                    checkAnswerWithAi(currentQuestion, userAnswer, ballIdx);
+                }
+            } else {
+                askAiBtn.classList.add('is-paywalled');
+                if (!askAiBtn.querySelector('.paywall-tab-icon')) {
+                    const icon = document.createElement('img');
+                    icon.src = '../assets/img/paywall.svg';
+                    icon.className = 'w-4 h-4 paywall-tab-icon ml-2 inline align-middle';
+                    icon.alt = 'Pro';
+                    askAiBtn.appendChild(icon);
+                }
             }
         } else {
             askAiBtn.classList.add('hidden');
@@ -2947,10 +2954,15 @@ function initHeaderStats() {
 function updateAiUI() {
     updateTutorUI({ menuAiIcon, menuAiStatusBadge, menuAiSubtitle, aiIconOff, aiIconOn, aiSwitch });
     if (hlAiBtn) {
-        if (isTutorEnabled()) {
-            hlAiBtn.classList.remove('hidden');
+        hlAiBtn.classList.remove('hidden');
+        if (isUserPro()) {
+            hlAiBtn.classList.remove('is-paywalled');
+            hlAiBtn.innerHTML = '<img src="../assets/img/tutor.svg" class="w-4 h-4 pointer-events-none relative z-10" alt="Peça ajuda">';
+            hlAiBtn.title = 'Peça ajuda ao Tutor IA';
         } else {
-            hlAiBtn.classList.add('hidden');
+            hlAiBtn.classList.add('is-paywalled');
+            hlAiBtn.innerHTML = '<img src="../assets/img/paywall.svg" class="w-4 h-4 pointer-events-none relative z-10" alt="Pro">';
+            hlAiBtn.title = 'Recurso Pro (Clique para assinar)';
             if (hlAiCard) hlAiCard.classList.add('hidden');
             hlAiBtn.classList.remove('hl-ai-shimmering');
         }
@@ -3331,10 +3343,15 @@ function showHighlightPopup(range, isMarked) {
     }
     if (hlAiBtn) {
         hlAiBtn.classList.remove('hl-ai-shimmering');
-        if (isTutorEnabled()) {
-            hlAiBtn.classList.remove('hidden');
+        hlAiBtn.classList.remove('hidden');
+        if (isUserPro()) {
+            hlAiBtn.classList.remove('is-paywalled');
+            hlAiBtn.innerHTML = '<img src="../assets/img/tutor.svg" class="w-4 h-4 pointer-events-none relative z-10" alt="Peça ajuda">';
+            hlAiBtn.title = 'Peça ajuda ao Tutor IA';
         } else {
-            hlAiBtn.classList.add('hidden');
+            hlAiBtn.classList.add('is-paywalled');
+            hlAiBtn.innerHTML = '<img src="../assets/img/paywall.svg" class="w-4 h-4 pointer-events-none relative z-10" alt="Pro">';
+            hlAiBtn.title = 'Recurso Pro (Clique para assinar)';
         }
     }
 
@@ -3715,6 +3732,11 @@ if (hlAiBtn) {
         e.stopPropagation();
         e.preventDefault();
 
+        if (!isUserPro()) {
+            openProModal();
+            return;
+        }
+
         // Close color palette if open
         closeHighlightPalette(true);
 
@@ -3858,6 +3880,11 @@ if (hlAiOpenChatBtn) {
     hlAiOpenChatBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         e.preventDefault();
+
+        if (!isUserPro()) {
+            openProModal();
+            return;
+        }
 
         if (isHandoffAnimating) return;
 
@@ -4310,22 +4337,32 @@ counterLeftWrapper?.addEventListener('click', (e) => {
     }
 });
 if (aiToggleBtn) {
-    aiToggleBtn.addEventListener('click', async () => { 
+    aiToggleBtn.addEventListener('click', () => { 
         closeHamburgerMenu();
-        apiModal.classList.remove('hidden'); 
-        geminiApiKey = await getApiKeyAsync();
-        apiKeyInput.value = geminiApiKey || ''; 
-        if (apiKeyRemember) apiKeyRemember.checked = isKeyRemembered();
-        setTimeout(() => apiKeyInput.focus(), 50);
+        if (!isUserPro()) {
+            openProModal();
+            return;
+        }
+        const isAiOn = localStorage.getItem('flashcards_ai_enabled') === 'true';
+        const nextState = !isAiOn;
+        localStorage.setItem('flashcards_ai_enabled', String(nextState));
+        if (nextState) {
+            initializeAi();
+            initBackgroundCategorization();
+            showNotificationPill("Recursos de IA ativados", "enabled_ai.svg");
+        } else {
+            disableTutor();
+            updateAiUI();
+            showNotificationPill("Recursos de IA desativados", "config_ai.svg");
+        }
     });
 }
 
 if (aiSwitch) {
-    aiSwitch.addEventListener('change', async () => {
+    aiSwitch.addEventListener('change', () => {
         const nextState = Boolean(aiSwitch.selected);
         if (nextState) {
-            geminiApiKey = await getApiKeyAsync();
-            if (geminiApiKey) {
+            if (isUserPro()) {
                 localStorage.setItem('flashcards_ai_enabled', 'true');
                 initializeAi();
                 initBackgroundCategorization();
@@ -4333,11 +4370,8 @@ if (aiSwitch) {
             } else {
                 aiSwitch.selected = false;
                 closeHamburgerMenu();
-                apiModal.classList.remove('hidden');
-                apiKeyInput.value = '';
-                if (apiKeyRemember) apiKeyRemember.checked = isKeyRemembered();
-                setTimeout(() => apiKeyInput.focus(), 50);
-                showNotificationPill("Insira sua chave de API para ativar a IA", "config_ai.svg");
+                openProModal();
+                showNotificationPill("Recurso exclusivo do plano Flashcards Pro", "paywall.svg");
             }
         } else {
             localStorage.setItem('flashcards_ai_enabled', 'false');
@@ -4419,14 +4453,14 @@ async function updateSettingsModalState() {
     if (settingAiSwitch) {
         settingAiSwitch.selected = isAiOn;
     }
-    const currentApiKey = await getApiKeyAsync();
-    if (settingApiKeyStatus) {
-        if (currentApiKey) {
-            settingApiKeyStatus.textContent = 'Chave configurada';
-            settingApiKeyStatus.className = 'text-[11px] font-semibold text-emerald-600';
+    const settingProStatus = document.getElementById('setting-pro-status');
+    if (settingProStatus) {
+        if (isUserPro()) {
+            settingProStatus.textContent = 'Plano Flashcards Pro Ativo ✓';
+            settingProStatus.className = 'text-[11px] font-semibold text-emerald-600';
         } else {
-            settingApiKeyStatus.textContent = 'Nenhuma chave salva';
-            settingApiKeyStatus.className = 'text-[11px] text-[var(--md-sys-color-on-surface-variant)]';
+            settingProStatus.textContent = 'Disponível no Flashcards Pro';
+            settingProStatus.className = 'text-[11px] text-[var(--md-sys-color-on-surface-variant)]';
         }
     }
 
@@ -4656,11 +4690,10 @@ if (settingPomodoroRow && settingPomodoroSwitch) {
 
 // AI Switch in Settings Modal
 if (settingAiSwitch) {
-    settingAiSwitch.addEventListener('change', async () => {
+    settingAiSwitch.addEventListener('change', () => {
         const nextState = Boolean(settingAiSwitch.selected);
         if (nextState) {
-            geminiApiKey = await getApiKeyAsync();
-            if (geminiApiKey) {
+            if (isUserPro()) {
                 localStorage.setItem('flashcards_ai_enabled', 'true');
                 initializeAi();
                 initBackgroundCategorization();
@@ -4671,11 +4704,8 @@ if (settingAiSwitch) {
                 settingAiSwitch.selected = false;
                 if (aiSwitch) aiSwitch.selected = false;
                 closeAppSettingsModal();
-                apiModal.classList.remove('hidden');
-                apiKeyInput.value = '';
-                if (apiKeyRemember) apiKeyRemember.checked = isKeyRemembered();
-                setTimeout(() => apiKeyInput.focus(), 50);
-                showNotificationPill("Insira sua chave de API para ativar a IA", "config_ai.svg");
+                openProModal();
+                showNotificationPill("Recurso exclusivo do plano Flashcards Pro", "paywall.svg");
             }
         } else {
             localStorage.setItem('flashcards_ai_enabled', 'false');
@@ -4689,21 +4719,18 @@ if (settingAiSwitch) {
 }
 if (settingAiRow && settingAiSwitch) {
     settingAiRow.addEventListener('click', (e) => {
-        if (e.target.closest('md-switch') || e.target.closest('#setting-api-key-btn')) return;
+        if (e.target.closest('md-switch') || e.target.closest('#setting-pro-btn')) return;
         e.preventDefault();
         settingAiSwitch.selected = !settingAiSwitch.selected;
         settingAiSwitch.dispatchEvent(new Event('change', { bubbles: true }));
     });
 }
 
-// API Key Configure Button in Settings Modal
-settingApiKeyBtn?.addEventListener('click', async () => {
+// Pro Plan Manage Button in Settings Modal
+const settingProBtn = document.getElementById('setting-pro-btn');
+settingProBtn?.addEventListener('click', () => {
     closeAppSettingsModal();
-    apiModal.classList.remove('hidden');
-    geminiApiKey = await getApiKeyAsync();
-    apiKeyInput.value = geminiApiKey || '';
-    if (apiKeyRemember) apiKeyRemember.checked = isKeyRemembered();
-    setTimeout(() => apiKeyInput.focus(), 50);
+    openProModal();
 });
 
 // Notebook Goal Select in Settings Modal
@@ -4896,43 +4923,14 @@ if (hapticToggleBtn) {
     });
 }
 
-const handleSaveApiKey = async (e) => {
-    if (e) e.preventDefault();
-    geminiApiKey = apiKeyInput.value.trim();
-    if (geminiApiKey) {
-        const remember = Boolean(apiKeyRemember?.checked);
-        await saveApiKey(geminiApiKey, remember);
-        localStorage.setItem('flashcards_ai_enabled', 'true');
-        initializeAi(); 
-        apiModal.classList.add('hidden');
-        showNotificationPill(
-            remember ? "IA Ativada e Chave Salva com Segurança!" : "IA Ativada com Sucesso!",
-            "enabled_ai.svg"
-        );
+askAiBtn.addEventListener('click', () => {
+    if (!isUserPro()) {
+        openProModal();
+        return;
     }
-};
-
-saveApiKeyBtn.addEventListener('click', handleSaveApiKey);
-if (apiKeyForm) {
-    apiKeyForm.addEventListener('submit', handleSaveApiKey);
-}
-
-disableAiBtn.addEventListener('click', async (e) => {
-    if (e) e.preventDefault();
-    disableTutor(); 
-    geminiApiKey = ''; 
-    await clearApiKey();
-    localStorage.setItem('flashcards_ai_enabled', 'false');
-    if (apiKeyRemember) apiKeyRemember.checked = false;
-    updateAiUI();
-    apiModal.classList.add('hidden');
-    showNotificationPill("Recursos de IA desativados", "config_ai.svg");
+    aiChatContainer.classList.add('open');
+    chatInput.focus();
 });
-closeApiModal.addEventListener('click', () => apiModal.classList.add('hidden'));
-openAiInstructions.addEventListener('click', () => instructionsModal.classList.remove('hidden'));
-[closeInstructionsBtn, instructionsReadyBtn].forEach(b => b.addEventListener('click', () => instructionsModal.classList.add('hidden')));
-instructionsModal.addEventListener('click', (e) => { if (e.target === instructionsModal) instructionsModal.classList.add('hidden'); });
-askAiBtn.addEventListener('click', () => { aiChatContainer.classList.add('open'); chatInput.focus(); });
 closeChatBtn.addEventListener('click', () => aiChatContainer.classList.remove('open'));
 sendChatBtn.addEventListener('click', sendChatMessage);
 chatInput.addEventListener('keydown', (e) => {
@@ -5772,6 +5770,22 @@ deckItemNormal.addEventListener('click', (e) => {
     switchActiveMode('normal');
 });
 
+if (deckItemExplore) {
+    deckItemExplore.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeDeckDropdown();
+        openExploreModal();
+    });
+}
+
+if (menuAccountBtn) {
+    menuAccountBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeHamburgerMenu();
+        openExploreModal();
+    });
+}
+
 deckItemNotebook.addEventListener('click', (e) => {
     e.stopPropagation();
     closeDeckDropdown();
@@ -5834,6 +5848,11 @@ async function initGame() {
     resizeCanvas(); animate();
     
     initTransfer(); // Initialize P2P logic from transfer.js
+    initExploreModal(); // Initialize Explore Files & Pro Modal
+
+    // Check if opening a shared deck via link (?share=...)
+    const sharedLoaded = await checkAndLoadSharedDeck();
+    if (sharedLoaded) return;
 
     activeMode = localStorage.getItem('flashcardsActiveMode') || 'normal';
 
@@ -5983,6 +6002,9 @@ async function initBackgroundCategorization() {
     } catch (e) {
         console.warn("[Algorithm] Falha ao verificar categorização em segundo plano:", e);
     }
+    onAuthChange(() => {
+        updateAiUI();
+    });
 }
 
 if (document.readyState === 'loading') {

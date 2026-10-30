@@ -3122,6 +3122,45 @@ body.reduce-motion #header-shimmer-beam {
     display: none !important;
 }
 
+/* ==========================================================================
+   PRO PAYWALL & DESATURATED FEATURE STYLES
+   ========================================================================== */
+.is-paywalled {
+    filter: grayscale(1) opacity(0.65) !important;
+    position: relative !important;
+    cursor: pointer !important;
+    transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+.is-paywalled:hover {
+    filter: grayscale(0.75) opacity(0.85) !important;
+}
+
+.paywall-badge-pill {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 9999px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 800;
+    color: #475569;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.paywall-badge-pill img {
+    width: 14px;
+    height: 14px;
+}
+
+
 
 
 

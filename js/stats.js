@@ -10,6 +10,8 @@ import {
 import { ROUTES, escapeHtml } from './utils.js';
 import { getApiKeyAsync, getCachedApiKey, saveApiKey, clearApiKey, isKeyRemembered } from './key-manager.js';
 import { getDailyStreak, getHeatmapActivityMap, getTodayDateString } from './engine/notebook-scheduler.js';
+import { initExploreModal, openProModal, isUserPro } from './explore-modal.js';
+import { onAuthChange } from './firebase-client.js';
 
 // DOM Elements
 const backToGameBtn = document.getElementById('back-to-game-btn');
@@ -130,41 +132,8 @@ const addAllToNotebookBtn = document.getElementById('add-all-to-notebook-btn');
 // AI Elements
 const aiStatsSection = document.getElementById('ai-stats-section');
 const aiHistorySubjectsSection = document.getElementById('ai-history-subjects-section');
-const aiConfigModal = document.getElementById('ai-config-modal');
-const closeAiModalBtn = document.getElementById('close-ai-modal-btn');
-const modalApiKeyInput = document.getElementById('modal-api-key-input');
-const modalApiKeyRemember = document.getElementById('modal-api-key-remember');
-const statsApiKeyForm = document.getElementById('stats-api-key-form');
-const modalSaveApiKeyBtn = document.getElementById('modal-save-api-key-btn');
-const modalDisableAiBtn = document.getElementById('modal-disable-ai-btn');
 
 let isAiLoading = false;
-
-function getGeminiApiKey() {
-    return getCachedApiKey();
-}
-
-async function setGeminiApiKey(key, remember = false) {
-    if (key) {
-        await saveApiKey(key, remember);
-    } else {
-        await clearApiKey();
-    }
-}
-
-async function openAiModal() {
-    if (!aiConfigModal) return;
-    const key = await getApiKeyAsync();
-    if (modalApiKeyInput) modalApiKeyInput.value = key;
-    if (modalApiKeyRemember) modalApiKeyRemember.checked = isKeyRemembered();
-    aiConfigModal.classList.remove('hidden');
-    setTimeout(() => modalApiKeyInput?.focus(), 50);
-}
-
-function closeAiModal() {
-    if (!aiConfigModal) return;
-    aiConfigModal.classList.add('hidden');
-}
 
 function formatSeconds(totalSeconds) {
     const s = Math.max(0, Math.floor(totalSeconds || 0));
@@ -1007,9 +976,6 @@ function renderAiDashboard(currentDeckTitle, subjectsStats, topicsStats, gameSta
                         </svg>
                         <span>Recategorizar com IA</span>
                     </button>
-                    <button id="btn-change-ai-key" class="text-xs font-semibold px-2.5 py-1.5 rounded-xl text-gray-500 hover:text-gray-700 transition" title="Configurar chave de API">
-                        Chave
-                    </button>
                 </div>
             </div>
 
@@ -1069,11 +1035,11 @@ function renderAiDashboard(currentDeckTitle, subjectsStats, topicsStats, gameSta
     `;
 
     document.getElementById('btn-refresh-ai-stats')?.addEventListener('click', () => {
+        if (!isUserPro()) {
+            openProModal();
+            return;
+        }
         triggerAiCategorization(gameState, statsData);
-    });
-
-    document.getElementById('btn-change-ai-key')?.addEventListener('click', () => {
-        openAiModal();
     });
 
     // Also update Tab 2 Subjects section if present
@@ -1085,7 +1051,6 @@ function renderAiDashboard(currentDeckTitle, subjectsStats, topicsStats, gameSta
 function renderAiSection(gameState, statsData, isLiveUpdate = false, sessionToUse = null) {
     if (!aiStatsSection) return;
 
-    const apiKey = getGeminiApiKey();
     const currentDeckTitle = gameState.deckTitle || (localStorage.getItem('flashcardsActiveMode') === 'notebook' ? 'Caderno' : (localStorage.getItem('flashcardsActiveMode') === 'exam' ? 'Semana de Provas' : 'Flashcards'));
     const categories = getStoredAiCategories();
     const activeSession = sessionToUse || (statsData.currentSession && statsData.currentSession.cardsAnswered > 0 ? statsData.currentSession : (statsData.history && statsData.history[0])) || statsData.currentSession || null;
@@ -1097,7 +1062,7 @@ function renderAiSection(gameState, statsData, isLiveUpdate = false, sessionToUs
         categories
     });
 
-    // If ALREADY CATEGORIZED: render the dashboard immediately, even if user has NO API key!
+    // If ALREADY CATEGORIZED: render the dashboard immediately!
     if (alreadyCategorized) {
         const { subjectsStats, topicsStats } = computeAiStats({
             categories,
@@ -1111,70 +1076,41 @@ function renderAiSection(gameState, statsData, isLiveUpdate = false, sessionToUs
         return;
     }
 
-    // IF NOT CATEGORIZED YET:
-    // Case 1: AI is NOT activated -> Render prompt with API Key input
-    if (!apiKey) {
-        if (document.getElementById('ai-stats-key-input')) return;
-
+    // IF USER IS NOT PRO: Display Paywalled UI
+    if (!isUserPro()) {
         aiStatsSection.innerHTML = `
-            <div class="bg-gradient-to-b from-purple-500/5 via-blue-500/5 to-transparent p-5 sm:p-6 rounded-2xl border border-purple-200/80 shadow-sm relative overflow-hidden">
+            <div id="paywalled-stats-ai-card" class="is-paywalled bg-gradient-to-b from-purple-500/5 via-blue-500/5 to-transparent p-5 sm:p-6 rounded-2xl border border-purple-200/80 shadow-sm relative overflow-hidden cursor-pointer group">
+                <div class="paywall-badge-pill">
+                    <img src="../assets/img/paywall.svg" alt="Pro"><span>PRO</span>
+                </div>
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div class="space-y-1">
                         <div class="flex items-center gap-2">
                             <span class="inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200/80">
-                                <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
+                                <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
                                 Gemini Flash-Lite
                             </span>
                             <span class="text-xs text-gray-400 font-medium">Categorização Semântica</span>
                         </div>
                         <h2 class="text-base sm:text-lg font-bold text-gray-900">Desempenho por Matérias & Assuntos (IA)</h2>
                         <p class="text-xs text-gray-600 max-w-xl leading-relaxed">
-                            Este baralho ainda não possui tópicos salvos. Insira sua Gemini API Key para categorizar os cards com inteligência artificial.
+                            Recurso exclusivo Flashcards Pro: categorize seus baralhos e obtenha diagnósticos avançados de retenção com inteligência artificial.
                         </p>
                     </div>
 
-                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-shrink-0 w-full sm:w-auto">
-                        <div class="relative flex-1 sm:w-64">
-                            <md-outlined-text-field
-                                id="ai-stats-key-input"
-                                type="password"
-                                label="Gemini API Key"
-                                placeholder="AIzaSy..."
-                                class="w-full"
-                                style="width: 100%;">
-                            </md-outlined-text-field>
-                        </div>
-                        <button id="btn-generate-ai-stats"
-                            class="px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-purple-600 hover:bg-purple-700 active:scale-[0.98] transition shadow-md flex items-center justify-center gap-1.5 whitespace-nowrap">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                            <span>Categorizar com IA</span>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <button id="btn-paywall-stats-ai" class="m3-btn-expressive m3-btn-filled px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 whitespace-nowrap shadow-md">
+                            <img src="../assets/img/paywall.svg" class="w-3.5 h-3.5" alt="Pro">
+                            <span>Desbloquear com Pro</span>
                         </button>
                     </div>
                 </div>
-                <div id="ai-stats-key-error" class="hidden text-xs text-red-500 mt-2.5 font-medium"></div>
             </div>
         `;
 
-        const btnGen = document.getElementById('btn-generate-ai-stats');
-        const inputKey = document.getElementById('ai-stats-key-input');
-        const errorKey = document.getElementById('ai-stats-key-error');
-
-        btnGen?.addEventListener('click', () => {
-            const key = (inputKey?.value || '').trim();
-            if (!key) {
-                if (errorKey) {
-                    errorKey.textContent = "Por favor, insira uma Gemini API Key válida para gerar as estatísticas.";
-                    errorKey.classList.remove('hidden');
-                }
-                return;
-            }
-            if (errorKey) errorKey.classList.add('hidden');
-            setGeminiApiKey(key);
-            triggerAiCategorization(gameState, statsData);
+        document.getElementById('paywalled-stats-ai-card')?.addEventListener('click', () => {
+            openProModal();
         });
-
         if (aiHistorySubjectsSection) aiHistorySubjectsSection.innerHTML = '';
         return;
     }
@@ -1184,55 +1120,50 @@ function renderAiSection(gameState, statsData, isLiveUpdate = false, sessionToUs
         return;
     }
 
-    // Case 3: Deck not yet categorized, but user has API key
     if (isLiveUpdate) return;
 
-        aiStatsSection.innerHTML = `
-            <div class="bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-transparent p-5 sm:p-6 rounded-2xl border border-purple-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div class="space-y-1">
-                    <div class="flex items-center gap-2">
-                        <span class="inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700">
-                            <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
-                            Gemini Flash-Lite
-                        </span>
-                        <span class="text-xs text-gray-500 font-medium">Categorização Semântica</span>
-                    </div>
-                    <h2 class="text-base sm:text-lg font-bold text-gray-900">Categorizar Baralho com IA</h2>
-                    <p class="text-xs text-gray-600 max-w-xl">
-                        Classifique os cards de "<b>${currentDeckTitle}</b>" em tópicos e matérias para análise de retenção. A categorização é permanente e salva no seu navegador.
-                    </p>
+    // Case 3: Deck not yet categorized, Pro user -> Show Categorize Button
+    aiStatsSection.innerHTML = `
+        <div class="bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-transparent p-5 sm:p-6 rounded-2xl border border-purple-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700">
+                        <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
+                        Gemini Flash-Lite
+                    </span>
+                    <span class="text-xs text-gray-500 font-medium">Categorização Semântica</span>
                 </div>
-                <div class="flex items-center gap-2 flex-shrink-0">
-                    <button id="btn-categorize-deck-now" class="px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-purple-600 hover:bg-purple-700 active:scale-[0.98] transition shadow-md flex items-center justify-center gap-1.5 whitespace-nowrap">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                        <span>Categorizar Baralho</span>
-                    </button>
-                </div>
+                <h2 class="text-base sm:text-lg font-bold text-gray-900">Categorizar Baralho com IA</h2>
+                <p class="text-xs text-gray-600 max-w-xl">
+                    Classifique os cards de "<b>${escapeHtml(currentDeckTitle)}</b>" em tópicos e matérias para análise de retenção. A categorização é permanente e salva no seu navegador.
+                </p>
             </div>
-        `;
-        document.getElementById('btn-categorize-deck-now')?.addEventListener('click', () => {
-            triggerAiCategorization(gameState, statsData);
-        });
-        return;
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <button id="btn-generate-ai-stats"
+                    class="px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-purple-600 hover:bg-purple-700 active:scale-[0.98] transition shadow-md flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>Categorizar com IA</span>
+                </button>
+            </div>
+        </div>
+    `;
 
-    // Case 4: Render Categorized Dashboard (fully persistent, instant from storage)
-    const { subjectsStats, topicsStats } = computeAiStats({
-        categories,
-        currentDeckTitle,
-        allQuestions: gameState.allQuestions || [],
-        currentSession: activeSession,
-        history: statsData.history
+    document.getElementById('btn-generate-ai-stats')?.addEventListener('click', () => {
+        triggerAiCategorization(gameState, statsData);
     });
 
-    renderAiDashboard(currentDeckTitle, subjectsStats, topicsStats, gameState, statsData);
+    if (aiHistorySubjectsSection) aiHistorySubjectsSection.innerHTML = '';
 }
 
 async function triggerAiCategorization(gameState, statsData) {
-    let apiKey = getGeminiApiKey();
-    if (!apiKey) {
-        apiKey = await getApiKeyAsync();
+    if (!isUserPro()) {
+        openProModal();
+        return;
     }
-    if (!apiKey) return;
+
+    let apiKey = getGeminiApiKey() || getCachedApiKey() || '';
 
     isAiLoading = true;
     if (aiStatsSection) {
@@ -1315,22 +1246,16 @@ async function triggerAiCategorization(gameState, statsData) {
                     <button id="btn-retry-ai" class="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-red-600 hover:bg-red-700 transition shadow-sm">
                         Tentar Novamente
                     </button>
-                    <button id="btn-change-key-error" class="px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-100 transition shadow-xs">
-                        Alterar Chave
-                    </button>
                 </div>
             </div>
         `;
         const errTextEl = document.getElementById('ai-stats-error-text');
         if (errTextEl) {
-            errTextEl.textContent = (err && err.message) ? err.message : 'Verifique sua conexão ou se sua Gemini API Key tem cotas disponíveis.';
+            errTextEl.textContent = (err && err.message) ? err.message : 'Verifique sua conexão ou se seu plano Flashcards Pro está ativo.';
         }
 
         document.getElementById('btn-retry-ai')?.addEventListener('click', () => {
             triggerAiCategorization(gameState, statsData);
-        });
-        document.getElementById('btn-change-key-error')?.addEventListener('click', () => {
-            openAiModal();
         });
     }
 }
@@ -1933,50 +1858,17 @@ exportStatsBtn?.addEventListener('click', () => {
     showStatsPill("Relatório exportado!", true);
 });
 
-// AI CONFIG MODAL LISTENERS
-closeAiModalBtn?.addEventListener('click', closeAiModal);
-aiConfigModal?.addEventListener('click', (e) => {
-    if (e.target === aiConfigModal) closeAiModal();
-});
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && aiConfigModal && !aiConfigModal.classList.contains('hidden')) {
-        closeAiModal();
-    }
-});
-statsApiKeyForm?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    modalSaveApiKeyBtn?.click();
+// INITIALIZATION
+document.addEventListener('DOMContentLoaded', async () => {
+    initExploreModal();
+    await getApiKeyAsync();
+    renderAllStats();
 });
 
-modalSaveApiKeyBtn?.addEventListener('click', async () => {
-    const key = (modalApiKeyInput?.value || '').trim();
-    if (!key) {
-        alert("Por favor, insira uma chave de API válida.");
-        return;
-    }
-    const remember = Boolean(modalApiKeyRemember?.checked);
-    await setGeminiApiKey(key, remember);
-    closeAiModal();
-    showStatsPill(remember ? "Chave de API salva com segurança no dispositivo!" : "Chave de API salva!", true);
-    const gameState = getStoredGameState();
-    const statsData = getStatsStorage();
-    triggerAiCategorization(gameState, statsData);
-});
-
-modalDisableAiBtn?.addEventListener('click', async () => {
-    await setGeminiApiKey('');
-    if (modalApiKeyRemember) modalApiKeyRemember.checked = false;
-    closeAiModal();
-    showStatsPill("Recursos de IA desativados.", false);
+onAuthChange(() => {
     const gameState = getStoredGameState();
     const statsData = getStatsStorage();
     renderAiSection(gameState, statsData);
-});
-
-// INITIALIZATION
-document.addEventListener('DOMContentLoaded', async () => {
-    await getApiKeyAsync();
-    renderAllStats();
 });
 
 // REAL-TIME CROSS-TAB AUTO-SYNC (Ultra-lightweight: 0% CPU idle, RAF debounced, background-tab deferred)

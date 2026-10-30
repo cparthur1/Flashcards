@@ -71,34 +71,18 @@
 
     <canvas id="background-canvas" class="fixed top-0 left-0 w-full h-full" style="z-index: -1;"></canvas>
 
-    <!-- TELA DE UPLOAD (INICIAL) -->
+    <!-- TELA PRINCIPAL (INICIAL) -->
     <div id="upload-screen"
         class="w-full max-w-md mx-auto m3-card-expressive p-8 text-center transition-all duration-300">
         <h1 class="brand-page-title text-3xl font-extrabold mb-1 tracking-tight">Flashcards</h1>
-        <p class="text-[var(--md-sys-color-on-surface-variant)] mb-8 text-sm">Carregue um arquivo .json ou crie um novo baralho agora mesmo.</p>
-
-        <!-- Área de Upload de Arquivo -->
-        <div
-            class="mb-6 p-4 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-500 transition-colors">
-            <input type="file" id="file-input" accept=".json" multiple
-                class="block w-full text-sm text-gray-500 font-['Inter',sans-serif] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
-        </div>
+        <p class="text-[var(--md-sys-color-on-surface-variant)] mb-8 text-sm">Abra um arquivo ou crie um novo baralho agora mesmo.</p>
 
         <div class="flex flex-col gap-3.5">
-            <button id="start-btn"
-                class="m3-btn-expressive m3-btn-filled w-full py-3.5 px-4 text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled>
-                <span class="material-symbols-rounded text-xl">folder_open</span> Abrir Arquivo
-            </button>
-
-            <!-- Botão Semana de Provas (Multi-baralhos) -->
-            <button id="open-exam-btn"
-                class="m3-btn-expressive w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white font-bold py-3.5 px-4 text-base shadow-lg hover:shadow-xl relative group">
-                <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                </svg>
-                <span>Semana de Provas</span>
-                <span id="exam-saved-badge" class="hidden text-[11px] bg-white/20 text-white px-2 py-0.5 rounded-full font-normal">Sessão Salva</span>
+            <!-- Botão Explorar Arquivos (Abre o Modal com Slots e Caderno) -->
+            <button id="open-explore-btn"
+                class="m3-btn-expressive m3-btn-filled w-full py-4 px-4 text-base font-bold shadow-md flex items-center justify-center gap-2.5">
+                <span class="material-symbols-rounded text-2xl">folder_open</span>
+                <span>Explorar arquivos</span>
             </button>
 
             <div class="relative flex py-1 items-center">
@@ -109,24 +93,16 @@
 
             <!-- Botão Criar Baralho -->
             <a href="pages/generate.html" id="open-create-btn"
-                class="m3-btn-expressive m3-btn-tonal w-full py-3.5 px-4 text-base font-bold shadow-sm">
-                <span class="material-symbols-rounded text-xl">add_circle</span> Criar Baralho
+                class="m3-btn-expressive m3-btn-tonal w-full py-3.5 px-4 text-base font-bold shadow-sm flex items-center justify-center gap-2">
+                <span class="material-symbols-rounded text-xl">add_circle</span>
+                <span>Criar Baralho</span>
             </a>
 
-            <!-- Botão Caderno (visible only if notebook has cards) -->
-            <button id="open-notebook-btn"
-                class="hidden m3-btn-expressive m3-btn-outlined w-full py-3.5 px-4 text-base font-bold flex items-center justify-between">
-                <span class="flex items-center gap-2">
-                    <span class="material-symbols-rounded text-xl">bookmark</span>
-                    <span>Estudar Caderno</span>
-                </span>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs sm:text-sm font-normal text-[var(--md-sys-color-on-surface-variant)]">(<span id="notebook-count">0</span> <span id="notebook-count-label">cards</span>)</span>
-                    <span id="home-notebook-streak" class="hidden items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold">
-                        <img src="assets/img/fire.svg" class="w-3.5 h-3.5" alt="Streak">
-                        <span id="home-notebook-streak-count">0</span>
-                    </span>
-                </div>
+            <!-- Continuar Sessão em Aberto (visível dinamicamente se houver deck ativo) -->
+            <button id="continue-session-btn"
+                class="hidden m3-btn-expressive m3-btn-outlined w-full py-3 px-4 text-sm font-semibold flex items-center justify-center gap-2 text-blue-600 border-blue-200 hover:bg-blue-50">
+                <span class="material-symbols-rounded text-lg">play_arrow</span>
+                <span>Continuar Sessão Atual</span>
             </button>
         </div>
         <p id="upload-error" class="text-red-500 mt-4 text-sm font-medium"></p>
