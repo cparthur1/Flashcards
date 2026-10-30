@@ -55,6 +55,19 @@ export async function createProSubscription(params = {}) {
 }
 
 /**
+ * Verify payment status with backend and activate Pro
+ */
+export async function verifyPaymentStatus() {
+  const res = await fetchWithAuth('/api/payment/verify', {
+    method: 'POST'
+  });
+  if (!res.ok) {
+    return { isPro: false, status: 'unknown' };
+  }
+  return await res.json();
+}
+
+/**
  * Buy extra deck generation (R$ 0,99)
  */
 export async function buyExtraGeneration(params = {}) {

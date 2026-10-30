@@ -111,9 +111,15 @@ export async function createSubscription({ customerId, uid, apiKey, isProduction
     }
   }
 
-  // If first payment exists, fetch Pix QR Code
+  // If first payment exists, tag externalReference and fetch Pix QR Code
   let pixData = null;
   if (firstPayment && firstPayment.id) {
+    await fetch(`${baseUrl}/payments/${firstPayment.id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ externalReference: `sub:${uid}` })
+    }).catch(err => console.warn('Erro ao atualizar externalReference do primeiro pagamento no Asaas:', err));
+
     const pixRes = await fetch(`${baseUrl}/payments/${firstPayment.id}/pixQrCode`, { headers });
     if (pixRes.ok) {
       pixData = await pixRes.json();
@@ -231,5 +237,60 @@ export async function cancelSubscription({ subscriptionId, apiKey, isProduction 
     return false;
   }
   return true;
+}
+
+/**
+ * Check if customer has an active subscription or paid payment in Asaas
+ */
+export async function checkCustomerProStatusInAsaas({ email, customerId = null, apiKey, isProduction = true }) {
+  if (!email && !customerId) return { isPro: false };
+  const baseUrl = getAsaasBaseUrl(isProduction);
+  const headers = getAsaasHeaders(apiKey);
+
+  try {
+    let targetCustomerId = customerId;
+    if (!targetCustomerId && email) {
+      const searchRes = await fetch(`${baseUrl}/customers?email=${encodeURIComponent(email)}`, { headers });
+      if (searchRes.ok) {
+        const searchData = await searchRes.json();
+        if (searchData.data && searchData.data.length > 0) {
+          targetCustomerId = searchData.data[0].id;
+        }
+      }
+    }
+
+    if (!targetCustomerId) return { isPro: false };
+
+    // 1. Check active subscription
+    const subRes = await fetch(`${baseUrl}/subscriptions?customer=${targetCustomerId}&status=ACTIVE`, { headers });
+    let activeSub = null;
+    if (subRes.ok) {
+      const subData = await subRes.json();
+      if (subData.data && subData.data.length > 0) {
+        activeSub = subData.data[0];
+      }
+    }
+
+    // 2. Check received or confirmed payments
+    const payRes = await fetch(`${baseUrl}/payments?customer=${targetCustomerId}&status=RECEIVED,CONFIRMED&limit=1`, { headers });
+    let confirmedPayment = null;
+    if (payRes.ok) {
+      const payData = await payRes.json();
+      if (payData.data && payData.data.length > 0) {
+        confirmedPayment = payData.data[0];
+      }
+    }
+
+    const isPro = Boolean(activeSub || confirmedPayment);
+    return {
+      isPro,
+      customerId: targetCustomerId,
+      subscriptionId: activeSub ? activeSub.id : null,
+      paymentId: confirmedPayment ? confirmedPayment.id : null
+    };
+  } catch (err) {
+    console.warn('Erro ao verificar status do cliente no Asaas:', err);
+    return { isPro: false };
+  }
 }
 

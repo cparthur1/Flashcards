@@ -8,8 +8,8 @@
  * 4. User Quota & Pro Claim Management
  */
 
-import { verifyFirebaseIdToken, setFirebaseUserProClaim, deleteFirebaseUser } from './google-auth.js';
-import { getOrCreateCustomer, createSubscription, createExtraGenerationPayment, cancelSubscription, getSubscriptionDetails } from './asaas.js';
+import { verifyFirebaseIdToken, setFirebaseUserProClaim, deleteFirebaseUser, getFirebaseUserByEmail } from './google-auth.js';
+import { getOrCreateCustomer, createSubscription, createExtraGenerationPayment, cancelSubscription, getSubscriptionDetails, checkCustomerProStatusInAsaas } from './asaas.js';
 import { callGemini } from './gemini.js';
 import { getUserDocument, updateUserDocument, deleteUserDocument, getDocument, setDocument } from './firestore.js';
 
@@ -126,7 +126,38 @@ export default {
           console.warn('[Status] Falha ao ler documento do Firestore:', docErr.message);
         }
 
-        const isPro = Boolean(isLifetime || user.pro || userDoc?.subscription?.status === 'active');
+        let isPro = Boolean(isLifetime || user.pro || userDoc?.subscription?.status === 'active');
+
+        // If not recognized as Pro in Firestore/claims, verify directly with Asaas
+        if (!isPro && env.ASAAS_API_KEY && user.email) {
+          const asaasCheck = await checkCustomerProStatusInAsaas({
+            email: user.email,
+            customerId: userDoc?.subscription?.customerId || null,
+            apiKey: env.ASAAS_API_KEY,
+            isProduction: env.ASAAS_ENV !== 'sandbox'
+          });
+
+          if (asaasCheck.isPro) {
+            isPro = true;
+            if (serviceAccount) {
+              ctx.waitUntil(Promise.all([
+                setFirebaseUserProClaim(serviceAccount, user.uid, true).catch(() => {}),
+                updateUserDocument(serviceAccount, user.uid, {
+                  subscription: {
+                    status: 'active',
+                    plan: 'pro_monthly',
+                    provider: 'asaas',
+                    subscriptionId: asaasCheck.subscriptionId || userDoc?.subscription?.id || '',
+                    customerId: asaasCheck.customerId || '',
+                    lastPaymentId: asaasCheck.paymentId || '',
+                    updatedAt: new Date().toISOString()
+                  }
+                }).catch(() => {})
+              ]));
+            }
+          }
+        }
+
         const currentMonth = new Date().toISOString().slice(0, 7); // e.g. "2026-10"
         const lastReset = userDoc?.quotaLastResetMonth || '';
         let monthlyUsed = userDoc?.monthlyGenerationsUsed || 0;
@@ -289,7 +320,63 @@ export default {
           value: 5.00
         });
 
+        // Save pending subscription in user doc
+        const serviceAccount = getServiceAccount(env);
+        await updateUserDocument(serviceAccount, user.uid, {
+          subscription: {
+            id: subResult.subscriptionId,
+            customerId: customer.id,
+            status: 'pending',
+            invoiceUrl: subResult.invoiceUrl || null,
+            updatedAt: new Date().toISOString()
+          }
+        }).catch(err => console.warn('Erro ao salvar subscription pending no Firestore:', err));
+
         return jsonResponse(subResult, 200, corsHeaders);
+      }
+
+      // 4.1 Verify Payment Status & Activate Pro immediately
+      if (path === '/api/payment/verify' && request.method === 'POST') {
+        const user = await authenticateUser();
+        const serviceAccount = getServiceAccount(env);
+        const userDoc = await getUserDocument(serviceAccount, user.uid).catch(() => null);
+
+        const isLifetime = LIFETIME_PRO_EMAILS.includes((user.email || '').toLowerCase().trim());
+        if (isLifetime) {
+          await setFirebaseUserProClaim(serviceAccount, user.uid, true).catch(() => {});
+          return jsonResponse({ isPro: true, status: 'active', plan: 'pro_lifetime' }, 200, corsHeaders);
+        }
+
+        const asaasCheck = await checkCustomerProStatusInAsaas({
+          email: user.email,
+          customerId: userDoc?.subscription?.customerId || null,
+          apiKey: env.ASAAS_API_KEY,
+          isProduction: env.ASAAS_ENV !== 'sandbox'
+        });
+
+        if (asaasCheck.isPro) {
+          await Promise.all([
+            setFirebaseUserProClaim(serviceAccount, user.uid, true).catch(() => {}),
+            updateUserDocument(serviceAccount, user.uid, {
+              subscription: {
+                status: 'active',
+                plan: 'pro_monthly',
+                provider: 'asaas',
+                subscriptionId: asaasCheck.subscriptionId || userDoc?.subscription?.id || '',
+                customerId: asaasCheck.customerId || '',
+                lastPaymentId: asaasCheck.paymentId || '',
+                updatedAt: new Date().toISOString()
+              }
+            }).catch(() => {})
+          ]);
+          return jsonResponse({ isPro: true, status: 'active', plan: 'pro_monthly' }, 200, corsHeaders);
+        }
+
+        return jsonResponse({
+          isPro: false,
+          status: 'pending',
+          message: 'Pagamento ainda não confirmado pelo banco. Se realizou o pagamento há poucos segundos, aguarde um instante e verifique novamente.'
+        }, 200, corsHeaders);
       }
 
       // 5. Create Extra Deck Generation Payment (R$ 0,99)
@@ -638,8 +725,46 @@ async function handleAsaasWebhook(request, env) {
 
   // Subscription confirmation
   if (event === 'PAYMENT_RECEIVED' || event === 'PAYMENT_CONFIRMED') {
-    if (externalRef.startsWith('sub:')) {
-      const uid = externalRef.replace('sub:', '');
+    let uid = externalRef.startsWith('sub:') ? externalRef.replace('sub:', '') : null;
+
+    // 1. If not on payment, look up subscription externalReference
+    if (!uid && payment.subscription && env.ASAAS_API_KEY) {
+      try {
+        const baseUrl = env.ASAAS_ENV === 'sandbox' ? 'https://sandbox.asaas.com/api/v3' : 'https://api.asaas.com/v3';
+        const headers = { 'Content-Type': 'application/json', 'access_token': env.ASAAS_API_KEY, 'User-Agent': 'Flashcards/1.0 (https://flashcards.camblu.org)' };
+        const subRes = await fetch(`${baseUrl}/subscriptions/${payment.subscription}`, { headers });
+        if (subRes.ok) {
+          const subData = await subRes.json();
+          if (subData.externalReference && subData.externalReference.startsWith('sub:')) {
+            uid = subData.externalReference.replace('sub:', '');
+          }
+        }
+      } catch (err) {
+        console.warn('[Asaas Webhook] Erro ao buscar assinatura do pagamento:', err);
+      }
+    }
+
+    // 2. If still not found, look up customer email -> Firebase Auth UID
+    if (!uid && payment.customer && env.ASAAS_API_KEY) {
+      try {
+        const baseUrl = env.ASAAS_ENV === 'sandbox' ? 'https://sandbox.asaas.com/api/v3' : 'https://api.asaas.com/v3';
+        const headers = { 'Content-Type': 'application/json', 'access_token': env.ASAAS_API_KEY, 'User-Agent': 'Flashcards/1.0 (https://flashcards.camblu.org)' };
+        const custRes = await fetch(`${baseUrl}/customers/${payment.customer}`, { headers });
+        if (custRes.ok) {
+          const custData = await custRes.json();
+          if (custData.email) {
+            const userRecord = await getFirebaseUserByEmail(serviceAccount, custData.email).catch(() => null);
+            if (userRecord?.uid) {
+              uid = userRecord.uid;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[Asaas Webhook] Erro ao buscar cliente do pagamento:', err);
+      }
+    }
+
+    if (uid) {
       // 1. Assign Pro custom claim on Firebase Auth
       await setFirebaseUserProClaim(serviceAccount, uid, true);
       // 2. Update Firestore user document
@@ -649,26 +774,41 @@ async function handleAsaasWebhook(request, env) {
           plan: 'pro_monthly',
           provider: 'asaas',
           subscriptionId: payment.subscription || '',
+          customerId: payment.customer || '',
           lastPaymentId: payment.id,
           updatedAt: new Date().toISOString()
         }
       });
       console.log(`[Asaas Webhook] Pro ativado com sucesso para UID: ${uid}`);
     } else if (externalRef.startsWith('extra:')) {
-      const uid = externalRef.replace('extra:', '');
-      const userDoc = await getUserDocument(serviceAccount, uid);
+      const uidExtra = externalRef.replace('extra:', '');
+      const userDoc = await getUserDocument(serviceAccount, uidExtra);
       const currentExtras = userDoc?.extraGenerations || 0;
-      await updateUserDocument(serviceAccount, uid, {
+      await updateUserDocument(serviceAccount, uidExtra, {
         extraGenerations: currentExtras + 1
       });
-      console.log(`[Asaas Webhook] Geração extra adicionada para UID: ${uid}`);
+      console.log(`[Asaas Webhook] Geração extra adicionada para UID: ${uidExtra}`);
     }
   }
 
   // Subscription cancellation or delinquency
   if (event === 'SUBSCRIPTION_INACTIVATED' || event === 'PAYMENT_OVERDUE') {
-    if (externalRef.startsWith('sub:')) {
-      const uid = externalRef.replace('sub:', '');
+    let uid = externalRef.startsWith('sub:') ? externalRef.replace('sub:', '') : null;
+    if (!uid && payment.subscription && env.ASAAS_API_KEY) {
+      try {
+        const baseUrl = env.ASAAS_ENV === 'sandbox' ? 'https://sandbox.asaas.com/api/v3' : 'https://api.asaas.com/v3';
+        const headers = { 'Content-Type': 'application/json', 'access_token': env.ASAAS_API_KEY, 'User-Agent': 'Flashcards/1.0 (https://flashcards.camblu.org)' };
+        const subRes = await fetch(`${baseUrl}/subscriptions/${payment.subscription}`, { headers });
+        if (subRes.ok) {
+          const subData = await subRes.json();
+          if (subData.externalReference && subData.externalReference.startsWith('sub:')) {
+            uid = subData.externalReference.replace('sub:', '');
+          }
+        }
+      } catch (e) {}
+    }
+
+    if (uid) {
       await setFirebaseUserProClaim(serviceAccount, uid, false);
       await updateUserDocument(serviceAccount, uid, {
         'subscription.status': 'canceled'

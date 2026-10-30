@@ -234,6 +234,39 @@ export async function setFirebaseUserProClaim(serviceAccountConfig, uid, isPro =
 }
 
 /**
+ * Look up a Firebase User by email
+ */
+export async function getFirebaseUserByEmail(serviceAccountConfig, email) {
+  if (!email) return null;
+  const accessToken = await getGoogleAdminAccessToken(serviceAccountConfig);
+  const projectId = serviceAccountConfig.project_id;
+
+  const url = `https://identitytoolkit.googleapis.com/v1/projects/${projectId}/accounts:lookup`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ email: [email] })
+  });
+
+  if (!res.ok) {
+    return null;
+  }
+
+  const data = await res.json();
+  if (data.users && data.users.length > 0) {
+    return {
+      uid: data.users[0].localId,
+      email: data.users[0].email,
+      displayName: data.users[0].displayName
+    };
+  }
+  return null;
+}
+
+/**
  * Permanently delete a Firebase Auth User
  */
 export async function deleteFirebaseUser(serviceAccountConfig, uid) {

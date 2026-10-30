@@ -17,7 +17,7 @@ import {
   loadSlotsFromCloud
 } from './slot-manager.js';
 import { shareDeckToCloud } from './share-manager.js';
-import { getUserStatus, createProSubscription, buyExtraGeneration, deleteAccountAndCancelSubscription } from './backend-api.js';
+import { getUserStatus, createProSubscription, buyExtraGeneration, deleteAccountAndCancelSubscription, verifyPaymentStatus } from './backend-api.js';
 import { ROUTES } from './utils.js';
 
 let modalInitialized = false;
@@ -128,7 +128,17 @@ export function openProModal() {
   }
 }
 
+let paymentPollingInterval = null;
+
+export function stopProPaymentPolling() {
+  if (paymentPollingInterval) {
+    clearInterval(paymentPollingInterval);
+    paymentPollingInterval = null;
+  }
+}
+
 export function closeProModal() {
+  stopProPaymentPolling();
   const proModal = document.getElementById('pro-subscription-modal');
   if (proModal) {
     proModal.classList.add('hidden');
@@ -264,17 +274,38 @@ function injectModalHtml() {
           </button>
         </div>
 
-        <!-- Pix QR Code Result View (Hidden by default) -->
+        <!-- Awaiting Payment & Checkout Result View (Hidden by default) -->
         <div id="pro-pix-result" class="hidden space-y-3">
-          <div class="p-3 bg-white border border-gray-200 rounded-2xl inline-block mx-auto shadow-sm">
-            <img id="pro-pix-qr-img" class="w-48 h-48 mx-auto" alt="QR Code Pix" />
+          <div id="pro-qr-container" class="space-y-2">
+            <div class="p-3 bg-white border border-gray-200 rounded-2xl inline-block mx-auto shadow-sm">
+              <img id="pro-pix-qr-img" class="w-48 h-48 mx-auto" alt="QR Code Pix" />
+            </div>
+            <div class="text-xs text-gray-500">Escaneie o QR Code ou copie a chave Pix abaixo:</div>
+            <button id="pro-copy-pix-btn" class="m3-btn-expressive m3-btn-tonal w-full py-2.5 px-3 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
+              <span class="material-symbols-rounded text-base">content_copy</span>
+              <span>Copiar Chave Pix</span>
+            </button>
           </div>
-          <div class="text-xs text-gray-500">Escaneie o QR Code ou copie a chave Pix abaixo:</div>
-          <button id="pro-copy-pix-btn" class="m3-btn-expressive m3-btn-tonal w-full py-2.5 px-3 text-xs font-bold flex items-center justify-center gap-1.5">
-            <span class="material-symbols-rounded text-base">content_copy</span>
-            <span>Copiar Chave Pix</span>
+
+          <a id="pro-invoice-btn" href="#" target="_blank" rel="noopener noreferrer" class="m3-btn-expressive m3-btn-filled w-full py-2.5 px-3 text-xs font-bold flex items-center justify-center gap-1.5 shadow cursor-pointer">
+            <span class="material-symbols-rounded text-base">open_in_new</span>
+            <span>Abrir página de pagamento no Asaas</span>
+          </a>
+
+          <div id="pro-polling-status" class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-left space-y-1">
+            <div class="flex items-center gap-2 text-xs font-bold text-blue-900">
+              <span class="material-symbols-rounded text-base animate-spin text-blue-600">sync</span>
+              <span>Aguardando confirmação do pagamento...</span>
+            </div>
+            <p class="text-[11px] text-blue-700 leading-tight">
+              Assim que o pagamento for concluído na página do Asaas, seu plano Pro será ativado automaticamente.
+            </p>
+          </div>
+
+          <button id="pro-check-payment-btn" class="m3-btn-expressive m3-btn-tonal w-full py-2 px-3 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
+            <span class="material-symbols-rounded text-base">check_circle</span>
+            <span>Já realizei o pagamento</span>
           </button>
-          <a id="pro-invoice-link" href="#" target="_blank" rel="noopener noreferrer" class="block text-xs text-blue-600 underline font-medium mt-1">Pagar com Cartão no Asaas</a>
         </div>
 
         <button id="close-pro-modal-btn" class="mt-4 text-xs text-gray-400 hover:text-gray-600 underline block mx-auto">
@@ -408,6 +439,53 @@ function formatCpf(v) {
   return digits;
 }
 
+async function checkPaymentStatusNow(showFeedback = false) {
+  const checkBtn = document.getElementById('pro-check-payment-btn');
+  if (checkBtn && showFeedback) {
+    checkBtn.disabled = true;
+    checkBtn.innerHTML = '<span class="material-symbols-rounded text-base animate-spin mr-1">sync</span><span>Verificando...</span>';
+  }
+
+  try {
+    const result = await verifyPaymentStatus();
+    if (result.isPro) {
+      stopProPaymentPolling();
+      await refreshUserProStatus();
+      renderProModalContent();
+      renderModalContent();
+      return true;
+    } else if (showFeedback) {
+      alert('Pagamento ainda não confirmado pelo banco. Se realizou o pagamento há poucos segundos, aguarde um instante e verifique novamente.');
+    }
+  } catch (e) {
+    console.warn('Erro ao checar pagamento:', e);
+  } finally {
+    if (checkBtn && showFeedback) {
+      checkBtn.disabled = false;
+      checkBtn.innerHTML = '<span class="material-symbols-rounded text-base mr-1">check_circle</span><span>Já realizei o pagamento</span>';
+    }
+  }
+  return false;
+}
+
+function startProPaymentPolling() {
+  stopProPaymentPolling();
+  let attempts = 0;
+  const maxAttempts = 100; // ~5.5 minutes of polling every 3.5s
+
+  paymentPollingInterval = setInterval(async () => {
+    attempts++;
+    if (attempts > maxAttempts) {
+      stopProPaymentPolling();
+      return;
+    }
+    const confirmed = await checkPaymentStatusNow(false);
+    if (confirmed) {
+      stopProPaymentPolling();
+    }
+  }, 3500);
+}
+
 function bindProCheckoutBtn() {
   const btn = document.getElementById('pro-generate-pix-btn');
   const cpfInput = document.getElementById('pro-cpf-input');
@@ -428,37 +506,58 @@ function bindProCheckoutBtn() {
     }
 
     btn.disabled = true;
-    btn.textContent = 'Gerando cobrança...';
+    btn.innerHTML = '<span class="material-symbols-rounded text-base animate-spin mr-1.5">sync</span><span>Gerando cobrança...</span>';
 
     try {
       const result = await createProSubscription({
         cpfCnpj: cleanCpf
       });
 
+      // Switch to Awaiting Payment view
+      document.getElementById('pro-checkout-container')?.classList.add('hidden');
+      const pixResult = document.getElementById('pro-pix-result');
+      pixResult?.classList.remove('hidden');
+
+      const qrContainer = document.getElementById('pro-qr-container');
+      const qrImg = document.getElementById('pro-pix-qr-img');
+      const copyBtn = document.getElementById('pro-copy-pix-btn');
+      const invoiceBtn = document.getElementById('pro-invoice-btn');
+
       if (result.pix?.encodedImage) {
-        document.getElementById('pro-checkout-container')?.classList.add('hidden');
-        const pixResult = document.getElementById('pro-pix-result');
-        pixResult?.classList.remove('hidden');
-
-        const qrImg = document.getElementById('pro-pix-qr-img');
+        if (qrContainer) qrContainer.classList.remove('hidden');
         if (qrImg) qrImg.src = `data:image/png;base64,${result.pix.encodedImage}`;
-
-        const copyBtn = document.getElementById('pro-copy-pix-btn');
         if (copyBtn) {
           copyBtn.onclick = () => {
             navigator.clipboard.writeText(result.pix.payload);
-            copyBtn.textContent = 'Copiado!';
-            setTimeout(() => { copyBtn.innerHTML = '<span class="material-symbols-rounded text-base">content_copy</span><span>Copiar Chave Pix</span>'; }, 2000);
+            copyBtn.innerHTML = '<span class="material-symbols-rounded text-base">check</span><span>Copiado!</span>';
+            setTimeout(() => {
+              copyBtn.innerHTML = '<span class="material-symbols-rounded text-base">content_copy</span><span>Copiar Chave Pix</span>';
+            }, 2000);
           };
         }
-
-        const invoiceLink = document.getElementById('pro-invoice-link');
-        if (invoiceLink && result.invoiceUrl) {
-          invoiceLink.href = result.invoiceUrl;
-        }
-      } else if (result.invoiceUrl) {
-        window.open(result.invoiceUrl, '_blank');
+      } else {
+        if (qrContainer) qrContainer.classList.add('hidden');
       }
+
+      if (result.invoiceUrl) {
+        if (invoiceBtn) {
+          invoiceBtn.href = result.invoiceUrl;
+          invoiceBtn.classList.remove('hidden');
+        }
+        window.open(result.invoiceUrl, '_blank');
+      } else if (invoiceBtn) {
+        invoiceBtn.classList.add('hidden');
+      }
+
+      // Bind check payment button
+      const checkBtn = document.getElementById('pro-check-payment-btn');
+      if (checkBtn) {
+        checkBtn.onclick = () => checkPaymentStatusNow(true);
+      }
+
+      // Start automatic polling
+      startProPaymentPolling();
+
     } catch (e) {
       alert(e.message || 'Erro ao gerar assinatura. Tente novamente.');
       btn.disabled = false;
@@ -482,6 +581,7 @@ export function renderProModalContent() {
   const lifetime = isLifetime(currentUser);
 
   if (pro) {
+    stopProPaymentPolling();
     container.innerHTML = `
       <div class="p-3.5 bg-green-50 border border-green-200 rounded-2xl text-xs text-green-800 font-bold flex items-center justify-center gap-2">
         <span class="material-symbols-rounded text-lg text-green-600">verified</span>
