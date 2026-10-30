@@ -7,15 +7,20 @@ function getAsaasBaseUrl(isProduction = true) {
   return isProduction ? 'https://api.asaas.com/v3' : 'https://sandbox.asaas.com/api/v3';
 }
 
+function getAsaasHeaders(apiKey) {
+  return {
+    'Content-Type': 'application/json',
+    'access_token': apiKey,
+    'User-Agent': 'Flashcards/1.0 (https://flashcards.camblu.org)'
+  };
+}
+
 /**
  * Find or create Asaas Customer
  */
 export async function getOrCreateCustomer({ name, email, cpfCnpj = null, apiKey, isProduction = true }) {
   const baseUrl = getAsaasBaseUrl(isProduction);
-  const headers = {
-    'Content-Type': 'application/json',
-    'access_token': apiKey
-  };
+  const headers = getAsaasHeaders(apiKey);
 
   // Search existing customer by email
   const searchUrl = `${baseUrl}/customers?email=${encodeURIComponent(email)}`;
@@ -52,10 +57,7 @@ export async function getOrCreateCustomer({ name, email, cpfCnpj = null, apiKey,
  */
 export async function createSubscription({ customerId, uid, apiKey, isProduction = true, value = 5.00 }) {
   const baseUrl = getAsaasBaseUrl(isProduction);
-  const headers = {
-    'Content-Type': 'application/json',
-    'access_token': apiKey
-  };
+  const headers = getAsaasHeaders(apiKey);
 
   // Today + 1 day for first due date
   const tomorrow = new Date();
@@ -116,10 +118,7 @@ export async function createSubscription({ customerId, uid, apiKey, isProduction
  */
 export async function createExtraGenerationPayment({ customerId, uid, apiKey, isProduction = true, value = 0.99 }) {
   const baseUrl = getAsaasBaseUrl(isProduction);
-  const headers = {
-    'Content-Type': 'application/json',
-    'access_token': apiKey
-  };
+  const headers = getAsaasHeaders(apiKey);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -163,10 +162,7 @@ export async function createExtraGenerationPayment({ customerId, uid, apiKey, is
 export async function getSubscriptionDetails({ subscriptionId, apiKey, isProduction = true }) {
   if (!subscriptionId) return null;
   const baseUrl = getAsaasBaseUrl(isProduction);
-  const headers = {
-    'Content-Type': 'application/json',
-    'access_token': apiKey
-  };
+  const headers = getAsaasHeaders(apiKey);
 
   try {
     const subRes = await fetch(`${baseUrl}/subscriptions/${subscriptionId}`, { headers });
@@ -206,10 +202,7 @@ export async function getSubscriptionDetails({ subscriptionId, apiKey, isProduct
 export async function cancelSubscription({ subscriptionId, apiKey, isProduction = true }) {
   if (!subscriptionId) return false;
   const baseUrl = getAsaasBaseUrl(isProduction);
-  const headers = {
-    'Content-Type': 'application/json',
-    'access_token': apiKey
-  };
+  const headers = getAsaasHeaders(apiKey);
 
   const res = await fetch(`${baseUrl}/subscriptions/${subscriptionId}`, {
     method: 'DELETE',

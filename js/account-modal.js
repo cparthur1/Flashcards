@@ -5,7 +5,7 @@
  */
 
 import { auth, signInWithGoogle, signOutUser, onAuthChange } from './firebase-client.js';
-import { isLifetime, isUserPro, openProModal } from './explore-modal.js';
+import { isLifetime, isUserPro, openProModal, refreshUserProStatus } from './explore-modal.js';
 import { getSubscriptionDetails, cancelSubscriptionOnly, deleteAccountAndCancelSubscription } from './backend-api.js';
 
 let accountModalInitialized = false;
@@ -100,6 +100,7 @@ async function renderAccountModalContent() {
         const loggedUser = await signInWithGoogle();
         if (loggedUser) {
           subDetailsCache = null;
+          await refreshUserProStatus(loggedUser);
           renderAccountModalContent();
         }
       } catch (err) {
@@ -378,6 +379,11 @@ export function openAccountModal() {
   if (modal) {
     modal.classList.remove('hidden');
     modal.classList.add('flex');
+  }
+  if (auth.currentUser) {
+    refreshUserProStatus(auth.currentUser).then(() => {
+      renderAccountModalContent();
+    });
   }
 }
 

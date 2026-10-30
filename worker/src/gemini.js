@@ -16,7 +16,7 @@ const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
  * @param {string} params.apiKey - Internal server Gemini API key
  */
 export async function callGemini({
-  model = 'gemini-3.8-flash',
+  model = 'gemini-flash-latest',
   contents,
   systemInstruction,
   generationConfig,
@@ -92,10 +92,10 @@ export async function callGemini({
       }
     }
 
-    // Fallback 2: Se erro 404 ou 400 persistir, tenta fallback para gemini-3.8-flash
-    if ((response.status === 404 || response.status === 400) && model !== 'gemini-3.8-flash') {
-      console.warn(`[Gemini Fallback] Tentando fallback para gemini-3.8-flash...`);
-      const fallbackUrl = `${GEMINI_API_BASE}/models/gemini-3.8-flash:${action}${queryString}`;
+    // Fallback 2: Se erro 404 ou 400 persistir, tenta fallback para gemini-flash-latest
+    if ((response.status === 404 || response.status === 400) && model !== 'gemini-flash-latest') {
+      console.warn(`[Gemini Fallback] Tentando fallback para gemini-flash-latest...`);
+      const fallbackUrl = `${GEMINI_API_BASE}/models/gemini-flash-latest:${action}${queryString}`;
       const cleanBody = { ...body };
       if (cleanBody.generationConfig?.thinkingConfig) {
         cleanBody.generationConfig = { ...cleanBody.generationConfig };

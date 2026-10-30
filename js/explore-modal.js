@@ -37,7 +37,27 @@ export function isLifetime(user) {
 export function isUserPro(user = (currentUser || auth.currentUser), status = userProStatus) {
   if (!user) return false;
   if (isLifetime(user)) return true;
-  return Boolean(user.pro || status?.isPro || status?.subscription?.status === 'active');
+  // Crucial: ensure status actually belongs to this specific user UID!
+  if (status && status.uid && status.uid !== user.uid) {
+    return false;
+  }
+  return Boolean(status?.isPro || status?.subscription?.status === 'active');
+}
+
+/**
+ * Refreshes Pro status from backend for a specific user
+ */
+export async function refreshUserProStatus(user = (currentUser || auth.currentUser)) {
+  if (!user) {
+    userProStatus = null;
+    return null;
+  }
+  if (isLifetime(user)) {
+    userProStatus = { uid: user.uid, isPro: true, isLifetimePro: true };
+    return userProStatus;
+  }
+  userProStatus = await getUserStatus().catch(() => null);
+  return userProStatus;
 }
 
 /**
@@ -52,11 +72,15 @@ export function initExploreModal() {
 
   // Listen to Auth State
   onAuthChange(async (user) => {
+    const prevUid = currentUser?.uid;
     currentUser = user;
     if (user) {
+      if (prevUid !== user.uid) {
+        userProStatus = isLifetime(user) ? { uid: user.uid, isPro: true, isLifetimePro: true } : null;
+      }
       try {
+        await refreshUserProStatus(user);
         await loadSlotsFromCloud();
-        userProStatus = await getUserStatus().catch(() => null);
       } catch (e) {
         console.warn('Erro ao atualizar dados Pro do usuário:', e);
       }
