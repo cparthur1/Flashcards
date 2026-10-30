@@ -3,7 +3,7 @@
  * Copyright (C) 2026 Arthur <arthur.paludo.c@gmail.com>
  */
 
-const CACHE_NAME = 'flashcards-v13.4'; // Increment version to trigger update
+const CACHE_NAME = 'flashcards-v13.5'; // Increment version to trigger update
 
 const BASE_PATH = self.registration && self.registration.scope 
   ? new URL(self.registration.scope).pathname.replace(/\/$/, '') 
@@ -22,7 +22,6 @@ const RAW_ASSETS = [
   '/assets/fonts/roboto-flex.woff2',
   '/assets/vendor/material-web.bundle.js',
   '/assets/vendor/purify.min.js',
-  '/assets/audio/unlock.mp3',
   '/js/index.js',
   '/js/game.js',
   '/js/account-modal.js',

@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /**
  * js/engine/pro-unlock-celebration.js
- * Fortnite Battle Pass style celebratory unlock animation for Flashcards Pro.
+ * Celebratory unlock animation for Flashcards Pro (Material Design 3).
  * Features:
- * - 2-phase state transformation: Silver/Cool Cyan -> Blinding Shockwave -> 24K Gold & Radiant Sunburst
- * - 3D faceted metallic shield & star badge SVG
+ * - 2-phase state transformation: Silver/Cool Cyan -> Radiant 24K Gold & Sunburst
+ * - Sleek Flashcards PRO Cards & Rosette Medal emblem SVG
  * - 360-degree canvas golden diamond and sparkle particle burst
- * - Massive 3D slam typography ("FLASHCARDS PRO - DESBLOQUEADO!")
- * - Audio fanfare and tactile haptic vibration
+ * - 3D slam typography ("FLASHCARDS PRO - DESBLOQUEADO!")
+ * - Tactile haptic vibration (silent, without background audio)
  */
 
 import { triggerHaptic } from './effects.js';
@@ -15,7 +15,7 @@ import { triggerHaptic } from './effects.js';
 let isCelebrationActive = false;
 
 /**
- * Triggers the full-screen Fortnite Battle Pass style Pro Unlock animation
+ * Triggers the full-screen Pro Unlock celebration animation
  * @param {object} options
  * @param {string} [options.title="DESBLOQUEADO!"]
  * @param {string} [options.subtitle="FLASHCARDS PRO"]
@@ -30,19 +30,6 @@ export function triggerProUnlockCelebration(options = {}) {
     subtitle = 'FLASHCARDS PRO',
     onComplete = null
   } = options;
-
-  // Determine relative assets root path
-  const isPagesSubdir = typeof window !== 'undefined' && window.location.pathname.includes('/pages/');
-  const rootPath = isPagesSubdir ? '../' : './';
-
-  // Play fanfare sound
-  try {
-    const audio = new Audio(`${rootPath}assets/audio/unlock.mp3`);
-    audio.volume = 0.85;
-    audio.play().catch(e => {
-      console.log('[Pro Unlock] Audio autoplay aguardando interação do usuário:', e.message);
-    });
-  } catch (e) {}
 
   // Tactile initial haptic
   try {
@@ -328,37 +315,60 @@ export function triggerProUnlockCelebration(options = {}) {
         <div class="f-badge-silver">
           <svg width="210" height="210" viewBox="0 0 200 200">
             <defs>
-              <linearGradient id="f-silver-face-light" x1="0%" y1="0%" x2="100%" y2="100%">
+              <filter id="f-shadow-silver" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.35"/>
+              </filter>
+              <linearGradient id="f-card-silver-bg" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stop-color="#ffffff"/>
-                <stop offset="50%" stop-color="#cbd5e1"/>
+                <stop offset="50%" stop-color="#f1f5f9"/>
+                <stop offset="100%" stop-color="#cbd5e1"/>
+              </linearGradient>
+              <linearGradient id="f-card-silver-border" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff"/>
                 <stop offset="100%" stop-color="#94a3b8"/>
               </linearGradient>
-              <linearGradient id="f-silver-face-dark" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#94a3b8"/>
-                <stop offset="50%" stop-color="#64748b"/>
-                <stop offset="100%" stop-color="#475569"/>
+              <linearGradient id="f-rosette-silver" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="50%" stop-color="#cbd5e1"/>
+                <stop offset="100%" stop-color="#64748b"/>
               </linearGradient>
             </defs>
-            <g>
-              <path d="M 88 170 C 45 168 12 135 15 85 C 16 75 22 72 28 74 C 34 76 35 84 37 92 C 40 68 48 62 55 63 C 62 64 63 73 63 82 C 68 58 78 54 85 55 C 90 56 91 63 88 74 C 70 120 78 145 88 170 Z" fill="url(#f-silver-face-light)" stroke="#475569" stroke-width="1.5"/>
-              <path d="M 112 170 C 155 168 188 135 185 85 C 184 75 178 72 172 74 C 166 76 165 84 163 92 C 160 68 152 62 145 63 C 138 64 137 73 137 82 C 132 58 122 54 115 55 C 110 56 109 63 112 74 C 130 120 122 145 112 170 Z" fill="url(#f-silver-face-dark)" stroke="#334155" stroke-width="1.5"/>
-              <polygon points="100,24 152,55 139,128 100,166 61,128 48,55" fill="url(#f-silver-face-dark)" stroke="#334155" stroke-width="2"/>
-              <polygon points="100,30 146,58 134,124 100,158 66,124 54,58" fill="url(#f-silver-face-light)"/>
-              <polygon points="100,30 100,158 66,124 54,58" fill="#000" opacity="0.12"/>
-              <polygon points="100,40 137,63 127,117 100,146 73,117 63,63" fill="url(#f-silver-face-dark)"/>
-              <polygon points="100,40 100,146 73,117 63,63" fill="#000" opacity="0.18"/>
-              <g>
-                <polygon points="100,56 100,95 110,82" fill="#ffffff"/>
-                <polygon points="100,56 100,95 90,82" fill="#94a3b8"/>
-                <polygon points="135,84 100,95 110,82" fill="#f1f5f9"/>
-                <polygon points="135,84 100,95 116,101" fill="#64748b"/>
-                <polygon points="121,125 100,95 116,101" fill="#cbd5e1"/>
-                <polygon points="121,125 100,95 100,111" fill="#475569"/>
-                <polygon points="79,125 100,95 100,111" fill="#94a3b8"/>
-                <polygon points="79,125 100,95 84,101" fill="#334155"/>
-                <polygon points="65,84 100,95 84,101" fill="#64748b"/>
-                <polygon points="65,84 100,95 90,82" fill="#cbd5e1"/>
+            
+            <!-- Back Card Left -->
+            <g transform="rotate(-12 100 95)">
+              <rect x="54" y="34" width="92" height="122" rx="16" fill="#64748b" opacity="0.4" filter="url(#f-shadow-silver)"/>
+              <rect x="54" y="34" width="92" height="122" rx="16" fill="url(#f-card-silver-bg)" opacity="0.6"/>
+              <rect x="54" y="34" width="92" height="122" rx="16" fill="none" stroke="url(#f-card-silver-border)" stroke-width="1.5" opacity="0.7"/>
+            </g>
+
+            <!-- Back Card Right -->
+            <g transform="rotate(12 100 95)">
+              <rect x="54" y="34" width="92" height="122" rx="16" fill="#64748b" opacity="0.4" filter="url(#f-shadow-silver)"/>
+              <rect x="54" y="34" width="92" height="122" rx="16" fill="url(#f-card-silver-bg)" opacity="0.75"/>
+              <rect x="54" y="34" width="92" height="122" rx="16" fill="none" stroke="url(#f-card-silver-border)" stroke-width="1.5" opacity="0.8"/>
+            </g>
+
+            <!-- Front Main Card -->
+            <g filter="url(#f-shadow-silver)">
+              <rect x="52" y="32" width="96" height="126" rx="18" fill="url(#f-card-silver-bg)"/>
+              <rect x="52" y="32" width="96" height="126" rx="18" fill="none" stroke="url(#f-card-silver-border)" stroke-width="2"/>
+              <rect x="57" y="37" width="86" height="116" rx="14" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+
+              <!-- Mini lines imitating flashcard content -->
+              <rect x="68" y="47" width="24" height="4" rx="2" fill="#94a3b8" opacity="0.6"/>
+              <circle cx="124" cy="49" r="3" fill="#94a3b8" opacity="0.6"/>
+
+              <!-- Center Pro Rosette Medal -->
+              <g transform="translate(100, 84) scale(2.5) translate(-12, -12)">
+                <path d="M12,23.3L8.65,20H4V15.35L0.7,12L4,8.65V4H8.65L12,0.7L15.35,4H20V8.65L23.3,12L20,15.35V20H15.35L12,23.3Z" fill="url(#f-rosette-silver)" stroke="#475569" stroke-width="0.5"/>
+                <circle cx="12" cy="12" r="7.5" fill="#f8fafc" stroke="#64748b" stroke-width="0.5"/>
+                <path d="M9.08,16.25L12,14.48l2.93,1.78l-0.78-3.33l2.6-2.25L13.33,10.4L12,7.25L10.68,10.4L7.25,10.68l2.6,2.25L9.08,16.25Z" fill="url(#f-rosette-silver)"/>
               </g>
+
+              <!-- PRO Pill Badge -->
+              <rect x="74" y="122" width="52" height="22" rx="11" fill="#334155"/>
+              <rect x="75" y="123" width="50" height="20" rx="10" fill="url(#f-card-silver-bg)"/>
+              <text x="100" y="137.5" text-anchor="middle" font-size="11" font-weight="900" font-family="system-ui, -apple-system, sans-serif" letter-spacing="2" fill="#1e293b">PRO</text>
             </g>
           </svg>
         </div>
@@ -367,45 +377,63 @@ export function triggerProUnlockCelebration(options = {}) {
         <div class="f-badge-gold">
           <svg width="210" height="210" viewBox="0 0 200 200">
             <defs>
-              <linearGradient id="f-gold-bright" x1="0%" y1="0%" x2="100%" y2="100%">
+              <filter id="f-shadow-gold" x="-25%" y="-25%" width="150%" height="150%">
+                <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#78350f" flood-opacity="0.45"/>
+              </filter>
+              <linearGradient id="f-card-gold-bg" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stop-color="#fffbeb"/>
+                <stop offset="40%" stop-color="#fef08a"/>
+                <stop offset="75%" stop-color="#fde047"/>
+                <stop offset="100%" stop-color="#f59e0b"/>
+              </linearGradient>
+              <linearGradient id="f-card-gold-border" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="50%" stop-color="#facc15"/>
+                <stop offset="100%" stop-color="#b45309"/>
+              </linearGradient>
+              <linearGradient id="f-rosette-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff"/>
                 <stop offset="30%" stop-color="#fde047"/>
                 <stop offset="70%" stop-color="#f59e0b"/>
-                <stop offset="100%" stop-color="#d97706"/>
-              </linearGradient>
-              <linearGradient id="f-gold-dark" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#f59e0b"/>
-                <stop offset="40%" stop-color="#b45309"/>
-                <stop offset="100%" stop-color="#78350f"/>
-              </linearGradient>
-              <linearGradient id="f-wing-gold" x1="0%" y1="100%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#d97706"/>
-                <stop offset="50%" stop-color="#fde047"/>
-                <stop offset="100%" stop-color="#ffffff"/>
+                <stop offset="100%" stop-color="#b45309"/>
               </linearGradient>
             </defs>
-            <g>
-              <path d="M 88 170 C 45 168 12 135 15 85 C 16 75 22 72 28 74 C 34 76 35 84 37 92 C 40 68 48 62 55 63 C 62 64 63 73 63 82 C 68 58 78 54 85 55 C 90 56 91 63 88 74 C 70 120 78 145 88 170 Z" fill="url(#f-wing-gold)" stroke="#92400e" stroke-width="1.5"/>
-              <path d="M 88 170 C 58 165 32 140 32 98 C 34 115 48 135 68 148 C 76 153 84 162 88 170 Z" fill="url(#f-gold-dark)" opacity="0.6"/>
-              <path d="M 112 170 C 155 168 188 135 185 85 C 184 75 178 72 172 74 C 166 76 165 84 163 92 C 160 68 152 62 145 63 C 138 64 137 73 137 82 C 132 58 122 54 115 55 C 110 56 109 63 112 74 C 130 120 122 145 112 170 Z" fill="url(#f-wing-gold)" stroke="#78350f" stroke-width="1.5"/>
-              <path d="M 112 170 C 142 165 168 140 168 98 C 166 115 152 135 132 148 C 124 153 116 162 112 170 Z" fill="url(#f-gold-dark)" opacity="0.8"/>
-              <polygon points="100,24 152,55 139,128 100,166 61,128 48,55" fill="url(#f-gold-dark)" stroke="#451a03" stroke-width="2"/>
-              <polygon points="100,30 146,58 134,124 100,158 66,124 54,58" fill="url(#f-gold-bright)"/>
-              <polygon points="100,30 100,158 66,124 54,58" fill="#78350f" opacity="0.22"/>
-              <polygon points="100,40 137,63 127,117 100,146 73,117 63,63" fill="url(#f-gold-dark)"/>
-              <polygon points="100,40 100,146 73,117 63,63" fill="#000" opacity="0.25"/>
-              <g>
-                <polygon points="100,56 100,95 110,82" fill="#ffffff"/>
-                <polygon points="100,56 100,95 90,82" fill="#facc15"/>
-                <polygon points="135,84 100,95 110,82" fill="#fef08a"/>
-                <polygon points="135,84 100,95 116,101" fill="#ca8a04"/>
-                <polygon points="121,125 100,95 116,101" fill="#eab308"/>
-                <polygon points="121,125 100,95 100,111" fill="#854d0e"/>
-                <polygon points="79,125 100,95 100,111" fill="#ca8a04"/>
-                <polygon points="79,125 100,95 84,101" fill="#713f12"/>
-                <polygon points="65,84 100,95 84,101" fill="#a16207"/>
-                <polygon points="65,84 100,95 90,82" fill="#fef9c3"/>
+
+            <!-- Back Card Left -->
+            <g transform="rotate(-12 100 95)">
+              <rect x="54" y="34" width="92" height="122" rx="16" fill="#78350f" opacity="0.4" filter="url(#f-shadow-gold)"/>
+              <rect x="54" y="34" width="92" height="122" rx="16" fill="url(#f-card-gold-bg)" opacity="0.75"/>
+              <rect x="54" y="34" width="92" height="122" rx="16" fill="none" stroke="url(#f-card-gold-border)" stroke-width="1.8" opacity="0.85"/>
+            </g>
+
+            <!-- Back Card Right -->
+            <g transform="rotate(12 100 95)">
+              <rect x="54" y="34" width="92" height="122" rx="16" fill="#78350f" opacity="0.4" filter="url(#f-shadow-gold)"/>
+              <rect x="54" y="34" width="92" height="122" rx="16" fill="url(#f-card-gold-bg)" opacity="0.85"/>
+              <rect x="54" y="34" width="92" height="122" rx="16" fill="none" stroke="url(#f-card-gold-border)" stroke-width="1.8" opacity="0.95"/>
+            </g>
+
+            <!-- Front Main Card -->
+            <g filter="url(#f-shadow-gold)">
+              <rect x="52" y="32" width="96" height="126" rx="18" fill="url(#f-card-gold-bg)"/>
+              <rect x="52" y="32" width="96" height="126" rx="18" fill="none" stroke="url(#f-card-gold-border)" stroke-width="2.5"/>
+              <rect x="57" y="37" width="86" height="116" rx="14" fill="none" stroke="#ffffff" stroke-width="1.2" opacity="0.75"/>
+
+              <!-- Mini lines imitating flashcard content -->
+              <rect x="68" y="47" width="24" height="4" rx="2" fill="#b45309" opacity="0.4"/>
+              <circle cx="124" cy="49" r="3" fill="#b45309" opacity="0.4"/>
+
+              <!-- Center Pro Rosette Medal -->
+              <g transform="translate(100, 84) scale(2.5) translate(-12, -12)">
+                <path d="M12,23.3L8.65,20H4V15.35L0.7,12L4,8.65V4H8.65L12,0.7L15.35,4H20V8.65L23.3,12L20,15.35V20H15.35L12,23.3Z" fill="url(#f-rosette-gold)" stroke="#78350f" stroke-width="0.5"/>
+                <circle cx="12" cy="12" r="7.5" fill="#fffbeb" stroke="#b45309" stroke-width="0.5"/>
+                <path d="M9.08,16.25L12,14.48l2.93,1.78l-0.78-3.33l2.6-2.25L13.33,10.4L12,7.25L10.68,10.4L7.25,10.68l2.6,2.25L9.08,16.25Z" fill="url(#f-rosette-gold)"/>
               </g>
+
+              <!-- PRO Pill Badge -->
+              <rect x="74" y="122" width="52" height="22" rx="11" fill="#78350f"/>
+              <rect x="75" y="123" width="50" height="20" rx="10" fill="url(#f-card-gold-bg)"/>
+              <text x="100" y="137.5" text-anchor="middle" font-size="11" font-weight="900" font-family="system-ui, -apple-system, sans-serif" letter-spacing="2" fill="#78350f">PRO</text>
             </g>
           </svg>
         </div>
