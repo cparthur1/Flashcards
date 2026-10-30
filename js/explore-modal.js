@@ -146,10 +146,30 @@ export function closeProModal() {
   }
 }
 
+export function openExtraDeckModal() {
+  initExploreModal();
+  renderExtraDeckModalContent();
+  const modal = document.getElementById('extra-deck-modal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+}
+
+export function closeExtraDeckModal() {
+  const modal = document.getElementById('extra-deck-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+}
+
 // Global expose for triggers across any page
 if (typeof window !== 'undefined') {
   window.flashcardsOpenProModal = openProModal;
   window.flashcardsCloseProModal = closeProModal;
+  window.flashcardsOpenExtraDeckModal = openExtraDeckModal;
+  window.flashcardsCloseExtraDeckModal = closeExtraDeckModal;
 }
 
 /**
@@ -271,6 +291,34 @@ function injectModalHtml() {
         </button>
       </div>
     </div>
+
+    <!-- EXTRA DECK PURCHASE MODAL (R$ 0,99) -->
+    <div id="extra-deck-modal" class="hidden fixed inset-0 modal-overlay z-[120] items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm">
+      <div class="m3-dialog-card w-full max-w-md bg-[var(--md-sys-color-surface-container-lowest)] rounded-[28px] shadow-2xl border border-[var(--md-sys-color-outline-variant)] p-6 text-center animate-fadeIn max-h-[92vh] overflow-y-auto custom-scrollbar">
+        <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center mx-auto mb-3">
+          <span class="material-symbols-rounded text-2xl">add_circle</span>
+        </div>
+        <h2 class="text-xl font-bold text-[var(--md-sys-color-on-surface)] mb-1">Geração de Baralho Extra</h2>
+        <p class="text-xs text-[var(--md-sys-color-on-surface-variant)] mb-4">Gere um baralho adicional usando Gemini High Thinking sem aguardar a renovação mensal.</p>
+
+        <div class="mb-4">
+          <span class="text-3xl font-extrabold text-[var(--md-sys-color-primary)]">R$ 0,99</span>
+          <span class="text-xs text-[var(--md-sys-color-on-surface-variant)]">/ baralho</span>
+        </div>
+
+        <div id="extra-deck-checkout-container" class="space-y-3">
+          <div id="extra-deck-form-loading" class="flex flex-col items-center justify-center p-6 text-gray-500 text-xs gap-2">
+            <span class="material-symbols-rounded text-2xl animate-spin text-blue-600">sync</span>
+            <span>Carregando formulário seguro do Stripe...</span>
+          </div>
+          <div id="extra-deck-checkout-form"></div>
+        </div>
+
+        <button id="close-extra-deck-modal-btn" class="mt-4 text-xs text-gray-400 hover:text-gray-600 underline block mx-auto cursor-pointer">
+          Cancelar
+        </button>
+      </div>
+    </div>
   `;
   document.body.appendChild(container);
 }
@@ -281,6 +329,7 @@ function injectModalHtml() {
 function attachModalEventListeners() {
   document.getElementById('close-explore-modal-btn')?.addEventListener('click', closeExploreModal);
   document.getElementById('close-pro-modal-btn')?.addEventListener('click', closeProModal);
+  document.getElementById('close-extra-deck-modal-btn')?.addEventListener('click', closeExtraDeckModal);
 
   // File Upload inside modal
   const uploadBtn = document.getElementById('modal-upload-btn');
@@ -718,6 +767,145 @@ export function renderProModalContent() {
     </div>
   `;
   mountStripeEmbeddedForm();
+}
+
+/**
+ * Mount Stripe Embedded Checkout Form for Extra Deck Generation (R$ 0,99)
+ */
+let activeExtraDeckForm = null;
+
+async function mountExtraDeckEmbeddedForm() {
+  const container = document.getElementById('extra-deck-checkout-form');
+  const loadingEl = document.getElementById('extra-deck-form-loading');
+  if (!container) return;
+
+  const publishableKey = window.STRIPE_PUBLISHABLE_KEY || 'pk_live_51UWEHsRynl9tIFFYm32d9vyXApB9FLeUcI5oNBuaCwkkxA0yc0pAVjKioRBO0Zy8j7CVQU6LSp09mM5Lss3EaDNg00qvRJ4VIT';
+
+  if (!window.Stripe) {
+    if (loadingEl) {
+      loadingEl.innerHTML = `
+        <span class="material-symbols-rounded text-2xl text-red-500">error</span>
+        <span class="text-xs text-red-600 font-medium">Stripe.js não pôde ser carregado. Verifique sua conexão.</span>
+      `;
+    }
+    return;
+  }
+
+  try {
+    const stripe = window.Stripe(publishableKey);
+
+    const appearance = {
+      "theme": "flat",
+      "labels": "auto",
+      "inputs": "spaced",
+      "variables": {
+        "borderRadius": "4px",
+        "colorBackground": "#ffffff",
+        "colorDanger": "#df1b41",
+        "colorPrimary": "#3b82f7",
+        "colorSuccess": "#00c853",
+        "colorText": "#30313d",
+        "fontFamily": "Open Sans",
+        "fontSizeBase": "16px",
+        "spacingUnit": "4px"
+      }
+    };
+
+    const token = await getCurrentUserToken().catch(() => null);
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const apiEndpoint = (typeof BACKEND_URL !== 'undefined' && BACKEND_URL)
+      ? `${BACKEND_URL}/api/create-extra-deck-session`
+      : '/api/create-extra-deck-session';
+
+    const clientSecret = fetch(apiEndpoint, { method: 'POST', headers })
+      .then((response) => response.json())
+      .then((json) => {
+        if (json.error) {
+          throw new Error(json.message || json.error);
+        }
+        return json.client_secret;
+      });
+
+    const checkout = await stripe.initCheckoutFormSdk({ clientSecret, appearance });
+
+    if (loadingEl) loadingEl.classList.add('hidden');
+
+    const form = checkout.createForm({ layout: 'expanded' });
+    activeExtraDeckForm = form;
+    form.mount('#extra-deck-checkout-form');
+
+    const loadActionsResult = await checkout.loadActions();
+    if (loadActionsResult.type === 'success') {
+      form.on('confirm', async (event) => {
+        try {
+          const actionResult = await loadActionsResult.actions.confirm({ formConfirmEvent: event });
+          console.log('[Stripe Extra Deck] Confirmação:', actionResult);
+          setTimeout(async () => {
+            await refreshUserProStatus();
+            alert('Pagamento confirmado com sucesso! 1 geração extra de baralho com IA foi adicionada à sua conta.');
+            closeExtraDeckModal();
+          }, 2000);
+        } catch (error) {
+          console.error('Payment confirmation error:', error);
+        }
+      });
+    }
+  } catch (err) {
+    console.error('[Stripe Extra Deck Form Error]:', err);
+    if (loadingEl) {
+      loadingEl.classList.remove('hidden');
+      loadingEl.innerHTML = `
+        <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-left space-y-1">
+          <div class="flex items-center gap-1.5 text-xs font-bold text-amber-900">
+            <span class="material-symbols-rounded text-base text-amber-600">info</span>
+            <span>Erro ao carregar checkout</span>
+          </div>
+          <p class="text-[11px] text-amber-800 leading-tight">
+            ${err.message || 'Não foi possível inicializar o checkout.'}
+          </p>
+        </div>
+      `;
+    }
+  }
+}
+
+export function renderExtraDeckModalContent() {
+  const container = document.getElementById('extra-deck-checkout-container');
+  if (!container) return;
+
+  if (!currentUser) {
+    container.innerHTML = `
+      <div class="space-y-3">
+        <button id="extra-google-login-btn" class="m3-btn-expressive m3-btn-filled w-full py-3.5 px-4 font-bold text-sm flex items-center justify-center gap-2.5 shadow bg-blue-600 hover:bg-blue-700 text-white cursor-pointer transition">
+          <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="#ffffff"><path fill="#ffffff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#ffffff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#ffffff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#ffffff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+          <span>Fazer Login com Google</span>
+        </button>
+        <p class="text-[11px] text-[var(--md-sys-color-on-surface-variant)]">Faça login com sua conta Google para comprar a geração extra.</p>
+      </div>
+    `;
+    document.getElementById('extra-google-login-btn')?.addEventListener('click', async () => {
+      try {
+        const user = await signInWithGoogle();
+        if (user) {
+          renderExtraDeckModalContent();
+        }
+      } catch (e) {
+        alert('Erro ao autenticar com Google.');
+      }
+    });
+    return;
+  }
+
+  container.innerHTML = `
+    <div id="extra-deck-form-loading" class="flex flex-col items-center justify-center p-6 text-gray-500 text-xs gap-2">
+      <span class="material-symbols-rounded text-2xl animate-spin text-blue-600">sync</span>
+      <span>Carregando formulário seguro do Stripe...</span>
+    </div>
+    <div id="extra-deck-checkout-form"></div>
+  `;
+  mountExtraDeckEmbeddedForm();
 }
 
 /**

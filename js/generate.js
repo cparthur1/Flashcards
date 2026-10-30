@@ -1563,6 +1563,13 @@ Retorne EXCLUSIVAMENTE o array JSON ([]) contendo os flashcards estruturados con
 
             if (!res.ok) {
                 const errData = await res.json().catch(() => ({}));
+                if (errData.error === 'quota_exceeded') {
+                    if (confirm("Você atingiu o limite mensal de baralhos incluídos no Pro.\n\nDeseja adquirir 1 geração de baralho extra por R$ 0,99 agora?")) {
+                        if (typeof window.flashcardsOpenExtraDeckModal === 'function') {
+                            window.flashcardsOpenExtraDeckModal();
+                        }
+                    }
+                }
                 throw new Error(errData.message || `Erro no servidor (${res.status})`);
             }
 
@@ -1815,6 +1822,13 @@ ${JSON.stringify(localCards, null, 2)}`;
 
             if (!res.ok) {
                 const errData = await res.json().catch(() => ({}));
+                if (errData.error === 'quota_exceeded') {
+                    if (confirm("Você atingiu o limite mensal de baralhos incluídos no Pro.\n\nDeseja adquirir 1 geração de baralho extra por R$ 0,99 agora?")) {
+                        if (typeof window.flashcardsOpenExtraDeckModal === 'function') {
+                            window.flashcardsOpenExtraDeckModal();
+                        }
+                    }
+                }
                 throw new Error(errData.message || `Erro no servidor (${res.status})`);
             }
 

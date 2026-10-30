@@ -211,6 +211,13 @@ async function renderAccountModalContent() {
             </div>
           `}
 
+          <!-- Botão Comprar Baralho Extra -->
+          <button type="button" id="account-buy-extra-deck-btn"
+            class="m3-btn-expressive m3-btn-tonal w-full py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition cursor-pointer shadow-xs">
+            <span class="material-symbols-rounded text-base text-amber-700">add_circle</span>
+            <span>Comprar Baralho Extra (R$ 0,99)</span>
+          </button>
+
           <!-- Botão Cancelar Assinatura -->
           <button type="button" id="account-cancel-sub-btn"
             class="w-full py-2 px-3 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer">
@@ -284,6 +291,14 @@ async function renderAccountModalContent() {
       window.location.reload();
     } catch (err) {
       console.error('Erro ao sair:', err);
+    }
+  });
+
+  // Comprar Baralho Extra
+  document.getElementById('account-buy-extra-deck-btn')?.addEventListener('click', () => {
+    closeAccountModal();
+    if (typeof window.flashcardsOpenExtraDeckModal === 'function') {
+      window.flashcardsOpenExtraDeckModal();
     }
   });
 

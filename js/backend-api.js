@@ -97,6 +97,20 @@ export async function buyExtraGeneration(params = {}) {
 }
 
 /**
+ * Create Stripe Checkout Session for Extra Deck Generation (R$ 0,99)
+ */
+export async function createExtraDeckCheckoutSession() {
+  const res = await fetchWithAuth('/api/create-extra-deck-session', {
+    method: 'POST'
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Erro ao criar sessão para deck extra no Stripe');
+  }
+  return await res.json();
+}
+
+/**
  * Generate Flashcards deck using Backend Gemini Proxy
  */
 export async function generateDeckAI({ contents, systemInstruction, generationConfig, onChunk, stream = true }) {

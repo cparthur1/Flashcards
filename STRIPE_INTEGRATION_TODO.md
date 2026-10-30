@@ -37,7 +37,8 @@ These parameters were configured in Checkout Studio and are active in production
 | `payment_method_collection` | `always` | Collect and save payment methods for subscription renewals |
 | `submit_type` | `auto` | Default payment submit action |
 | `saved_payment_method_options` | `{"payment_method_save": "enabled"}` | Allow customers to save card details for seamless renewals |
-| `integration_identifier` | `custom_embedded_web_0001` | Unique custom integration identifier |
+| `integration_identifier (Pro)` | `custom_embedded_web_0001` | Unique custom integration identifier for Pro monthly subscription |
+| `integration_identifier (Extra Deck)` | `custom_embedded_web_0002` | Unique custom integration identifier for one-time Extra Deck purchase (R$ 0,99) |
 | `appearance.theme` | `flat` | Clean flat theme matching Material Design 3 tokens |
 | `appearance.variables.colorPrimary` | `#3b82f7` | Primary brand accent |
 | `appearance.variables.borderRadius` | `4px` | Form input corner radius |

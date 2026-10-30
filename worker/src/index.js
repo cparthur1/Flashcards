@@ -196,6 +196,50 @@ export default {
         return jsonResponse({ client_secret: session.client_secret }, 200, corsHeaders);
       }
 
+      // 2.3 Create Stripe Embedded Checkout Session for Extra Deck Generation (R$ 0,99 one-time)
+      if ((path === '/api/create-extra-deck-session' || path === '/api/payment/extra-deck-session') && request.method === 'POST') {
+        let user = null;
+        try {
+          user = await authenticateUser();
+        } catch (e) {
+          // Authentication is optional for initial checkout session creation, but links user if logged in
+        }
+
+        const mode = "payment";
+
+        const sessionParams = {
+          mode,
+          ui_mode: "form",
+          line_items: [
+            {
+              price: env.STRIPE_EXTRA_PRICE_ID || "price_1UWEc0Rynl9tIFFYhgaFcei3",
+              quantity: 1,
+            },
+          ],
+          billing_address_collection: "auto",
+          submit_type: "auto",
+          integration_identifier: "custom_embedded_web_0002",
+        };
+
+        if (user) {
+          sessionParams.customer_email = user.email;
+          sessionParams.client_reference_id = user.uid;
+          sessionParams.metadata = { uid: user.uid, type: "extra_deck" };
+        }
+
+        if (!env.STRIPE_SECRET_KEY) {
+          return jsonResponse({
+            error: 'configuration_error',
+            message: 'STRIPE_SECRET_KEY não configurada no servidor.'
+          }, 500, corsHeaders);
+        }
+
+        const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2026-03-25.dahlia' });
+        const session = await stripe.checkout.sessions.create(sessionParams);
+
+        return jsonResponse({ client_secret: session.client_secret }, 200, corsHeaders);
+      }
+
       // 3. User Pro Status & Quota
       if (path === '/api/user/status' && request.method === 'GET') {
         const user = await authenticateUser();
@@ -982,18 +1026,30 @@ async function handleStripeWebhook(request, env) {
     }
 
     if (uid) {
-      await setFirebaseUserProClaim(serviceAccount, uid, true);
-      await updateUserDocument(serviceAccount, uid, {
-        subscription: {
-          status: 'active',
-          plan: 'pro_monthly',
-          provider: 'stripe',
-          subscriptionId: dataObject.subscription || '',
-          customerId: dataObject.customer || '',
+      if (dataObject.mode === 'payment' || dataObject.metadata?.type === 'extra_deck') {
+        // ONE-TIME EXTRA DECK GENERATION PURCHASE
+        const userDoc = await getUserDocument(serviceAccount, uid);
+        const currentExtras = userDoc?.extraGenerations || 0;
+        await updateUserDocument(serviceAccount, uid, {
+          extraGenerations: currentExtras + 1,
           updatedAt: new Date().toISOString()
-        }
-      });
-      console.log(`[Stripe Webhook] Pro ativado com sucesso para UID: ${uid}`);
+        });
+        console.log(`[Stripe Webhook] Geração extra adicionada com sucesso para UID: ${uid} (novo total: ${currentExtras + 1})`);
+      } else {
+        // RECURRING MONTHLY PRO SUBSCRIPTION
+        await setFirebaseUserProClaim(serviceAccount, uid, true);
+        await updateUserDocument(serviceAccount, uid, {
+          subscription: {
+            status: 'active',
+            plan: 'pro_monthly',
+            provider: 'stripe',
+            subscriptionId: dataObject.subscription || '',
+            customerId: dataObject.customer || '',
+            updatedAt: new Date().toISOString()
+          }
+        });
+        console.log(`[Stripe Webhook] Pro ativado com sucesso para UID: ${uid}`);
+      }
     }
   }
 
