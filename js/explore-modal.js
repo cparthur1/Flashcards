@@ -18,6 +18,7 @@ import {
 } from './slot-manager.js';
 import { shareDeckToCloud } from './share-manager.js';
 import { getUserStatus, createProSubscription, createCheckoutSession, buyExtraGeneration, deleteAccountAndCancelSubscription, verifyPaymentStatus, BACKEND_URL } from './backend-api.js';
+import { triggerProUnlockCelebration } from './engine/pro-unlock-celebration.js';
 import { ROUTES } from './utils.js';
 
 let modalInitialized = false;
@@ -99,7 +100,7 @@ export function initExploreModal() {
           if (verifyResult?.type === 'extra_deck') {
             alert('Compra de geração extra concluída com sucesso!');
           } else {
-            alert('Assinatura Pro ativada com sucesso! Aproveite seus benefícios.');
+            triggerProUnlockCelebration();
           }
         } catch (err) {
           console.warn('[Stripe Return] Erro ao verificar pagamento após retorno:', err);
@@ -494,6 +495,7 @@ async function checkPaymentStatusNow(showFeedback = false) {
       await refreshUserProStatus();
       renderProModalContent();
       renderModalContent();
+      triggerProUnlockCelebration();
       return true;
     } else if (showFeedback) {
       alert('Pagamento ainda não confirmado pelo banco. Se realizou o pagamento há poucos segundos, aguarde um instante e verifique novamente.');
@@ -711,9 +713,12 @@ async function mountStripeEmbeddedForm() {
             return;
           }
           setTimeout(async () => {
-            await refreshUserProStatus();
+            const status = await refreshUserProStatus();
             renderProModalContent();
             renderModalContent();
+            if (status?.isPro) {
+              triggerProUnlockCelebration();
+            }
           }, 2000);
         } catch (error) {
           console.error('Payment confirmation error:', error);
@@ -734,7 +739,7 @@ async function mountStripeEmbeddedForm() {
             ${err.message || 'Defina suas chaves públicas e secretas do Stripe para ativar o formulário de pagamento.'}
           </p>
           <p class="text-[10px] text-blue-700">
-            Consulte o arquivo <code>STRIPE_INTEGRATION_TODO.md</code> para obter instruções.
+            Consulte as instruções do painel do Stripe para obter as chaves de integração.
           </p>
         </div>
       `;
