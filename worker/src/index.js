@@ -312,12 +312,16 @@ export default {
           isProduction
         });
 
+        const allowedTypes = ['PIX', 'CREDIT_CARD'];
+        const billingType = allowedTypes.includes(body.billingType) ? body.billingType : 'PIX';
+
         const subResult = await createSubscription({
           customerId: customer.id,
           uid: user.uid,
           apiKey,
           isProduction,
-          value: 5.00
+          value: 5.00,
+          billingType
         });
 
         // Save pending subscription in user doc

@@ -269,6 +269,36 @@ function injectModalHtml() {
             </label>
             <input type="text" id="pro-cpf-input" placeholder="000.000.000-00" maxlength="14" class="w-full text-xs p-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 bg-white text-gray-900" />
           </div>
+
+          <div class="space-y-1 text-left">
+            <label class="block text-[11px] font-bold text-[var(--md-sys-color-on-surface)]">
+              Forma de pagamento
+            </label>
+            <div class="grid grid-cols-2 gap-2" id="pro-payment-method-selector">
+              <label id="opt-method-pix" class="flex items-center gap-2 p-2.5 border-2 rounded-xl cursor-pointer transition border-blue-600 bg-blue-50/50">
+                <input type="radio" name="pro-payment-method" value="PIX" checked class="accent-blue-600" />
+                <div class="min-w-0">
+                  <div class="text-xs font-bold text-gray-900 flex items-center gap-1">
+                    <span class="material-symbols-rounded text-sm text-blue-600">qr_code_2</span>
+                    <span>Pix</span>
+                  </div>
+                  <span class="text-[10px] text-gray-500 block leading-tight">Instantâneo</span>
+                </div>
+              </label>
+
+              <label id="opt-method-card" class="flex items-center gap-2 p-2.5 border-2 rounded-xl cursor-pointer transition border-gray-200 hover:border-gray-300 bg-white">
+                <input type="radio" name="pro-payment-method" value="CREDIT_CARD" class="accent-blue-600" />
+                <div class="min-w-0">
+                  <div class="text-xs font-bold text-gray-900 flex items-center gap-1">
+                    <span class="material-symbols-rounded text-sm text-gray-700">credit_card</span>
+                    <span>Cartão</span>
+                  </div>
+                  <span class="text-[10px] text-gray-500 block leading-tight">Crédito ou Débito</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
           <button id="pro-generate-pix-btn" class="m3-btn-expressive m3-btn-filled w-full py-3 px-4 font-bold text-sm flex items-center justify-center shadow cursor-pointer">
             <span>Assinar agora</span>
           </button>
@@ -497,6 +527,27 @@ function bindProCheckoutBtn() {
     });
   }
 
+  // Toggle selection styling between Pix and Card
+  const methodInputs = document.querySelectorAll('input[name="pro-payment-method"]');
+  const optPix = document.getElementById('opt-method-pix');
+  const optCard = document.getElementById('opt-method-card');
+
+  methodInputs.forEach(input => {
+    input.addEventListener('change', () => {
+      if (input.value === 'PIX') {
+        optPix?.classList.add('border-blue-600', 'bg-blue-50/50');
+        optPix?.classList.remove('border-gray-200', 'bg-white');
+        optCard?.classList.add('border-gray-200', 'bg-white');
+        optCard?.classList.remove('border-blue-600', 'bg-blue-50/50');
+      } else {
+        optCard?.classList.add('border-blue-600', 'bg-blue-50/50');
+        optCard?.classList.remove('border-gray-200', 'bg-white');
+        optPix?.classList.add('border-gray-200', 'bg-white');
+        optPix?.classList.remove('border-blue-600', 'bg-blue-50/50');
+      }
+    });
+  });
+
   btn?.addEventListener('click', async () => {
     const cleanCpf = cpfInput?.value?.replace(/\D/g, '') || '';
     if (cleanCpf.length !== 11) {
@@ -505,12 +556,15 @@ function bindProCheckoutBtn() {
       return;
     }
 
+    const selectedMethod = document.querySelector('input[name="pro-payment-method"]:checked')?.value || 'PIX';
+
     btn.disabled = true;
     btn.innerHTML = '<span class="material-symbols-rounded text-base animate-spin mr-1.5">sync</span><span>Gerando cobrança...</span>';
 
     try {
       const result = await createProSubscription({
-        cpfCnpj: cleanCpf
+        cpfCnpj: cleanCpf,
+        billingType: selectedMethod
       });
 
       // Switch to Awaiting Payment view
@@ -523,7 +577,7 @@ function bindProCheckoutBtn() {
       const copyBtn = document.getElementById('pro-copy-pix-btn');
       const invoiceBtn = document.getElementById('pro-invoice-btn');
 
-      if (result.pix?.encodedImage) {
+      if (selectedMethod === 'PIX' && result.pix?.encodedImage) {
         if (qrContainer) qrContainer.classList.remove('hidden');
         if (qrImg) qrImg.src = `data:image/png;base64,${result.pix.encodedImage}`;
         if (copyBtn) {
@@ -535,18 +589,18 @@ function bindProCheckoutBtn() {
             }, 2000);
           };
         }
+        if (invoiceBtn) invoiceBtn.classList.add('hidden');
       } else {
         if (qrContainer) qrContainer.classList.add('hidden');
-      }
-
-      if (result.invoiceUrl) {
-        if (invoiceBtn) {
+        if (invoiceBtn && result.invoiceUrl) {
           invoiceBtn.href = result.invoiceUrl;
           invoiceBtn.classList.remove('hidden');
+          invoiceBtn.innerHTML = '<span class="material-symbols-rounded text-base">credit_card</span><span>Pagar com Cartão no Asaas</span>';
         }
+      }
+
+      if (selectedMethod === 'CREDIT_CARD' && result.invoiceUrl) {
         window.open(result.invoiceUrl, '_blank');
-      } else if (invoiceBtn) {
-        invoiceBtn.classList.add('hidden');
       }
 
       // Bind check payment button
@@ -628,6 +682,36 @@ export function renderProModalContent() {
       </label>
       <input type="text" id="pro-cpf-input" placeholder="000.000.000-00" maxlength="14" class="w-full text-xs p-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 bg-white text-gray-900" />
     </div>
+
+    <div class="space-y-1 text-left">
+      <label class="block text-[11px] font-bold text-[var(--md-sys-color-on-surface)]">
+        Forma de pagamento
+      </label>
+      <div class="grid grid-cols-2 gap-2" id="pro-payment-method-selector">
+        <label id="opt-method-pix" class="flex items-center gap-2 p-2.5 border-2 rounded-xl cursor-pointer transition border-blue-600 bg-blue-50/50">
+          <input type="radio" name="pro-payment-method" value="PIX" checked class="accent-blue-600" />
+          <div class="min-w-0">
+            <div class="text-xs font-bold text-gray-900 flex items-center gap-1">
+              <span class="material-symbols-rounded text-sm text-blue-600">qr_code_2</span>
+              <span>Pix</span>
+            </div>
+            <span class="text-[10px] text-gray-500 block leading-tight">Instantâneo</span>
+          </div>
+        </label>
+
+        <label id="opt-method-card" class="flex items-center gap-2 p-2.5 border-2 rounded-xl cursor-pointer transition border-gray-200 hover:border-gray-300 bg-white">
+          <input type="radio" name="pro-payment-method" value="CREDIT_CARD" class="accent-blue-600" />
+          <div class="min-w-0">
+            <div class="text-xs font-bold text-gray-900 flex items-center gap-1">
+              <span class="material-symbols-rounded text-sm text-gray-700">credit_card</span>
+              <span>Cartão</span>
+            </div>
+            <span class="text-[10px] text-gray-500 block leading-tight">Crédito ou Débito</span>
+          </div>
+        </label>
+      </div>
+    </div>
+
     <button id="pro-generate-pix-btn" class="m3-btn-expressive m3-btn-filled w-full py-3 px-4 font-bold text-sm flex items-center justify-center shadow cursor-pointer">
       <span>Assinar agora</span>
     </button>

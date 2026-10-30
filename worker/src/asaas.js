@@ -69,11 +69,13 @@ export async function getOrCreateCustomer({ name, email, cpfCnpj = null, apiKey,
 }
 
 /**
- * Create Monthly Pro Subscription (R$ 5.00/mês)
+ * Create Monthly Pro Subscription (R$ 5.00/mês) - Pix or Credit Card only (no Boleto)
  */
-export async function createSubscription({ customerId, uid, apiKey, isProduction = true, value = 5.00 }) {
+export async function createSubscription({ customerId, uid, apiKey, isProduction = true, value = 5.00, billingType = 'PIX' }) {
   const baseUrl = getAsaasBaseUrl(isProduction);
   const headers = getAsaasHeaders(apiKey);
+
+  const cleanBillingType = billingType === 'CREDIT_CARD' ? 'CREDIT_CARD' : 'PIX';
 
   // Today + 1 day for first due date
   const tomorrow = new Date();
@@ -85,7 +87,7 @@ export async function createSubscription({ customerId, uid, apiKey, isProduction
     headers,
     body: JSON.stringify({
       customer: customerId,
-      billingType: 'UNDEFINED', // Allows customer to pay with Pix or Credit Card
+      billingType: cleanBillingType,
       value: value,
       nextDueDate,
       cycle: 'MONTHLY',
@@ -111,7 +113,7 @@ export async function createSubscription({ customerId, uid, apiKey, isProduction
     }
   }
 
-  // If first payment exists, tag externalReference and fetch Pix QR Code
+  // If first payment exists, tag externalReference and fetch Pix QR Code if Pix
   let pixData = null;
   if (firstPayment && firstPayment.id) {
     await fetch(`${baseUrl}/payments/${firstPayment.id}`, {
@@ -120,9 +122,11 @@ export async function createSubscription({ customerId, uid, apiKey, isProduction
       body: JSON.stringify({ externalReference: `sub:${uid}` })
     }).catch(err => console.warn('Erro ao atualizar externalReference do primeiro pagamento no Asaas:', err));
 
-    const pixRes = await fetch(`${baseUrl}/payments/${firstPayment.id}/pixQrCode`, { headers });
-    if (pixRes.ok) {
-      pixData = await pixRes.json();
+    if (cleanBillingType === 'PIX') {
+      const pixRes = await fetch(`${baseUrl}/payments/${firstPayment.id}/pixQrCode`, { headers });
+      if (pixRes.ok) {
+        pixData = await pixRes.json();
+      }
     }
   }
 
@@ -130,7 +134,7 @@ export async function createSubscription({ customerId, uid, apiKey, isProduction
     subscriptionId: subData.id,
     paymentId: firstPayment ? firstPayment.id : null,
     invoiceUrl: firstPayment ? firstPayment.invoiceUrl : null,
-    bankSlipUrl: firstPayment ? firstPayment.bankSlipUrl : null,
+    billingType: cleanBillingType,
     pix: pixData
   };
 }
