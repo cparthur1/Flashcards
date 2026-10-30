@@ -146,6 +146,7 @@ export default {
             payment_method_save: "enabled"
           },
           integration_identifier: "custom_embedded_web_0001",
+          return_url: `${request.headers.get('Origin') || 'https://flashcards.camblu.org'}/?session_id={CHECKOUT_SESSION_ID}`,
           line_items: [
             {
               price: env.STRIPE_PRICE_ID || "price_1UWEb0Rynl9tIFFYF2cvZ3RB",
@@ -219,6 +220,7 @@ export default {
           billing_address_collection: "auto",
           submit_type: "auto",
           integration_identifier: "custom_embedded_web_0002",
+          return_url: `${request.headers.get('Origin') || 'https://flashcards.camblu.org'}/?session_id={CHECKOUT_SESSION_ID}`,
         };
 
         if (user) {

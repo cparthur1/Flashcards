@@ -70,6 +70,21 @@ export function initExploreModal() {
   injectModalHtml();
   attachModalEventListeners();
 
+  // Check if returning from Stripe redirect confirmation
+  if (typeof window !== 'undefined' && window.location && window.location.search.includes('session_id=')) {
+    (async () => {
+      try {
+        await verifyPaymentStatus();
+        await refreshUserProStatus();
+        const url = new URL(window.location.href);
+        url.searchParams.delete('session_id');
+        window.history.replaceState({}, document.title, url.toString());
+      } catch (err) {
+        console.warn('[Stripe Return] Erro ao verificar pagamento após retorno:', err);
+      }
+    })();
+  }
+
   // Listen to Auth State
   onAuthChange(async (user) => {
     const prevUid = currentUser?.uid;
@@ -668,8 +683,16 @@ async function mountStripeEmbeddedForm() {
     if (loadActionsResult.type === 'success') {
       form.on('confirm', async (event) => {
         try {
-          const actionResult = await loadActionsResult.actions.confirm({ formConfirmEvent: event });
+          const returnUrl = window.location.href.split('#')[0];
+          const actionResult = await loadActionsResult.actions.confirm({
+            formConfirmEvent: event,
+            returnUrl
+          });
           console.log('[Stripe] Confirmação de pagamento:', actionResult);
+          if (actionResult && actionResult.error) {
+            console.error('Payment confirmation error:', actionResult.error);
+            return;
+          }
           setTimeout(async () => {
             await refreshUserProStatus();
             renderProModalContent();
@@ -840,8 +863,16 @@ async function mountExtraDeckEmbeddedForm() {
     if (loadActionsResult.type === 'success') {
       form.on('confirm', async (event) => {
         try {
-          const actionResult = await loadActionsResult.actions.confirm({ formConfirmEvent: event });
+          const returnUrl = window.location.href.split('#')[0];
+          const actionResult = await loadActionsResult.actions.confirm({
+            formConfirmEvent: event,
+            returnUrl
+          });
           console.log('[Stripe Extra Deck] Confirmação:', actionResult);
+          if (actionResult && actionResult.error) {
+            console.error('Payment confirmation error:', actionResult.error);
+            return;
+          }
           setTimeout(async () => {
             await refreshUserProStatus();
             alert('Pagamento confirmado com sucesso! 1 geração extra de baralho com IA foi adicionada à sua conta.');
